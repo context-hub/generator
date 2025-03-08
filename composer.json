@@ -1,0 +1,56 @@
+{
+  "name": "butschster/context-generator",
+  "description": "Support package for content generation",
+  "keywords": [
+    "php8",
+    "php",
+    "llm",
+    "prompt",
+    "context"
+  ],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Pavel Buchnev",
+      "email": "butschster@gmail.com"
+    }
+  ],
+  "require": {
+    "php": "^8.2",
+    "league/html-to-markdown": "^5.1",
+    "psr-discovery/http-client-implementations": "^1.0",
+    "psr-discovery/http-factory-implementations": "^1.0",
+    "psr/http-client": "^1.0",
+    "psr/http-factory": "^1.0",
+    "symfony/finder": "^6.0 | ^7.0 | ^8.0",
+    "symfony/console": "^6.0 | ^7.0 | ^8.0"
+  },
+  "require-dev": {
+    "symfony/http-client": "^7.0 | ^8.0",
+    "phpunit/phpunit": "^10.2",
+    "rector/rector": "^2.0",
+    "vimeo/psalm": "^5.8"
+  },
+  "autoload": {
+    "psr-4": {
+      "Butschster\\ContextGenerator\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests/src"
+    }
+  },
+  "bin": [
+    "context-generator"
+  ],
+  "scripts": {
+    "cs-check": "vendor/bin/php-cs-fixer fix --dry-run",
+    "cs-fix": "vendor/bin/php-cs-fixer fix",
+    "psalm": "vendor/bin/psalm --config=psalm.xml ./src",
+    "test": "vendor/bin/phpunit",
+    "test-coverage": "vendor/bin/phpunit --coverage"
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true
+}

@@ -1,0 +1,48 @@
+#!/usr/bin/env php
+<?php
+
+namespace Butschster\ContextGenerator;
+
+// load dependencies
+$appPath = (static function (): string {
+    // OK, it's not, let give Composer autoloader a try!
+    $possibleFiles = [
+        __DIR__ . '/../../autoload.php',
+        __DIR__ . '/../autoload.php',
+        __DIR__ . '/vendor/autoload.php',
+    ];
+    $file = null;
+    foreach ($possibleFiles as $possibleFile) {
+        if (\file_exists($possibleFile)) {
+            $file = $possibleFile;
+
+            break;
+        }
+    }
+
+    if (null === $file) {
+        throw new \RuntimeException('Unable to locate autoload.php file.');
+    }
+
+    require_once $file;
+
+    return \realpath(\dirname($file) . '/../');
+})();
+
+use Butschster\ContextGenerator\Cli\ContextGenerator;
+use PsrDiscovery\Discover;
+use Symfony\Component\Console\Application;
+
+$application = new Application();
+
+$application->add(
+    new ContextGenerator(
+        rootPath: $appPath,
+        outputPath: $appPath . '/.context',
+        httpClient: Discover::httpClient(),
+        requestFactory: Discover::httpRequestFactory(),
+        urlFactory: Discover::httpUriFactory(),
+    ),
+);
+
+$application->run();
