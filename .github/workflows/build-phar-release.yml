@@ -46,11 +46,11 @@ jobs:
         uses: wayofdev/gh-actions/actions/composer/get-cache-directory@v3.2.0
 
       - name: ♻️ Restore cached dependencies installed with composer
-        uses: actions/cache@v4
+        uses: actions/cache@v4.2.2
         with:
           path: ${{ env.COMPOSER_CACHE_DIR }}
           key: php-${{ matrix.php-version }}-composer-${{ matrix.dependencies }}-${{ hashFiles('composer.lock') }}
-          restore-keys: php-${{ matrix.php-version }}-composer-${{ matrix.dependencies }}-
+          restore-keys: php-${{ matrix.php-version }}-composer-${{ matrix.dependencies }}
 
       - name: 📥 Install "${{ matrix.dependencies }}" dependencies with composer
         uses: wayofdev/gh-actions/actions/composer/install@v3.2.0
@@ -84,7 +84,7 @@ jobs:
       - name: 📥 Import keys from keys.asc with gpg
         run: gpg --batch --import ${{ env.GPG_KEYS }}
 
-      - name: 🔐 Sign har with gpg
+      - name: 🔐 Sign phar with gpg
         run: gpg --armor --local-user "${{ secrets.GPG_LOCAL_USER }}" --output ${{ env.BIN_PHAR_SIGNATURE }} --passphrase "${{ secrets.GPG_KEY_PASSPHRASE }}" --pinentry-mode loopback --yes --detach-sig ${{ env.BIN_PHAR }}
 
       - name: ❎ Remove decrypted keys.asc
