@@ -1,20 +1,20 @@
 {
-    "$schema": "https://raw.githubusercontent.com/box-project/box/main/res/schema.json",
-    "compactors": [
-        "KevinGH\\Box\\Compactor\\Json",
-        "KevinGH\\Box\\Compactor\\Php"
-    ],
-    "compression": "GZ",
-    "git": "git",
-    "directories": [
-        "src",
-        "vendor"
-    ],
-    "files": [
-        "context-generator",
-        "LICENSE.md",
-        "composer.json",
-        "composer.lock"
-    ],
-    "output": ".build/phar/context-generator.phar"
+  "$schema": "https://raw.githubusercontent.com/box-project/box/main/res/schema.json",
+  "compactors": [
+    "KevinGH\\Box\\Compactor\\Json",
+    "KevinGH\\Box\\Compactor\\Php"
+  ],
+  "compression": "GZ",
+  "git": "git",
+  "directories": [
+    "src",
+    "vendor"
+  ],
+  "files": [
+    "context-generator",
+    "LICENSE",
+    "composer.json",
+    "composer.lock"
+  ],
+  "output": ".build/phar/context-generator.phar"
 }
