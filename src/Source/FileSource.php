@@ -18,7 +18,7 @@ final class FileSource extends BaseSource
     public function __construct(
         public readonly string|array $sourcePaths,
         string $description = '',
-        public readonly string $filePattern = '*.php',
+        public readonly string $filePattern = '*.*',
         public readonly array $excludePatterns = [],
         public readonly bool $showTreeView = true,
     ) {

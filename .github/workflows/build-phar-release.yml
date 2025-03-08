@@ -1,0 +1,100 @@
+---
+
+on: # yamllint disable-line rule:truthy
+  release:
+    types:
+      - published
+
+name: 📦 Build PHAR release
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    strategy:
+      matrix:
+        php-version:
+          - '8.2'
+        dependencies:
+          - locked
+    env:
+      BIN_PHAR: ".build/phar/context-generator.phar"
+      BIN_PHAR_SIGNATURE: ".build/phar/context-generator.phar.asc"
+      GPG_KEYS: ".build/phar/keys.asc"
+      GPG_KEYS_ENCRYPTED: ".github/phar/keys.asc.gpg"
+    steps:
+      - name: 📦 Check out the codebase
+        uses: actions/checkout@v4
+
+      - name: 🛠️ Setup PHP
+        uses: shivammathur/setup-php@2.32.0
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: none, ctype, dom, json, mbstring, phar, simplexml, tokenizer, xml, xmlwriter
+          ini-values: error_reporting=E_ALL
+          coverage: none
+          tools: phive
+
+      - name: 🛠️ Setup problem matchers
+        run: |
+          echo "::add-matcher::${{ runner.tool_cache }}/php.json"
+
+      - name: 🤖 Validate composer.json and composer.lock
+        run: composer validate --ansi --strict
+
+      - name: 🔍 Get composer cache directory
+        uses: wayofdev/gh-actions/actions/composer/get-cache-directory@v3.2.0
+
+      - name: ♻️ Restore cached dependencies installed with composer
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.COMPOSER_CACHE_DIR }}
+          key: php-${{ matrix.php-version }}-composer-${{ matrix.dependencies }}-${{ hashFiles('composer.lock') }}
+          restore-keys: php-${{ matrix.php-version }}-composer-${{ matrix.dependencies }}-
+
+      - name: 📥 Install "${{ matrix.dependencies }}" dependencies with composer
+        uses: wayofdev/gh-actions/actions/composer/install@v3.2.0
+        with:
+          dependencies: ${{ matrix.dependencies }}
+
+      - name: 📥 Install dependencies with phive
+        uses: wayofdev/gh-actions/actions/phive/install@v3.2.0
+        with:
+          phive-home: '.phive'
+          trust-gpg-keys: '0xC00543248C87FB13,0x033E5F8D801A2F8D,0x2DF45277AEF09A2F'
+
+      - name: 🔍 Validate configuration for box-project/box
+        run: .phive/box validate box.json.dist --ansi
+
+      - name: 🤖 Compile phar with box-project/box
+        run: .phive/box compile --ansi
+
+      - name: 💥 Show info about phar with box-project/box
+        run: .phive/box info ${{ env.BIN_PHAR }} --ansi
+
+      - name: 🤔 Run help command
+        run: ${{ env.BIN_PHAR }} --help
+
+      - name: 🔍 Show gpg version
+        run: gpg --version
+
+      - name: 🔑 Decrypt keys.asc.gpg with gpg
+        run: gpg --batch --output ${{ env.GPG_KEYS }} --passphrase "${{ secrets.GPG_DECRYPT_PASSPHRASE }}" --yes --decrypt ${{ env.GPG_KEYS_ENCRYPTED }}
+
+      - name: 📥 Import keys from keys.asc with gpg
+        run: gpg --batch --import ${{ env.GPG_KEYS }}
+
+      - name: 🔐 Sign har with gpg
+        run: gpg --armor --local-user "${{ secrets.GPG_LOCAL_USER }}" --output ${{ env.BIN_PHAR_SIGNATURE }} --passphrase "${{ secrets.GPG_KEY_PASSPHRASE }}" --pinentry-mode loopback --yes --detach-sig ${{ env.BIN_PHAR }}
+
+      - name: ❎ Remove decrypted keys.asc
+        run: rm ${{ env.GPG_KEYS }}
+
+      - name: 📤 Upload release assets
+        uses: softprops/action-gh-release@v2.2.1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          token: "${{ secrets.RELEASE_TOKEN }}"
+          files: |
+            ${{ env.BIN_PHAR }}
+            ${{ env.BIN_PHAR_SIGNATURE }}
