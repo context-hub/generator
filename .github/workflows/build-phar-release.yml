@@ -19,9 +19,6 @@ jobs:
           - locked
     env:
       BIN_PHAR: ".build/phar/context-generator.phar"
-      BIN_PHAR_SIGNATURE: ".build/phar/context-generator.phar.asc"
-      GPG_KEYS: ".build/phar/keys.asc"
-      GPG_KEYS_ENCRYPTED: ".github/phar/keys.asc.gpg"
     steps:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -36,7 +33,6 @@ jobs:
 
       - run: git describe --tags HEAD || git tag 0.0.0
 
-
       - uses: ramsey/composer-install@v3
       - name: Build PHAR
         run: box compile
@@ -47,21 +43,6 @@ jobs:
       - name: 🤔 Run help command
         run: ${{ env.BIN_PHAR }} --help
 
-      - name: 🔍 Show gpg version
-        run: gpg --version
-
-      - name: 🔑 Decrypt keys.asc.gpg with gpg
-        run: gpg --batch --output ${{ env.GPG_KEYS }} --passphrase "${{ secrets.GPG_DECRYPT_PASSPHRASE }}" --yes --decrypt ${{ env.GPG_KEYS_ENCRYPTED }}
-
-      - name: 📥 Import keys from keys.asc with gpg
-        run: gpg --batch --import ${{ env.GPG_KEYS }}
-
-      - name: 🔐 Sign phar with gpg
-        run: gpg --armor --local-user "${{ secrets.GPG_LOCAL_USER }}" --output ${{ env.BIN_PHAR_SIGNATURE }} --passphrase "${{ secrets.GPG_KEY_PASSPHRASE }}" --pinentry-mode loopback --yes --detach-sig ${{ env.BIN_PHAR }}
-
-      - name: ❎ Remove decrypted keys.asc
-        run: rm ${{ env.GPG_KEYS }}
-
       - name: 📤 Upload release assets
         uses: softprops/action-gh-release@v2.2.1
         if: startsWith(github.ref, 'refs/tags/')
@@ -69,4 +50,3 @@ jobs:
           token: "${{ secrets.RELEASE_TOKEN }}"
           files: |
             ${{ env.BIN_PHAR }}
-            ${{ env.BIN_PHAR_SIGNATURE }}
