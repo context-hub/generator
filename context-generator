@@ -3,6 +3,8 @@
 
 namespace Butschster\ContextGenerator;
 
+$insidePhar = \str_starts_with(__FILE__, 'phar://');
+
 // load dependencies
 $appPath = (static function (): string {
     // OK, it's not, let give Composer autoloader a try!
@@ -34,6 +36,11 @@ use PsrDiscovery\Discover;
 use Symfony\Component\Console\Application;
 
 $application = new Application();
+$application->setDefaultCommand('generate');
+
+if ($insidePhar) {
+    $appPath = getcwd();
+}
 
 $application->add(
     new ContextGenerator(
