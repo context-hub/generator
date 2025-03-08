@@ -31,6 +31,29 @@ When working with AI-powered development tools context is everything.
 
 ## Installation
 
+### Using bash
+
+The easiest way to install Context Generator is by using our installation script. This automatically downloads the
+latest version and sets it up for immediate use.
+
+```bash
+# Install to /usr/local/bin (will be added to PATH in most Linux distributions)
+curl -sSL https://raw.githubusercontent.com/butschster/context-generator/main/download-latest.sh | sh
+```
+
+**What the script does**
+
+- Detects the latest version
+- Downloads the PHAR file from GitHub releases
+- Installs it to your bin directory (default: `/usr/local/bin`)
+- Makes it executable
+
+After installation, you can use Context Generator by simply running:
+
+```bash
+context-generator generate
+```
+
 ### Using PHAR file
 
 The simplest way to use Context Generator is by downloading the ready-to-use PHAR file directly. No Composer or
