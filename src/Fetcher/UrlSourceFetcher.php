@@ -75,7 +75,9 @@ final readonly class UrlSourceFetcher implements SourceFetcherInterface
 
                 // Extract content from specific selector if defined
                 if ($source->hasSelector()) {
-                    $contentFromSelector = $this->extractContentFromSelector($html, $source->getSelector());
+                    $selector = $source->getSelector();
+                    \assert(!empty($selector));
+                    $contentFromSelector = $this->extractContentFromSelector($html, $selector);
                     if (empty($html)) {
                         $content .= "// URL: {$url}" . PHP_EOL;
                         $content .= "// Warning: Selector '{$source->getSelector()}' didn't match any content" . PHP_EOL;
@@ -105,9 +107,9 @@ final readonly class UrlSourceFetcher implements SourceFetcherInterface
     /**
      * Extract content from HTML using a CSS selector
      */
-    private function extractContentFromSelector(string $html, ?string $selector): string
+    private function extractContentFromSelector(string $html, string $selector): string
     {
-        if (empty($selector)) {
+        if (empty($html)) {
             return $html;
         }
 
