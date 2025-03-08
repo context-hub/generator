@@ -1,0 +1,16 @@
+{
+  "documents": [
+    {
+      "description": "Context generator.",
+      "outputPath": "ContextGenerator.txt",
+      "sources": [
+        {
+          "type": "file",
+          "sourcePaths": [
+            "src"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -48,4 +48,13 @@ final readonly class Files implements FilesInterface
     {
         \file_put_contents($filename, $content, LOCK_EX);
     }
+
+    public function read(string $filename): string|false
+    {
+        if (!\file_exists($filename)) {
+            return false;
+        }
+
+        return \file_get_contents($filename);
+    }
 }

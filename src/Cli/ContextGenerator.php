@@ -13,6 +13,7 @@ use Butschster\ContextGenerator\Fetcher\UrlSourceFetcher;
 use Butschster\ContextGenerator\Files;
 use Butschster\ContextGenerator\Loader\CompositeDocumentsLoader;
 use Butschster\ContextGenerator\Loader\ConfigDocumentsLoader;
+use Butschster\ContextGenerator\Loader\JsonConfigDocumentsLoader;
 use Butschster\ContextGenerator\Parser\DefaultSourceParser;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
@@ -28,10 +29,11 @@ final class ContextGenerator extends Command
     public function __construct(
         private readonly string $rootPath,
         private readonly string $outputPath,
-        private readonly string $configName = 'kb.php',
         private readonly ?ClientInterface $httpClient = null,
         private readonly ?RequestFactoryInterface $requestFactory = null,
         private readonly ?UriFactoryInterface $urlFactory = null,
+        private readonly string $phpConfigName = 'context.php',
+        private readonly string $jsonConfigName = 'context.json',
     ) {
         parent::__construct();
     }
@@ -67,7 +69,12 @@ final class ContextGenerator extends Command
 
         $loader = new CompositeDocumentsLoader(
             new ConfigDocumentsLoader(
-                configPath: $this->rootPath . '/' . $this->configName,
+                configPath: $this->rootPath . '/' . $this->phpConfigName,
+            ),
+            new JsonConfigDocumentsLoader(
+                files: $files,
+                configPath: $this->rootPath . '/' . $this->jsonConfigName,
+                rootPath: $this->rootPath,
             ),
         );
 
