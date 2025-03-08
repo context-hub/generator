@@ -23,54 +23,26 @@ jobs:
       GPG_KEYS: ".build/phar/keys.asc"
       GPG_KEYS_ENCRYPTED: ".github/phar/keys.asc.gpg"
     steps:
-      - name: 📦 Check out the codebase
-        uses: actions/checkout@v4
-
-      - name: 🛠️ Setup PHP
-        uses: shivammathur/setup-php@2.32.0
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php-version }}
-          extensions: none, ctype, dom, json, mbstring, phar, simplexml, tokenizer, xml, xmlwriter
-          ini-values: error_reporting=E_ALL
           coverage: none
-          tools: phive
+          tools: composer, box
+          php-version: "${{ matrix.php-version }}"
 
-      - name: 🛠️ Setup problem matchers
-        run: |
-          echo "::add-matcher::${{ runner.tool_cache }}/php.json"
-
-      - name: 🤖 Validate composer.json and composer.lock
-        run: composer validate --ansi --strict
-
-      - name: 🔍 Get composer cache directory
-        uses: wayofdev/gh-actions/actions/composer/get-cache-directory@v3.2.0
-
-      - name: ♻️ Restore cached dependencies installed with composer
-        uses: actions/cache@v4.2.2
+      - uses: actions/checkout@v4
         with:
-          path: ${{ env.COMPOSER_CACHE_DIR }}
-          key: php-${{ matrix.php-version }}-composer-${{ matrix.dependencies }}-${{ hashFiles('composer.lock') }}
-          restore-keys: php-${{ matrix.php-version }}-composer-${{ matrix.dependencies }}
+          fetch-depth: 0
 
-      - name: 📥 Install "${{ matrix.dependencies }}" dependencies with composer
-        uses: wayofdev/gh-actions/actions/composer/install@v3.2.0
-        with:
-          dependencies: ${{ matrix.dependencies }}
+      - run: git describe --tags HEAD || git tag 0.0.0
 
-      - name: 📥 Install dependencies with phive
-        uses: wayofdev/gh-actions/actions/phive/install@v3.2.0
-        with:
-          phive-home: '.phive'
-          trust-gpg-keys: '0xC00543248C87FB13,0x033E5F8D801A2F8D,0x2DF45277AEF09A2F'
 
-      - name: 🔍 Validate configuration for box-project/box
-        run: .phive/box validate box.json.dist --ansi
-
-      - name: 🤖 Compile phar with box-project/box
-        run: .phive/box compile --ansi
+      - uses: ramsey/composer-install@v3
+      - name: Build PHAR
+        run: box compile
 
       - name: 💥 Show info about phar with box-project/box
-        run: .phive/box info ${{ env.BIN_PHAR }} --ansi
+        run: box info ${{ env.BIN_PHAR }} --ansi
 
       - name: 🤔 Run help command
         run: ${{ env.BIN_PHAR }} --help
