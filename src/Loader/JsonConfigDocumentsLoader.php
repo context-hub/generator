@@ -132,7 +132,7 @@ final readonly class JsonConfigDocumentsLoader implements DocumentsLoaderInterfa
         return new FileSource(
             sourcePaths: $sourcePaths,
             description: $description,
-            filePattern: $data['filePattern'] ?? '*.php',
+            filePattern: $data['filePattern'] ?? '*.*',
             excludePatterns: $data['excludePatterns'] ?? [],
             showTreeView: $data['showTreeView'] ?? true,
         );

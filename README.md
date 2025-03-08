@@ -31,6 +31,32 @@ When working with AI-powered development tools context is everything.
 
 ## Installation
 
+### Using PHAR file
+
+The simplest way to use Context Generator is by downloading the ready-to-use PHAR file directly. No Composer or
+dependency installation required!
+
+Download and make executable:
+
+```bash
+wget https://github.com/butschster/context-generator/releases/download/1.0.2/context-generator.phar
+chmod +x context-generator.phar
+```
+
+Move it to a convenient location for easy access:
+
+```bash
+# Option 1: Move to current project
+mv context-generator.phar ./context-generator
+
+# Option 2: Move to a directory in your PATH (for system-wide access)
+mv context-generator.phar /usr/local/bin/context-generator
+```
+
+This approach is perfect for quickly trying out the tool or for environments where Composer isn't available.
+
+### Using Composer
+
 Install the package via Composer:
 
 ```bash
