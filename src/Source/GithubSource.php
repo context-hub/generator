@@ -76,15 +76,17 @@ final class GithubSource extends BaseSource
      *
      * @return array<string, string>
      */
-    public function getAuthHeaders(): array
+    public function getAuthHeaders(?string $githubToken = null): array
     {
+        $githubToken = $this->githubToken ?? $githubToken;
+
         $headers = [
             'Accept' => 'application/vnd.github.v3+json',
             'User-Agent' => 'Context-Generator-Bot',
         ];
 
-        if ($this->githubToken !== null) {
-            $headers['Authorization'] = 'token ' . $this->githubToken;
+        if ($githubToken !== null) {
+            $headers['Authorization'] = 'token ' . $githubToken;
         }
 
         return $headers;
