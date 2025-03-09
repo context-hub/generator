@@ -24,6 +24,7 @@ final readonly class GithubSourceFetcher implements SourceFetcherInterface
         private ?UriFactoryInterface $uriFactory,
         private SourceModifierRegistry $modifiers,
         private FileTreeBuilder $treeBuilder = new FileTreeBuilder(),
+        private ?string $githubToken = null,
     ) {}
 
     public function supports(SourceInterface $source): bool
@@ -107,7 +108,7 @@ final readonly class GithubSourceFetcher implements SourceFetcherInterface
         $request = $this->requestFactory->createRequest('GET', $this->uriFactory->createUri($contentsUrl));
 
         // Add headers
-        foreach ($source->getAuthHeaders() as $name => $value) {
+        foreach ($source->getAuthHeaders($this->githubToken) as $name => $value) {
             $request = $request->withHeader($name, $value);
         }
 
@@ -198,7 +199,7 @@ final readonly class GithubSourceFetcher implements SourceFetcherInterface
         $request = $this->requestFactory->createRequest('GET', $this->uriFactory->createUri($rawUrl));
 
         // Add headers
-        foreach ($source->getAuthHeaders() as $name => $value) {
+        foreach ($source->getAuthHeaders($this->githubToken) as $name => $value) {
             $request = $request->withHeader($name, $value);
         }
 
