@@ -34,6 +34,11 @@
           "description": "Path where the document will be saved",
           "pattern": "^[^\\0]+$"
         },
+        "overwrite": {
+          "type": "boolean",
+          "description": "Whether to overwrite existing files",
+          "default": true
+        },
         "sources": {
           "type": "array",
           "description": "List of content sources for this document",
