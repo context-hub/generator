@@ -9,8 +9,8 @@
 Context Generator is a PHP tool that helps developers build structured context files from various sources:
 
 - code files,
-- PHP class signatures (without implementation details),
-- URLs,
+- GitHub repositories,
+- Web pages (URLs) with CSS selectors,
 - and plain text.
 
 It was created to solve a common problem: efficiently providing AI language models like ChatGPT, Claude with necessary
@@ -81,7 +81,10 @@ This approach is perfect for quickly trying out the tool or for environments whe
 
 ### Using Composer
 
-Install the package via Composer:
+In some cases you may want to use Context Generator as a library in your PHP project to provide custom functionality or
+to integrate it into your existing codebase, provide more modifiers or custom sources.
+
+In this case you can install it via Composer:
 
 ```bash
 composer require butschster/context-generator --dev
@@ -107,6 +110,7 @@ use Butschster\ContextGenerator\DocumentRegistry;
 use Butschster\ContextGenerator\Source\FileSource;
 use Butschster\ContextGenerator\Source\TextSource;
 use Butschster\ContextGenerator\Source\UrlSource;
+use Butschster\ContextGenerator\Source\GithubSource;
 
 return (new DocumentRegistry())
     ->register(
@@ -121,6 +125,7 @@ return (new DocumentRegistry())
                 filePattern: '*.php',
                 excludePatterns: ['tests', 'vendor'],
                 showTreeView: true,
+                modifiers: ['php-signature'],
             ),
             new TextSource(
                 content: "# API Documentation\n\nThis document contains the API source code.",
@@ -143,13 +148,20 @@ return (new DocumentRegistry())
     )
     ->register(
         Document::create(
-            description: 'API Class Signatures',
-            outputPath: 'docs/api-interfaces.md',
+            description: 'GitHub Repository',
+            outputPath: 'docs/github-repo.md',
         )
         ->addSource(
-            new PhpClassSource(
-                sourcePaths: __DIR__ . '/src/Api',
-                description: 'API Class Definitions',
+            new GithubSource(
+                repository: 'owner/repo',
+                sourcePaths: 'src',
+                branch: 'main',
+                description: 'Repository Source Files',
+                filePattern: '*.php',
+                excludePatterns: ['tests', 'vendor'],
+                showTreeView: true,
+                githubToken: '${GITHUB_TOKEN}', // Optional: GitHub token for private repositories or rate limits
+                modifiers: ['php-signature'],
             ),
         ),
     );
@@ -175,7 +187,10 @@ or
             "tests",
             "vendor"
           ],
-          "showTreeView": true
+          "showTreeView": true,
+          "modifiers": [
+            "php-signature"
+          ]
         },
         {
           "type": "text",
@@ -199,14 +214,25 @@ or
       ]
     },
     {
-      "description": "API Class Signatures",
-      "outputPath": "docs/api-interfaces.md",
+      "description": "GitHub Repository",
+      "outputPath": "docs/github-repo.md",
       "sources": [
         {
-          "type": "phpClass",
-          "description": "API Class Definitions",
+          "type": "github",
+          "description": "Repository Source Files",
+          "repository": "owner/repo",
           "sourcePaths": [
-            "src/Api"
+            "src"
+          ],
+          "branch": "main",
+          "filePattern": "*.php",
+          "excludePatterns": [
+            "tests",
+            "vendor"
+          ],
+          "showTreeView": true,
+          "modifiers": [
+            "php-signature"
           ]
         }
       ]
@@ -226,23 +252,6 @@ Then run the command:
 
 ## Source Types
 
-### PhpClassSource
-
-The `Butschster\ContextGenerator\Source\PhpClassSource` allows you to extract class signatures from PHP files without implementation details:
-
-```php
-use Butschster\ContextGenerator\Source\PhpClassSource;
-
-new PhpClassSource(
-    sourcePaths: __DIR__ . '/src',        // Path to directory or file with PHP classes
-    description: 'Class Signatures',      // Optional description
-    filePattern: '*.php',                 // File pattern to match (default: *.php)
-    excludePatterns: ['tests', 'vendor'], // Patterns to exclude
-    showTreeView: true,                   // Whether to show tree view (default: true)
-    onlySignatures: true                  // Whether to include only class signatures (default: true)
-);
-```
-
 ### FileSource
 
 The `Butschster\ContextGenerator\Source\FileSource` allows you to include content from files and directories:
@@ -256,6 +265,27 @@ new FileSource(
     filePattern: '*.php',                 // File pattern to match (default: *.php)
     excludePatterns: ['tests', 'vendor'], // Patterns to exclude
     showTreeView: true,                    // Whether to show tree view (default: true)
+    modifiers: ['php-signature'],         // Optional content modifiers to apply
+);
+```
+
+### GithubSource
+
+The `Butschster\ContextGenerator\Source\GithubSource` allows you to include content directly from a GitHub repository:
+
+```php
+use Butschster\ContextGenerator\Source\GithubSource;
+
+new GithubSource(
+    repository: 'owner/repo',             // GitHub repository in format "owner/repo"
+    sourcePaths: 'src',                   // Path(s) within the repository (string or array)
+    branch: 'main',                       // Branch or tag to fetch from (default: main)
+    description: 'Repository files',      // Optional description
+    filePattern: '*.php',                 // Pattern to match files (default: *.php)
+    excludePatterns: ['tests', 'vendor'], // Patterns to exclude
+    showTreeView: true,                   // Whether to show directory tree (default: true)
+    githubToken: '${GITHUB_TOKEN}',       // GitHub API token for private repos (can use env vars)
+    modifiers: ['php-signature'],         // Optional content modifiers to apply
 );
 ```
 
@@ -296,40 +326,46 @@ new TextSource(
 );
 ```
 
-### Combined Sources Example
+## Content Modifiers
+
+Content modifiers allow you to transform the source content before it's included in the document. Currently, Context
+Generator includes the following modifiers:
+
+### Php files Signature Modifier
+
+The php-signature modifier extracts PHP class signatures without implementation details. This is useful for providing
+API documentation without cluttering the context with implementation details.
+
+The modifier will transform:
 
 ```php
-<?php
+class Example 
+{
+    private $property;
+    
+    public function doSomething($param)
+    {
+        // Implementation...
+        return $result;
+    }
+    
+    private function helperMethod()
+    {
+        // Implementation...
+    }
+}
+```
 
-declare(strict_types=1);
+Into:
 
-use Butschster\ContextGenerator\Document;
-use Butschster\ContextGenerator\DocumentRegistry;
-use Butschster\ContextGenerator\Source\FileSource;
-use Butschster\ContextGenerator\Source\TextSource;
-use Butschster\ContextGenerator\Source\UrlSource;
-
-return DocumentRegistry::create()
-    ->register(
-        Document::create(
-            description: 'Complete Project Documentation',
-            outputPath: 'docs/complete.txt',
-        )
-        ->addSource(
-            new TextSource(
-                content: "# Project Overview\nThis document contains the complete documentation...",
-                description: 'Introduction',
-            ),
-            new FileSource(
-                sourcePaths: [__DIR__ . '/src'],
-                description: 'Source code',
-            ),
-            new UrlSource(
-                urls: ['https://example.com/api-docs'],
-                description: 'External API documentation',
-            ),
-        ),
-    );
+```php
+class Example 
+{
+    public function doSomething($param) 
+    {
+        /* ... */
+    }
+}
 ```
 
 ### License

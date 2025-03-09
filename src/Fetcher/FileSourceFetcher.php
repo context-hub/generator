@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Fetcher;
 
 use Butschster\ContextGenerator\Source\FileSource;
+use Butschster\ContextGenerator\Source\SourceModifierRegistry;
 use Butschster\ContextGenerator\SourceInterface;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
@@ -20,6 +21,7 @@ readonly class FileSourceFetcher implements SourceFetcherInterface
      */
     public function __construct(
         private string $basePath,
+        private SourceModifierRegistry $modifiers,
         private FileTreeBuilder $treeBuilder = new FileTreeBuilder(),
     ) {}
 
@@ -62,7 +64,27 @@ readonly class FileSourceFetcher implements SourceFetcherInterface
 
     protected function getContent(SplFileInfo $file, SourceInterface $source): string
     {
-        return $file->getContents();
+        $content = $file->getContents();
+
+        // Apply modifiers if available
+        if (!empty($source->modifiers)) {
+            foreach ($source->modifiers as $modifierId) {
+                if ($this->modifiers->has($modifierId)) {
+                    $modifier = $this->modifiers->get($modifierId);
+
+                    if ($modifier->supports($file->getFilename())) {
+                        $context = [
+                            'file' => $file,
+                            'source' => $source,
+                        ];
+
+                        $content = $modifier->modify($content, $context);
+                    }
+                }
+            }
+        }
+
+        return $content;
     }
 
     /**

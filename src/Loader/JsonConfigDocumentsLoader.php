@@ -9,7 +9,7 @@ use Butschster\ContextGenerator\DocumentRegistry;
 use Butschster\ContextGenerator\DocumentsLoaderInterface;
 use Butschster\ContextGenerator\FilesInterface;
 use Butschster\ContextGenerator\Source\FileSource;
-use Butschster\ContextGenerator\Source\PhpClassSource;
+use Butschster\ContextGenerator\Source\GithubSource;
 use Butschster\ContextGenerator\Source\TextSource;
 use Butschster\ContextGenerator\Source\UrlSource;
 
@@ -97,9 +97,9 @@ final readonly class JsonConfigDocumentsLoader implements DocumentsLoaderInterfa
 
         return match ($sourceData['type']) {
             'file' => $this->createFileSource($sourceData, $path, $description),
-            'php_class' => $this->createPhpClassSource($sourceData, $path, $description),
             'url' => $this->createUrlSource($sourceData, $path, $description),
             'text' => $this->createTextSource($sourceData, $path, $description),
+            'github' => $this->createGithubSource($sourceData, $path, $description),
             default => throw new \RuntimeException(
                 \sprintf('Unknown source type "%s" at path %s', $sourceData['type'], $path),
             ),
@@ -107,44 +107,125 @@ final readonly class JsonConfigDocumentsLoader implements DocumentsLoaderInterfa
     }
 
     /**
-     * Create a FileSource from its configuration.
+     * Parse modifiers configuration
+     *
+     * @param array<mixed> $modifiersConfig
+     * @return array<string|array{name: string, options: array<string, mixed>}>
      */
-    private function createPhpClassSource(array $data, string $path, string $description): PhpClassSource
+    private function parseModifiers(array $modifiersConfig): array
     {
+        $result = [];
+
+        foreach ($modifiersConfig as $modifier) {
+            if (\is_string($modifier)) {
+                $result[] = $modifier;
+            } elseif (\is_array($modifier) && isset($modifier['name'])) {
+                $result[] = [
+                    'name' => $modifier['name'],
+                    'options' => $modifier['options'] ?? [],
+                ];
+            } else {
+                throw new \InvalidArgumentException(
+                    sprintf('Invalid modifier format: %s', json_encode($modifier)),
+                );
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Create a GithubSource from its configuration.
+     */
+    private function createGithubSource(
+        array $data,
+        string $path,
+        string $description,
+    ): GithubSource {
+        if (!isset($data['repository'])) {
+            throw new \RuntimeException(
+                \sprintf('GitHub source at path %s must have a "repository" property', $path),
+            );
+        }
+
+        // Determine source paths (required)
         if (!isset($data['sourcePaths'])) {
             throw new \RuntimeException(
-                \sprintf('File source at path %s must have a "sourcePaths" property', $path),
+                \sprintf('GitHub source at path %s must have a "sourcePaths" property', $path),
             );
         }
 
         $sourcePaths = $data['sourcePaths'];
-
         if (!\is_string($sourcePaths) && !\is_array($sourcePaths)) {
             throw new \RuntimeException(
                 \sprintf('"sourcePaths" must be a string or array in source at path %s', $path),
             );
         }
 
+        // Convert to array if single string
         $sourcePaths = \is_string($sourcePaths) ? [$sourcePaths] : $sourcePaths;
-        $sourcePaths = \array_map(
-            fn(string $sourcePath): string => $this->rootPath . '/' . \trim($sourcePath, '/'),
-            $sourcePaths,
-        );
 
-        return new PhpClassSource(
+        return new GithubSource(
+            repository: $data['repository'],
             sourcePaths: $sourcePaths,
+            branch: $data['branch'] ?? 'main',
             description: $description,
+            filePattern: $data['filePattern'] ?? '*.php',
             excludePatterns: $data['excludePatterns'] ?? [],
             showTreeView: $data['showTreeView'] ?? true,
-            onlySignatures: $data['onlySignatures'] ?? true,
+            githubToken: $this->parseConfigValue($data['githubToken'] ?? null),
+            modifiers: $this->parseModifiers($data['modifiers'] ?? []),
         );
+    }
+
+    /**
+     * Parse a configuration value, resolving environment variables if needed.
+     *
+     * @param string|null $value The configuration value to parse
+     * @return string|null The parsed value
+     */
+    private function parseConfigValue(?string $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        // Check if the value is an environment variable reference
+        if (\preg_match('/^\${([A-Za-z0-9_]+)}$/', $value, $matches)) {
+            // Get the environment variable name
+            $envName = $matches[1];
+
+            // Get the value from environment
+            $envValue = getenv($envName);
+
+            // Return the environment variable value or null if not set
+            return $envValue !== false ? $envValue : null;
+        }
+
+        // Check if the value has embedded environment variables
+        if (\preg_match_all('/\${([A-Za-z0-9_]+)}/', $value, $matches)) {
+            // Replace all environment variables in the string
+            foreach ($matches[0] as $index => $placeholder) {
+                $envName = $matches[1][$index];
+                $envValue = \getenv($envName);
+
+                if ($envValue !== false) {
+                    $value = \str_replace($placeholder, $envValue, $value);
+                }
+            }
+        }
+
+        return $value;
     }
 
     /**
      * Create a FileSource from its configuration.
      */
-    private function createFileSource(array $data, string $path, string $description): FileSource
-    {
+    private function createFileSource(
+        array $data,
+        string $path,
+        string $description,
+    ): FileSource {
         if (!isset($data['sourcePaths'])) {
             throw new \RuntimeException(
                 \sprintf('File source at path %s must have a "sourcePaths" property', $path),
@@ -171,6 +252,7 @@ final readonly class JsonConfigDocumentsLoader implements DocumentsLoaderInterfa
             filePattern: $data['filePattern'] ?? '*.*',
             excludePatterns: $data['excludePatterns'] ?? [],
             showTreeView: $data['showTreeView'] ?? true,
+            modifiers: $this->parseModifiers($data['modifiers'] ?? []),
         );
     }
 

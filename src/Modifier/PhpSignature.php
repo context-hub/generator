@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Fetcher;
+namespace Butschster\ContextGenerator\Modifier;
 
+use Butschster\ContextGenerator\SourceModifierInterface;
 use Nette\PhpGenerator\ClassLike;
 use Nette\PhpGenerator\ClassType;
 use Nette\PhpGenerator\EnumType;
@@ -13,18 +14,24 @@ use Nette\PhpGenerator\TraitType;
 
 /**
  * Parser for PHP class files to extract signatures without implementation details.
- * Uses Nette PHP Generator for robust parsing.
  */
-final class PhpClassParser
+final class PhpSignature implements SourceModifierInterface
 {
     private const MAGIC_METHODS = [
         '__construct',
     ];
 
-    /**
-     * Parse a PHP file and extract class signatures
-     */
-    public function parse(string $content): string
+    public function getIdentifier(): string
+    {
+        return 'php-signature';
+    }
+
+    public function supports(string $contentType): bool
+    {
+        return \str_ends_with($contentType, '.php');
+    }
+
+    public function modify(string $content, array $context = []): string
     {
         try {
             $file = PhpFile::fromCode($content);
@@ -74,6 +81,21 @@ final class PhpClassParser
      */
     private function generateClassSignature(ClassType $class): string
     {
+        // Remove not public properties
+        foreach ($class->getProperties() as $property) {
+            if (!$property->isPublic()) {
+                $class->removeProperty($property->getName());
+            }
+        }
+
+        // Remove not public constants
+        foreach ($class->getConstants() as $constant) {
+            if (!$constant->isPublic()) {
+                $class->removeConstant($constant->getName());
+            }
+        }
+
+
         // Remove method bodies
         foreach ($class->getMethods() as $method) {
             // if is magic method, skip
@@ -106,6 +128,20 @@ final class PhpClassParser
      */
     private function generateTraitSignature(TraitType $trait): string
     {
+        // Remove not public properties
+        foreach ($trait->getProperties() as $property) {
+            if (!$property->isPublic()) {
+                $trait->removeProperty($property->getName());
+            }
+        }
+
+        // Remove not public constants
+        foreach ($trait->getConstants() as $constant) {
+            if (!$constant->isPublic()) {
+                $trait->removeConstant($constant->getName());
+            }
+        }
+
         foreach ($trait->getMethods() as $method) {
             if (!$method->isPublic()) {
                 $trait->removeMethod($method->getName());

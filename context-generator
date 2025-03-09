@@ -32,7 +32,8 @@ $appPath = (static function (): string {
 })();
 
 use Butschster\ContextGenerator\Cli\ContextGenerator;
-use PsrDiscovery\Discover;
+use GuzzleHttp\Client;
+use GuzzleHttp\Psr7\HttpFactory;
 use Symfony\Component\Console\Application;
 
 $application = new Application();
@@ -42,13 +43,16 @@ if ($insidePhar) {
     $appPath = getcwd();
 }
 
+$httpClient = new Client();
+$httpMessageFactory = new HttpFactory();
+
 $application->add(
     new ContextGenerator(
         rootPath: $appPath,
         outputPath: $appPath . '/.context',
-        httpClient: Discover::httpClient(),
-        requestFactory: Discover::httpRequestFactory(),
-        urlFactory: Discover::httpUriFactory(),
+        httpClient: $httpClient,
+        requestFactory: $httpMessageFactory,
+        urlFactory: $httpMessageFactory,
     ),
 );
 
