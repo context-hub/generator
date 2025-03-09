@@ -51,10 +51,15 @@ final readonly class Files implements FilesInterface
 
     public function read(string $filename): string|false
     {
-        if (!\file_exists($filename)) {
+        if (!$this->exists($filename)) {
             return false;
         }
 
         return \file_get_contents($filename);
+    }
+
+    public function exists(string $filename): bool
+    {
+        return \file_exists($filename);
     }
 }

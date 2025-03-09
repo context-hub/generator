@@ -128,6 +128,11 @@ final readonly class GithubSourceFetcher implements SourceFetcherInterface
             throw new \RuntimeException('Invalid response from GitHub API');
         }
 
+        // check if contents is file
+        if (isset($contents['type']) && $contents['type'] === 'file') {
+            return [$contents['path']];
+        }
+
         foreach ($contents as $item) {
             $itemPath = $item['path'] ?? '';
 

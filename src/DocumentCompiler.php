@@ -23,9 +23,13 @@ final readonly class DocumentCompiler
      */
     public function compile(Document $document): void
     {
+        $resultPath = \rtrim($this->basePath, '/') . '/' . \ltrim($document->outputPath, '/');
+        if (!$document->overwrite && $this->files->exists($resultPath)) {
+            return;
+        }
+
         $content = $this->buildContent($document);
 
-        $resultPath = \rtrim($this->basePath, '/') . '/' . \ltrim($document->outputPath, '/');
         $this->files->ensureDirectory(\dirname($resultPath));
 
         $this->files->write($resultPath, $content);

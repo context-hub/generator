@@ -65,6 +65,7 @@ final readonly class JsonConfigDocumentsLoader implements DocumentsLoaderInterfa
             $document = Document::create(
                 description: (string) $docData['description'],
                 outputPath: (string) $docData['outputPath'],
+                overwrite: (bool) ($docData['overwrite'] ?? true),
             );
 
             if (isset($docData['sources']) && \is_array($docData['sources'])) {

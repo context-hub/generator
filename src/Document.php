@@ -9,13 +9,18 @@ final class Document
     /** @var array<SourceInterface> */
     private array $sources = [];
 
+    /**
+     * @param bool $overwrite Whether to overwrite the file if it already exists
+     */
     public static function create(
         string $description,
         string $outputPath,
+        bool $overwrite = true,
     ): self {
         return new self(
             description: $description,
             outputPath: $outputPath,
+            overwrite: $overwrite,
         );
     }
 
@@ -26,6 +31,7 @@ final class Document
     public function __construct(
         public readonly string $description,
         public readonly string $outputPath,
+        public readonly bool $overwrite = true,
         SourceInterface ...$sources,
     ) {
         $this->sources = $sources;
