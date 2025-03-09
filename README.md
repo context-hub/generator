@@ -9,6 +9,7 @@
 Context Generator is a PHP tool that helps developers build structured context files from various sources:
 
 - code files,
+- PHP class signatures (without implementation details),
 - URLs,
 - and plain text.
 
@@ -139,6 +140,18 @@ return (new DocumentRegistry())
                 selector: '.main-content',
             ),
         ),
+    )
+    ->register(
+        Document::create(
+            description: 'API Class Signatures',
+            outputPath: 'docs/api-interfaces.md',
+        )
+        ->addSource(
+            new PhpClassSource(
+                sourcePaths: __DIR__ . '/src/Api',
+                description: 'API Class Definitions',
+            ),
+        ),
     );
 ```
 
@@ -184,6 +197,19 @@ or
           "selector": ".main-content"
         }
       ]
+    },
+    {
+      "description": "API Class Signatures",
+      "outputPath": "docs/api-interfaces.md",
+      "sources": [
+        {
+          "type": "phpClass",
+          "description": "API Class Definitions",
+          "sourcePaths": [
+            "src/Api"
+          ]
+        }
+      ]
     }
   ]
 }
@@ -199,6 +225,23 @@ Then run the command:
 ```
 
 ## Source Types
+
+### PhpClassSource
+
+The `Butschster\ContextGenerator\Source\PhpClassSource` allows you to extract class signatures from PHP files without implementation details:
+
+```php
+use Butschster\ContextGenerator\Source\PhpClassSource;
+
+new PhpClassSource(
+    sourcePaths: __DIR__ . '/src',        // Path to directory or file with PHP classes
+    description: 'Class Signatures',      // Optional description
+    filePattern: '*.php',                 // File pattern to match (default: *.php)
+    excludePatterns: ['tests', 'vendor'], // Patterns to exclude
+    showTreeView: true,                   // Whether to show tree view (default: true)
+    onlySignatures: true                  // Whether to include only class signatures (default: true)
+);
+```
 
 ### FileSource
 
