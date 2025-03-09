@@ -1,8 +1,8 @@
 {
   "documents": [
     {
-      "description": "Context generator.",
-      "outputPath": "ContextGenerator.txt",
+      "description": "Context generator code.",
+      "outputPath": "code.md",
       "sources": [
         {
           "type": "file",
@@ -10,6 +10,22 @@
             "src"
           ],
           "filePattern": "*.php"
+        }
+      ]
+    },
+    {
+      "description": "Context generator API.",
+      "outputPath": "api.md",
+      "sources": [
+        {
+          "type": "file",
+          "sourcePaths": [
+            "src"
+          ],
+          "filePattern": "*.php",
+          "modifiers": [
+            "php-signature"
+          ]
         }
       ]
     }

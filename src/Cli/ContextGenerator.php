@@ -66,7 +66,7 @@ final class ContextGenerator extends Command
                     requestFactory: $this->requestFactory,
                     uriFactory: $this->urlFactory,
                     modifiers: $modifiers,
-                    githubToken: getenv('GITHUB_TOKEN'),
+                    githubToken: getenv('GITHUB_TOKEN') ?: null,
                 ),
             ],
         );
