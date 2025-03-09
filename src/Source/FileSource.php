@@ -7,7 +7,7 @@ namespace Butschster\ContextGenerator\Source;
 /**
  * Source for files and directories
  */
-final class FileSource extends BaseSource
+class FileSource extends BaseSource
 {
     /**
      * @param string $description Human-readable description

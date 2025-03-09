@@ -7,6 +7,7 @@ namespace Butschster\ContextGenerator\Cli;
 use Butschster\ContextGenerator\DocumentCompiler;
 use Butschster\ContextGenerator\Fetcher\FileSourceFetcher;
 use Butschster\ContextGenerator\Fetcher\HtmlCleaner;
+use Butschster\ContextGenerator\Fetcher\PhpFileSourceFetcher;
 use Butschster\ContextGenerator\Fetcher\SourceFetcherRegistry;
 use Butschster\ContextGenerator\Fetcher\TextSourceFetcher;
 use Butschster\ContextGenerator\Fetcher\UrlSourceFetcher;
@@ -45,6 +46,9 @@ final class ContextGenerator extends Command
         $sourceFetcherRegistry = new SourceFetcherRegistry(
             fetchers: [
                 new TextSourceFetcher(),
+                new PhpFileSourceFetcher(
+                    basePath: $this->rootPath,
+                ),
                 new FileSourceFetcher(
                     basePath: $this->rootPath,
                 ),

@@ -9,6 +9,7 @@ use Butschster\ContextGenerator\DocumentRegistry;
 use Butschster\ContextGenerator\DocumentsLoaderInterface;
 use Butschster\ContextGenerator\FilesInterface;
 use Butschster\ContextGenerator\Source\FileSource;
+use Butschster\ContextGenerator\Source\PhpClassSource;
 use Butschster\ContextGenerator\Source\TextSource;
 use Butschster\ContextGenerator\Source\UrlSource;
 
@@ -96,12 +97,47 @@ final readonly class JsonConfigDocumentsLoader implements DocumentsLoaderInterfa
 
         return match ($sourceData['type']) {
             'file' => $this->createFileSource($sourceData, $path, $description),
+            'php_class' => $this->createPhpClassSource($sourceData, $path, $description),
             'url' => $this->createUrlSource($sourceData, $path, $description),
             'text' => $this->createTextSource($sourceData, $path, $description),
             default => throw new \RuntimeException(
                 \sprintf('Unknown source type "%s" at path %s', $sourceData['type'], $path),
             ),
         };
+    }
+
+    /**
+     * Create a FileSource from its configuration.
+     */
+    private function createPhpClassSource(array $data, string $path, string $description): PhpClassSource
+    {
+        if (!isset($data['sourcePaths'])) {
+            throw new \RuntimeException(
+                \sprintf('File source at path %s must have a "sourcePaths" property', $path),
+            );
+        }
+
+        $sourcePaths = $data['sourcePaths'];
+
+        if (!\is_string($sourcePaths) && !\is_array($sourcePaths)) {
+            throw new \RuntimeException(
+                \sprintf('"sourcePaths" must be a string or array in source at path %s', $path),
+            );
+        }
+
+        $sourcePaths = \is_string($sourcePaths) ? [$sourcePaths] : $sourcePaths;
+        $sourcePaths = \array_map(
+            fn(string $sourcePath): string => $this->rootPath . '/' . \trim($sourcePath, '/'),
+            $sourcePaths,
+        );
+
+        return new PhpClassSource(
+            sourcePaths: $sourcePaths,
+            description: $description,
+            excludePatterns: $data['excludePatterns'] ?? [],
+            showTreeView: $data['showTreeView'] ?? true,
+            onlySignatures: $data['onlySignatures'] ?? true,
+        );
     }
 
     /**

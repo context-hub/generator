@@ -13,7 +13,7 @@ use Symfony\Component\Finder\SplFileInfo;
  * Fetcher for file sources
  * @implements SourceFetcherInterface<FileSource>
  */
-final readonly class FileSourceFetcher implements SourceFetcherInterface
+readonly class FileSourceFetcher implements SourceFetcherInterface
 {
     /**
      * @param string $basePath Base path for relative file references
@@ -30,10 +30,6 @@ final readonly class FileSourceFetcher implements SourceFetcherInterface
 
     public function fetch(SourceInterface $source): string
     {
-        if (!$source instanceof FileSource) {
-            throw new \InvalidArgumentException('Source must be an instance of FileSource');
-        }
-
         $content = '';
         if ($source->showTreeView) {
             $finder = $this->createFinder($source);
@@ -43,29 +39,30 @@ final readonly class FileSourceFetcher implements SourceFetcherInterface
             }
 
             // Generate tree view
-            $content = $this->treeBuilder->buildTree($filePaths, $this->basePath);
+            $content .= '```' . PHP_EOL;
+            $content .= $this->treeBuilder->buildTree($filePaths, $this->basePath);
+            $content .= '```' . PHP_EOL . PHP_EOL;
         }
 
         $finder = $this->createFinder($source);
+
         foreach ($finder as $file) {
             $relativePath = \trim(\str_replace($this->basePath, '', $file->getPath()));
             $fileName = $file->getFilename();
             $filePath = empty($relativePath) ? $fileName : "$relativePath/$fileName";
 
-            // Remove PHP tags and strict_types declaration
-            $fileContent = \str_replace(
-                ['<?php', 'declare(strict_types=1);'],
-                '',
-                $file->getContents(),
-            );
-
-            $content .= "// FILE: {$filePath}" . PHP_EOL;
-            $content .= \trim($fileContent) . PHP_EOL . PHP_EOL;
-            $content .= "// END OF FILE: {$filePath}" . PHP_EOL;
-            $content .= '----------------------------------------------------------' . PHP_EOL;
+            $content .= '```' . PHP_EOL;
+            $content .= "// Path: {$filePath}" . PHP_EOL;
+            $content .= $this->getContent($file, $source) . PHP_EOL . PHP_EOL;
+            $content .= '```' . PHP_EOL;
         }
 
         return $content;
+    }
+
+    protected function getContent(SplFileInfo $file, SourceInterface $source): string
+    {
+        return $file->getContents();
     }
 
     /**

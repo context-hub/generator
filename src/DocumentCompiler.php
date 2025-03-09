@@ -37,10 +37,7 @@ final readonly class DocumentCompiler
     private function buildContent(Document $document): string
     {
         // Add document description
-        $content = "DOCUMENT: {$document->description}" . PHP_EOL . PHP_EOL;
-
-        $content .= "SOURCES:" . PHP_EOL;
-        $content .= '==========================================================' . PHP_EOL . PHP_EOL;
+        $content = "## DOCUMENT: {$document->description}" . PHP_EOL . PHP_EOL;
 
         // Process all sources
         foreach ($document->getSources() as $source) {
@@ -50,7 +47,10 @@ final readonly class DocumentCompiler
 
             $content .= $source->parseContent($this->parser);
             $content .= PHP_EOL;
+            $content .= '---' . PHP_EOL;
         }
+
+        $content .= PHP_EOL;
 
         // Remove empty lines at the beginning of each line
         return \preg_replace('/^\s*[\r\n]+/m', '', $content);
