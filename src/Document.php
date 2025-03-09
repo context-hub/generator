@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator;
 
-final class Document
+final class Document implements \JsonSerializable
 {
     /** @var array<SourceInterface> */
     private array $sources = [];
@@ -55,5 +55,15 @@ final class Document
     public function getSources(): array
     {
         return $this->sources;
+    }
+
+    public function jsonSerialize(): array
+    {
+        return \array_filter([
+            'description' => $this->description,
+            'outputPath' => $this->outputPath,
+            'overwrite' => $this->overwrite,
+            'sources' => $this->sources,
+        ]);
     }
 }

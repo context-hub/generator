@@ -9,6 +9,34 @@ namespace Butschster\ContextGenerator\Source;
  */
 class FileSource extends BaseSource
 {
+    public static function fromArray(array $data, string $rootPath = ''): self
+    {
+        if (!isset($data['sourcePaths'])) {
+            throw new \RuntimeException('File source must have a "sourcePaths" property');
+        }
+
+        $sourcePaths = $data['sourcePaths'];
+
+        if (!\is_string($sourcePaths) && !\is_array($sourcePaths)) {
+            throw new \RuntimeException('"sourcePaths" must be a string or array in source');
+        }
+
+        $sourcePaths = \is_string($sourcePaths) ? [$sourcePaths] : $sourcePaths;
+        $sourcePaths = \array_map(
+            static fn(string $sourcePath): string => $rootPath . '/' . \trim($sourcePath, '/'),
+            $sourcePaths,
+        );
+
+        return new self(
+            sourcePaths: $sourcePaths,
+            description: $data['description'] ?? '',
+            filePattern: $data['filePattern'] ?? '*.*',
+            excludePatterns: $data['excludePatterns'] ?? [],
+            showTreeView: $data['showTreeView'] ?? true,
+            modifiers: $data['modifiers'] ?? [],
+        );
+    }
+
     /**
      * @param string $description Human-readable description
      * @param string|array<string> $sourcePaths Paths to source files or directories
@@ -25,5 +53,18 @@ class FileSource extends BaseSource
         public readonly array $modifiers = [],
     ) {
         parent::__construct($description);
+    }
+
+    public function jsonSerialize(): array
+    {
+        return \array_filter([
+            'type' => 'file',
+            'description' => $this->description,
+            'sourcePaths' => $this->sourcePaths,
+            'filePattern' => $this->filePattern,
+            'excludePatterns' => $this->excludePatterns,
+            'showTreeView' => $this->showTreeView,
+            'modifiers' => $this->modifiers,
+        ]);
     }
 }

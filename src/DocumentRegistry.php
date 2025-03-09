@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator;
 
-final class DocumentRegistry
+final class DocumentRegistry implements \JsonSerializable
 {
     /**
      * @var array<Document>
@@ -34,5 +34,12 @@ final class DocumentRegistry
     public function getDocuments(): array
     {
         return $this->documents;
+    }
+
+    public function jsonSerialize(): array
+    {
+        return [
+            'documents' => $this->documents,
+        ];
     }
 }

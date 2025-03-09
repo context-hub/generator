@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator;
 
-interface SourceInterface
+interface SourceInterface extends \JsonSerializable
 {
     /**
      * Get source description
