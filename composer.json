@@ -17,6 +17,7 @@
   ],
   "require": {
     "php": "^8.2",
+    "guzzlehttp/guzzle": "^7.0",
     "league/html-to-markdown": "^5.1",
     "psr-discovery/http-client-implementations": "^1.0",
     "psr-discovery/http-factory-implementations": "^1.0",
@@ -27,7 +28,6 @@
     "nette/php-generator": "^4.1"
   },
   "require-dev": {
-    "symfony/http-client": "^7.0 | ^8.0",
     "phpunit/phpunit": "^10.2",
     "rector/rector": "^2.0",
     "vimeo/psalm": "^5.8"

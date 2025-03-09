@@ -1,0 +1,92 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Butschster\ContextGenerator\Source;
+
+/**
+ * Source for GitHub repositories
+ */
+final class GithubSource extends BaseSource
+{
+    /**
+     * @param string $repository GitHub repository in format "owner/repo"
+     * @param string $branch Branch or tag to fetch from (default: main)
+     * @param string $description Human-readable description
+     * @param string $filePattern Pattern to match files
+     * @param array<string> $excludePatterns Patterns to exclude files
+     * @param bool $showTreeView Whether to show directory tree
+     * @param string|null $githubToken GitHub API token for private repositories
+     * @param array<string> $modifiers Identifiers for content modifiers to apply
+     */
+    public function __construct(
+        public readonly string $repository,
+        public readonly string|array $sourcePaths,
+        public readonly string $branch = 'main',
+        string $description = '',
+        public readonly string $filePattern = '*.php',
+        public readonly array $excludePatterns = [],
+        public readonly bool $showTreeView = true,
+        public readonly ?string $githubToken = null,
+        public readonly array $modifiers = [],
+    ) {
+        parent::__construct($description);
+    }
+
+    /**
+     * Get base GitHub API URL for this repository
+     */
+    public function getApiBaseUrl(): string
+    {
+        return \sprintf('https://api.github.com/repos/%s', $this->repository);
+    }
+
+    /**
+     * Get contents API URL for a specific path
+     */
+    public function getContentsUrl(string $path = ''): string
+    {
+        $url = $this->getApiBaseUrl() . '/contents';
+
+        if (!empty($path)) {
+            $url .= '/' . ltrim($path, '/');
+        }
+
+        // Add ref parameter for branch or tag
+        $url .= '?ref=' . urlencode($this->branch);
+
+        return $url;
+    }
+
+    /**
+     * Get raw content URL for a specific file
+     */
+    public function getRawContentUrl(string $path): string
+    {
+        return \sprintf(
+            'https://raw.githubusercontent.com/%s/%s/%s',
+            $this->repository,
+            $this->branch,
+            ltrim($path, '/'),
+        );
+    }
+
+    /**
+     * Get authentication headers for GitHub API
+     *
+     * @return array<string, string>
+     */
+    public function getAuthHeaders(): array
+    {
+        $headers = [
+            'Accept' => 'application/vnd.github.v3+json',
+            'User-Agent' => 'Context-Generator-Bot',
+        ];
+
+        if ($this->githubToken !== null) {
+            $headers['Authorization'] = 'token ' . $this->githubToken;
+        }
+
+        return $headers;
+    }
+}

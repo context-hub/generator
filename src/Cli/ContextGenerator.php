@@ -6,8 +6,8 @@ namespace Butschster\ContextGenerator\Cli;
 
 use Butschster\ContextGenerator\DocumentCompiler;
 use Butschster\ContextGenerator\Fetcher\FileSourceFetcher;
+use Butschster\ContextGenerator\Fetcher\GithubSourceFetcher;
 use Butschster\ContextGenerator\Fetcher\HtmlCleaner;
-use Butschster\ContextGenerator\Fetcher\PhpFileSourceFetcher;
 use Butschster\ContextGenerator\Fetcher\SourceFetcherRegistry;
 use Butschster\ContextGenerator\Fetcher\TextSourceFetcher;
 use Butschster\ContextGenerator\Fetcher\UrlSourceFetcher;
@@ -15,7 +15,9 @@ use Butschster\ContextGenerator\Files;
 use Butschster\ContextGenerator\Loader\CompositeDocumentsLoader;
 use Butschster\ContextGenerator\Loader\ConfigDocumentsLoader;
 use Butschster\ContextGenerator\Loader\JsonConfigDocumentsLoader;
+use Butschster\ContextGenerator\Modifier\PhpSignature;
 use Butschster\ContextGenerator\Parser\DefaultSourceParser;
+use Butschster\ContextGenerator\Source\SourceModifierRegistry;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
@@ -43,20 +45,27 @@ final class ContextGenerator extends Command
     {
         $files = new Files();
 
+        $modifiers = new SourceModifierRegistry();
+        $modifiers->register(new PhpSignature());
+
         $sourceFetcherRegistry = new SourceFetcherRegistry(
             fetchers: [
                 new TextSourceFetcher(),
-                new PhpFileSourceFetcher(
-                    basePath: $this->rootPath,
-                ),
                 new FileSourceFetcher(
                     basePath: $this->rootPath,
+                    modifiers: $modifiers,
                 ),
                 new UrlSourceFetcher(
                     httpClient: $this->httpClient,
                     requestFactory: $this->requestFactory,
                     uriFactory: $this->urlFactory,
                     cleaner: new HtmlCleaner(),
+                ),
+                new GithubSourceFetcher(
+                    httpClient: $this->httpClient,
+                    requestFactory: $this->requestFactory,
+                    uriFactory: $this->urlFactory,
+                    modifiers: $modifiers,
                 ),
             ],
         );

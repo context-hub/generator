@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Context Generator Configuration",
-  "description": "Schema for context generator configuration files",
+  "title": "ContextHub Configuration",
+  "description": "Configuration schema for ContextHub document generator",
   "type": "object",
   "required": [
     "documents"
@@ -9,19 +9,20 @@
   "properties": {
     "documents": {
       "type": "array",
-      "description": "List of documents to be generated",
+      "description": "List of documents to generate",
       "items": {
-        "$ref": "#/definitions/Document"
+        "$ref": "#/definitions/document"
       },
       "minItems": 1
     }
   },
   "definitions": {
-    "Document": {
+    "document": {
       "type": "object",
       "required": [
         "description",
-        "outputPath"
+        "outputPath",
+        "sources"
       ],
       "properties": {
         "description": {
@@ -30,142 +31,294 @@
         },
         "outputPath": {
           "type": "string",
-          "description": "Path where the generated document will be written"
+          "description": "Path where the document will be saved",
+          "pattern": "^[^\\0]+$"
         },
         "sources": {
           "type": "array",
-          "description": "List of sources to include in this document",
+          "description": "List of content sources for this document",
           "items": {
-            "type": "object",
-            "required": [
-              "type"
-            ],
-            "oneOf": [
-              {
-                "$ref": "#/definitions/FileSource"
-              },
-              {
-                "$ref": "#/definitions/UrlSource"
-              },
-              {
-                "$ref": "#/definitions/TextSource"
-              }
-            ]
-          },
-          "default": []
+            "$ref": "#/definitions/source"
+          }
         }
       }
     },
-    "FileSource": {
+    "source": {
       "type": "object",
       "required": [
-        "type",
-        "sourcePaths"
+        "type"
       ],
       "properties": {
         "type": {
           "type": "string",
           "enum": [
-            "file"
+            "file",
+            "php_class",
+            "url",
+            "text",
+            "github"
           ],
-          "description": "Type of the source"
+          "description": "Type of content source"
         },
         "description": {
           "type": "string",
           "description": "Human-readable description of the source"
         },
+        "modifiers": {
+          "type": "array",
+          "description": "List of content modifiers to apply",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string",
+                "description": "Modifier identifier"
+              },
+              {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Modifier identifier"
+                  },
+                  "options": {
+                    "type": "object",
+                    "description": "Modifier options"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "file"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/fileSource"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "php_class"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/phpClassSource"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "url"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/urlSource"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "text"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/textSource"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "github"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/githubSource"
+          }
+        }
+      ]
+    },
+    "fileSource": {
+      "required": [
+        "sourcePaths"
+      ],
+      "properties": {
         "sourcePaths": {
           "oneOf": [
             {
               "type": "string",
-              "description": "Path to source file or directory"
+              "description": "Path to file or directory"
             },
             {
               "type": "array",
+              "description": "List of paths to files or directories",
               "items": {
                 "type": "string"
-              },
-              "description": "List of paths to source files or directories"
+              }
             }
           ]
         },
         "filePattern": {
           "type": "string",
-          "description": "Pattern to match files",
-          "default": "*.php"
+          "description": "Pattern to match files (e.g., *.php)",
+          "default": "*.*"
         },
         "excludePatterns": {
           "type": "array",
+          "description": "Patterns to exclude files",
           "items": {
             "type": "string"
           },
-          "description": "Patterns to exclude files",
           "default": []
         },
         "showTreeView": {
           "type": "boolean",
-          "description": "Whether to show a tree view of the files",
+          "description": "Whether to show directory tree",
           "default": true
         }
       }
     },
-    "UrlSource": {
-      "type": "object",
+    "phpClassSource": {
       "required": [
-        "type",
+        "sourcePaths"
+      ],
+      "properties": {
+        "sourcePaths": {
+          "oneOf": [
+            {
+              "type": "string",
+              "description": "Path to PHP file or directory containing PHP files"
+            },
+            {
+              "type": "array",
+              "description": "List of paths to PHP files or directories containing PHP files",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "excludePatterns": {
+          "type": "array",
+          "description": "Patterns to exclude files",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "showTreeView": {
+          "type": "boolean",
+          "description": "Whether to show directory tree",
+          "default": true
+        },
+        "onlySignatures": {
+          "type": "boolean",
+          "description": "Whether to show only method signatures without implementation",
+          "default": true
+        }
+      }
+    },
+    "urlSource": {
+      "required": [
         "urls"
       ],
       "properties": {
-        "type": {
-          "type": "string",
-          "enum": [
-            "url"
-          ],
-          "description": "Type of the source"
-        },
-        "description": {
-          "type": "string",
-          "description": "Human-readable description of the source"
-        },
         "urls": {
           "type": "array",
+          "description": "List of URLs to fetch content from",
           "items": {
             "type": "string",
             "format": "uri"
           },
-          "description": "URLs to fetch content from",
           "minItems": 1
         },
         "selector": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": "string",
           "description": "CSS selector to extract specific content (null for full page)"
         }
       }
     },
-    "TextSource": {
-      "type": "object",
+    "textSource": {
       "required": [
-        "type",
         "content"
       ],
       "properties": {
-        "type": {
-          "type": "string",
-          "enum": [
-            "text"
-          ],
-          "description": "Type of the source"
-        },
-        "description": {
-          "type": "string",
-          "description": "Human-readable description of the source"
-        },
         "content": {
           "type": "string",
           "description": "Text content"
+        }
+      }
+    },
+    "githubSource": {
+      "required": [
+        "repository",
+        "sourcePaths"
+      ],
+      "properties": {
+        "repository": {
+          "type": "string",
+          "description": "GitHub repository in format owner/repo",
+          "pattern": "^[\\w.-]+/[\\w.-]+$"
+        },
+        "sourcePaths": {
+          "oneOf": [
+            {
+              "type": "string",
+              "description": "Path within the repository"
+            },
+            {
+              "type": "array",
+              "description": "List of paths within the repository",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "branch": {
+          "type": "string",
+          "description": "Branch or tag to fetch from",
+          "default": "main"
+        },
+        "filePattern": {
+          "type": "string",
+          "description": "Pattern to match files (e.g., *.php)",
+          "default": "*.php"
+        },
+        "excludePatterns": {
+          "type": "array",
+          "description": "Patterns to exclude files",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "showTreeView": {
+          "type": "boolean",
+          "description": "Whether to show directory tree",
+          "default": true
+        },
+        "githubToken": {
+          "type": "string",
+          "description": "GitHub API token for private repositories (can use env var pattern ${TOKEN_NAME})"
         }
       }
     }
