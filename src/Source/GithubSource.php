@@ -9,6 +9,38 @@ namespace Butschster\ContextGenerator\Source;
  */
 final class GithubSource extends BaseSource
 {
+    public static function fromArray(array $data): self
+    {
+        if (!isset($data['repository'])) {
+            throw new \RuntimeException('GitHub source must have a "repository" property');
+        }
+
+        // Determine source paths (required)
+        if (!isset($data['sourcePaths'])) {
+            throw new \RuntimeException('GitHub source must have a "sourcePaths" property');
+        }
+
+        $sourcePaths = $data['sourcePaths'];
+        if (!\is_string($sourcePaths) && !\is_array($sourcePaths)) {
+            throw new \RuntimeException('"sourcePaths" must be a string or array in source');
+        }
+
+        // Convert to array if single string
+        $sourcePaths = \is_string($sourcePaths) ? [$sourcePaths] : $sourcePaths;
+
+        return new self(
+            repository: $data['repository'],
+            sourcePaths: $sourcePaths,
+            branch: $data['branch'] ?? 'main',
+            description: $data['description'] ?? '',
+            filePattern: $data['filePattern'] ?? '*.php',
+            excludePatterns: $data['excludePatterns'] ?? [],
+            showTreeView: $data['showTreeView'] ?? true,
+            githubToken: $data['githubToken'] ?? null,
+            modifiers: $data['modifiers'] ?? [],
+        );
+    }
+
     /**
      * @param string $repository GitHub repository in format "owner/repo"
      * @param string $branch Branch or tag to fetch from (default: main)
@@ -90,5 +122,20 @@ final class GithubSource extends BaseSource
         }
 
         return $headers;
+    }
+
+    public function jsonSerialize(): array
+    {
+        return \array_filter([
+            'type' => 'github',
+            'repository' => $this->repository,
+            'branch' => $this->branch,
+            'description' => $this->description,
+            'filePattern' => $this->filePattern,
+            'excludePatterns' => $this->excludePatterns,
+            'showTreeView' => $this->showTreeView,
+            'githubToken' => $this->githubToken,
+            'modifiers' => $this->modifiers,
+        ]);
     }
 }

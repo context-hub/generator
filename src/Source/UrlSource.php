@@ -9,6 +9,19 @@ namespace Butschster\ContextGenerator\Source;
  */
 final class UrlSource extends BaseSource
 {
+    public static function fromArray(array $data): self
+    {
+        if (!isset($data['urls']) || !\is_array($data['urls'])) {
+            throw new \RuntimeException('URL source must have a "urls" array property');
+        }
+
+        return new self(
+            urls: $data['urls'],
+            description: $data['description'] ?? '',
+            selector: $data['selector'] ?? null,
+        );
+    }
+
     /**
      * @param array<string> $urls URLs to fetch content from
      * @param string $description Human-readable description
@@ -48,5 +61,15 @@ final class UrlSource extends BaseSource
             description: $this->getDescription(),
             selector: $selector,
         );
+    }
+
+    public function jsonSerialize(): array
+    {
+        return \array_filter([
+            'type' => 'url',
+            'urls' => $this->urls,
+            'description' => $this->getDescription(),
+            'selector' => $this->getSelector(),
+        ]);
     }
 }

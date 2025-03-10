@@ -122,7 +122,7 @@ return (new DocumentRegistry())
             new FileSource(
                 sourcePaths: __DIR__ . '/src/Api',
                 description: 'API Source Files',
-                filePattern: '*.php',
+                filePattern: ['*.php', '*.md', '*.json'], // by default *.*
                 excludePatterns: ['tests', 'vendor'],
                 showTreeView: true,
                 modifiers: ['php-signature'],
@@ -182,7 +182,7 @@ or
           "sourcePaths": [
             "src/Api"
           ],
-          "filePattern": "*.php",
+          "filePattern": ["*.php", "*.md", "*.json"],
           "excludePatterns": [
             "tests",
             "vendor"

@@ -9,6 +9,18 @@ namespace Butschster\ContextGenerator\Source;
  */
 final class TextSource extends BaseSource
 {
+    public static function fromArray(array $data): self
+    {
+        if (!isset($data['content']) || !\is_string($data['content'])) {
+            throw new \RuntimeException('Text source must have a "content" string property');
+        }
+
+        return new self(
+            content: $data['content'],
+            description: $data['description'] ?? '',
+        );
+    }
+
     /**
      * @param string $description Human-readable description
      * @param string $content Text content
@@ -18,5 +30,14 @@ final class TextSource extends BaseSource
         string $description = '',
     ) {
         parent::__construct($description);
+    }
+
+    public function jsonSerialize(): array
+    {
+        return \array_filter([
+            'type' => 'text',
+            'description' => $this->description,
+            'content' => $this->content,
+        ]);
     }
 }
