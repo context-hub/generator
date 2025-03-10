@@ -27,10 +27,29 @@ class FileSource extends BaseSource
             $sourcePaths,
         );
 
+        // Validate filePattern if present
+        if (isset($data['filePattern'])) {
+            if (!\is_string($data['filePattern']) && !is_array($data['filePattern'])) {
+                throw new \RuntimeException('filePattern must be a string or an array of strings');
+            }
+
+            // If it's an array, make sure all elements are strings
+            if (\is_array($data['filePattern'])) {
+                foreach ($data['filePattern'] as $pattern) {
+                    if (!\is_string($pattern)) {
+                        throw new \RuntimeException('All elements in filePattern must be strings');
+                    }
+                }
+            }
+        }
+
+        // Handle filePattern parameter, allowing both string and array formats
+        $filePattern = $data['filePattern'] ?? '*.*';
+
         return new self(
             sourcePaths: $sourcePaths,
             description: $data['description'] ?? '',
-            filePattern: $data['filePattern'] ?? '*.*',
+            filePattern: $filePattern,
             excludePatterns: $data['excludePatterns'] ?? [],
             showTreeView: $data['showTreeView'] ?? true,
             modifiers: $data['modifiers'] ?? [],
@@ -40,14 +59,14 @@ class FileSource extends BaseSource
     /**
      * @param string $description Human-readable description
      * @param string|array<string> $sourcePaths Paths to source files or directories
-     * @param string $filePattern Pattern to match files
+     * @param string|array<string> $filePattern Pattern(s) to match files
      * @param array<string> $excludePatterns Patterns to exclude files
      * @param array<string> $modifiers Identifiers for content modifiers to apply
      */
     public function __construct(
         public readonly string|array $sourcePaths,
         string $description = '',
-        public readonly string $filePattern = '*.*',
+        public readonly string|array $filePattern = '*.*',
         public readonly array $excludePatterns = [],
         public readonly bool $showTreeView = true,
         public readonly array $modifiers = [],

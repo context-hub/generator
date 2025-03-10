@@ -182,8 +182,19 @@
           ]
         },
         "filePattern": {
-          "type": "string",
-          "description": "Pattern to match files (e.g., *.php)",
+          "oneOf": [
+            {
+              "type": "string",
+              "description": "Pattern to match files (e.g., *.php)"
+            },
+            {
+              "type": "array",
+              "description": "List of patterns to match files (e.g., ['*.php', '*.md'])",
+              "items": {
+                "type": "string"
+              }
+            }
+          ],
           "default": "*.*"
         },
         "excludePatterns": {
@@ -304,8 +315,19 @@
           "default": "main"
         },
         "filePattern": {
-          "type": "string",
-          "description": "Pattern to match files (e.g., *.php)",
+          "oneOf": [
+            {
+              "type": "string",
+              "description": "Pattern to match files (e.g., *.php)"
+            },
+            {
+              "type": "array",
+              "description": "List of patterns to match files (e.g., ['*.php', '*.md'])",
+              "items": {
+                "type": "string"
+              }
+            }
+          ],
           "default": "*.php"
         },
         "excludePatterns": {
