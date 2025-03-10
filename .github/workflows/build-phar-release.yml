@@ -34,8 +34,7 @@ jobs:
       - run: git describe --tags HEAD || git tag 0.0.0
 
       - name: Set current version from ${{ github.ref_name }}
-        run:
-          echo "{\"version\": \"${{ github.ref_name }}\"}" > version.json
+        run: echo "{\"version\": \"${{ github.ref_name }}\"}" > version.json
 
       - uses: ramsey/composer-install@v3
       - name: Build PHAR
