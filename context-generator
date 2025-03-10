@@ -6,7 +6,7 @@ namespace Butschster\ContextGenerator;
 $insidePhar = \str_starts_with(__FILE__, 'phar://');
 
 // load dependencies
-$appPath = (static function (): string {
+$vendorPath = (static function (): string {
     // OK, it's not, let give Composer autoloader a try!
     $possibleFiles = [
         __DIR__ . '/../../autoload.php',
@@ -28,10 +28,11 @@ $appPath = (static function (): string {
 
     require_once $file;
 
-    return \realpath(\dirname($file) . '/../');
+    return $file;
 })();
 
 use Butschster\ContextGenerator\Cli\ContextGenerator;
+use Butschster\ContextGenerator\Cli\GetVersion;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\HttpFactory;
 use Symfony\Component\Console\Application;
@@ -39,12 +40,24 @@ use Symfony\Component\Console\Application;
 $application = new Application();
 $application->setDefaultCommand('generate');
 
+$vendorPath = \dirname($vendorPath) . '/../';
+$versionFile = $vendorPath . '/version.json';
+$appPath = \realpath($vendorPath);
+
+$version = \file_exists($versionFile) ? \json_decode(\file_get_contents($versionFile), true) : ['version' => 'dev'];
+
 if ($insidePhar) {
     $appPath = getcwd();
 }
 
 $httpClient = new Client();
 $httpMessageFactory = new HttpFactory();
+
+$application->add(
+    new GetVersion(
+        version: $version['version'] ?? 'dev',
+    ),
+);
 
 $application->add(
     new ContextGenerator(

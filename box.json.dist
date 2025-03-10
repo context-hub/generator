@@ -14,7 +14,8 @@
     "context-generator",
     "LICENSE",
     "composer.json",
-    "composer.lock"
+    "composer.lock",
+    "version.json"
   ],
   "output": ".build/phar/context-generator.phar"
 }
