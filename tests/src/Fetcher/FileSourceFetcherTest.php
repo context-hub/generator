@@ -186,10 +186,8 @@ class FileSourceFetcherTest extends TestCase
             ->method('modify')
             ->with(
                 '<?php echo "Hello World"; ?>',
-                $this->callback(static function ($context) use ($file, $source) {
-                    return isset($context['file']) && $context['file'] === $file &&
-                        isset($context['source']) && $context['source'] === $source;
-                }),
+                $this->callback(static fn($context) => isset($context['file']) && $context['file'] === $file &&
+                    isset($context['source']) && $context['source'] === $source),
             )
             ->willReturn('<?php echo "Modified Hello World"; ?>');
         $modifier
