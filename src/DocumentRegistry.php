@@ -11,11 +11,6 @@ final class DocumentRegistry implements \JsonSerializable
      */
     private array $documents = [];
 
-    public static function create(): self
-    {
-        return new self();
-    }
-
     /**
      * Register a document in the registry
      */
@@ -36,6 +31,11 @@ final class DocumentRegistry implements \JsonSerializable
         return $this->documents;
     }
 
+    /**
+     * @return Document[][]
+     *
+     * @psalm-return array{documents: array<Document>}
+     */
     public function jsonSerialize(): array
     {
         return [

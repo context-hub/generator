@@ -65,7 +65,7 @@ $application->add(
         outputPath: $appPath . '/.context',
         httpClient: $httpClient,
         requestFactory: $httpMessageFactory,
-        urlFactory: $httpMessageFactory,
+        uriFactory: $httpMessageFactory,
     ),
 );
 

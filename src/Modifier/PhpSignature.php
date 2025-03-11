@@ -21,6 +21,10 @@ final class PhpSignature implements SourceModifierInterface
         '__construct',
     ];
 
+    /**
+     *
+     * @psalm-return 'php-signature'
+     */
     public function getIdentifier(): string
     {
         return 'php-signature';
@@ -67,7 +71,7 @@ final class PhpSignature implements SourceModifierInterface
             $output .= $this->generateInterfaceSignature($class);
         } elseif ($class->isTrait()) {
             $output .= $this->generateTraitSignature($class);
-        } elseif (PHP_VERSION_ID >= 80100 && method_exists($class, 'isEnum') && $class->isEnum()) {
+        } elseif (PHP_VERSION_ID >= 80100 && \method_exists($class, 'isEnum') && $class->isEnum()) {
             $output .= $this->generateEnumSignature($class);
         } else {
             $output .= $this->generateClassSignature($class);

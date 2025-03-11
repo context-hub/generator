@@ -1,0 +1,24 @@
+---
+
+# this file is for the labeler workflow job
+# Documentation https://github.com/marketplace/actions/labeler
+
+"bug":
+  - head-branch: [ '^bug', '^fix', 'bug', 'fix' ]
+
+"enhancement":
+  - head-branch: [ '^feature', '^feat', 'feature' ]
+
+"documentation":
+  - changed-files:
+      - any-glob-to-any-file: [ '.github/*.md', './*.md' ]
+
+"maintenance":
+  - changed-files:
+      - any-glob-to-any-file: [ '.github/**/*' ]
+
+"tests":
+  - changed-files:
+      - any-glob-to-any-file: [ 'tests/**/*', 'phpunit*', 'psalm*' ]
+
+...

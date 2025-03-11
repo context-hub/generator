@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Fetcher;
 
+use Butschster\ContextGenerator\Fetcher\Url\HtmlCleaner;
+use Butschster\ContextGenerator\Fetcher\Url\HtmlCleanerInterface;
+use Butschster\ContextGenerator\Fetcher\Url\SelectorContentExtractor;
+use Butschster\ContextGenerator\Fetcher\Url\SelectorContentExtractorInterface;
 use Butschster\ContextGenerator\Source\UrlSource;
 use Butschster\ContextGenerator\SourceInterface;
-use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
@@ -29,8 +32,13 @@ final readonly class UrlSourceFetcher implements SourceFetcherInterface
             'Accept' => 'text/html,application/xhtml+xml',
             'Accept-Language' => 'en-US,en;q=0.9',
         ],
-        private HtmlCleaner $cleaner = new HtmlCleaner(),
-    ) {}
+        private HtmlCleanerInterface $cleaner = new HtmlCleaner(),
+        private ?SelectorContentExtractorInterface $selectorExtractor = new SelectorContentExtractor(),
+    ) {
+        if ($this->httpClient === null || $this->requestFactory === null || $this->uriFactory === null) {
+            throw new \RuntimeException('To use Url source you need to install PSR-18 HTTP client');
+        }
+    }
 
     public function supports(SourceInterface $source): bool
     {
@@ -43,41 +51,31 @@ final readonly class UrlSourceFetcher implements SourceFetcherInterface
             throw new \InvalidArgumentException('Source must be an instance of UrlSource');
         }
 
-        if ($this->httpClient === null || $this->requestFactory === null || $this->uriFactory === null) {
-            throw new \RuntimeException('To use Url source you need to install PSR-18 HTTP client');
-        }
-
         $content = '';
-
         foreach ($source->urls as $url) {
             try {
                 // Create and send the request
                 $request = $this->requestFactory->createRequest('GET', $this->uriFactory->createUri($url));
-
                 // Add headers
                 foreach ($this->defaultHeaders as $name => $value) {
                     $request = $request->withHeader($name, $value);
                 }
-
                 // Send the request
                 $response = $this->httpClient->sendRequest($request);
                 $statusCode = $response->getStatusCode();
-
                 if ($statusCode < 200 || $statusCode >= 300) {
                     $content .= "// URL: {$url}" . PHP_EOL;
                     $content .= "// Error: HTTP status code {$statusCode}" . PHP_EOL;
                     $content .= '----------------------------------------------------------' . PHP_EOL;
                     continue;
                 }
-
                 // Get the response body
                 $html = (string) $response->getBody();
-
                 // Extract content from specific selector if defined
-                if ($source->hasSelector()) {
+                if ($source->hasSelector() && $this->selectorExtractor !== null) {
                     $selector = $source->getSelector();
                     \assert(!empty($selector));
-                    $contentFromSelector = $this->extractContentFromSelector($html, $selector);
+                    $contentFromSelector = $this->selectorExtractor->extract($html, $selector);
                     if (empty($html)) {
                         $content .= "// URL: {$url}" . PHP_EOL;
                         $content .= "// Warning: Selector '{$source->getSelector()}' didn't match any content" . PHP_EOL;
@@ -89,70 +87,15 @@ final readonly class UrlSourceFetcher implements SourceFetcherInterface
                     // Process the whole page
                     $content .= "// URL: {$url}" . PHP_EOL;
                 }
-
                 $content .= $this->cleaner->clean($html) . PHP_EOL . PHP_EOL;
-
                 $content .= "// END OF URL: {$url}" . PHP_EOL;
                 $content .= '----------------------------------------------------------' . PHP_EOL;
-            } catch (ClientExceptionInterface|\Throwable $e) {
+            } catch (\Throwable $e) {
                 $content .= "// URL: {$url}" . PHP_EOL;
                 $content .= "// Error: {$e->getMessage()}" . PHP_EOL;
                 $content .= '----------------------------------------------------------' . PHP_EOL;
             }
         }
-
         return $content;
-    }
-
-    /**
-     * Extract content from HTML using a CSS selector
-     */
-    private function extractContentFromSelector(string $html, string $selector): string
-    {
-        if (empty($html)) {
-            return $html;
-        }
-
-        $dom = new \DOMDocument();
-        libxml_use_internal_errors(true);
-        $dom->loadHTML($html, LIBXML_NOWARNING | LIBXML_NOERROR);
-        libxml_clear_errors();
-
-        $xpath = new \DOMXPath($dom);
-
-        // Convert CSS selector to XPath (simplified version)
-        $xpathSelector = $this->cssToXPath($selector);
-
-        $elements = $xpath->query($xpathSelector);
-        if ($elements === false || $elements->length === 0) {
-            return '';
-        }
-
-        $result = '';
-        foreach ($elements as $element) {
-            $result .= $dom->saveHTML($element) . "\n";
-        }
-
-        return $result;
-    }
-
-    /**
-     * Very basic CSS to XPath converter (only handles simple selectors)
-     * In a real implementation, use a proper library for this
-     */
-    private function cssToXPath(string $selector): string
-    {
-        // Handle ID selector (#id)
-        if (\str_starts_with($selector, '#')) {
-            return "//*[@id='" . substr($selector, 1) . "']";
-        }
-
-        // Handle class selector (.class)
-        if (\str_starts_with($selector, '.')) {
-            return "//*[contains(@class, '" . substr($selector, 1) . "')]";
-        }
-
-        // Handle element selector (div, p, etc.)
-        return "//{$selector}";
     }
 }

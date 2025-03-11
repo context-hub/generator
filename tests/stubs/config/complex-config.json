@@ -1,0 +1,93 @@
+{
+  "documents": [
+    {
+      "description": "API Documentation",
+      "outputPath": "/output/api-docs.md",
+      "overwrite": true,
+      "sources": [
+        {
+          "type": "file",
+          "description": "API Source Files",
+          "sourcePaths": ["/api/controllers", "/api/models"],
+          "filePattern": "*.php",
+          "excludePatterns": ["*Test.php", "*Factory.php"],
+          "showTreeView": true,
+          "modifiers": [
+            "strip-comments",
+            {
+              "name": "highlight-code",
+              "options": {
+                "language": "php",
+                "lineNumbers": true
+              }
+            }
+          ]
+        },
+        {
+          "type": "url",
+          "description": "External API References",
+          "urls": [
+            "https://example.com/api/docs",
+            "https://example.com/api/reference"
+          ],
+          "selector": ".api-content"
+        }
+      ]
+    },
+    {
+      "description": "User Guide",
+      "outputPath": "/output/user-guide.md",
+      "overwrite": false,
+      "sources": [
+        {
+          "type": "text",
+          "description": "Introduction",
+          "content": "# User Guide\n\nThis guide explains how to use our application."
+        },
+        {
+          "type": "file",
+          "description": "Documentation Files",
+          "sourcePaths": ["/docs"],
+          "filePattern": "*.md",
+          "showTreeView": true
+        },
+        {
+          "type": "github",
+          "description": "External Examples",
+          "repository": "example/repo",
+          "sourcePaths": ["examples", "tutorials"],
+          "branch": "main",
+          "filePattern": ["*.md", "*.txt"],
+          "excludePatterns": ["internal/*"],
+          "showTreeView": true
+        }
+      ]
+    },
+    {
+      "description": "Development Setup",
+      "outputPath": "/output/dev-setup.md",
+      "sources": [
+        {
+          "type": "file",
+          "description": "Configuration Files",
+          "sourcePaths": ["/config"],
+          "filePattern": ["*.json", "*.yaml", "*.yml"],
+          "showTreeView": false,
+          "modifiers": [
+            {
+              "name": "remove-secrets",
+              "options": {
+                "patterns": ["password", "token", "key"]
+              }
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "description": "Setup Instructions",
+          "content": "## Development Setup\n\n1. Clone the repository\n2. Install dependencies\n3. Configure environment\n4. Run tests"
+        }
+      ]
+    }
+  ]
+}

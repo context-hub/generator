@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Fetcher;
 
+use Butschster\ContextGenerator\Fetcher\Finder\SymfonyFinder;
 use Butschster\ContextGenerator\Source\FileSource;
 use Butschster\ContextGenerator\Source\SourceModifierRegistry;
 use Butschster\ContextGenerator\SourceInterface;
-use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 
 /**
- * Fetcher for file sources
+ * Enhanced fetcher for file sources with extended Symfony Finder features
  * @implements SourceFetcherInterface<FileSource>
  */
 readonly class FileSourceFetcher implements SourceFetcherInterface
@@ -22,7 +22,7 @@ readonly class FileSourceFetcher implements SourceFetcherInterface
     public function __construct(
         private string $basePath,
         private SourceModifierRegistry $modifiers,
-        private FileTreeBuilder $treeBuilder = new FileTreeBuilder(),
+        private FinderInterface $finder = new SymfonyFinder(),
     ) {}
 
     public function supports(SourceInterface $source): bool
@@ -32,52 +32,62 @@ readonly class FileSourceFetcher implements SourceFetcherInterface
 
     public function fetch(SourceInterface $source): string
     {
-        $content = '';
-        if ($source->showTreeView) {
-            $finder = $this->createFinder($source);
-            $filePaths = [];
-            foreach ($finder as $file) {
-                $filePaths[] = $file->getPathname();
-            }
-
-            // Generate tree view
-            $content .= '```' . PHP_EOL;
-            $content .= $this->treeBuilder->buildTree($filePaths, $this->basePath);
-            $content .= '```' . PHP_EOL . PHP_EOL;
+        if (!$source instanceof FileSource) {
+            throw new \InvalidArgumentException('Source must be an instance of FileSource');
         }
 
-        $finder = $this->createFinder($source);
+        $content = '';
 
-        foreach ($finder as $file) {
+        // Execute find operation and get the result
+        $finderResult = $this->finder->find($source, $this->basePath);
+
+        // Generate tree view if requested
+        if ($source->showTreeView) {
+            $content .= "```\n";
+            $content .= $finderResult->treeView;
+            $content .= "```\n\n";
+        }
+
+        // Process each file
+        foreach ($finderResult->files as $file) {
+            if (!$file instanceof SplFileInfo) {
+                throw new \RuntimeException('Expected SplFileInfo objects in finder results');
+            }
+
             $relativePath = \trim(\str_replace($this->basePath, '', $file->getPath()));
             $fileName = $file->getFilename();
             $filePath = empty($relativePath) ? $fileName : "$relativePath/$fileName";
 
-            $content .= '```' . PHP_EOL;
-            $content .= "// Path: {$filePath}" . PHP_EOL;
-            $content .= $this->getContent($file, $source) . PHP_EOL . PHP_EOL;
-            $content .= '```' . PHP_EOL;
+            $content .= "```\n";
+            $content .= "// Path: {$filePath}\n";
+            $content .= $this->getContent($file, $source) . "\n\n";
+            $content .= "```\n";
         }
 
         return $content;
     }
 
+    /**
+     * Get and optionally modify the content of a file
+     *
+     * @param SplFileInfo $file The file info object
+     * @param SourceInterface $source The source containing modifiers
+     * @return string The file content, possibly modified
+     */
     protected function getContent(SplFileInfo $file, SourceInterface $source): string
     {
         $content = $file->getContents();
 
-        // Apply modifiers if available
-        if (!empty($source->modifiers)) {
+        // Apply modifiers if available and the source is a FileSource
+        if ($source instanceof FileSource && !empty($source->modifiers)) {
             foreach ($source->modifiers as $modifierId) {
                 if ($this->modifiers->has($modifierId)) {
                     $modifier = $this->modifiers->get($modifierId);
-
                     if ($modifier->supports($file->getFilename())) {
                         $context = [
                             'file' => $file,
                             'source' => $source,
                         ];
-
                         $content = $modifier->modify($content, $context);
                     }
                 }
@@ -85,60 +95,5 @@ readonly class FileSourceFetcher implements SourceFetcherInterface
         }
 
         return $content;
-    }
-
-    /**
-     * Create a configured Finder instance for a file source
-     */
-    private function createFinder(FileSource $source): Finder
-    {
-        $files = [];
-        $directories = [];
-
-        // Separate files and directories
-        foreach ((array) $source->sourcePaths as $path) {
-            match (true) {
-                \is_file($path) => $files[] = $path,
-                \is_dir($path) => $directories[] = $path,
-                default => null,
-            };
-        }
-
-        // Create finder and configure it
-        $finder = new Finder();
-        if (!empty($directories)) {
-            $finder->name($source->filePattern)->in($directories);
-        }
-
-        // Add individual files
-        foreach ($files as $file) {
-            $finder->append([new SplFileInfo($file, $file, $file)]);
-        }
-
-        // Apply exclusion filter if patterns exist
-        if (!empty($source->excludePatterns)) {
-            $finder->filter(
-                fn(SplFileInfo $file): bool => !$this->shouldExcludeFile(
-                    file: $file,
-                    excludePatterns: $source->excludePatterns,
-                ),
-            );
-        }
-
-        return $finder;
-    }
-
-    /**
-     * Determine if a file should be excluded based on patterns
-     */
-    private function shouldExcludeFile(SplFileInfo $file, array $excludePatterns): bool
-    {
-        foreach ($excludePatterns as $pattern) {
-            if (\str_contains($file->getPathname(), (string) $pattern)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }
