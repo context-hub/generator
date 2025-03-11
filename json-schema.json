@@ -199,16 +199,112 @@
         },
         "excludePatterns": {
           "type": "array",
-          "description": "Patterns to exclude files",
+          "description": "Patterns to exclude files (alias for notPath)",
           "items": {
             "type": "string"
           },
           "default": []
         },
+        "notPath": {
+          "type": "array",
+          "description": "Patterns to exclude files by path",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "path": {
+          "oneOf": [
+            {
+              "type": "string",
+              "description": "Pattern to include only files in specific paths"
+            },
+            {
+              "type": "array",
+              "description": "List of patterns to include only files in specific paths",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "contains": {
+          "oneOf": [
+            {
+              "type": "string",
+              "description": "Pattern to include only files containing specific content"
+            },
+            {
+              "type": "array",
+              "description": "List of patterns to include only files containing specific content",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "notContains": {
+          "oneOf": [
+            {
+              "type": "string",
+              "description": "Pattern to exclude files containing specific content"
+            },
+            {
+              "type": "array",
+              "description": "List of patterns to exclude files containing specific content",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "size": {
+          "oneOf": [
+            {
+              "type": "string",
+              "description": "Size constraint for files (e.g., '> 10K', '< 1M')"
+            },
+            {
+              "type": "array",
+              "description": "List of size constraints for files",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "date": {
+          "oneOf": [
+            {
+              "type": "string",
+              "description": "Date constraint for files (e.g., 'since yesterday', '> 2023-01-01')"
+            },
+            {
+              "type": "array",
+              "description": "List of date constraints for files",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "ignoreUnreadableDirs": {
+          "type": "boolean",
+          "description": "Whether to ignore unreadable directories",
+          "default": false
+        },
         "showTreeView": {
           "type": "boolean",
           "description": "Whether to show directory tree",
           "default": true
+        },
+        "modifiers": {
+          "type": "array",
+          "description": "List of content modifiers to apply",
+          "items": {
+            "type": "string"
+          },
+          "default": []
         }
       }
     },

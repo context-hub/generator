@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source;
 
+use Butschster\ContextGenerator\Fetcher\FilterableSourceInterface;
+
 /**
  * Source for GitHub repositories
  */
-final class GithubSource extends BaseSource
+final class GithubSource extends BaseSource implements FilterableSourceInterface
 {
     public static function fromArray(array $data): self
     {
@@ -28,12 +30,31 @@ final class GithubSource extends BaseSource
         // Convert to array if single string
         $sourcePaths = \is_string($sourcePaths) ? [$sourcePaths] : $sourcePaths;
 
+        // Validate filePattern if present
+        if (isset($data['filePattern'])) {
+            if (!\is_string($data['filePattern']) && !is_array($data['filePattern'])) {
+                throw new \RuntimeException('filePattern must be a string or an array of strings');
+            }
+
+            // If it's an array, make sure all elements are strings
+            if (\is_array($data['filePattern'])) {
+                foreach ($data['filePattern'] as $pattern) {
+                    if (!\is_string($pattern)) {
+                        throw new \RuntimeException('All elements in filePattern must be strings');
+                    }
+                }
+            }
+        }
+
+        // Handle filePattern parameter, allowing both string and array formats
+        $filePattern = $data['filePattern'] ?? '*.*';
+
         return new self(
             repository: $data['repository'],
             sourcePaths: $sourcePaths,
             branch: $data['branch'] ?? 'main',
             description: $data['description'] ?? '',
-            filePattern: $data['filePattern'] ?? '*.php',
+            filePattern: $filePattern,
             excludePatterns: $data['excludePatterns'] ?? [],
             showTreeView: $data['showTreeView'] ?? true,
             githubToken: $data['githubToken'] ?? null,
@@ -45,7 +66,7 @@ final class GithubSource extends BaseSource
      * @param string $repository GitHub repository in format "owner/repo"
      * @param string $branch Branch or tag to fetch from (default: main)
      * @param string $description Human-readable description
-     * @param string $filePattern Pattern to match files
+     * @param string|array<string> $filePattern Pattern(s) to match files
      * @param array<string> $excludePatterns Patterns to exclude files
      * @param bool $showTreeView Whether to show directory tree
      * @param string|null $githubToken GitHub API token for private repositories
@@ -56,7 +77,7 @@ final class GithubSource extends BaseSource
         public readonly string|array $sourcePaths,
         public readonly string $branch = 'main',
         string $description = '',
-        public readonly string $filePattern = '*.php',
+        public readonly string|array $filePattern = '*.*',
         public readonly array $excludePatterns = [],
         public readonly bool $showTreeView = true,
         public readonly ?string $githubToken = null,
@@ -124,6 +145,96 @@ final class GithubSource extends BaseSource
         return $headers;
     }
 
+    /**
+     * Get file name pattern(s)
+     * @return string|array<string>|null Pattern(s) to match file names against
+     */
+    public function name(): string|array|null
+    {
+        return $this->filePattern;
+    }
+    
+    /**
+     * Get file path pattern(s)
+     * @return string|array<string>|null Pattern(s) to match file paths against
+     */
+    public function path(): string|array|null
+    {
+        return null; // GitHub source doesn't use path patterns directly
+    }
+    
+    /**
+     * Get excluded path pattern(s)
+     * @return string|array<string>|null Pattern(s) to exclude file paths
+     */
+    public function notPath(): string|array|null
+    {
+        return $this->excludePatterns;
+    }
+    
+    /**
+     * Get content pattern(s)
+     * @return string|array<string>|null Pattern(s) to match file content against
+     */
+    public function contains(): string|array|null
+    {
+        return null; // GitHub source doesn't support content filtering directly
+    }
+    
+    /**
+     * Get excluded content pattern(s)
+     * @return string|array<string>|null Pattern(s) to exclude file content
+     */
+    public function notContains(): string|array|null
+    {
+        return null; // GitHub source doesn't support content exclusion filtering directly
+    }
+    
+    /**
+     * Get size constraint(s)
+     * @return string|array<string>|null Size constraint(s)
+     */
+    public function size(): string|array|null
+    {
+        return null; // GitHub source doesn't support size filtering directly
+    }
+    
+    /**
+     * Get date constraint(s)
+     * @return string|array<string>|null Date constraint(s)
+     */
+    public function date(): string|array|null
+    {
+        return null; // GitHub source doesn't support date filtering directly
+    }
+    
+    /**
+     * Get directories to search in
+     * @return array<string>|null Directories to search in
+     */
+    public function in(): array|null
+    {
+        return (array) $this->sourcePaths;
+    }
+    
+    /**
+     * Get individual files to include
+     * @return array<string>|null Individual files to include
+     */
+    public function files(): array|null
+    {
+        return null; // GitHub source treats all sourcePaths as directories
+    }
+    
+    /**
+     * Check if unreadable directories should be ignored
+     * @return bool
+     */
+    public function ignoreUnreadableDirs(): bool
+    {
+        return false; // Not applicable for GitHub sources
+    }
+    
     public function jsonSerialize(): array
     {
         return \array_filter([

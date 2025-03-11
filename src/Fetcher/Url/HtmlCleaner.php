@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Fetcher;
+namespace Butschster\ContextGenerator\Fetcher\Url;
 
 use League\HTMLToMarkdown\HtmlConverter;
 
 /**
  * HTML content cleaner for URL sources
  */
-final readonly class HtmlCleaner
+final readonly class HtmlCleaner implements HtmlCleanerInterface
 {
     public function __construct(
         private HtmlConverter $htmlConverter = new HtmlConverter(),

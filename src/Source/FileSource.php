@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source;
 
+use Butschster\ContextGenerator\Fetcher\FilterableSourceInterface;
+
 /**
- * Source for files and directories
+ * Enhanced source for files and directories with extended Symfony Finder features
  */
-class FileSource extends BaseSource
+class FileSource extends BaseSource implements FilterableSourceInterface
 {
+    /**
+     * Create a FileSource from an array configuration
+     */
     public static function fromArray(array $data, string $rootPath = ''): self
     {
         if (!isset($data['sourcePaths'])) {
@@ -16,7 +21,6 @@ class FileSource extends BaseSource
         }
 
         $sourcePaths = $data['sourcePaths'];
-
         if (!\is_string($sourcePaths) && !\is_array($sourcePaths)) {
             throw new \RuntimeException('"sourcePaths" must be a string or array in source');
         }
@@ -46,44 +50,211 @@ class FileSource extends BaseSource
         // Handle filePattern parameter, allowing both string and array formats
         $filePattern = $data['filePattern'] ?? '*.*';
 
+        // Convert notPath to match Symfony Finder's naming convention
+        $notPath = $data['excludePatterns'] ?? $data['notPath'] ?? [];
+
         return new self(
             sourcePaths: $sourcePaths,
             description: $data['description'] ?? '',
             filePattern: $filePattern,
-            excludePatterns: $data['excludePatterns'] ?? [],
+            notPath: $notPath,
+            path: $data['path'] ?? [],
+            contains: $data['contains'] ?? [],
+            notContains: $data['notContains'] ?? [],
+            size: $data['size'] ?? [],
+            date: $data['date'] ?? [],
+            ignoreUnreadableDirs: $data['ignoreUnreadableDirs'] ?? false,
             showTreeView: $data['showTreeView'] ?? true,
             modifiers: $data['modifiers'] ?? [],
         );
     }
 
     /**
-     * @param string $description Human-readable description
      * @param string|array<string> $sourcePaths Paths to source files or directories
+     * @param string $description Human-readable description
      * @param string|array<string> $filePattern Pattern(s) to match files
-     * @param array<string> $excludePatterns Patterns to exclude files
+     * @param array<string> $notPath Patterns to exclude files (formerly excludePatterns)
+     * @param string|array<string> $path Patterns to include only specific paths
+     * @param string|array<string> $contains Patterns to include files containing specific content
+     * @param string|array<string> $notContains Patterns to exclude files containing specific content
+     * @param string|array<string> $size Size constraints for files (e.g., '> 10K', '< 1M')
+     * @param string|array<string> $date Date constraints for files (e.g., 'since yesterday', '> 2023-01-01')
+     * @param bool $ignoreUnreadableDirs Whether to ignore unreadable directories
+     * @param bool $showTreeView Whether to show tree view in output
      * @param array<string> $modifiers Identifiers for content modifiers to apply
      */
     public function __construct(
         public readonly string|array $sourcePaths,
         string $description = '',
         public readonly string|array $filePattern = '*.*',
-        public readonly array $excludePatterns = [],
+        public readonly array $notPath = [],
+        public readonly string|array $path = [],
+        public readonly string|array $contains = [],
+        public readonly string|array $notContains = [],
+        public readonly string|array $size = [],
+        public readonly string|array $date = [],
+        public readonly bool $ignoreUnreadableDirs = false,
         public readonly bool $showTreeView = true,
         public readonly array $modifiers = [],
     ) {
         parent::__construct($description);
     }
 
+    /**
+     * Get the list of notPath patterns (alias for excludePatterns for backward compatibility)
+     *
+     * @return array<string>
+     */
+    public function getExcludePatterns(): array
+    {
+        return $this->notPath;
+    }
+    
+    /**
+     * Get file name pattern(s)
+     * @return string|array<string>|null Pattern(s) to match file names against
+     */
+    public function name(): string|array|null
+    {
+        return $this->filePattern;
+    }
+    
+    /**
+     * Get file path pattern(s)
+     * @return string|array<string>|null Pattern(s) to match file paths against
+     */
+    public function path(): string|array|null
+    {
+        return $this->path;
+    }
+    
+    /**
+     * Get excluded path pattern(s)
+     * @return string|array<string>|null Pattern(s) to exclude file paths
+     */
+    public function notPath(): string|array|null
+    {
+        return $this->notPath;
+    }
+    
+    /**
+     * Get content pattern(s)
+     * @return string|array<string>|null Pattern(s) to match file content against
+     */
+    public function contains(): string|array|null
+    {
+        return $this->contains;
+    }
+    
+    /**
+     * Get excluded content pattern(s)
+     * @return string|array<string>|null Pattern(s) to exclude file content
+     */
+    public function notContains(): string|array|null
+    {
+        return $this->notContains;
+    }
+    
+    /**
+     * Get size constraint(s)
+     * @return string|array<string>|null Size constraint(s)
+     */
+    public function size(): string|array|null
+    {
+        return $this->size;
+    }
+    
+    /**
+     * Get date constraint(s)
+     * @return string|array<string>|null Date constraint(s)
+     */
+    public function date(): string|array|null
+    {
+        return $this->date;
+    }
+    
+    /**
+     * Get directories to search in
+     * @return array<string>|null Directories to search in
+     */
+    public function in(): array|null
+    {
+        $directories = [];
+        
+        // Extract directories from sourcePaths
+        foreach ((array) $this->sourcePaths as $path) {
+            if (\is_dir($path)) {
+                $directories[] = $path;
+            }
+        }
+        
+        return empty($directories) ? null : $directories;
+    }
+    
+    /**
+     * Get individual files to include
+     * @return array<string>|null Individual files to include
+     */
+    public function files(): array|null
+    {
+        $files = [];
+        
+        // Extract files from sourcePaths
+        foreach ((array) $this->sourcePaths as $path) {
+            if (\is_file($path)) {
+                $files[] = $path;
+            }
+        }
+        
+        return empty($files) ? null : $files;
+    }
+    
+    /**
+     * Check if unreadable directories should be ignored
+     * @return bool
+     */
+    public function ignoreUnreadableDirs(): bool
+    {
+        return $this->ignoreUnreadableDirs;
+    }
+
     public function jsonSerialize(): array
     {
-        return \array_filter([
+        $result = [
             'type' => 'file',
             'description' => $this->description,
             'sourcePaths' => $this->sourcePaths,
             'filePattern' => $this->filePattern,
-            'excludePatterns' => $this->excludePatterns,
+            'notPath' => $this->notPath,
             'showTreeView' => $this->showTreeView,
             'modifiers' => $this->modifiers,
-        ]);
+        ];
+
+        // Add optional properties only if they're non-empty
+        if (!empty($this->path)) {
+            $result['path'] = $this->path;
+        }
+
+        if (!empty($this->contains)) {
+            $result['contains'] = $this->contains;
+        }
+
+        if (!empty($this->notContains)) {
+            $result['notContains'] = $this->notContains;
+        }
+
+        if (!empty($this->size)) {
+            $result['size'] = $this->size;
+        }
+
+        if (!empty($this->date)) {
+            $result['date'] = $this->date;
+        }
+
+        if ($this->ignoreUnreadableDirs) {
+            $result['ignoreUnreadableDirs'] = true;
+        }
+
+        return \array_filter($result);
     }
 }

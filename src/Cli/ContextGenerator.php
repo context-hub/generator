@@ -6,10 +6,12 @@ namespace Butschster\ContextGenerator\Cli;
 
 use Butschster\ContextGenerator\DocumentCompiler;
 use Butschster\ContextGenerator\Fetcher\FileSourceFetcher;
+use Butschster\ContextGenerator\Fetcher\Finder\GithubFinder;
+use Butschster\ContextGenerator\Fetcher\Github\GithubContentFetcher;
 use Butschster\ContextGenerator\Fetcher\GithubSourceFetcher;
-use Butschster\ContextGenerator\Fetcher\HtmlCleaner;
 use Butschster\ContextGenerator\Fetcher\SourceFetcherRegistry;
 use Butschster\ContextGenerator\Fetcher\TextSourceFetcher;
+use Butschster\ContextGenerator\Fetcher\Url\HtmlCleaner;
 use Butschster\ContextGenerator\Fetcher\UrlSourceFetcher;
 use Butschster\ContextGenerator\Files;
 use Butschster\ContextGenerator\Loader\CompositeDocumentsLoader;
@@ -34,7 +36,7 @@ final class ContextGenerator extends Command
         private readonly string $outputPath,
         private readonly ?ClientInterface $httpClient = null,
         private readonly ?RequestFactoryInterface $requestFactory = null,
-        private readonly ?UriFactoryInterface $urlFactory = null,
+        private readonly ?UriFactoryInterface $uriFactory = null,
         private readonly string $phpConfigName = 'context.php',
         private readonly string $jsonConfigName = 'context.json',
     ) {
@@ -44,9 +46,24 @@ final class ContextGenerator extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $files = new Files();
-
         $modifiers = new SourceModifierRegistry();
         $modifiers->register(new PhpSignature());
+
+        // Create GitHub-related components
+        $githubToken = getenv('GITHUB_TOKEN') ?: null;
+        $githubFinder = new GithubFinder(
+            httpClient: $this->httpClient,
+            requestFactory: $this->requestFactory,
+            uriFactory: $this->uriFactory,
+            githubToken: $githubToken,
+        );
+
+        $githubContentFetcher = new GithubContentFetcher(
+            httpClient: $this->httpClient,
+            requestFactory: $this->requestFactory,
+            uriFactory: $this->uriFactory,
+            githubToken: $githubToken,
+        );
 
         $sourceFetcherRegistry = new SourceFetcherRegistry(
             fetchers: [
@@ -58,15 +75,12 @@ final class ContextGenerator extends Command
                 new UrlSourceFetcher(
                     httpClient: $this->httpClient,
                     requestFactory: $this->requestFactory,
-                    uriFactory: $this->urlFactory,
-                    cleaner: new HtmlCleaner(),
+                    uriFactory: $this->uriFactory,
                 ),
                 new GithubSourceFetcher(
-                    httpClient: $this->httpClient,
-                    requestFactory: $this->requestFactory,
-                    uriFactory: $this->urlFactory,
+                    finder: $githubFinder,
                     modifiers: $modifiers,
-                    githubToken: getenv('GITHUB_TOKEN') ?: null,
+                    contentFetcher: $githubContentFetcher,
                 ),
             ],
         );
@@ -94,9 +108,7 @@ final class ContextGenerator extends Command
 
         foreach ($loader->load()->getDocuments() as $document) {
             $output->writeln(\sprintf('Compiling %s', $document->description));
-
             $compiler->compile($document);
-
             $output->writeln(\sprintf('Document compiled into %s', $document->outputPath));
             $output->writeln('');
         }
