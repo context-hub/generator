@@ -9,6 +9,7 @@ use Butschster\ContextGenerator\Fetcher\FileSourceFetcher;
 use Butschster\ContextGenerator\Fetcher\Finder\GithubFinder;
 use Butschster\ContextGenerator\Fetcher\Github\GithubContentFetcher;
 use Butschster\ContextGenerator\Fetcher\GithubSourceFetcher;
+use Butschster\ContextGenerator\Fetcher\CommitDiffSourceFetcher;
 use Butschster\ContextGenerator\Fetcher\SourceFetcherRegistry;
 use Butschster\ContextGenerator\Fetcher\TextSourceFetcher;
 use Butschster\ContextGenerator\Fetcher\UrlSourceFetcher;
@@ -80,6 +81,9 @@ final class ContextGenerator extends Command
                     finder: $githubFinder,
                     modifiers: $modifiers,
                     contentFetcher: $githubContentFetcher,
+                ),
+                new CommitDiffSourceFetcher(
+                    modifiers: $modifiers,
                 ),
             ],
         );

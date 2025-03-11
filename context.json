@@ -1,6 +1,29 @@
 {
   "documents": [
     {
+      "description": "Recent Git Changes",
+      "outputPath": "docs/recent-changes.md",
+      "sources": [
+        {
+          "type": "text",
+          "description": "Documentation Header",
+          "content": "# Recent Git Changes\n\nThis document contains recent changes from the git repository.\n"
+        },
+        {
+          "type": "git_diff",
+          "description": "Recent Commits (Last 1)",
+          "repository": ".",
+          "commitRange": "unstaged",
+          "filePattern": "*.php",
+          "notPath": [
+            "vendor",
+            "tests"
+          ],
+          "showStats": true
+        }
+      ]
+    },
+    {
       "description": "Context generator code.",
       "outputPath": "code.md",
       "sources": [
