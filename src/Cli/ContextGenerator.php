@@ -17,6 +17,8 @@ use Butschster\ContextGenerator\Files;
 use Butschster\ContextGenerator\Loader\CompositeDocumentsLoader;
 use Butschster\ContextGenerator\Loader\ConfigDocumentsLoader;
 use Butschster\ContextGenerator\Loader\JsonConfigDocumentsLoader;
+use Butschster\ContextGenerator\Modifier\AstDocTransformer;
+use Butschster\ContextGenerator\Modifier\ContextSanitizerModifier;
 use Butschster\ContextGenerator\Modifier\PhpContentFilter;
 use Butschster\ContextGenerator\Modifier\PhpSignature;
 use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
@@ -48,8 +50,12 @@ final class ContextGenerator extends Command
     {
         $files = new Files();
         $modifiers = new SourceModifierRegistry();
-        $modifiers->register(new PhpSignature());
-        $modifiers->register(new PhpContentFilter());
+        $modifiers->register(
+            new PhpSignature(),
+            new ContextSanitizerModifier(),
+            new PhpContentFilter(),
+            new AstDocTransformer(),
+        );
 
         // Create GitHub-related components
         $githubToken = \getenv('GITHUB_TOKEN') ?: null;

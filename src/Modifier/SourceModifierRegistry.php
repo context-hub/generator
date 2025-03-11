@@ -14,9 +14,12 @@ final class SourceModifierRegistry
     /**
      * Register a modifier
      */
-    public function register(SourceModifierInterface $modifier): self
+    public function register(SourceModifierInterface ...$modifiers): self
     {
-        $this->modifiers[$modifier->getIdentifier()] = $modifier;
+        foreach ($modifiers as $modifier) {
+            $this->modifiers[$modifier->getIdentifier()] = $modifier;
+        }
+
         return $this;
     }
 

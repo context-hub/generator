@@ -58,10 +58,8 @@ readonly class FileSourceFetcher implements SourceFetcherInterface
             $fileName = $file->getFilename();
             $filePath = empty($relativePath) ? $fileName : "$relativePath/$fileName";
 
-            $content .= "```\n";
             $content .= "// Path: {$filePath}\n";
             $content .= $this->getContent($file, $source) . "\n\n";
-            $content .= "```\n";
         }
 
         return $content;
