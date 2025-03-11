@@ -538,6 +538,214 @@
         }
       }
     },
+    "php-docs": {
+      "type": "object",
+      "properties": {
+        "include_private_methods": {
+          "type": "boolean",
+          "description": "Whether to include private methods in documentation",
+          "default": false
+        },
+        "include_protected_methods": {
+          "type": "boolean",
+          "description": "Whether to include protected methods in documentation",
+          "default": true
+        },
+        "include_private_properties": {
+          "type": "boolean",
+          "description": "Whether to include private properties in documentation",
+          "default": false
+        },
+        "include_protected_properties": {
+          "type": "boolean",
+          "description": "Whether to include protected properties in documentation",
+          "default": true
+        },
+        "include_implementations": {
+          "type": "boolean",
+          "description": "Whether to include method implementations in code blocks",
+          "default": true
+        },
+        "include_property_defaults": {
+          "type": "boolean",
+          "description": "Whether to include property default values",
+          "default": true
+        },
+        "include_constants": {
+          "type": "boolean",
+          "description": "Whether to include class constants",
+          "default": true
+        },
+        "code_block_format": {
+          "type": "string",
+          "description": "Language identifier for code blocks (e.g., 'php')",
+          "default": "php"
+        },
+        "class_heading_level": {
+          "type": "integer",
+          "description": "Heading level for class names (1-6)",
+          "minimum": 1,
+          "maximum": 6,
+          "default": 1
+        },
+        "extract_routes": {
+          "type": "boolean",
+          "description": "Whether to extract route information from annotations/attributes",
+          "default": true
+        },
+        "keep_doc_comments": {
+          "type": "boolean",
+          "description": "Whether to keep doc comments in the output",
+          "default": true
+        }
+      }
+    },
+    "sanitizer": {
+      "type": "object",
+      "properties": {
+        "rules": {
+          "type": "array",
+          "description": "Array of sanitization rules to apply",
+          "items": {
+            "type": "object",
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "keyword"
+                    ],
+                    "description": "Keyword removal rule"
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Optional unique rule name"
+                  },
+                  "keywords": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Array of keywords to search for and remove"
+                  },
+                  "replacement": {
+                    "type": "string",
+                    "description": "Text to replace the found keywords with"
+                  },
+                  "caseSensitive": {
+                    "type": "boolean",
+                    "description": "Whether matching should be case-sensitive"
+                  },
+                  "removeLines": {
+                    "type": "boolean",
+                    "description": "Whether to remove entire lines containing the keyword"
+                  }
+                },
+                "required": [
+                  "type",
+                  "keywords"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "regex"
+                    ],
+                    "description": "Regular expression replacement rule"
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Optional unique rule name"
+                  },
+                  "patterns": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "description": "Object mapping regex patterns to their replacements"
+                  },
+                  "usePatterns": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "credit-card",
+                        "email",
+                        "api-key",
+                        "ip-address",
+                        "jwt",
+                        "phone-number",
+                        "password-field",
+                        "url",
+                        "social-security",
+                        "aws-key",
+                        "private-key",
+                        "database-conn"
+                      ]
+                    },
+                    "description": "Predefined pattern aliases to use"
+                  }
+                },
+                "required": [
+                  "type"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "comment"
+                    ],
+                    "description": "Comment insertion rule"
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Optional unique rule name"
+                  },
+                  "fileHeaderComment": {
+                    "type": "string",
+                    "description": "Comment to insert at the top of file"
+                  },
+                  "classComment": {
+                    "type": "string",
+                    "description": "Comment to insert before class definitions"
+                  },
+                  "methodComment": {
+                    "type": "string",
+                    "description": "Comment to insert before method definitions"
+                  },
+                  "frequency": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "How often to insert random comments (0 = disabled, 1 = every line, 5 = every 5th line)"
+                  },
+                  "randomComments": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Array of random comments to insert"
+                  }
+                },
+                "required": [
+                  "type"
+                ]
+              }
+            ],
+            "required": [
+              "type"
+            ]
+          }
+        }
+      }
+    },
     "modifiers": {
       "type": "array",
       "description": "List of content modifiers to apply",
@@ -551,7 +759,8 @@
               "type": "string",
               "description": "Modifier identifier",
               "enum": [
-                "php-content-filter"
+                "php-signature",
+                "php-docs"
               ]
             }
           },
@@ -569,7 +778,9 @@
                   "type": "string",
                   "description": "Modifier identifier",
                   "enum": [
-                    "php-content-filter"
+                    "php-content-filter",
+                    "php-docs",
+                    "sanitizer"
                   ]
                 },
                 "options": {
@@ -585,6 +796,30 @@
                       },
                       "then": {
                         "$ref": "#/definitions/php-content-filter"
+                      }
+                    },
+                    {
+                      "if": {
+                        "properties": {
+                          "name": {
+                            "const": "php-docs"
+                          }
+                        }
+                      },
+                      "then": {
+                        "$ref": "#/definitions/php-docs"
+                      }
+                    },
+                    {
+                      "if": {
+                        "properties": {
+                          "name": {
+                            "const": "sanitizer"
+                          }
+                        }
+                      },
+                      "then": {
+                        "$ref": "#/definitions/sanitizer"
                       }
                     }
                   ]

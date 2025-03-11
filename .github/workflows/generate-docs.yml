@@ -1,0 +1,50 @@
+name: 📚 Generate Documentation
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'context.json'
+  workflow_dispatch:  # Allow manual trigger
+  release:
+    types: [ published ]
+
+jobs:
+  generate-docs:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Needed to push updates back to the repository
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+
+      - name: Download context-generator
+        run: |
+          wget https://github.com/butschster/context-generator/releases/download/1.5.0/context-generator.phar
+          chmod +x context-generator.phar
+          ./context-generator.phar version
+
+      - name: Generate documentation
+        run: |
+          ./context-generator.phar
+
+      - name: List generated documents
+        run: |
+          find .context -type f | sort
+          echo "Generated documentation files in .context directory"
+
+      - name: 📤 Upload documentation as release assets
+        uses: softprops/action-gh-release@v2.2.1
+        if: github.event_name == 'release'
+        with:
+          token: "${{ secrets.GITHUB_TOKEN }}"
+          files: |
+            .context/**/*
