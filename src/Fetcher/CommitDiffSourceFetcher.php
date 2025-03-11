@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Fetcher;
 
-use Butschster\ContextGenerator\Fetcher\Finder\FinderResult;
-use Butschster\ContextGenerator\Fetcher\Finder\CommitDiffFinder;
-use Butschster\ContextGenerator\Fetcher\Git\CommitRangeParser;
+use Butschster\ContextGenerator\Fetcher\Git\CommitDiffFinder;
 use Butschster\ContextGenerator\Source\CommitDiffSource;
 use Butschster\ContextGenerator\Source\SourceModifierRegistry;
 use Butschster\ContextGenerator\SourceInterface;
@@ -21,11 +19,9 @@ final readonly class CommitDiffSourceFetcher implements SourceFetcherInterface
     /**
      * @param SourceModifierRegistry $modifiers Registry of content modifiers
      * @param FinderInterface $finder Finder for filtering diffs
-     * @param CommitRangeParser $rangeParser Parser for commit range expressions
      */
     public function __construct(
         private SourceModifierRegistry $modifiers,
-        private CommitRangeParser $rangeParser = new CommitRangeParser(),
         private FinderInterface $finder = new CommitDiffFinder(),
     ) {}
 
@@ -45,48 +41,14 @@ final readonly class CommitDiffSourceFetcher implements SourceFetcherInterface
             throw new \RuntimeException(\sprintf('Git repository "%s" does not exist', $source->repository));
         }
 
-        // Parse and resolve the commit range
-        $resolvedCommitRange = $this->rangeParser->resolve($source->getCommit());
-
-        // Use the finder to get the diffs (passing the resolved range)
-        $finderResult = $this->findDiffs($source, $resolvedCommitRange);
+        // Use the finder to get the diffs
+        $finderResult = $this->finder->find($source);
 
         // Extract diffs from the finder result
         $diffs = $this->extractDiffsFromFinderResult($finderResult);
 
         // Format the output
-        return $this->formatOutput($diffs, $finderResult->treeView, $source, $resolvedCommitRange);
-    }
-
-    /**
-     * Find diffs for the given source and commit range
-     */
-    private function findDiffs(CommitDiffSource $source, string|array $commitRange): FinderResult
-    {
-        // Create a source with the resolved commit range to pass to the finder
-        $finderSource = new class($source, $commitRange) extends CommitDiffSource {
-            public function __construct(CommitDiffSource $original, private readonly string|array $resolvedCommitRange)
-            {
-                parent::__construct(
-                    repository: $original->repository,
-                    description: $original->getDescription(),
-                    commit: $original->commit,
-                    filePattern: $original->filePattern,
-                    notPath: $original->notPath,
-                    path: $original->path,
-                    contains: $original->contains,
-                    notContains: $original->notContains,
-                    showStats: $original->showStats,
-                );
-            }
-
-            public function getCommitRange(): string|array
-            {
-                return $this->resolvedCommitRange;
-            }
-        };
-
-        return $this->finder->find($finderSource);
+        return $this->formatOutput($diffs, $finderResult->treeView, $source);
     }
 
     /**
@@ -106,7 +68,6 @@ final readonly class CommitDiffSourceFetcher implements SourceFetcherInterface
             $originalPath = \method_exists($file, 'getOriginalPath')
                 ? $file->getOriginalPath()
                 : $file->getRelativePathname();
-
             $diffContent = $file->getContents();
 
             // Get the stats for this file
@@ -127,7 +88,6 @@ final readonly class CommitDiffSourceFetcher implements SourceFetcherInterface
                 'stats' => $stats,
             ];
         }
-
         return $diffs;
     }
 
@@ -140,19 +100,15 @@ final readonly class CommitDiffSourceFetcher implements SourceFetcherInterface
         array $diffs,
         string $treeView,
         CommitDiffSource $source,
-        string|array $resolvedCommitRange,
     ): string {
         $content = '';
-
         // Handle empty diffs case
         if (empty($diffs)) {
-            $formattedRange = $this->rangeParser->formatForDisplay($resolvedCommitRange);
-            return "# Git Diff for Commit Range: {$formattedRange}\n\nNo changes found in this commit range.\n";
+            return "# Git Diff for Commit Range: {$source->commit}\n\nNo changes found in this commit range.\n";
         }
 
         // Add a header with the commit range
-        $formattedRange = $this->rangeParser->formatForDisplay($resolvedCommitRange);
-        $content .= "# Git Diff for Commit Range: {$formattedRange}\n\n";
+        $content .= "# Git Diff for Commit Range: {$source->commit}\n\n";
 
         // Add a tree view summary of changed files
         $content .= "## Summary of Changes\n\n";

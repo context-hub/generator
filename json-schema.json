@@ -62,7 +62,7 @@
             "url",
             "text",
             "github",
-            "git_commit_diff"
+            "git_diff"
           ],
           "description": "Type of content source"
         },
@@ -164,7 +164,7 @@
           "if": {
             "properties": {
               "type": {
-                "const": "git_commit_diff"
+                "const": "git_diff"
               }
             }
           },
@@ -459,29 +459,34 @@
       }
     },
     "gitCommitDiffSource": {
-      "required": [
-        "repository"
-      ],
       "properties": {
         "repository": {
           "type": "string",
           "description": "Path to the git repository"
         },
-        "commitRange": {
-          "oneOf": [
-            {
-              "type": "string",
-              "description": "Git commit range (e.g., 'HEAD~5..HEAD') or preset ('last', 'last-5', 'last-10', 'last-week', 'last-month', 'unstaged')"
-            },
-            {
-              "type": "array",
-              "description": "List of specific commits",
-              "items": {
-                "type": "string"
-              }
-            }
+        "commit": {
+          "type": "string",
+          "enum": [
+            "last",
+            "last-5",
+            "last-10",
+            "last-week",
+            "last-month",
+            "unstaged",
+            "staged",
+            "wip",
+            "main-diff",
+            "master-diff",
+            "develop-diff",
+            "today",
+            "last-24h",
+            "yesterday",
+            "last-2weeks",
+            "last-quarter",
+            "last-year"
           ],
-          "default": "HEAD~1..HEAD"
+          "description": "Git commit range (e.g., 'HEAD~5..HEAD')",
+          "default": "staged"
         },
         "filePattern": {
           "oneOf": [

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Fetcher;
 
-use Butschster\ContextGenerator\Fetcher\Finder\FinderResult;
-
 /**
  * Interface for file finders
  *

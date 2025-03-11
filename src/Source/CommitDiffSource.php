@@ -7,31 +7,33 @@ namespace Butschster\ContextGenerator\Source;
 use Butschster\ContextGenerator\Fetcher\FilterableSourceInterface;
 
 /**
- * Source for git commit diffs with enhanced commit range support
+ * Source for git commit diffs with simplified commit range support
  */
 class CommitDiffSource extends BaseSource implements FilterableSourceInterface, \JsonSerializable
 {
     /**
      * @param string $repository Path to the git repository
      * @param string $description Human-readable description
-     * @param string|array<string> $commit Git commit range (e.g., 'HEAD~5..HEAD', specific commit hash, preset alias, or array of commits)
+     * @param string $commit Git commit range (e.g., 'HEAD~5..HEAD', specific commit hash, preset alias)
      * @param string|array<string> $filePattern Pattern(s) to match files
      * @param array<string> $notPath Patterns to exclude files
      * @param string|array<string> $path Patterns to include only specific paths
      * @param string|array<string> $contains Patterns to include files containing specific content
      * @param string|array<string> $notContains Patterns to exclude files containing specific content
      * @param bool $showStats Whether to show commit stats in output
+     * @param array<string> $modifiers Identifiers for content modifiers to apply
      */
     public function __construct(
         public readonly string $repository = '.',
         string $description = '',
-        public readonly string|array $commit = 'staged',
+        public readonly string $commit = 'staged',
         public readonly string|array $filePattern = '*.*',
         public readonly array $notPath = [],
         public readonly string|array $path = [],
         public readonly string|array $contains = [],
         public readonly string|array $notContains = [],
         public readonly bool $showStats = true,
+        public readonly array $modifiers = [],
     ) {
         parent::__construct($description);
     }
@@ -66,25 +68,30 @@ class CommitDiffSource extends BaseSource implements FilterableSourceInterface, 
             }
         }
 
+        // Ensure commit is a string
+        $commit = $data['commit'] ?? 'staged';
+        if (isset($data['commit']) && !\is_string($commit)) {
+            throw new \RuntimeException('commit must be a string');
+        }
+
         return new self(
             repository: $repository,
             description: $data['description'] ?? '',
-            commit: $data['commit'] ?? 'staged',
+            commit: $commit,
             filePattern: $data['filePattern'] ?? '*.*',
             notPath: $data['notPath'] ?? [],
             path: $data['path'] ?? [],
             contains: $data['contains'] ?? [],
             notContains: $data['notContains'] ?? [],
             showStats: $data['showStats'] ?? true,
+            modifiers: $data['modifiers'] ?? [],
         );
     }
 
     /**
-     * Get the commit parameter as specified (without resolving)
-     *
-     * This is needed when serializing the source to avoid resolving aliases
+     * Get the commit parameter
      */
-    public function getCommit(): string|array
+    public function getCommit(): string
     {
         return $this->commit;
     }

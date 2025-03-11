@@ -12,7 +12,7 @@
         {
           "type": "git_diff",
           "description": "Recent Commits (Last 1)",
-          "commitRange": "unstaged",
+          "commit": "stash",
           "filePattern": "*.php",
           "notPath": [
             "vendor",

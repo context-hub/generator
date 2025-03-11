@@ -6,7 +6,7 @@ namespace Tests\Fetcher;
 
 use Butschster\ContextGenerator\Fetcher\FileSourceFetcher;
 use Butschster\ContextGenerator\Fetcher\FinderInterface;
-use Butschster\ContextGenerator\Fetcher\Finder\FinderResult;
+use Butschster\ContextGenerator\Fetcher\FinderResult;
 use Butschster\ContextGenerator\Source\FileSource;
 use Butschster\ContextGenerator\Source\SourceModifierRegistry;
 use Butschster\ContextGenerator\SourceInterface;

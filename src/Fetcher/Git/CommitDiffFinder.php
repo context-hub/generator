@@ -2,13 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Fetcher\Finder;
-
-namespace Butschster\ContextGenerator\Fetcher\Finder;
+namespace Butschster\ContextGenerator\Fetcher\Git;
 
 use Butschster\ContextGenerator\Fetcher\FileTreeBuilder;
 use Butschster\ContextGenerator\Fetcher\FilterableSourceInterface;
 use Butschster\ContextGenerator\Fetcher\FinderInterface;
+use Butschster\ContextGenerator\Fetcher\FinderResult;
 use Butschster\ContextGenerator\Fetcher\Git\CommitRangeParser;
 use Butschster\ContextGenerator\Source\CommitDiffSource;
 use Symfony\Component\Finder\Finder;
@@ -17,7 +16,7 @@ use Symfony\Component\Finder\SplFileInfo;
 /**
  * Finder for git commit diffs
  *
- * This finder extracts diffs from git commits and applies filters to them
+ * This finder extracts diffs from git commits and stashes and applies filters to them
  */
 final readonly class CommitDiffFinder implements FinderInterface
 {
@@ -48,8 +47,11 @@ final readonly class CommitDiffFinder implements FinderInterface
         // The CommitDiffSource now returns an already resolved range from the parser
         $commitRange = $this->formatCommitRange($source->commit);
 
+        // Determine if we're working with stashes
+        $isStashReference = $this->isStashReference($commitRange);
+
         // Get the list of changed files
-        $changedFiles = $this->getChangedFiles($source->repository, $commitRange);
+        $changedFiles = $this->getChangedFiles($source->repository, $commitRange, $isStashReference);
 
         if (empty($changedFiles)) {
             return new FinderResult(new \ArrayIterator([]), 'No changes found');
@@ -66,7 +68,7 @@ final readonly class CommitDiffFinder implements FinderInterface
 
             foreach ($changedFiles as $file) {
                 // Get the diff for this file
-                $diff = $this->getFileDiff($source->repository, $commitRange, $file);
+                $diff = $this->getFileDiff($source->repository, $commitRange, $file, $isStashReference);
 
                 if (empty($diff)) {
                     continue;
@@ -133,9 +135,17 @@ final readonly class CommitDiffFinder implements FinderInterface
         }
 
         // Generate tree view using the FileTreeBuilder
-        $treeView = $this->generateTreeView($filePaths, $commitRange);
+        $treeView = $this->generateTreeView($filePaths, $commitRange, $isStashReference);
 
         return new FinderResult(new \ArrayIterator($fileInfos), $treeView);
+    }
+
+    /**
+     * Check if a commit range refers to stashes
+     */
+    private function isStashReference(string $commitRange): bool
+    {
+        return \str_contains($commitRange, 'stash@{');
     }
 
     /**
@@ -159,11 +169,11 @@ final readonly class CommitDiffFinder implements FinderInterface
     }
 
     /**
-     * Get the list of changed files in the commit range
+     * Get the list of changed files in the commit range or stash
      *
      * @return array<string>
      */
-    private function getChangedFiles(string $repository, string $commitRange): array
+    private function getChangedFiles(string $repository, string $commitRange, bool $isStashReference): array
     {
         $currentDir = \getcwd();
         $files = [];
@@ -172,8 +182,80 @@ final readonly class CommitDiffFinder implements FinderInterface
             // Change to the repository directory
             \chdir($repository);
 
-            // Check if the command contains `--since=` format, which needs a different approach
-            if (\str_contains($commitRange, '--since=')) {
+            // Check if we're dealing with stashes
+            if ($isStashReference) {
+                // Handle single stash reference: stash@{0}
+                if (\preg_match('/^stash@\{\d+\}$/', $commitRange)) {
+                    $command = \sprintf('git stash show --name-only %s', \escapeshellarg($commitRange));
+                } // Handle stash range: stash@{0}..stash@{2}
+                elseif (\preg_match('/^stash@\{\d+\}\.\.stash@\{\d+\}$/', $commitRange)) {
+                    [$startStash, $endStash] = \explode('..', $commitRange);
+
+                    // Extract stash indices
+                    \preg_match('/stash@\{(\d+)\}/', $startStash, $startMatches);
+                    \preg_match('/stash@\{(\d+)\}/', $endStash, $endMatches);
+
+                    $startIndex = (int) $startMatches[1];
+                    $endIndex = (int) $endMatches[1];
+
+                    if ($startIndex > $endIndex) {
+                        // Swap to ensure correct order (smaller to larger)
+                        [$startIndex, $endIndex] = [$endIndex, $startIndex];
+                    }
+
+                    // Get files from each stash in the range
+                    $allFiles = [];
+                    for ($i = $startIndex; $i <= $endIndex; $i++) {
+                        $stashRef = "stash@{$i}";
+                        $stashCommand = \sprintf('git stash show --name-only %s', \escapeshellarg($stashRef));
+                        $stashOutput = [];
+                        \exec($stashCommand, $stashOutput, $stashReturnCode);
+
+                        if ($stashReturnCode === 0) {
+                            $allFiles = \array_merge($allFiles, $stashOutput);
+                        }
+                    }
+
+                    return \array_unique($allFiles);
+                } // Handle stash with message search: stash@{/message}
+                elseif (\preg_match('/^stash@\{\/.*\}$/', $commitRange)) {
+                    // First, get the stash index that matches the message
+                    $listCommand = 'git stash list';
+                    $listOutput = [];
+                    \exec($listCommand, $listOutput, $listReturnCode);
+
+                    if ($listReturnCode !== 0 || empty($listOutput)) {
+                        return [];
+                    }
+
+                    // Extract message search pattern
+                    \preg_match('/stash@\{\/(.*)\}/', $commitRange, $matches);
+                    $searchPattern = $matches[1] ?? '';
+
+                    if (empty($searchPattern)) {
+                        return [];
+                    }
+
+                    // Find matching stash
+                    $matchingStashIndex = null;
+                    foreach ($listOutput as $index => $stashEntry) {
+                        if (\stripos($stashEntry, $searchPattern) !== false) {
+                            $matchingStashIndex = $index;
+                            break;
+                        }
+                    }
+
+                    if ($matchingStashIndex === null) {
+                        return [];
+                    }
+
+                    $command = \sprintf('git stash show --name-only stash@{%d}', $matchingStashIndex);
+                } else {
+                    // Try to handle as regular git command
+                    $command = \sprintf('git diff --name-only %s', \escapeshellarg($commitRange));
+                }
+            } // Check if the command contains `--since=` format, which needs a different approach
+            elseif (\str_contains($commitRange, '--since=')) {
                 $command = 'git log ' . $commitRange . ' --name-only --pretty=format:""';
                 $output = [];
                 \exec($command, $output, $returnCode);
@@ -187,10 +269,8 @@ final readonly class CommitDiffFinder implements FinderInterface
                 // Remove empty lines and duplicates
                 $files = \array_unique(\array_filter($output));
                 return $files;
-            }
-
-            // Get the list of changed files - handle unstaged and special formats differently
-            if ($commitRange === '--cached') {
+            } // Get the list of changed files - handle unstaged and special formats differently
+            elseif ($commitRange === '--cached') {
                 $command = 'git diff --name-only --cached';
             } elseif (\str_contains($commitRange, ' -- ')) {
                 // Handle specific file in commit format: abc1234 -- path/to/file.php
@@ -209,7 +289,7 @@ final readonly class CommitDiffFinder implements FinderInterface
 
             if ($returnCode !== 0) {
                 throw new \RuntimeException(
-                    \sprintf('Failed to get changed files for commit range "%s"', $commitRange),
+                    \sprintf('Failed to get changed files for range "%s"', $commitRange),
                 );
             }
 
@@ -225,7 +305,7 @@ final readonly class CommitDiffFinder implements FinderInterface
     /**
      * Get the diff for a specific file
      */
-    private function getFileDiff(string $repository, string $commitRange, string $file): string
+    private function getFileDiff(string $repository, string $commitRange, string $file, bool $isStashReference): string
     {
         $currentDir = \getcwd();
         $diff = '';
@@ -234,8 +314,69 @@ final readonly class CommitDiffFinder implements FinderInterface
             // Change to the repository directory
             \chdir($repository);
 
-            // Check if the command contains `--since=` format, which needs a different approach
-            if (\str_contains($commitRange, '--since=')) {
+            // Handle stash references
+            if ($isStashReference) {
+                // Handle single stash reference
+                if (\preg_match('/^stash@\{\d+\}$/', $commitRange)) {
+                    $command = \sprintf(
+                        'git stash show -p %s -- %s',
+                        \escapeshellarg($commitRange),
+                        \escapeshellarg($file),
+                    );
+                } // Handle stash range (just use the first stash in the range for showing diff)
+                elseif (\preg_match('/^stash@\{\d+\}\.\.stash@\{\d+\}$/', $commitRange)) {
+                    [$startStash,] = \explode('..', $commitRange);
+                    $command = \sprintf(
+                        'git stash show -p %s -- %s',
+                        \escapeshellarg($startStash),
+                        \escapeshellarg($file),
+                    );
+                } // Handle stash with message search
+                elseif (\preg_match('/^stash@\{\/(.*)\}$/', $commitRange, $matches)) {
+                    // Extract message search pattern
+                    $searchPattern = $matches[1] ?? '';
+
+                    if (empty($searchPattern)) {
+                        return '';
+                    }
+
+                    // First, get the stash index that matches the message
+                    $listCommand = 'git stash list';
+                    $listOutput = [];
+                    \exec($listCommand, $listOutput, $listReturnCode);
+
+                    if ($listReturnCode !== 0 || empty($listOutput)) {
+                        return '';
+                    }
+
+                    // Find matching stash
+                    $matchingStashIndex = null;
+                    foreach ($listOutput as $index => $stashEntry) {
+                        if (\stripos($stashEntry, $searchPattern) !== false) {
+                            $matchingStashIndex = $index;
+                            break;
+                        }
+                    }
+
+                    if ($matchingStashIndex === null) {
+                        return '';
+                    }
+
+                    $command = \sprintf(
+                        'git stash show -p stash@{%d} -- %s',
+                        $matchingStashIndex,
+                        \escapeshellarg($file),
+                    );
+                } else {
+                    // Fallback to regular diff
+                    $command = \sprintf(
+                        'git diff %s -- %s',
+                        \escapeshellarg($commitRange),
+                        \escapeshellarg($file),
+                    );
+                }
+            } // Check if the command contains `--since=` format, which needs a different approach
+            elseif (\str_contains($commitRange, '--since=')) {
                 $command = \sprintf(
                     'git log %s -p -- %s',
                     \escapeshellarg($commitRange),
@@ -249,15 +390,14 @@ final readonly class CommitDiffFinder implements FinderInterface
                 }
 
                 return $diff;
-            }
-
-            // Get the diff for this file - handle different cases
-            if ($commitRange === '--cached') {
+            } // Get the diff for this file - handle different cases
+            elseif ($commitRange === '--cached') {
                 $command = \sprintf('git diff --cached -- %s', \escapeshellarg($file));
             } elseif (\str_contains($commitRange, ' -- ')) {
                 // Handle specific file in commit format: abc1234 -- path/to/file.php
                 // In this case, we show the specific file at that commit
                 [$commit, $path] = \explode(' -- ', $commitRange, 2);
+
                 // If the file matches the path, show it
                 if ($path === $file || \str_starts_with($file, $path)) {
                     $command = \sprintf(
@@ -345,15 +485,20 @@ final readonly class CommitDiffFinder implements FinderInterface
      *
      * @param array<string> $files List of file paths
      * @param string $commitRange Commit range for the header
+     * @param bool $isStashReference Whether the commit range refers to stashes
      * @return string Text representation of the file tree
      */
-    private function generateTreeView(array $files, string $commitRange): string
+    private function generateTreeView(array $files, string $commitRange, bool $isStashReference): string
     {
         if (empty($files)) {
-            return "No changes found in commit range: {$commitRange}\n";
+            $rangeType = $isStashReference ? 'stash' : 'commit range';
+            return "No changes found in {$rangeType}: {$commitRange}\n";
         }
 
-        $treeHeader = "Changes in commit range: {$commitRange}\n";
+        $treeHeader = $isStashReference
+            ? "Changes in stash: {$commitRange}\n"
+            : "Changes in commit range: {$commitRange}\n";
+
         $tree = $this->fileTreeBuilder->buildTree($files, '');
 
         return $treeHeader . $tree;

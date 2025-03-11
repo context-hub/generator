@@ -39,6 +39,21 @@ final readonly class CommitRangeParser
         'main-diff' => 'main..HEAD', // Difference between main and current branch
         'master-diff' => 'master..HEAD', // Difference between master and current branch
         'develop-diff' => 'develop..HEAD', // Difference between develop and current branch
+
+        // Stash related presets
+        'stash' => 'stash@{0}', // Latest stash
+        'stash-last' => 'stash@{0}', // Latest stash (alias)
+        'stash-1' => 'stash@{1}', // Second most recent stash
+        'stash-2' => 'stash@{2}', // Third most recent stash
+        'stash-3' => 'stash@{3}', // Fourth most recent stash
+        'stash-all' => 'stash@{0}..stash@{100}', // All stashes (up to 100)
+        'stash-latest-2' => 'stash@{0}..stash@{1}', // Latest 2 stashes
+        'stash-latest-3' => 'stash@{0}..stash@{2}', // Latest 3 stashes
+        'stash-latest-5' => 'stash@{0}..stash@{4}', // Latest 5 stashes
+        'stash-before-pull' => 'stash@{/before pull}', // Stash with "before pull" in message
+        'stash-wip' => 'stash@{/WIP}', // Stash with "WIP" in message
+        'stash-untracked' => 'stash@{/untracked}', // Stash with "untracked" in message
+        'stash-index' => 'stash@{/index}', // Stash with "index" in message
     ];
 
     /**
@@ -52,18 +67,18 @@ final readonly class CommitRangeParser
         if (\is_array($commitRange)) {
             return \array_map(fn(string $range): string => $this->resolveExpression($range), $commitRange);
         }
-
         return $this->resolveExpression($commitRange);
     }
 
     /**
      * Parse a commit expression which can be in various formats:
-     * - A preset alias: 'last', 'last-week', etc.
+     * - A preset alias: 'last', 'last-week', 'stash', etc.
      * - A commit hash: 'abc1234'
      * - A tag: 'v1.0.0'
      * - A branch: 'feature/branch'
      * - A full range: 'commit1..commit2'
      * - A specific file at a commit: 'commit:path/to/file.php'
+     * - A stash reference: 'stash@{0}', 'stash@{/message}'
      */
     public function resolveExpression(string $expression): string
     {
@@ -73,7 +88,6 @@ final readonly class CommitRangeParser
         }
 
         // Handle specific commit patterns
-
         // 1. Check for a specific commit hash (must be at least 7 chars)
         if (\preg_match('/^[0-9a-f]{7,40}$/', $expression)) {
             return $expression . '~1..' . $expression;
@@ -99,6 +113,22 @@ final readonly class CommitRangeParser
         // 5. Check for 'since:' pattern to specify a starting point
         if (\preg_match('/^since:(.+)$/', $expression, $matches)) {
             return $matches[1] . '..HEAD';
+        }
+
+        // 6. Handle stash pattern: stash@{n} or stash@{/message}
+        if (\preg_match('/^stash@\{.+\}$/', $expression)) {
+            // This is already a valid stash reference - return as is
+            return $expression;
+        }
+
+        // 7. Handle numeric stash pattern: stash:0, stash:1, etc.
+        if (\preg_match('/^stash:(\d+)$/', $expression, $matches)) {
+            return 'stash@{' . $matches[1] . '}';
+        }
+
+        // 8. Handle stash message pattern: stash:/message
+        if (\preg_match('/^stash:\/(.+)$/', $expression, $matches)) {
+            return 'stash@{/' . $matches[1] . '}';
         }
 
         // Handle ISO-8601 date format: @2023-01-15 or date:2023-01-15
@@ -127,7 +157,6 @@ final readonly class CommitRangeParser
         if ($commitRange === '') {
             return 'unstaged changes';
         }
-
         if ($commitRange === '--cached') {
             return 'staged changes';
         }
@@ -141,6 +170,13 @@ final readonly class CommitRangeParser
             'HEAD@{1.month.ago}..HEAD' => 'changes from last month',
             'main..HEAD' => 'changes since diverging from main',
             'master..HEAD' => 'changes since diverging from master',
+            'stash@{0}' => 'latest stash',
+            'stash@{1}' => 'second most recent stash',
+            'stash@{2}' => 'third most recent stash',
+            'stash@{0}..stash@{1}' => 'latest 2 stashes',
+            'stash@{0}..stash@{2}' => 'latest 3 stashes',
+            'stash@{0}..stash@{4}' => 'latest 5 stashes',
+            'stash@{0}..stash@{100}' => 'all stashes',
         ];
 
         return $humanReadable[$commitRange] ?? $commitRange;
