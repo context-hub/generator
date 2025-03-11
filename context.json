@@ -12,8 +12,7 @@
         {
           "type": "git_diff",
           "description": "Recent Commits (Last 1)",
-          "commit": "stash",
-          "filePattern": "*.php",
+          "commit": "staged",
           "notPath": [
             "vendor",
             "tests"
@@ -30,6 +29,20 @@
           "type": "file",
           "sourcePaths": [
             "src"
+          ],
+          "filePattern": "*.php"
+        }
+      ]
+    },
+    {
+      "description": "Git finder.",
+      "outputPath": "git_diff.md",
+      "sources": [
+        {
+          "type": "file",
+          "sourcePaths": [
+            "src/Fetcher/Git",
+            "src/Fetcher/FinderResult"
           ],
           "filePattern": "*.php"
         }

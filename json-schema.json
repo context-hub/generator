@@ -483,7 +483,20 @@
             "yesterday",
             "last-2weeks",
             "last-quarter",
-            "last-year"
+            "last-year",
+            "stash",
+            "stash-last",
+            "stash-1",
+            "stash-2",
+            "stash-3",
+            "stash-all",
+            "stash-latest-2",
+            "stash-latest-3",
+            "stash-latest-5",
+            "stash-before-pull",
+            "stash-wip",
+            "stash-untracked",
+            "stash-index"
           ],
           "description": "Git commit range (e.g., 'HEAD~5..HEAD')",
           "default": "staged"
