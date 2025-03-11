@@ -807,6 +807,253 @@ annotations based on configurable criteria.
 | `include_properties_pattern` | string  | `null`                               | Regular expression pattern for properties to include                            |
 | `exclude_properties_pattern` | string  | `null`                               | Regular expression pattern for properties to exclude                            |
 
+I'd be happy to provide complete documentation for the AstDocTransformer ('php-docs') and ContextSanitizerModifier ('
+sanitizer') modifiers to enhance the README. Here's what I'll add to the existing documentation:
+
+## Sanitizer Modifier
+
+It helps you clean up or obfuscate sensitive information in your code before sharing it. It applies configurable
+sanitization rules to protect private details.
+
+### Basic Usage
+
+```json
+{
+  "documents": [
+    {
+      "description": "Sanitized API Documentation",
+      "outputPath": "docs/sanitized-api.md",
+      "sources": [
+        {
+          "type": "file",
+          "description": "API Classes",
+          "sourcePaths": [
+            "src/Auth"
+          ],
+          "filePattern": "*.php",
+          "modifiers": [
+            {
+              "name": "sanitizer",
+              "options": {
+                "rules": [
+                  {
+                    "type": "keyword",
+                    "keywords": [
+                      "password",
+                      "secret",
+                      "api_key"
+                    ],
+                    "replacement": "[REDACTED]"
+                  },
+                  {
+                    "type": "regex",
+                    "usePatterns": [
+                      "email",
+                      "api-key",
+                      "jwt"
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Rule Types
+
+#### 1. Keyword Removal Rule
+
+Removes or replaces text containing specific keywords.
+
+```json
+{
+  "type": "keyword",
+  "name": "remove-sensitive",
+  "keywords": [
+    "password",
+    "secret",
+    "private_key"
+  ],
+  "replacement": "[REDACTED]",
+  "caseSensitive": false,
+  "removeLines": true
+}
+```
+
+| Parameter       | Type    | Default        | Description                                        |
+|-----------------|---------|----------------|----------------------------------------------------|
+| `name`          | string  | auto-generated | Unique rule identifier                             |
+| `keywords`      | array   | required       | List of keywords to search for                     |
+| `replacement`   | string  | `"[REMOVED]"`  | Replacement text                                   |
+| `caseSensitive` | boolean | `false`        | Whether matching should be case-sensitive          |
+| `removeLines`   | boolean | `true`         | Whether to remove entire lines containing keywords |
+
+#### 2. Regex Replacement Rule
+
+Applies regular expression patterns to find and replace content.
+
+```json
+{
+  "type": "regex",
+  "patterns": {
+    "/access_token\\s*=\\s*['\"]([^'\"]+)['\"]/": "access_token='[REDACTED]'",
+    "/password\\s*=\\s*['\"]([^'\"]+)['\"]/": "password='[REDACTED]'"
+  },
+  "usePatterns": [
+    "credit-card",
+    "email",
+    "api-key"
+  ]
+}
+```
+
+| Parameter     | Type   | Default        | Description                                   |
+|---------------|--------|----------------|-----------------------------------------------|
+| `name`        | string | auto-generated | Unique rule identifier                        |
+| `patterns`    | object | {}             | Object mapping regex patterns to replacements |
+| `usePatterns` | array  | []             | Predefined pattern aliases (see below)        |
+
+#### 3. Comment Insertion Rule
+
+Inserts comments into the code to mark it as sanitized or add disclaimers.
+
+```json
+{
+  "type": "comment",
+  "fileHeaderComment": "This file has been sanitized for security purposes.",
+  "classComment": "Sanitized class - sensitive information removed.",
+  "methodComment": "Sanitized method - implementation details omitted.",
+  "frequency": 10,
+  "randomComments": [
+    "Sanitized for security",
+    "Internal details removed",
+    "Sensitive data redacted"
+  ]
+}
+```
+
+| Parameter           | Type    | Default        | Description                                        |
+|---------------------|---------|----------------|----------------------------------------------------|
+| `name`              | string  | auto-generated | Unique rule identifier                             |
+| `fileHeaderComment` | string  | `""`           | Comment to insert at the top of file               |
+| `classComment`      | string  | `""`           | Comment to insert before class definitions         |
+| `methodComment`     | string  | `""`           | Comment to insert before method definitions        |
+| `frequency`         | integer | `0`            | How often to insert random comments (0 = disabled) |
+| `randomComments`    | array   | `[]`           | Array of random comments to insert                 |
+
+### Predefined Pattern Aliases
+
+The regex rule type supports these built-in pattern aliases:
+
+| Alias             | Description                 |
+|-------------------|-----------------------------|
+| `credit-card`     | Credit card numbers         |
+| `email`           | Email addresses             |
+| `api-key`         | API keys and tokens         |
+| `ip-address`      | IP addresses                |
+| `jwt`             | JWT tokens                  |
+| `phone-number`    | Phone numbers               |
+| `password-field`  | Password fields in code     |
+| `url`             | URLs                        |
+| `social-security` | Social security numbers     |
+| `aws-key`         | AWS access keys             |
+| `private-key`     | Private key headers         |
+| `database-conn`   | Database connection strings |
+
+These modifiers give you powerful tools to both transform your code into well-structured documentation and ensure
+sensitive information is properly sanitized before sharing.
+
+## PHP-Docs (AstDocTransformer) Modifier
+
+The `php-docs` modifier transforms PHP code into structured markdown documentation. It parses classes, methods,
+properties, and constants to generate API documentation that cannot be converted into code. It helps
+you to generate a code for team members, LLMs, or other documentation purposes without
+exposing sensitive information or implementation details.
+
+### Basic Usage
+
+```json
+{
+  "documents": [
+    {
+      "description": "API Documentation",
+      "outputPath": "docs/api.md",
+      "sources": [
+        {
+          "type": "file",
+          "description": "API Classes",
+          "sourcePaths": [
+            "src/Api"
+          ],
+          "filePattern": "*.php",
+          "modifiers": [
+            "php-docs"
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Advanced Configuration
+
+For more control, you can provide configuration options:
+
+```json
+{
+  "documents": [
+    {
+      "description": "API Documentation",
+      "outputPath": "docs/api.md",
+      "sources": [
+        {
+          "type": "file",
+          "description": "API Classes",
+          "sourcePaths": [
+            "src/Api"
+          ],
+          "filePattern": "*.php",
+          "modifiers": [
+            {
+              "name": "php-docs",
+              "options": {
+                "include_private_methods": false,
+                "include_protected_methods": true,
+                "include_implementations": false,
+                "class_heading_level": 2,
+                "extract_routes": true
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Options
+
+| Option                         | Type    | Default | Description                                                      |
+|--------------------------------|---------|---------|------------------------------------------------------------------|
+| `include_private_methods`      | boolean | `false` | Whether to include private methods in the documentation          |
+| `include_protected_methods`    | boolean | `true`  | Whether to include protected methods in the documentation        |
+| `include_private_properties`   | boolean | `false` | Whether to include private properties in the documentation       |
+| `include_protected_properties` | boolean | `true`  | Whether to include protected properties in the documentation     |
+| `include_implementations`      | boolean | `true`  | Whether to include method implementations in code blocks         |
+| `include_property_defaults`    | boolean | `true`  | Whether to include property default values                       |
+| `include_constants`            | boolean | `true`  | Whether to include class constants                               |
+| `code_block_format`            | string  | `"php"` | Language identifier for code blocks                              |
+| `class_heading_level`          | integer | `1`     | Heading level for class names (1-6)                              |
+| `extract_routes`               | boolean | `true`  | Whether to extract route information from annotations/attributes |
+| `keep_doc_comments`            | boolean | `true`  | Whether to preserve PHPDoc comments in the output                |
+
 ## Environment Variables
 
 You can use environment variables in your configuration using the `${VARIABLE_NAME}` syntax:
@@ -820,7 +1067,6 @@ You can use environment variables in your configuration using the `${VARIABLE_NA
 ```
 
 This will use the value of the `GITHUB_TOKEN` environment variable.
-
 
 ## Complete Example
 
@@ -841,18 +1087,24 @@ A comprehensive configuration example with multiple document types and sources:
         {
           "type": "file",
           "description": "API Controllers",
-          "sourcePaths": ["src/Controller"],
+          "sourcePaths": [
+            "src/Controller"
+          ],
           "filePattern": "*.php",
           "contains": "Controller",
           "notContains": "@deprecated",
           "showTreeView": true,
-          "modifiers": ["php-signature"]
+          "modifiers": [
+            "php-signature"
+          ]
         },
         {
           "type": "github",
           "description": "API Client Library",
           "repository": "owner/api-client",
-          "sourcePaths": ["src"],
+          "sourcePaths": [
+            "src"
+          ],
           "branch": "main",
           "filePattern": "*.php",
           "githubToken": "${GITHUB_TOKEN}"
@@ -868,8 +1120,13 @@ A comprehensive configuration example with multiple document types and sources:
           "description": "Changes from last week",
           "repository": ".",
           "commit": "last-week",
-          "filePattern": ["*.php", "*.md"],
-          "notPath": ["vendor"]
+          "filePattern": [
+            "*.php",
+            "*.md"
+          ],
+          "notPath": [
+            "vendor"
+          ]
         }
       ]
     },
@@ -880,7 +1137,9 @@ A comprehensive configuration example with multiple document types and sources:
         {
           "type": "url",
           "description": "Documentation Website",
-          "urls": ["https://example.com/docs"],
+          "urls": [
+            "https://example.com/docs"
+          ],
           "selector": ".main-content"
         }
       ]
@@ -888,7 +1147,6 @@ A comprehensive configuration example with multiple document types and sources:
   ]
 }
 ```
-
 
 # For PHP Developers - Integration Guide
 
