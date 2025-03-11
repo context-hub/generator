@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Fetcher\Finder;
+namespace Butschster\ContextGenerator\Fetcher;
 
 /**
  * Data Transfer Object containing the results of a finder operation

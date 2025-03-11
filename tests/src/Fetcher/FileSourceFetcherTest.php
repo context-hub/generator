@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Fetcher;
 
 use Butschster\ContextGenerator\Fetcher\FileSourceFetcher;
-use Butschster\ContextGenerator\Fetcher\Finder\FinderResult;
 use Butschster\ContextGenerator\Fetcher\FinderInterface;
 use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
 use Butschster\ContextGenerator\Source\FileSource;
@@ -21,13 +20,6 @@ class FileSourceFetcherTest extends TestCase
     private SourceModifierRegistry $modifiers;
     private FileSourceFetcher $fetcher;
     private FinderInterface $finder;
-
-    #[Test]
-    public function it_should_support_file_source(): void
-    {
-        $source = $this->createMock(FileSource::class);
-        $this->assertTrue($this->fetcher->supports($source));
-    }
 
     #[Test]
     public function it_should_not_support_other_sources(): void

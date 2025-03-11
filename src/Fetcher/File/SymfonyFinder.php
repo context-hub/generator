@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Fetcher\Finder;
+namespace Butschster\ContextGenerator\Fetcher\File;
 
 use Butschster\ContextGenerator\Fetcher\FileTreeBuilder;
 use Butschster\ContextGenerator\Fetcher\FilterableSourceInterface;
 use Butschster\ContextGenerator\Fetcher\FinderInterface;
+use Butschster\ContextGenerator\Fetcher\FinderResult;
 use Butschster\ContextGenerator\Source\FileSource;
 use Symfony\Component\Finder\Finder;
 

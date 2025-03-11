@@ -17,6 +17,7 @@ It automates the process of building context files from various sources:
 
 - code files,
 - GitHub repositories,
+- Git commit changes and diffs
 - Web pages (URLs) with CSS selectors,
 - and plain text.
 
@@ -184,6 +185,25 @@ Create a `context.json` file in your project root:
           "modifiers": [
             "php-signature"
           ]
+        }
+      ]
+    },
+    {
+      "description": "Recent Git Changes",
+      "outputPath": "docs/recent-changes.md",
+      "sources": [
+        {
+          "type": "text",
+          "description": "Documentation Header",
+          "content": "# Recent Git Changes\nThis document contains recent changes from the git repository."
+        },
+        {
+          "type": "git_diff",
+          "description": "Recent Commits (Last 1)",
+          "repository": ".",
+          "commit": "last",
+          "filePattern": "*.php",
+          "showStats": true
         }
       ]
     }
@@ -494,6 +514,113 @@ Pull files directly from a GitHub repository:
 }
 ```
 
+### Git Diff Source
+
+The source allows you to include changes from Git commits, providing a streamlined way to show recent code changes:
+
+```json
+{
+  "type": "git_diff",
+  "description": "Recent Git Changes",
+  "commit": "last",
+  "filePattern": "*.php",
+  "notPath": [
+    "tests",
+    "vendor"
+  ],
+  "path": "src",
+  "contains": "class",
+  "notContains": "@deprecated",
+  "showStats": true
+}
+```
+
+#### Commit Range Presets
+
+The Git diff source supports many convenient presets for `commit` parameter:
+
+
+```json
+{
+  "type": "git_diff",
+  "repository": ".",
+  "commit": "last-week", 
+  "filePattern": "*.php"
+}
+```
+
+Available presets include:
+
+- **Basic ranges**:
+  - `last`: Last commit (HEAD~1..HEAD)
+  - `last-2`, `last-3`, `last-5`, `last-10`: Last N commits
+  - `staged`: Changes staged but not committed
+  - `unstaged`: Changes not yet staged
+
+- **Time-based ranges**:
+  - `today`: Changes from today
+  - `last-24h`: Changes in the last 24 hours
+  - `yesterday`: Changes from yesterday
+  - `last-week`: Changes in the last week
+  - `last-2weeks`: Changes in the last two weeks
+  - `last-month`: Changes in the last month
+  - `last-quarter`: Changes in the last three months
+  - `last-year`: Changes in the last year
+
+- **Branch comparisons**:
+  - `main-diff`: Differences between main and current branch
+  - `master-diff`: Differences between master and current branch
+  - `develop-diff`: Differences between develop and current branch
+
+#### Advanced Commit Specifications
+
+You can use more specific Git expressions:
+
+```json
+{
+  "type": "git_diff",
+  "repository": ".",
+  "commit": "abc1234",
+  "filePattern": "*.php"
+}
+```
+
+```json
+{
+  "type": "git_diff",
+  "repository": ".",
+  "commit": "abc1234:path/to/file.php",
+  "filePattern": "*.php"
+}
+```
+
+```json
+{
+  "type": "git_diff",
+  "repository": ".",
+  "commit": "v1.0.0..v2.0.0",
+  "filePattern": "*.php"
+}
+```
+
+```json
+{
+  "type": "git_diff",
+  "repository": ".",
+  "commit": "since:2023-01-15",
+  "filePattern": "*.php"
+}
+```
+
+```json
+{
+  "type": "git_diff",
+  "repository": ".",
+  "commit": "date:2023-01-15",
+  "filePattern": "*.php"
+}
+```
+
 ### URL Source
 
 Fetch content from websites:
@@ -716,6 +843,26 @@ new GithubSource(
     showTreeView: true,                   // Whether to show directory tree (default: true)
     githubToken: '${GITHUB_TOKEN}',       // GitHub API token for private repos (can use env vars)
     modifiers: ['php-signature'],         // Optional content modifiers to apply
+);
+```
+
+### CommitDiffSource
+
+The `Butschster\ContextGenerator\Source\CommitDiffSource` allows you to include git diff content from commits or staged changes:
+
+```php
+use Butschster\ContextGenerator\Source\CommitDiffSource;
+
+new CommitDiffSource(
+    repository: __DIR__,                  // Path to git repository (use current directory with __DIR__)
+    description: 'Recent changes',        // Optional description
+    commit: 'last',                       // Commit range (preset, hash, or expression)
+    filePattern: '*.php',                 // Pattern to match files (default: *.php)
+    notPath: ['tests', 'vendor'],         // Patterns to exclude
+    path: 'src/Controller',               // Path filter to include
+    contains: 'namespace App',            // Content pattern to include
+    notContains: '@deprecated',           // Content pattern to exclude
+    showStats: true,                      // Whether to show git stats (default: true)
 );
 ```
 

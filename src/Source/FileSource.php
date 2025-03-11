@@ -10,7 +10,7 @@ use Butschster\ContextGenerator\Modifier\Modifier;
 /**
  * Enhanced source for files and directories with extended Symfony Finder features
  */
-class FileSource extends BaseSource implements FilterableSourceInterface
+final class FileSource extends BaseSource implements FilterableSourceInterface
 {
     /**
      * @param string|array<string> $sourcePaths Paths to source files or directories

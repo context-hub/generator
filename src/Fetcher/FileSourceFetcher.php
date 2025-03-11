@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Fetcher;
 
-use Butschster\ContextGenerator\Fetcher\Finder\SymfonyFinder;
+use Butschster\ContextGenerator\Fetcher\File\SymfonyFinder;
 use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
 use Butschster\ContextGenerator\Source\FileSource;
 use Butschster\ContextGenerator\SourceInterface;
