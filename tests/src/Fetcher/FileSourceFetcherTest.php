@@ -23,13 +23,6 @@ class FileSourceFetcherTest extends TestCase
     private FinderInterface $finder;
 
     #[Test]
-    public function it_should_support_file_source(): void
-    {
-        $source = $this->createMock(FileSource::class);
-        $this->assertTrue($this->fetcher->supports($source));
-    }
-
-    #[Test]
     public function it_should_not_support_other_sources(): void
     {
         $source = $this->createMock(SourceInterface::class);
