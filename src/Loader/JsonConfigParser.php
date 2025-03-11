@@ -53,7 +53,6 @@ final readonly class JsonConfigParser
     /**
      * Create a Source object from its configuration.
      *
-     * @return FileSource|GithubSource|TextSource|UrlSource
      */
     private function createSource(array $sourceData, string $path): FileSource|UrlSource|TextSource|GithubSource
     {

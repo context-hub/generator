@@ -42,9 +42,6 @@ final class ContextGenerator extends Command
         parent::__construct();
     }
 
-    /**
-     * @return int
-     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $files = new Files();

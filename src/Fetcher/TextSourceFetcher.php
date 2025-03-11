@@ -18,9 +18,6 @@ final class TextSourceFetcher implements SourceFetcherInterface
         return $source instanceof TextSource;
     }
 
-    /**
-     * @return string
-     */
     public function fetch(SourceInterface $source): string
     {
         if (!$source instanceof TextSource) {
