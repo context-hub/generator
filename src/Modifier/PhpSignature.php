@@ -22,7 +22,6 @@ final class PhpSignature implements SourceModifierInterface
     ];
 
     /**
-     * @return string
      *
      * @psalm-return 'php-signature'
      */

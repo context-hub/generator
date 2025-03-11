@@ -9,7 +9,6 @@ use Butschster\ContextGenerator\Fetcher\FilterableSourceInterface;
 use Butschster\ContextGenerator\Fetcher\FinderInterface;
 use Butschster\ContextGenerator\Source\FileSource;
 use Symfony\Component\Finder\Finder;
-use Symfony\Component\Finder\SplFileInfo;
 
 /**
  * Implementation of FinderInterface using Symfony's Finder component
