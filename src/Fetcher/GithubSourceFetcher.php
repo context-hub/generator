@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Fetcher;
 
 use Butschster\ContextGenerator\Fetcher\Github\GithubContentFetcherInterface;
+use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
 use Butschster\ContextGenerator\Source\GithubSource;
-use Butschster\ContextGenerator\Source\SourceModifierRegistry;
 use Butschster\ContextGenerator\SourceInterface;
 
 /**
@@ -55,11 +55,7 @@ final readonly class GithubSourceFetcher implements SourceFetcherInterface
                     if ($this->modifiers->has($modifierId)) {
                         $modifier = $this->modifiers->get($modifierId);
                         if ($modifier->supports($path)) {
-                            $context = [
-                                'path' => $path,
-                                'source' => $source,
-                            ];
-                            $fileContent = $modifier->modify($fileContent, $context);
+                            $fileContent = $modifier->modify($fileContent, $modifierId->context);
                         }
                     }
                 }

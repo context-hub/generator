@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Source;
 
 use Butschster\ContextGenerator\Fetcher\FilterableSourceInterface;
+use Butschster\ContextGenerator\Modifier\Modifier;
 
 /**
  * Enhanced source for files and directories with extended Symfony Finder features
@@ -23,7 +24,7 @@ class FileSource extends BaseSource implements FilterableSourceInterface
      * @param string|array<string> $date Date constraints for files (e.g., 'since yesterday', '> 2023-01-01')
      * @param bool $ignoreUnreadableDirs Whether to ignore unreadable directories
      * @param bool $showTreeView Whether to show tree view in output
-     * @param array<string> $modifiers Identifiers for content modifiers to apply
+     * @param array<Modifier> $modifiers Identifiers for content modifiers to apply
      */
     public function __construct(
         public readonly string|array $sourcePaths,

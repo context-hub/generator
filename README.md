@@ -521,6 +521,85 @@ Include custom text content:
 }
 ```
 
+## Modifiers
+
+### PHP Content Filter Modifier
+
+The modifier allows you to selectively include or exclude PHP class elements such as methods, properties, constants, and
+annotations based on configurable criteria.
+
+It supports only php files
+
+#### Features
+
+- Filter methods, properties, and constants by name or pattern
+- Include or exclude elements based on visibility (public, protected, private)
+- Control whether method bodies are kept or replaced with placeholders
+- Optionally keep or remove documentation comments
+- Optionally keep or remove PHP 8 attributes
+- Filter elements using regular expression patterns
+
+#### JSON Configuration
+
+```json
+{
+  "documents": [
+    {
+      "description": "API Documentation",
+      "outputPath": "docs/api.md",
+      "sources": [
+        {
+          "type": "file",
+          "description": "API Source Files",
+          "sourcePaths": [
+            "src/Api"
+          ],
+          "filePattern": "*.php",
+          "modifiers": [
+            {
+              "name": "php-content-filter",
+              "options": {
+                "method_visibility": [
+                  "public"
+                ],
+                "exclude_methods": [
+                  "__construct"
+                ],
+                "keep_method_bodies": false
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+#### Configuration Options
+
+It supports the following configuration options:
+
+| Option                       | Type    | Default                              | Description                                                                                  |
+|------------------------------|---------|--------------------------------------|----------------------------------------------------------------------------------------------|
+| `include_methods`            | array   | `[]`                                 | List of method names to include (empty means include all unless exclude_methods is set)      |
+| `exclude_methods`            | array   | `[]`                                 | List of method names to exclude (empty means exclude none)                                   |
+| `include_properties`         | array   | `[]`                                 | List of property names to include (empty means include all unless exclude_properties is set) |
+| `exclude_properties`         | array   | `[]`                                 | List of property names to exclude (empty means exclude none)                                 |
+| `include_constants`          | array   | `[]`                                 | List of constant names to include (empty means include all unless exclude_constants is set)  |
+| `exclude_constants`          | array   | `[]`                                 | List of constant names to exclude (empty means exclude none)                                 |
+| `method_visibility`          | array   | `['public', 'protected', 'private']` | List of method visibilities to include                                                       |
+| `property_visibility`        | array   | `['public', 'protected', 'private']` | List of property visibilities to include                                                     |
+| `constant_visibility`        | array   | `['public', 'protected', 'private']` | List of constant visibilities to include                                                     |
+| `keep_method_bodies`         | boolean | `false`                              | Whether to keep method bodies (true) or replace with placeholders (false)                    |
+| `method_body_placeholder`    | string  | `/* ... */`                          | Placeholder for method bodies when keep_method_bodies is false                               |
+| `keep_doc_comments`          | boolean | `true`                               | Whether to keep doc comments                                                                 |
+| `keep_attributes`            | boolean | `true`                               | Whether to keep PHP 8 attributes                                                             |
+| `include_methods_pattern`    | string  | `null`                               | Regular expression pattern for methods to include                                            |
+| `exclude_methods_pattern`    | string  | `null`                               | Regular expression pattern for methods to exclude                                            |
+| `include_properties_pattern` | string  | `null`                               | Regular expression pattern for properties to include                                         |
+| `exclude_properties_pattern` | string  | `null`                               | Regular expression pattern for properties to exclude                                         |
+
 ## Running Context Generator
 
 Once your configuration is in place, run:

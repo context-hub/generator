@@ -32,7 +32,7 @@
         "outputPath": {
           "type": "string",
           "description": "Path where the document will be saved",
-          "pattern": "^[^\\0]+$"
+          "pattern": "^[\\w\\-./]+\\.[\\w]+$"
         },
         "overwrite": {
           "type": "boolean",
@@ -70,32 +70,7 @@
           "description": "Human-readable description of the source"
         },
         "modifiers": {
-          "type": "array",
-          "description": "List of content modifiers to apply",
-          "items": {
-            "oneOf": [
-              {
-                "type": "string",
-                "description": "Modifier identifier"
-              },
-              {
-                "type": "object",
-                "required": [
-                  "name"
-                ],
-                "properties": {
-                  "name": {
-                    "type": "string",
-                    "description": "Modifier identifier"
-                  },
-                  "options": {
-                    "type": "object",
-                    "description": "Modifier options"
-                  }
-                }
-              }
-            ]
-          }
+          "$ref": "#/definitions/modifiers"
         }
       },
       "allOf": [
@@ -109,18 +84,6 @@
           },
           "then": {
             "$ref": "#/definitions/fileSource"
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "type": {
-                "const": "php_class"
-              }
-            }
-          },
-          "then": {
-            "$ref": "#/definitions/phpClassSource"
           }
         },
         {
@@ -161,40 +124,94 @@
         }
       ]
     },
+    "modifiers": {
+      "type": "array",
+      "description": "List of content modifiers to apply",
+      "items": {
+        "oneOf": [
+          {
+            "type": "string",
+            "description": "Modifier identifier"
+          },
+          {
+            "type": "object",
+            "required": [
+              "name"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Modifier identifier"
+              },
+              "options": {
+                "description": "Modifier options",
+                "oneOf": [
+                  {
+                    "$ref": "#/definitions/php-content-filter"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    "filePattern": {
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "Pattern to match files (e.g., *.php)"
+        },
+        {
+          "type": "array",
+          "description": "List of patterns to match files (e.g., ['*.php', '*.md'])",
+          "items": {
+            "type": "string",
+            "enum": ["*.php", "*.md", "*.txt", "*.json", "*.xml", "*.html", "*.css", "*.js"]
+          }
+        }
+      ]
+    },
+    "sourcePaths": {
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "Path to file or directory"
+        },
+        {
+          "type": "array",
+          "description": "List of paths to files or directories",
+          "items": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "patternConstraint": {
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "Pattern constraint"
+        },
+        {
+          "type": "array",
+          "description": "List of pattern constraints",
+          "items": {
+            "type": "string"
+          }
+        }
+      ]
+    },
     "fileSource": {
       "required": [
         "sourcePaths"
       ],
       "properties": {
         "sourcePaths": {
-          "oneOf": [
-            {
-              "type": "string",
-              "description": "Path to file or directory"
-            },
-            {
-              "type": "array",
-              "description": "List of paths to files or directories",
-              "items": {
-                "type": "string"
-              }
-            }
-          ]
+          "$ref": "#/definitions/sourcePaths"
         },
         "filePattern": {
-          "oneOf": [
-            {
-              "type": "string",
-              "description": "Pattern to match files (e.g., *.php)"
-            },
-            {
-              "type": "array",
-              "description": "List of patterns to match files (e.g., ['*.php', '*.md'])",
-              "items": {
-                "type": "string"
-              }
-            }
-          ],
+          "$ref": "#/definitions/filePattern",
           "default": "*.*"
         },
         "excludePatterns": {
@@ -214,79 +231,19 @@
           "default": []
         },
         "path": {
-          "oneOf": [
-            {
-              "type": "string",
-              "description": "Pattern to include only files in specific paths"
-            },
-            {
-              "type": "array",
-              "description": "List of patterns to include only files in specific paths",
-              "items": {
-                "type": "string"
-              }
-            }
-          ]
+          "$ref": "#/definitions/patternConstraint"
         },
         "contains": {
-          "oneOf": [
-            {
-              "type": "string",
-              "description": "Pattern to include only files containing specific content"
-            },
-            {
-              "type": "array",
-              "description": "List of patterns to include only files containing specific content",
-              "items": {
-                "type": "string"
-              }
-            }
-          ]
+          "$ref": "#/definitions/patternConstraint"
         },
         "notContains": {
-          "oneOf": [
-            {
-              "type": "string",
-              "description": "Pattern to exclude files containing specific content"
-            },
-            {
-              "type": "array",
-              "description": "List of patterns to exclude files containing specific content",
-              "items": {
-                "type": "string"
-              }
-            }
-          ]
+          "$ref": "#/definitions/patternConstraint"
         },
         "size": {
-          "oneOf": [
-            {
-              "type": "string",
-              "description": "Size constraint for files (e.g., '> 10K', '< 1M')"
-            },
-            {
-              "type": "array",
-              "description": "List of size constraints for files",
-              "items": {
-                "type": "string"
-              }
-            }
-          ]
+          "$ref": "#/definitions/patternConstraint"
         },
         "date": {
-          "oneOf": [
-            {
-              "type": "string",
-              "description": "Date constraint for files (e.g., 'since yesterday', '> 2023-01-01')"
-            },
-            {
-              "type": "array",
-              "description": "List of date constraints for files",
-              "items": {
-                "type": "string"
-              }
-            }
-          ]
+          "$ref": "#/definitions/patternConstraint"
         },
         "ignoreUnreadableDirs": {
           "type": "boolean",
@@ -299,52 +256,7 @@
           "default": true
         },
         "modifiers": {
-          "type": "array",
-          "description": "List of content modifiers to apply",
-          "items": {
-            "type": "string"
-          },
-          "default": []
-        }
-      }
-    },
-    "phpClassSource": {
-      "required": [
-        "sourcePaths"
-      ],
-      "properties": {
-        "sourcePaths": {
-          "oneOf": [
-            {
-              "type": "string",
-              "description": "Path to PHP file or directory containing PHP files"
-            },
-            {
-              "type": "array",
-              "description": "List of paths to PHP files or directories containing PHP files",
-              "items": {
-                "type": "string"
-              }
-            }
-          ]
-        },
-        "excludePatterns": {
-          "type": "array",
-          "description": "Patterns to exclude files",
-          "items": {
-            "type": "string"
-          },
-          "default": []
-        },
-        "showTreeView": {
-          "type": "boolean",
-          "description": "Whether to show directory tree",
-          "default": true
-        },
-        "onlySignatures": {
-          "type": "boolean",
-          "description": "Whether to show only method signatures without implementation",
-          "default": true
+          "$ref": "#/definitions/modifiers"
         }
       }
     },
@@ -391,19 +303,7 @@
           "pattern": "^[\\w.-]+/[\\w.-]+$"
         },
         "sourcePaths": {
-          "oneOf": [
-            {
-              "type": "string",
-              "description": "Path within the repository"
-            },
-            {
-              "type": "array",
-              "description": "List of paths within the repository",
-              "items": {
-                "type": "string"
-              }
-            }
-          ]
+          "$ref": "#/definitions/sourcePaths"
         },
         "branch": {
           "type": "string",
@@ -411,19 +311,7 @@
           "default": "main"
         },
         "filePattern": {
-          "oneOf": [
-            {
-              "type": "string",
-              "description": "Pattern to match files (e.g., *.php)"
-            },
-            {
-              "type": "array",
-              "description": "List of patterns to match files (e.g., ['*.php', '*.md'])",
-              "items": {
-                "type": "string"
-              }
-            }
-          ],
+          "$ref": "#/definitions/filePattern",
           "default": "*.php"
         },
         "excludePatterns": {
@@ -443,6 +331,108 @@
           "type": "string",
           "description": "GitHub API token for private repositories (can use env var pattern ${TOKEN_NAME})"
         }
+      }
+    },
+    "php-content-filter": {
+      "type": "object",
+      "properties": {
+        "include_methods": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Method names to include (empty means include all unless exclude_methods is set)"
+        },
+        "exclude_methods": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Method names to exclude"
+        },
+        "include_properties": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Property names to include"
+        },
+        "exclude_properties": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Property names to exclude"
+        },
+        "include_constants": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Constant names to include"
+        },
+        "exclude_constants": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Constant names to exclude"
+        },
+        "method_visibility": {
+          "$ref": "#/definitions/visibilityOptions",
+          "description": "Method visibilities to include"
+        },
+        "property_visibility": {
+          "$ref": "#/definitions/visibilityOptions",
+          "description": "Property visibilities to include"
+        },
+        "constant_visibility": {
+          "$ref": "#/definitions/visibilityOptions",
+          "description": "Constant visibilities to include"
+        },
+        "keep_method_bodies": {
+          "type": "boolean",
+          "description": "Whether to keep method bodies or replace with placeholders"
+        },
+        "method_body_placeholder": {
+          "type": "string",
+          "description": "Placeholder for method bodies when keep_method_bodies is false"
+        },
+        "keep_doc_comments": {
+          "type": "boolean",
+          "description": "Whether to keep doc comments"
+        },
+        "keep_attributes": {
+          "type": "boolean",
+          "description": "Whether to keep PHP 8+ attributes"
+        },
+        "include_methods_pattern": {
+          "type": "string",
+          "description": "Regex pattern for methods to include"
+        },
+        "exclude_methods_pattern": {
+          "type": "string",
+          "description": "Regex pattern for methods to exclude"
+        },
+        "include_properties_pattern": {
+          "type": "string",
+          "description": "Regex pattern for properties to include"
+        },
+        "exclude_properties_pattern": {
+          "type": "string",
+          "description": "Regex pattern for properties to exclude"
+        }
+      }
+    },
+    "visibilityOptions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "public",
+          "protected",
+          "private"
+        ]
       }
     }
   }

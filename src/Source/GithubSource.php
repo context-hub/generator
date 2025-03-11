@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Source;
 
 use Butschster\ContextGenerator\Fetcher\FilterableSourceInterface;
+use Butschster\ContextGenerator\Modifier\Modifier;
 
 /**
  * Source for GitHub repositories
@@ -19,7 +20,7 @@ final class GithubSource extends BaseSource implements FilterableSourceInterface
      * @param array<string> $excludePatterns Patterns to exclude files
      * @param bool $showTreeView Whether to show directory tree
      * @param string|null $githubToken GitHub API token for private repositories
-     * @param array<string> $modifiers Identifiers for content modifiers to apply
+     * @param array<Modifier> $modifiers Identifiers for content modifiers to apply
      */
     public function __construct(
         public readonly string $repository,
