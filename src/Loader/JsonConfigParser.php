@@ -6,6 +6,7 @@ namespace Butschster\ContextGenerator\Loader;
 
 use Butschster\ContextGenerator\Document;
 use Butschster\ContextGenerator\DocumentRegistry;
+use Butschster\ContextGenerator\Modifier\Modifier;
 use Butschster\ContextGenerator\Source\FileSource;
 use Butschster\ContextGenerator\Source\GithubSource;
 use Butschster\ContextGenerator\Source\CommitDiffSource;
@@ -81,7 +82,7 @@ final readonly class JsonConfigParser
      * Parse modifiers configuration
      *
      * @param array<mixed> $modifiersConfig
-     * @return array<string|array{name: string, options: array<string, mixed>}>
+     * @return array<Modifier>
      */
     private function parseModifiers(array $modifiersConfig): array
     {
@@ -89,12 +90,9 @@ final readonly class JsonConfigParser
 
         foreach ($modifiersConfig as $modifier) {
             if (\is_string($modifier)) {
-                $result[] = $modifier;
+                $result[] = new Modifier(name: $modifier);
             } elseif (\is_array($modifier) && isset($modifier['name'])) {
-                $result[] = [
-                    'name' => $modifier['name'],
-                    'options' => $modifier['options'] ?? [],
-                ];
+                $result[] = Modifier::from($modifier);
             } else {
                 throw new \InvalidArgumentException(
                     \sprintf('Invalid modifier format: %s', \json_encode($modifier)),

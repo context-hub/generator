@@ -11,8 +11,6 @@
 Context Generator is a tool designed to solve a common problem when working with LLMs like ChatGPT,
 Claude: providing sufficient context about your codebase.
 
-### How it works
-
 It automates the process of building context files from various sources:
 
 - code files,
@@ -21,14 +19,16 @@ It automates the process of building context files from various sources:
 - Web pages (URLs) with CSS selectors,
 - and plain text.
 
+It was created to solve a common problem: efficiently providing AI language models like ChatGPT, Claude with necessary
+context about your codebase.
+
+### How it works
+
 1. Gathers code from files, directories, GitHub repositories, web pages, or custom text.
 2. Targets specific files through pattern matching, content search, size, or date filters
 3. Applies optional modifiers (like extracting PHP signatures without implementation details)
 4. Organizes content into well-structured markdown documents
 5. Saves context files ready to be shared with LLMs
-
-It was created to solve a common problem: efficiently providing AI language models like ChatGPT, Claude with necessary
-context about your codebase.
 
 ## Why You Need This
 
@@ -104,16 +104,20 @@ mv context-generator.phar /usr/local/bin/context-generator
 
 Configuration is built around three core concepts:
 
-- **Document** - is the primary output unit that generator produces. It represents a complete, formatted context
-  file that you'll share with an LLM.
-- **Source** - represents where content is collected from. Sources are the building blocks of documents, and each source
-  provides specific content to be included in the final output.
-- **modifiers** - transform source content before it's included in the final document. They provide a way to
-  clean up, simplify, or enhance raw content to make it more useful for LLM contexts.
+- **Document**: The primary output unit produced by the generator - a complete, formatted context file to share with
+  LLMs
+- **Source**: Where content is collected from - files, GitHub, URLs, text, or git diffs
+- **Modifiers**: Transform source content before inclusion - clean up, simplify, or enhance raw content
 
-Understanding each component helps you create effective configurations.
+### JSON Configuration
 
 Create a `context.json` file in your project root:
+
+> **Note:** We
+>
+provide [json-schema.json](https://raw.githubusercontent.com/butschster/context-generator/refs/heads/main/json-schema.json)
+> for JSON configuration validation. You can use it to validate your JSON configuration file or for autocompletion in
+> your IDE.
 
 ```json
 {
@@ -121,7 +125,13 @@ Create a `context.json` file in your project root:
     {
       "description": "API Documentation",
       "outputPath": "docs/api.md",
+      "overwrite": true,
       "sources": [
+        {
+          "type": "text",
+          "description": "API Documentation Header",
+          "content": "# API Documentation\n\nThis document contains the API source code."
+        },
         {
           "type": "file",
           "description": "API Source Files",
@@ -130,80 +140,13 @@ Create a `context.json` file in your project root:
           ],
           "filePattern": [
             "*.php",
-            "*.md",
             "*.json"
           ],
           "excludePatterns": [
             "tests",
             "vendor"
           ],
-          "showTreeView": true,
-          "modifiers": [
-            "php-signature"
-          ]
-        },
-        {
-          "type": "text",
-          "description": "API Documentation Header",
-          "content": "# API Documentation\n\nThis document contains the API source code."
-        }
-      ]
-    },
-    {
-      "description": "Website Content",
-      "outputPath": "docs/website.md",
-      "sources": [
-        {
-          "type": "url",
-          "description": "Documentation Website",
-          "urls": [
-            "https://example.com/docs"
-          ],
-          "selector": ".main-content"
-        }
-      ]
-    },
-    {
-      "description": "GitHub Repository",
-      "outputPath": "docs/github-repo.md",
-      "sources": [
-        {
-          "type": "github",
-          "description": "Repository Source Files",
-          "repository": "owner/repo",
-          "sourcePaths": [
-            "src"
-          ],
-          "branch": "main",
-          "filePattern": "*.php",
-          "excludePatterns": [
-            "tests",
-            "vendor"
-          ],
-          "showTreeView": true,
-          "githubToken": "${GITHUB_TOKEN}",
-          "modifiers": [
-            "php-signature"
-          ]
-        }
-      ]
-    },
-    {
-      "description": "Recent Git Changes",
-      "outputPath": "docs/recent-changes.md",
-      "sources": [
-        {
-          "type": "text",
-          "description": "Documentation Header",
-          "content": "# Recent Git Changes\nThis document contains recent changes from the git repository."
-        },
-        {
-          "type": "git_diff",
-          "description": "Recent Commits (Last 1)",
-          "repository": ".",
-          "commit": "last",
-          "filePattern": "*.php",
-          "showStats": true
+          "showTreeView": true
         }
       ]
     }
@@ -211,11 +154,16 @@ Create a `context.json` file in your project root:
 }
 ```
 
-> **Note:** We
->
-provide [json-schema.json](https://raw.githubusercontent.com/butschster/context-generator/refs/heads/main/json-schema.json)
-> for JSON configuration validation. You can use it to validate your JSON configuration file or for autocompletion in
-> your IDE.
+As you can see it's pretty simple.
+
+## Document Properties
+
+| Property      | Type    | Default  | Description                                |
+|---------------|---------|----------|--------------------------------------------|
+| `description` | string  | required | Human-readable description of the document |
+| `outputPath`  | string  | required | Path where the document will be saved      |
+| `overwrite`   | boolean | `true`   | Whether to overwrite existing files        |
+| `sources`     | array   | required | List of content sources for this document  |
 
 ## Source Types
 
@@ -245,13 +193,23 @@ analyzing your codebase.
 }
 ```
 
-In this example:
+#### Parameters
 
-- `sourcePaths`: Specifies the directories to scan (can be a single path or an array)
-- `filePattern`: Defines which files to include (wildcards supported)
-- `notPath`: Specifies directories or patterns to exclude
-- `showTreeView`: When true, displays a directory tree visualization
-- `modifiers`: Applies transformations to the content (e.g., stripping implementation details)
+| Parameter                        | Type          | Default  | Description                                                              |
+|----------------------------------|---------------|----------|--------------------------------------------------------------------------|
+| `type`                           | string        | required | Must be `"file"`                                                         |
+| `description`                    | string        | `""`     | Human-readable description of the source                                 |
+| `sourcePaths`                    | string\|array | required | Path(s) to directory or files to include                                 |
+| `filePattern`                    | string\|array | `"*.*"`  | File pattern(s) to match                                                 |
+| `notPath` (or `excludePatterns`) | array         | `[]`     | Patterns to exclude files                                                |
+| `path`                           | string\|array | `[]`     | Patterns to include only files in specific paths                         |
+| `contains`                       | string\|array | `[]`     | Patterns to include only files containing specific content               |
+| `notContains`                    | string\|array | `[]`     | Patterns to exclude files containing specific content                    |
+| `size`                           | string\|array | `[]`     | Size constraints for files (e.g., `"> 10K"`, `"< 1M"`)                   |
+| `date`                           | string\|array | `[]`     | Date constraints for files (e.g., `"since yesterday"`, `"> 2023-01-01"`) |
+| `ignoreUnreadableDirs`           | boolean       | `false`  | Whether to ignore unreadable directories                                 |
+| `showTreeView`                   | boolean       | `true`   | Whether to display a directory tree visualization                        |
+| `modifiers`                      | array         | `[]`     | Content modifiers to apply                                               |
 
 #### Multiple Source Paths
 
@@ -514,6 +472,21 @@ Pull files directly from a GitHub repository:
 }
 ```
 
+#### Parameters
+
+| Parameter         | Type          | Default  | Description                                                                         |
+|-------------------|---------------|----------|-------------------------------------------------------------------------------------|
+| `type`            | string        | required | Must be `"github"`                                                                  |
+| `description`     | string        | `""`     | Human-readable description of the source                                            |
+| `repository`      | string        | required | GitHub repository in format `"owner/repo"`                                          |
+| `sourcePaths`     | string\|array | required | Path(s) within the repository to include                                            |
+| `branch`          | string        | `"main"` | Branch or tag to fetch from                                                         |
+| `filePattern`     | string\|array | `"*.*"`  | File pattern(s) to match                                                            |
+| `excludePatterns` | array         | `[]`     | Patterns to exclude files                                                           |
+| `showTreeView`    | boolean       | `true`   | Whether to display a directory tree visualization                                   |
+| `githubToken`     | string        | `null`   | GitHub API token for private repositories (can use env var pattern `${TOKEN_NAME}`) |
+| `modifiers`       | array         | `[]`     | Content modifiers to apply                                                          |
+
 ### Git Diff Source
 
 The source allows you to include changes from Git commits, providing a streamlined way to show recent code changes:
@@ -535,42 +508,69 @@ The source allows you to include changes from Git commits, providing a streamlin
 }
 ```
 
+#### Parameters
+
+| Parameter     | Type          | Default    | Description                                                |
+|---------------|---------------|------------|------------------------------------------------------------|
+| `type`        | string        | required   | Must be `"git_diff"`                                       |
+| `description` | string        | `""`       | Human-readable description of the source                   |
+| `repository`  | string        | `"."`      | Path to the git repository                                 |
+| `commit`      | string        | `"staged"` | Git commit range or preset                                 |
+| `filePattern` | string\|array | `"*.*"`    | File pattern(s) to match                                   |
+| `notPath`     | array         | `[]`       | Patterns to exclude files                                  |
+| `path`        | string\|array | `[]`       | Patterns to include only files in specific paths           |
+| `contains`    | string\|array | `[]`       | Patterns to include only files containing specific content |
+| `notContains` | string\|array | `[]`       | Patterns to exclude files containing specific content      |
+| `showStats`   | boolean       | `true`     | Whether to show commit stats in output                     |
+| `modifiers`   | array         | `[]`       | Content modifiers to apply                                 |
+|               |               |            |                                                            |
+
 #### Commit Range Presets
 
-The Git diff source supports many convenient presets for `commit` parameter:
-
+Supports many convenient presets for `commit` parameter:
 
 ```json
 {
   "type": "git_diff",
-  "repository": ".",
-  "commit": "last-week", 
+  "commit": "last-week",
   "filePattern": "*.php"
 }
 ```
 
-Available presets include:
-
-- **Basic ranges**:
-  - `last`: Last commit (HEAD~1..HEAD)
-  - `last-2`, `last-3`, `last-5`, `last-10`: Last N commits
-  - `staged`: Changes staged but not committed
-  - `unstaged`: Changes not yet staged
-
-- **Time-based ranges**:
-  - `today`: Changes from today
-  - `last-24h`: Changes in the last 24 hours
-  - `yesterday`: Changes from yesterday
-  - `last-week`: Changes in the last week
-  - `last-2weeks`: Changes in the last two weeks
-  - `last-month`: Changes in the last month
-  - `last-quarter`: Changes in the last three months
-  - `last-year`: Changes in the last year
-
-- **Branch comparisons**:
-  - `main-diff`: Differences between main and current branch
-  - `master-diff`: Differences between master and current branch
-  - `develop-diff`: Differences between develop and current branch
+| Preset                | Description                          | Git Command Equivalent                 |     |
+|-----------------------|--------------------------------------|----------------------------------------|-----|
+| `"last"`              | Last commit                          | `HEAD~1..HEAD`                         |     |
+| `"last-2"`            | Last 2 commits                       | `HEAD~2..HEAD`                         |     |
+| `"last-3"`            | Last 3 commits                       | `HEAD~3..HEAD`                         |     |
+| `"last-5"`            | Last 5 commits                       | `HEAD~5..HEAD`                         |     |
+| `"last-10"`           | Last 10 commits                      | `HEAD~10..HEAD`                        |     |
+| `"today"`             | Changes from today                   | `HEAD@{0:00:00}..HEAD`                 |     |
+| `"last-24h"`          | Changes in last 24 hours             | `HEAD@{24.hours.ago}..HEAD`            |     |
+| `"yesterday"`         | Changes from yesterday               | `HEAD@{1.days.ago}..HEAD@{0.days.ago}` |     |
+| `"last-week"`         | Changes from last week               | `HEAD@{1.week.ago}..HEAD`              |     |
+| `"last-2weeks"`       | Changes from last 2 weeks            | `HEAD@{2.weeks.ago}..HEAD`             |     |
+| `"last-month"`        | Changes from last month              | `HEAD@{1.month.ago}..HEAD`             |     |
+| `"last-quarter"`      | Changes from last quarter            | `HEAD@{3.months.ago}..HEAD`            |     |
+| `"last-year"`         | Changes from last year               | `HEAD@{1.year.ago}..HEAD`              |     |
+| `"unstaged"`          | Unstaged changes                     | `` (empty string)                      |     |
+| `"staged"`            | Staged changes                       | `--cached`                             |     |
+| `"wip"`               | Work in progress (last commit)       | `HEAD~1..HEAD`                         |     |
+| `"main-diff"`         | Changes since diverging from main    | `main..HEAD`                           |     |
+| `"master-diff"`       | Changes since diverging from master  | `master..HEAD`                         |     |
+| `"develop-diff"`      | Changes since diverging from develop | `develop..HEAD`                        |     |
+| `"stash"`             | Latest stash                         | `stash@{0}`                            |     |
+| `"stash-last"`        | Latest stash                         | `stash@{0}`                            |     |
+| `"stash-1"`           | Second most recent stash             | `stash@{1}`                            |     |
+| `"stash-2"`           | Third most recent stash              | `stash@{2}`                            |     |
+| `"stash-3"`           | Fourth most recent stash             | `stash@{3}`                            |     |
+| `"stash-all"`         | All stashes                          | `stash@{0}..stash@{100}`               |     |
+| `"stash-latest-2"`    | Latest 2 stashes                     | `stash@{0}..stash@{1}`                 |     |
+| `"stash-latest-3"`    | Latest 3 stashes                     | `stash@{0}..stash@{2}`                 |     |
+| `"stash-latest-5"`    | Latest 5 stashes                     | `stash@{0}..stash@{4}`                 |     |
+| `"stash-before-pull"` | Stash with "before pull" in message  | `stash@{/before pull}`                 |     |
+| `"stash-wip"`         | Stash with "WIP" in message          | `stash@{/WIP}`                         |     |
+| `"stash-untracked"`   | Stash with "untracked" in message    | `stash@{/untracked}`                   |     |
+| `"stash-index"`       | Stash with "index" in message        | `stash@{/index}`                       |     |
 
 #### Advanced Commit Specifications
 
@@ -623,7 +623,7 @@ You can use more specific Git expressions:
 
 ### URL Source
 
-Fetch content from websites:
+Fetch content from websites with optional CSS selector support.
 
 ```json
 {
@@ -636,9 +636,18 @@ Fetch content from websites:
 }
 ```
 
+#### Parameters
+
+| Parameter     | Type   | Default  | Description                                                   |
+|---------------|--------|----------|---------------------------------------------------------------|
+| `type`        | string | required | Must be `"url"`                                               |
+| `description` | string | `""`     | Human-readable description of the source                      |
+| `urls`        | array  | required | URLs to fetch content from                                    |
+| `selector`    | string | `null`   | CSS selector to extract specific content (null for full page) |
+
 ### Text Source
 
-Include custom text content:
+Include custom text content like headers, notes, or instructions.
 
 ```json
 {
@@ -648,19 +657,159 @@ Include custom text content:
 }
 ```
 
-## Running Context Generator
+#### Parameters
 
-Once your configuration is in place, run:
+| Parameter     | Type   | Default  | Description                              |
+|---------------|--------|----------|------------------------------------------|
+| `type`        | string | required | Must be `"text"`                         |
+| `description` | string | `""`     | Human-readable description of the source |
+| `content`     | string | required | Text content to include                  |
 
-```bash
-context-generator generate
+## Modifiers
+
+Modifiers transform source content before it's included in the final document. They provide a way to clean up, simplify,
+or enhance raw content to make it more useful for LLM contexts.
+
+### PHP Signature Modifier
+
+Extracts PHP class signatures without implementation details.
+
+**Identifier**: `"php-signature"`
+
+```json
+{
+  "documents": [
+    {
+      "description": "API Documentation",
+      "outputPath": "docs/api.md",
+      "sources": [
+        {
+          "type": "file",
+          "description": "API Source Files",
+          "sourcePaths": [
+            "src/Api"
+          ],
+          "filePattern": "*.php",
+          "modifiers": [
+            "php-signature"
+          ]
+        }
+      ]
+    }
+  ]
+}
 ```
 
-This will process your configuration and generate the specified documents.
+This modifier transforms:
+
+```php
+class Example 
+{
+    private $property;
+    
+    public function doSomething($param)
+    {
+        // Implementation...
+        return $result;
+    }
+    
+    private function helperMethod()
+    {
+        // Implementation...
+    }
+}
+```
+
+Into:
+
+```php
+class Example 
+{
+    public function doSomething($param) 
+    {
+        /* ... */
+    }
+}
+```
+
+### PHP Content Filter Modifier
+
+The modifier allows you to selectively include or exclude PHP class elements such as methods, properties, constants, and
+annotations based on configurable criteria.
+
+> Please note that this modifier is specifically designed for PHP files and will not work with other file types.
+
+#### Features
+
+- Filter methods, properties, and constants by name or pattern
+- Include or exclude elements based on visibility (public, protected, private)
+- Control whether method bodies are kept or replaced with placeholders
+- Optionally keep or remove documentation comments
+- Optionally keep or remove PHP 8 attributes
+- Filter elements using regular expression patterns
+
+#### JSON Configuration
+
+```json
+{
+  "documents": [
+    {
+      "description": "API Documentation",
+      "outputPath": "docs/api.md",
+      "sources": [
+        {
+          "type": "file",
+          "description": "API Source Files",
+          "sourcePaths": [
+            "src/Api"
+          ],
+          "filePattern": "*.php",
+          "modifiers": [
+            {
+              "name": "php-content-filter",
+              "options": {
+                "method_visibility": [
+                  "public"
+                ],
+                "exclude_methods": [
+                  "__construct"
+                ],
+                "keep_method_bodies": false
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+#### Options
+
+| Option                       | Type    | Default                              | Description                                                                     |
+|------------------------------|---------|--------------------------------------|---------------------------------------------------------------------------------|
+| `include_methods`            | array   | `[]`                                 | Method names to include (empty means include all unless exclude_methods is set) |
+| `exclude_methods`            | array   | `[]`                                 | Method names to exclude                                                         |
+| `include_properties`         | array   | `[]`                                 | Property names to include                                                       |
+| `exclude_properties`         | array   | `[]`                                 | Property names to exclude                                                       |
+| `include_constants`          | array   | `[]`                                 | Constant names to include                                                       |
+| `exclude_constants`          | array   | `[]`                                 | Constant names to exclude                                                       |
+| `method_visibility`          | array   | `["public", "protected", "private"]` | Method visibilities to include                                                  |
+| `property_visibility`        | array   | `["public", "protected", "private"]` | Property visibilities to include                                                |
+| `constant_visibility`        | array   | `["public", "protected", "private"]` | Constant visibilities to include                                                |
+| `keep_method_bodies`         | boolean | `false`                              | Whether to keep method bodies or replace with placeholders                      |
+| `method_body_placeholder`    | string  | `"/* ... */"`                        | Placeholder for method bodies when keep_method_bodies is false                  |
+| `keep_doc_comments`          | boolean | `true`                               | Whether to keep doc comments                                                    |
+| `keep_attributes`            | boolean | `true`                               | Whether to keep PHP 8+ attributes                                               |
+| `include_methods_pattern`    | string  | `null`                               | Regular expression pattern for methods to include                               |
+| `exclude_methods_pattern`    | string  | `null`                               | Regular expression pattern for methods to exclude                               |
+| `include_properties_pattern` | string  | `null`                               | Regular expression pattern for properties to include                            |
+| `exclude_properties_pattern` | string  | `null`                               | Regular expression pattern for properties to exclude                            |
 
 ## Environment Variables
 
-You can use environment variables in your configuration using the `${VARIABLE_NAME}` syntax. For example:
+You can use environment variables in your configuration using the `${VARIABLE_NAME}` syntax:
 
 ```json
 {
@@ -672,7 +821,76 @@ You can use environment variables in your configuration using the `${VARIABLE_NA
 
 This will use the value of the `GITHUB_TOKEN` environment variable.
 
-For PHP Developers - Integration Guide
+
+## Complete Example
+
+A comprehensive configuration example with multiple document types and sources:
+
+```json
+{
+  "documents": [
+    {
+      "description": "API Documentation",
+      "outputPath": "docs/api.md",
+      "sources": [
+        {
+          "type": "text",
+          "description": "Header",
+          "content": "# API Documentation\n\nThis document provides an overview of the API."
+        },
+        {
+          "type": "file",
+          "description": "API Controllers",
+          "sourcePaths": ["src/Controller"],
+          "filePattern": "*.php",
+          "contains": "Controller",
+          "notContains": "@deprecated",
+          "showTreeView": true,
+          "modifiers": ["php-signature"]
+        },
+        {
+          "type": "github",
+          "description": "API Client Library",
+          "repository": "owner/api-client",
+          "sourcePaths": ["src"],
+          "branch": "main",
+          "filePattern": "*.php",
+          "githubToken": "${GITHUB_TOKEN}"
+        }
+      ]
+    },
+    {
+      "description": "Recent Changes",
+      "outputPath": "docs/recent-changes.md",
+      "sources": [
+        {
+          "type": "git_diff",
+          "description": "Changes from last week",
+          "repository": ".",
+          "commit": "last-week",
+          "filePattern": ["*.php", "*.md"],
+          "notPath": ["vendor"]
+        }
+      ]
+    },
+    {
+      "description": "Documentation",
+      "outputPath": "docs/docs.md",
+      "sources": [
+        {
+          "type": "url",
+          "description": "Documentation Website",
+          "urls": ["https://example.com/docs"],
+          "selector": ".main-content"
+        }
+      ]
+    }
+  ]
+}
+```
+
+
+# For PHP Developers - Integration Guide
 
 This section is for PHP developers who want to integrate Context Generator into their applications or extend its
 functionality.
@@ -769,7 +987,8 @@ new GithubSource(
 
 ### CommitDiffSource
 
-The `Butschster\ContextGenerator\Source\CommitDiffSource` allows you to include git diff content from commits or staged changes:
+The `Butschster\ContextGenerator\Source\CommitDiffSource` allows you to include git diff content from commits or staged
+changes:
 
 ```php
 use Butschster\ContextGenerator\Source\CommitDiffSource;

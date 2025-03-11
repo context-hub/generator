@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Source;
 
 use Butschster\ContextGenerator\Fetcher\FilterableSourceInterface;
+use Butschster\ContextGenerator\Modifier\Modifier;
 
 /**
  * Source for git commit diffs with simplified commit range support
@@ -21,7 +22,7 @@ class CommitDiffSource extends BaseSource implements FilterableSourceInterface, 
      * @param string|array<string> $contains Patterns to include files containing specific content
      * @param string|array<string> $notContains Patterns to exclude files containing specific content
      * @param bool $showStats Whether to show commit stats in output
-     * @param array<string> $modifiers Identifiers for content modifiers to apply
+     * @param array<Modifier> $modifiers Identifiers for content modifiers to apply
      */
     public function __construct(
         public readonly string $repository = '.',

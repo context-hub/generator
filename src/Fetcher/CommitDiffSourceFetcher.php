@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Fetcher;
 
 use Butschster\ContextGenerator\Fetcher\Git\CommitDiffFinder;
+use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
 use Butschster\ContextGenerator\Source\CommitDiffSource;
-use Butschster\ContextGenerator\Source\SourceModifierRegistry;
 use Butschster\ContextGenerator\SourceInterface;
 use Symfony\Component\Finder\SplFileInfo;
 

@@ -66,14 +66,7 @@
       "outputPath": "api.md",
       "sources": [
         {
-          "type": "file",
-          "sourcePaths": [
-            "src"
-          ],
-          "filePattern": "*.php",
-          "modifiers": [
-            "php-signature"
-          ]
+          "type": ""
         }
       ]
     }
