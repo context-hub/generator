@@ -9,100 +9,100 @@ use PHPUnit\Framework\TestCase;
 
 class PhpContentFilterTest extends TestCase
 {
-    private const SAMPLE_CLASS = <<<'PHP'
-                      <?php
-                      namespace App\Example;
-                      
-                      use App\SomeClass;
-                      use App\OtherClass;
-                      
-                      /**
-                       * Sample class for testing the PHP content filter
-                       */
-                      #[SomeAttribute]
-                      class SampleClass
-                      {
-                          public const PUBLIC_CONST = 'public';
-                          protected const PROTECTED_CONST = 'protected';
-                          private const PRIVATE_CONST = 'private';
-                      
-                          /**
-                           * @var string
-                           */
-                          #[Property]
-                          public string $publicProperty = 'public';
-                      
-                          /**
-                           * @var string
-                           */
-                          protected string $protectedProperty = 'protected';
-                      
-                          /**
-                           * @var string
-                           */
-                          private string $privateProperty = 'private';
-                      
-                          /**
-                           * Constructor
-                           */
-                          public function __construct(
-                              public readonly string $name,
-                              protected readonly int $age,
-                              private readonly bool $active,
-                          ) {
-                              // Constructor implementation
-                          }
-                      
-                          /**
-                           * Public method
-                           */
-                          #[Route('/')]
-                          public function publicMethod(string $param): string
-                          {
-                              return "Public method with param: {$param}";
-                          }
-                      
-                          /**
-                           * Protected method
-                           */
-                          protected function protectedMethod(): void
-                          {
-                              // Protected method implementation
-                          }
-                      
-                          /**
-                           * Private method
-                           */
-                          private function privateMethod(): bool
-                          {
-                              return true;
-                          }
-                      
-                          /**
-                           * Getter method
-                           */
-                          public function getName(): string
-                          {
-                              return $this->name;
-                          }
-                      
-                          /**
-                           * Getter method
-                           */
-                          public function getAge(): int
-                          {
-                              return $this->age;
-                          }
-                      
-                          /**
-                           * Getter method
-                           */
-                          public function isActive(): bool
-                          {
-                              return $this->active;
-                          }
-                      }
-                      PHP;
+    private const SAMPLE_CLASS = <<<'PHP_WRAP'
+    <?php
+    namespace App\Example;
+    
+    use App\SomeClass;
+    use App\OtherClass;
+    
+    /**
+     * Sample class for testing the PHP content filter
+     */
+    #[SomeAttribute]
+    class SampleClass
+    {
+        public const PUBLIC_CONST = 'public';
+        protected const PROTECTED_CONST = 'protected';
+        private const PRIVATE_CONST = 'private';
+    
+        /**
+         * @var string
+         */
+        #[Property]
+        public string $publicProperty = 'public';
+    
+        /**
+         * @var string
+         */
+        protected string $protectedProperty = 'protected';
+    
+        /**
+         * @var string
+         */
+        private string $privateProperty = 'private';
+    
+        /**
+         * Constructor
+         */
+        public function __construct(
+            public readonly string $name,
+            protected readonly int $age,
+            private readonly bool $active,
+        ) {
+            // Constructor implementation
+        }
+    
+        /**
+         * Public method
+         */
+        #[Route('/')]
+        public function publicMethod(string $param): string
+        {
+            return "Public method with param: {$param}";
+        }
+    
+        /**
+         * Protected method
+         */
+        protected function protectedMethod(): void
+        {
+            // Protected method implementation
+        }
+    
+        /**
+         * Private method
+         */
+        private function privateMethod(): bool
+        {
+            return true;
+        }
+    
+        /**
+         * Getter method
+         */
+        public function getName(): string
+        {
+            return $this->name;
+        }
+    
+        /**
+         * Getter method
+         */
+        public function getAge(): int
+        {
+            return $this->age;
+        }
+    
+        /**
+         * Getter method
+         */
+        public function isActive(): bool
+        {
+            return $this->active;
+        }
+    }
+    PHP_WRAP;
 
     public function testKeepOnlyPublicMethods(): void
     {
