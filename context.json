@@ -60,15 +60,6 @@
           "filePattern": "*.php"
         }
       ]
-    },
-    {
-      "description": "Context generator API.",
-      "outputPath": "api.md",
-      "sources": [
-        {
-          "type": ""
-        }
-      ]
     }
   ]
 }
