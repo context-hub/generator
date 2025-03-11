@@ -55,7 +55,10 @@
     "refactor": "rector process --config=rector.php",
     "refactor:ci": "rector process --config=rector.php --dry-run --ansi",
     "test": "vendor/bin/phpunit",
-    "test-coverage": "vendor/bin/phpunit --coverage"
+    "test:cc": [
+      "@putenv XDEBUG_MODE=coverage",
+      "phpunit --coverage-clover=.build/phpunit/logs/clover.xml --color=always"
+    ]
   },
   "minimum-stability": "dev",
   "prefer-stable": true
