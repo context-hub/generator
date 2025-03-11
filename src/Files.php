@@ -34,16 +34,6 @@ final readonly class Files implements FilesInterface
         return true;
     }
 
-    private function setPermissions(string $filename, int $mode): bool
-    {
-        if (\is_dir($filename)) {
-            //Directories must always be executable (i.e. 664 for dir => 775)
-            $mode |= 0111;
-        }
-
-        return \chmod($filename, $mode);
-    }
-
     public function write(string $filename, string $content): void
     {
         \file_put_contents($filename, $content, LOCK_EX);
@@ -61,5 +51,15 @@ final readonly class Files implements FilesInterface
     public function exists(string $filename): bool
     {
         return \file_exists($filename);
+    }
+
+    private function setPermissions(string $filename, int $mode): bool
+    {
+        if (\is_dir($filename)) {
+            //Directories must always be executable (i.e. 664 for dir => 775)
+            $mode |= 0111;
+        }
+
+        return \chmod($filename, $mode);
     }
 }

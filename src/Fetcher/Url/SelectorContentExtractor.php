@@ -19,9 +19,9 @@ class SelectorContentExtractor implements SelectorContentExtractorInterface
         }
 
         $dom = new \DOMDocument();
-        libxml_use_internal_errors(true);
+        \libxml_use_internal_errors(true);
         $dom->loadHTML($html, LIBXML_NOWARNING | LIBXML_NOERROR);
-        libxml_clear_errors();
+        \libxml_clear_errors();
 
         $xpath = new \DOMXPath($dom);
 
@@ -49,12 +49,12 @@ class SelectorContentExtractor implements SelectorContentExtractorInterface
     {
         // Handle ID selector (#id)
         if (\str_starts_with($selector, '#')) {
-            return "//*[@id='" . substr($selector, 1) . "']";
+            return "//*[@id='" . \substr($selector, 1) . "']";
         }
 
         // Handle class selector (.class)
         if (\str_starts_with($selector, '.')) {
-            return "//*[contains(@class, '" . substr($selector, 1) . "')]";
+            return "//*[contains(@class, '" . \substr($selector, 1) . "')]";
         }
 
         // Handle element selector (div, p, etc.)

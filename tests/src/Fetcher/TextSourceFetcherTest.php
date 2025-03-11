@@ -14,11 +14,6 @@ class TextSourceFetcherTest extends TestCase
 {
     private TextSourceFetcher $fetcher;
 
-    protected function setUp(): void
-    {
-        $this->fetcher = new TextSourceFetcher();
-    }
-
     #[Test]
     public function it_should_support_text_source(): void
     {
@@ -56,5 +51,10 @@ class TextSourceFetcherTest extends TestCase
         $this->expectExceptionMessage('Source must be an instance of TextSource');
 
         $this->fetcher->fetch($source);
+    }
+
+    protected function setUp(): void
+    {
+        $this->fetcher = new TextSourceFetcher();
     }
 }

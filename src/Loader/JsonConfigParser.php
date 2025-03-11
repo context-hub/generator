@@ -27,7 +27,7 @@ final readonly class JsonConfigParser
         foreach ($config['documents'] as $index => $docData) {
             if (!isset($docData['description'], $docData['outputPath'])) {
                 throw new \RuntimeException(
-                    sprintf('Document at index %d must have "description" and "outputPath"', $index),
+                    \sprintf('Document at index %d must have "description" and "outputPath"', $index),
                 );
             }
 
@@ -40,9 +40,7 @@ final readonly class JsonConfigParser
             if (isset($docData['sources']) && \is_array($docData['sources'])) {
                 foreach ($docData['sources'] as $sourceIndex => $sourceData) {
                     $source = $this->createSource($sourceData, "$index.$sourceIndex");
-                    if ($source !== null) {
-                        $document->addSource($source);
-                    }
+                    $document->addSource($source);
                 }
             }
 
@@ -54,8 +52,10 @@ final readonly class JsonConfigParser
 
     /**
      * Create a Source object from its configuration.
+     *
+     * @return FileSource|GithubSource|TextSource|UrlSource
      */
-    private function createSource(array $sourceData, string $path): ?object
+    private function createSource(array $sourceData, string $path): FileSource|UrlSource|TextSource|GithubSource
     {
         if (!isset($sourceData['type'])) {
             throw new \RuntimeException(
@@ -94,7 +94,7 @@ final readonly class JsonConfigParser
                 ];
             } else {
                 throw new \InvalidArgumentException(
-                    sprintf('Invalid modifier format: %s', json_encode($modifier)),
+                    \sprintf('Invalid modifier format: %s', \json_encode($modifier)),
                 );
             }
         }
@@ -134,7 +134,7 @@ final readonly class JsonConfigParser
             $envName = $matches[1];
 
             // Get the value from environment
-            $envValue = getenv($envName);
+            $envValue = \getenv($envName);
 
             // Return the environment variable value or null if not set
             return $envValue !== false ? $envValue : null;
@@ -184,5 +184,3 @@ final readonly class JsonConfigParser
         return TextSource::fromArray($data);
     }
 }
-
-

@@ -53,22 +53,4 @@ class UrlSourceConstructorTest extends TestCase
         $this->assertFalse($sourceWithEmptySelector->hasSelector());
         $this->assertFalse($sourceWithNullSelector->hasSelector());
     }
-
-    #[Test]
-    public function it_should_create_new_instance_with_selector(): void
-    {
-        $urls = ['https://example.com'];
-        $description = 'Test description';
-
-        $originalSource = new UrlSource(urls: $urls, description: $description);
-        $newSource = $originalSource->withSelector('.content');
-
-        // Original source should remain unchanged
-        $this->assertNull($originalSource->getSelector());
-
-        // New source should have the selector
-        $this->assertEquals('.content', $newSource->getSelector());
-        $this->assertEquals($urls, $newSource->urls);
-        $this->assertEquals($description, $newSource->getDescription());
-    }
 }

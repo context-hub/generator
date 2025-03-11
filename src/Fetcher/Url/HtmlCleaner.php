@@ -28,5 +28,4 @@ final readonly class HtmlCleaner implements HtmlCleanerInterface
 
         return $this->htmlConverter->convert($html);
     }
-
 }

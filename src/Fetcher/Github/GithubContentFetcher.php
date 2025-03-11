@@ -56,7 +56,7 @@ final readonly class GithubContentFetcher implements GithubContentFetcherInterfa
             return (string) $response->getBody();
         } catch (ClientExceptionInterface $e) {
             throw new \RuntimeException(
-                sprintf('Error fetching file %s: %s', $path, $e->getMessage()),
+                \sprintf('Error fetching file %s: %s', $path, $e->getMessage()),
                 previous: $e,
             );
         }

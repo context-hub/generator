@@ -11,7 +11,7 @@ use Tests\TestCase;
 class FileSourceFromArrayTest extends TestCase
 {
     #[Test]
-    public function it_should_create_from_array_with_minimal_parameters()
+    public function it_should_create_from_array_with_minimal_parameters(): void
     {
         $data = [
             'sourcePaths' => 'path/to/file.php',
@@ -28,7 +28,7 @@ class FileSourceFromArrayTest extends TestCase
     }
 
     #[Test]
-    public function it_should_create_from_array_with_all_parameters()
+    public function it_should_create_from_array_with_all_parameters(): void
     {
         $data = [
             'sourcePaths' => ['path/to/file.php', 'path/to/directory'],
@@ -62,7 +62,7 @@ class FileSourceFromArrayTest extends TestCase
     }
 
     #[Test]
-    public function it_should_support_array_file_pattern()
+    public function it_should_support_array_file_pattern(): void
     {
         $data = [
             'sourcePaths' => 'path/to/file.php',
@@ -75,7 +75,7 @@ class FileSourceFromArrayTest extends TestCase
     }
 
     #[Test]
-    public function it_should_support_excludePatterns_as_alias_for_notPath()
+    public function it_should_support_excludePatterns_as_alias_for_notPath(): void
     {
         $data = [
             'sourcePaths' => 'path/to/file.php',
@@ -88,7 +88,7 @@ class FileSourceFromArrayTest extends TestCase
     }
 
     #[Test]
-    public function it_should_prepend_root_path_to_source_paths()
+    public function it_should_prepend_root_path_to_source_paths(): void
     {
         $data = [
             'sourcePaths' => ['path/to/file.php', 'path/to/directory'],
@@ -105,7 +105,7 @@ class FileSourceFromArrayTest extends TestCase
     }
 
     #[Test]
-    public function it_should_throw_exception_if_sourcePaths_is_missing()
+    public function it_should_throw_exception_if_sourcePaths_is_missing(): void
     {
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('File source must have a "sourcePaths" property');
@@ -114,7 +114,7 @@ class FileSourceFromArrayTest extends TestCase
     }
 
     #[Test]
-    public function it_should_throw_exception_if_sourcePaths_is_not_string_or_array()
+    public function it_should_throw_exception_if_sourcePaths_is_not_string_or_array(): void
     {
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('"sourcePaths" must be a string or array in source');
@@ -123,7 +123,7 @@ class FileSourceFromArrayTest extends TestCase
     }
 
     #[Test]
-    public function it_should_throw_exception_if_filePattern_is_not_string_or_array()
+    public function it_should_throw_exception_if_filePattern_is_not_string_or_array(): void
     {
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('filePattern must be a string or an array of strings');
@@ -135,7 +135,7 @@ class FileSourceFromArrayTest extends TestCase
     }
 
     #[Test]
-    public function it_should_throw_exception_if_filePattern_array_contains_non_strings()
+    public function it_should_throw_exception_if_filePattern_array_contains_non_strings(): void
     {
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('All elements in filePattern must be strings');
@@ -147,7 +147,7 @@ class FileSourceFromArrayTest extends TestCase
     }
 
     #[Test]
-    public function it_should_serialize_to_json()
+    public function it_should_serialize_to_json(): void
     {
         $source = new FileSource(
             sourcePaths: ['path/to/file.php', 'path/to/directory'],
@@ -183,7 +183,7 @@ class FileSourceFromArrayTest extends TestCase
     }
 
     #[Test]
-    public function it_should_omit_empty_values_in_json_serialization()
+    public function it_should_omit_empty_values_in_json_serialization(): void
     {
         $source = new FileSource(
             sourcePaths: 'path/to/file.php',

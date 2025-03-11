@@ -161,7 +161,10 @@ final readonly class GithubFinder implements FinderInterface
      *
      * @param array<string> $files The files to filter
      * @param GithubSource $source The source containing filter criteria
-     * @return array<string> The filtered files
+     *
+     * @return string[] The filtered files
+     *
+     * @psalm-return list<string>
      */
     private function applyFilters(array $files, GithubSource $source): array
     {
@@ -171,11 +174,10 @@ final readonly class GithubFinder implements FinderInterface
         $filePatterns = (array) $source->filePattern;
 
         // Convert excludePatterns to array
-        $excludePatterns = (array) $source->excludePatterns;
+        $excludePatterns = $source->excludePatterns;
 
         foreach ($files as $file) {
             $fileName = \basename($file);
-            $filePath = \dirname($file);
 
             // Check if file matches include patterns
             $includeFile = false;
@@ -219,7 +221,7 @@ final readonly class GithubFinder implements FinderInterface
     private function matchesPattern(string $string, string $pattern): bool
     {
         // Convert glob pattern to regex
-        $regex = '/^' . str_replace(['*', '?'], ['.*', '.'], preg_quote($pattern, '/')) . '$/i';
-        return (bool) preg_match($regex, $string);
+        $regex = '/^' . \str_replace(['*', '?'], ['.*', '.'], \preg_quote($pattern, '/')) . '$/i';
+        return (bool) \preg_match($regex, $string);
     }
 }

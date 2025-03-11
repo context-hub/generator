@@ -1,0 +1,10 @@
+documents:
+  - description: Test Document
+    outputPath: /output/path.md
+    overwrite: true
+    sources:
+      - type: file
+        sourcePaths: [/path/to/source]
+        filePattern: "*.php"
+      - type: url
+        url: https://example.com

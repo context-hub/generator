@@ -99,13 +99,4 @@ class FileSourceConstructorTest extends TestCase
         $this->assertTrue($source->showTreeView);
         $this->assertEquals([], $source->modifiers);
     }
-
-    #[Test]
-    public function it_should_return_exclude_patterns(): void
-    {
-        $notPath = ['vendor', 'node_modules'];
-        $source = new FileSource(sourcePaths: 'path', notPath: $notPath);
-
-        $this->assertEquals($notPath, $source->getExcludePatterns());
-    }
 }

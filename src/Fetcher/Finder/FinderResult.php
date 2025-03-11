@@ -17,20 +17,4 @@ final readonly class FinderResult
         public \Traversable $files,
         public string $treeView,
     ) {}
-
-    /**
-     * Get the files iterator
-     */
-    public function getFiles(): \Traversable
-    {
-        return $this->files;
-    }
-
-    /**
-     * Get the tree view representation
-     */
-    public function getTreeView(): string
-    {
-        return $this->treeView;
-    }
 }

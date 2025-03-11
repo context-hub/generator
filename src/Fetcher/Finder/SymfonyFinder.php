@@ -42,11 +42,11 @@ final readonly class SymfonyFinder implements FinderInterface
         $directories = $source->in();
         $files = $source->files();
 
-        if ($directories !== null && !empty($directories)) {
+        if (!empty($directories)) {
             $finder->in($directories);
         }
 
-        if ($files !== null && !empty($files)) {
+        if (!empty($files)) {
             $finder->append($files);
         }
 
@@ -120,7 +120,6 @@ final readonly class SymfonyFinder implements FinderInterface
         $filePaths = [];
 
         foreach ($finder as $file) {
-            /** @var SplFileInfo $file */
             $filePaths[] = $file->getRealPath();
         }
 

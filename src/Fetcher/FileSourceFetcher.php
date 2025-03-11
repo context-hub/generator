@@ -12,9 +12,9 @@ use Symfony\Component\Finder\SplFileInfo;
 
 /**
  * Enhanced fetcher for file sources with extended Symfony Finder features
- * @implements FileSourceFetcherInterface<FileSource>
+ * @implements SourceFetcherInterface<FileSource>
  */
-readonly class FileSourceFetcher implements FileSourceFetcherInterface
+readonly class FileSourceFetcher implements SourceFetcherInterface
 {
     /**
      * @param string $basePath Base path for relative file references

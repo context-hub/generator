@@ -2,18 +2,10 @@
 
 declare(strict_types=1);
 
-$finder = (new \PhpCsFixer\Finder())
-    ->in([
-        __DIR__ . '/src',
-    ])
-    ->exclude('database/Migration')
-    ->append([
-        __FILE__,
-    ]);
+require_once 'vendor/autoload.php';
 
-$config = (new \PhpCsFixer\Config())
-    ->setFinder($finder);
-
-(new \Internal\CodingStandard\PhpCsFixerCodingStandard())->applyTo($config);
-
-return $config;
+return \Spiral\CodeStyle\Builder::create()
+    ->include(__DIR__ . '/src')
+    ->include(__DIR__ . '/tests')
+    ->include(__DIR__ . '/rector.php')
+    ->build();

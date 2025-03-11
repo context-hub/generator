@@ -22,18 +22,6 @@ class FileSourceFetcherTest extends TestCase
     private FileSourceFetcher $fetcher;
     private FinderInterface $finder;
 
-    protected function setUp(): void
-    {
-        $this->modifiers = new SourceModifierRegistry();
-        $this->finder = $this->createMock(FinderInterface::class);
-
-        $this->fetcher = new FileSourceFetcher(
-            basePath: $this->basePath,
-            modifiers: $this->modifiers,
-            finder: $this->finder,
-        );
-    }
-
     #[Test]
     public function it_should_support_file_source(): void
     {
@@ -198,7 +186,7 @@ class FileSourceFetcherTest extends TestCase
             ->method('modify')
             ->with(
                 '<?php echo "Hello World"; ?>',
-                $this->callback(function ($context) use ($file, $source) {
+                $this->callback(static function ($context) use ($file, $source) {
                     return isset($context['file']) && $context['file'] === $file &&
                         isset($context['source']) && $context['source'] === $source;
                 }),
@@ -215,5 +203,17 @@ class FileSourceFetcherTest extends TestCase
 
         $expected = "```\n// Path: file1.php\n<?php echo \"Modified Hello World\"; ?>\n\n```\n";
         $this->assertEquals($expected, $result);
+    }
+
+    protected function setUp(): void
+    {
+        $this->modifiers = new SourceModifierRegistry();
+        $this->finder = $this->createMock(FinderInterface::class);
+
+        $this->fetcher = new FileSourceFetcher(
+            basePath: $this->basePath,
+            modifiers: $this->modifiers,
+            finder: $this->finder,
+        );
     }
 }

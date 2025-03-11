@@ -17,6 +17,9 @@ final class GetVersion extends Command
         parent::__construct();
     }
 
+    /**
+     * @return int
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $output->writeln('Current version: ' . $this->version);

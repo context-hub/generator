@@ -1,0 +1,14 @@
+{
+  "documents": [
+    {
+      "description": "Test Document",
+      "sources": [
+        {
+          "type": "file",
+          "sourcePaths": ["/path/to/source"],
+          "filePattern": "*.php"
+        }
+      ]
+    }
+  ]
+}

@@ -11,7 +11,6 @@ use Butschster\ContextGenerator\Fetcher\Github\GithubContentFetcher;
 use Butschster\ContextGenerator\Fetcher\GithubSourceFetcher;
 use Butschster\ContextGenerator\Fetcher\SourceFetcherRegistry;
 use Butschster\ContextGenerator\Fetcher\TextSourceFetcher;
-use Butschster\ContextGenerator\Fetcher\Url\HtmlCleaner;
 use Butschster\ContextGenerator\Fetcher\UrlSourceFetcher;
 use Butschster\ContextGenerator\Files;
 use Butschster\ContextGenerator\Loader\CompositeDocumentsLoader;
@@ -43,6 +42,9 @@ final class ContextGenerator extends Command
         parent::__construct();
     }
 
+    /**
+     * @return int
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $files = new Files();
@@ -50,7 +52,7 @@ final class ContextGenerator extends Command
         $modifiers->register(new PhpSignature());
 
         // Create GitHub-related components
-        $githubToken = getenv('GITHUB_TOKEN') ?: null;
+        $githubToken = \getenv('GITHUB_TOKEN') ?: null;
         $githubFinder = new GithubFinder(
             httpClient: $this->httpClient,
             requestFactory: $this->requestFactory,

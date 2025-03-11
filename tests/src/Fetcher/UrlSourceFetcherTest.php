@@ -28,27 +28,6 @@ class UrlSourceFetcherTest extends TestCase
     private HtmlCleanerInterface $cleaner;
     private SelectorContentExtractorInterface $selectorExtractor;
 
-    protected function setUp(): void
-    {
-        $this->httpClient = $this->createMock(ClientInterface::class);
-        $this->requestFactory = $this->createMock(RequestFactoryInterface::class);
-        $this->uriFactory = $this->createMock(UriFactoryInterface::class);
-        $this->cleaner = $this->createMock(HtmlCleanerInterface::class);
-        $this->selectorExtractor = $this->createMock(SelectorContentExtractorInterface::class);
-
-        $this->fetcher = new UrlSourceFetcher(
-            httpClient: $this->httpClient,
-            requestFactory: $this->requestFactory,
-            uriFactory: $this->uriFactory,
-            defaultHeaders: [
-                'User-Agent' => 'Test User Agent',
-                'Accept' => 'text/html',
-            ],
-            cleaner: $this->cleaner,
-            selectorExtractor: $this->selectorExtractor,
-        );
-    }
-
     #[Test]
     public function it_should_support_url_source(): void
     {
@@ -307,7 +286,7 @@ class UrlSourceFetcherTest extends TestCase
             uriFactory: $this->uriFactory,
             defaultHeaders: ['User-Agent' => 'Test User Agent'],
             cleaner: $cleaner,
-            selectorExtractor: $this->selectorExtractor
+            selectorExtractor: $this->selectorExtractor,
         );
 
         $result = $fetcher->fetch($source);
@@ -330,5 +309,26 @@ class UrlSourceFetcherTest extends TestCase
         $source = new UrlSource(urls: ['https://example.com']);
 
         $fetcher->fetch($source);
+    }
+
+    protected function setUp(): void
+    {
+        $this->httpClient = $this->createMock(ClientInterface::class);
+        $this->requestFactory = $this->createMock(RequestFactoryInterface::class);
+        $this->uriFactory = $this->createMock(UriFactoryInterface::class);
+        $this->cleaner = $this->createMock(HtmlCleanerInterface::class);
+        $this->selectorExtractor = $this->createMock(SelectorContentExtractorInterface::class);
+
+        $this->fetcher = new UrlSourceFetcher(
+            httpClient: $this->httpClient,
+            requestFactory: $this->requestFactory,
+            uriFactory: $this->uriFactory,
+            defaultHeaders: [
+                'User-Agent' => 'Test User Agent',
+                'Accept' => 'text/html',
+            ],
+            cleaner: $this->cleaner,
+            selectorExtractor: $this->selectorExtractor,
+        );
     }
 }

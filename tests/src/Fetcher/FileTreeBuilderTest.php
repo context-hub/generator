@@ -12,11 +12,6 @@ class FileTreeBuilderTest extends TestCase
 {
     private FileTreeBuilder $treeBuilder;
 
-    protected function setUp(): void
-    {
-        $this->treeBuilder = new FileTreeBuilder();
-    }
-
     #[Test]
     public function it_should_build_tree_from_list_of_files(): void
     {
@@ -75,5 +70,10 @@ class FileTreeBuilderTest extends TestCase
         $this->assertStringContainsString('file2.php', $result);
         $this->assertStringContainsString('tests', $result);
         $this->assertStringContainsString('file3.php', $result);
+    }
+
+    protected function setUp(): void
+    {
+        $this->treeBuilder = new FileTreeBuilder();
     }
 }

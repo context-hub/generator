@@ -1,0 +1,17 @@
+---
+
+on: # yamllint disable-line rule:truthy
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+name: 🧹 Fix PHP coding standards
+
+jobs:
+  coding-standards:
+    permissions:
+      contents: write
+    uses: spiral/gh-actions/.github/workflows/cs-fix.yml@master

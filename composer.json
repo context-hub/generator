@@ -29,6 +29,7 @@
     "nikic/php-parser": "^v4.0 | ^v5.0"
   },
   "require-dev": {
+    "spiral/code-style": "^2.2.2",
     "phpunit/phpunit": "^10.2",
     "rector/rector": "^2.0",
     "vimeo/psalm": "^5.8"
@@ -50,6 +51,9 @@
     "cs-check": "vendor/bin/php-cs-fixer fix --dry-run",
     "cs-fix": "vendor/bin/php-cs-fixer fix",
     "psalm": "vendor/bin/psalm --config=psalm.xml ./src",
+    "psalm:ci": "psalm --output-format=github --shepherd --show-info=false --stats --threads=4",
+    "refactor": "rector process --config=rector.php",
+    "refactor:ci": "rector process --config=rector.php --dry-run --ansi",
     "test": "vendor/bin/phpunit",
     "test-coverage": "vendor/bin/phpunit --coverage"
   },

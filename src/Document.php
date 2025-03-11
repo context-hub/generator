@@ -10,6 +10,19 @@ final class Document implements \JsonSerializable
     private array $sources = [];
 
     /**
+     * @param string $description Human-readable description
+     * @param string $outputPath Path where to write the output
+     */
+    public function __construct(
+        public readonly string $description,
+        public readonly string $outputPath,
+        public readonly bool $overwrite = true,
+        SourceInterface ...$sources,
+    ) {
+        $this->sources = $sources;
+    }
+
+    /**
      * @param bool $overwrite Whether to overwrite the file if it already exists
      */
     public static function create(
@@ -22,19 +35,6 @@ final class Document implements \JsonSerializable
             outputPath: $outputPath,
             overwrite: $overwrite,
         );
-    }
-
-    /**
-     * @param string $description Human-readable description
-     * @param string $outputPath Path where to write the output
-     */
-    public function __construct(
-        public readonly string $description,
-        public readonly string $outputPath,
-        public readonly bool $overwrite = true,
-        SourceInterface ...$sources,
-    ) {
-        $this->sources = $sources;
     }
 
     /**
@@ -57,6 +57,11 @@ final class Document implements \JsonSerializable
         return $this->sources;
     }
 
+    /**
+     * @return (SourceInterface[]|string|true)[]
+     *
+     * @psalm-return array{description?: string, outputPath?: string, overwrite?: true, sources?: array<SourceInterface>}
+     */
     public function jsonSerialize(): array
     {
         return \array_filter([

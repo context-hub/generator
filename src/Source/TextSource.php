@@ -9,6 +9,17 @@ namespace Butschster\ContextGenerator\Source;
  */
 final class TextSource extends BaseSource
 {
+    /**
+     * @param string $description Human-readable description
+     * @param string $content Text content
+     */
+    public function __construct(
+        public readonly string $content,
+        string $description = '',
+    ) {
+        parent::__construct($description);
+    }
+
     public static function fromArray(array $data): self
     {
         if (!isset($data['content']) || !\is_string($data['content'])) {
@@ -22,16 +33,10 @@ final class TextSource extends BaseSource
     }
 
     /**
-     * @param string $description Human-readable description
-     * @param string $content Text content
+     * @return string[]
+     *
+     * @psalm-return array{type: 'text', description?: string, content?: string}
      */
-    public function __construct(
-        public readonly string $content,
-        string $description = '',
-    ) {
-        parent::__construct($description);
-    }
-
     public function jsonSerialize(): array
     {
         return \array_filter([

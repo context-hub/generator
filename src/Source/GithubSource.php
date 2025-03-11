@@ -11,6 +11,30 @@ use Butschster\ContextGenerator\Fetcher\FilterableSourceInterface;
  */
 final class GithubSource extends BaseSource implements FilterableSourceInterface
 {
+    /**
+     * @param string $repository GitHub repository in format "owner/repo"
+     * @param string $branch Branch or tag to fetch from (default: main)
+     * @param string $description Human-readable description
+     * @param string|array<string> $filePattern Pattern(s) to match files
+     * @param array<string> $excludePatterns Patterns to exclude files
+     * @param bool $showTreeView Whether to show directory tree
+     * @param string|null $githubToken GitHub API token for private repositories
+     * @param array<string> $modifiers Identifiers for content modifiers to apply
+     */
+    public function __construct(
+        public readonly string $repository,
+        public readonly string|array $sourcePaths,
+        public readonly string $branch = 'main',
+        string $description = '',
+        public readonly string|array $filePattern = '*.*',
+        public readonly array $excludePatterns = [],
+        public readonly bool $showTreeView = true,
+        public readonly ?string $githubToken = null,
+        public readonly array $modifiers = [],
+    ) {
+        parent::__construct($description);
+    }
+
     public static function fromArray(array $data): self
     {
         if (!isset($data['repository'])) {
@@ -32,7 +56,7 @@ final class GithubSource extends BaseSource implements FilterableSourceInterface
 
         // Validate filePattern if present
         if (isset($data['filePattern'])) {
-            if (!\is_string($data['filePattern']) && !is_array($data['filePattern'])) {
+            if (!\is_string($data['filePattern']) && !\is_array($data['filePattern'])) {
                 throw new \RuntimeException('filePattern must be a string or an array of strings');
             }
 
@@ -63,30 +87,6 @@ final class GithubSource extends BaseSource implements FilterableSourceInterface
     }
 
     /**
-     * @param string $repository GitHub repository in format "owner/repo"
-     * @param string $branch Branch or tag to fetch from (default: main)
-     * @param string $description Human-readable description
-     * @param string|array<string> $filePattern Pattern(s) to match files
-     * @param array<string> $excludePatterns Patterns to exclude files
-     * @param bool $showTreeView Whether to show directory tree
-     * @param string|null $githubToken GitHub API token for private repositories
-     * @param array<string> $modifiers Identifiers for content modifiers to apply
-     */
-    public function __construct(
-        public readonly string $repository,
-        public readonly string|array $sourcePaths,
-        public readonly string $branch = 'main',
-        string $description = '',
-        public readonly string|array $filePattern = '*.*',
-        public readonly array $excludePatterns = [],
-        public readonly bool $showTreeView = true,
-        public readonly ?string $githubToken = null,
-        public readonly array $modifiers = [],
-    ) {
-        parent::__construct($description);
-    }
-
-    /**
      * Get base GitHub API URL for this repository
      */
     public function getApiBaseUrl(): string
@@ -102,11 +102,11 @@ final class GithubSource extends BaseSource implements FilterableSourceInterface
         $url = $this->getApiBaseUrl() . '/contents';
 
         if (!empty($path)) {
-            $url .= '/' . ltrim($path, '/');
+            $url .= '/' . \ltrim($path, '/');
         }
 
         // Add ref parameter for branch or tag
-        $url .= '?ref=' . urlencode($this->branch);
+        $url .= '?ref=' . \urlencode($this->branch);
 
         return $url;
     }
@@ -120,14 +120,16 @@ final class GithubSource extends BaseSource implements FilterableSourceInterface
             'https://raw.githubusercontent.com/%s/%s/%s',
             $this->repository,
             $this->branch,
-            ltrim($path, '/'),
+            \ltrim($path, '/'),
         );
     }
 
     /**
      * Get authentication headers for GitHub API
      *
-     * @return array<string, string>
+     * @return string[]
+     *
+     * @psalm-return array{Accept: 'application/vnd.github.v3+json', 'User-Agent': 'Context-Generator-Bot', Authorization?: string}
      */
     public function getAuthHeaders(?string $githubToken = null): array
     {
@@ -147,67 +149,78 @@ final class GithubSource extends BaseSource implements FilterableSourceInterface
 
     /**
      * Get file name pattern(s)
-     * @return string|array<string>|null Pattern(s) to match file names against
+     *
+     * @return string|string[] Pattern(s) to match file names against
+     *
+     * @psalm-return array<string>|string
      */
     public function name(): string|array|null
     {
         return $this->filePattern;
     }
-    
+
     /**
      * Get file path pattern(s)
-     * @return string|array<string>|null Pattern(s) to match file paths against
+     *
+     * @return null Pattern(s) to match file paths against
      */
     public function path(): string|array|null
     {
         return null; // GitHub source doesn't use path patterns directly
     }
-    
+
     /**
      * Get excluded path pattern(s)
-     * @return string|array<string>|null Pattern(s) to exclude file paths
+     *
+     * @return string[] Pattern(s) to exclude file paths
+     *
+     * @psalm-return array<string>
      */
     public function notPath(): string|array|null
     {
         return $this->excludePatterns;
     }
-    
+
     /**
      * Get content pattern(s)
-     * @return string|array<string>|null Pattern(s) to match file content against
+     *
+     * @return null Pattern(s) to match file content against
      */
     public function contains(): string|array|null
     {
         return null; // GitHub source doesn't support content filtering directly
     }
-    
+
     /**
      * Get excluded content pattern(s)
-     * @return string|array<string>|null Pattern(s) to exclude file content
+     *
+     * @return null Pattern(s) to exclude file content
      */
     public function notContains(): string|array|null
     {
         return null; // GitHub source doesn't support content exclusion filtering directly
     }
-    
+
     /**
      * Get size constraint(s)
-     * @return string|array<string>|null Size constraint(s)
+     *
+     * @return null Size constraint(s)
      */
     public function size(): string|array|null
     {
         return null; // GitHub source doesn't support size filtering directly
     }
-    
+
     /**
      * Get date constraint(s)
-     * @return string|array<string>|null Date constraint(s)
+     *
+     * @return null Date constraint(s)
      */
     public function date(): string|array|null
     {
         return null; // GitHub source doesn't support date filtering directly
     }
-    
+
     /**
      * Get directories to search in
      * @return array<string>|null Directories to search in
@@ -216,25 +229,32 @@ final class GithubSource extends BaseSource implements FilterableSourceInterface
     {
         return (array) $this->sourcePaths;
     }
-    
+
     /**
      * Get individual files to include
-     * @return array<string>|null Individual files to include
+     *
+     * @return null Individual files to include
      */
     public function files(): array|null
     {
         return null; // GitHub source treats all sourcePaths as directories
     }
-    
+
     /**
      * Check if unreadable directories should be ignored
-     * @return bool
+     *
+     * @return false
      */
     public function ignoreUnreadableDirs(): bool
     {
         return false; // Not applicable for GitHub sources
     }
-    
+
+    /**
+     * @return (string|string[]|true)[]
+     *
+     * @psalm-return array{type: 'github', repository?: string, branch?: string, description?: string, filePattern?: array<string>|string, excludePatterns?: array<string>, showTreeView?: true, githubToken?: string, modifiers?: array<string>}
+     */
     public function jsonSerialize(): array
     {
         return \array_filter([

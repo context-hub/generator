@@ -64,7 +64,7 @@ class SourceFetcherRegistryTest extends TestCase
         $registry = new SourceFetcherRegistry(fetchers: [$fetcher]);
 
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('No fetcher found for source of type ' . get_class($source));
+        $this->expectExceptionMessage('No fetcher found for source of type ' . \get_class($source));
 
         $registry->findFetcher($source);
     }
