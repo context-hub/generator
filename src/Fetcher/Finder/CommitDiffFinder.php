@@ -9,6 +9,7 @@ namespace Butschster\ContextGenerator\Fetcher\Finder;
 use Butschster\ContextGenerator\Fetcher\FileTreeBuilder;
 use Butschster\ContextGenerator\Fetcher\FilterableSourceInterface;
 use Butschster\ContextGenerator\Fetcher\FinderInterface;
+use Butschster\ContextGenerator\Fetcher\Git\CommitRangeParser;
 use Butschster\ContextGenerator\Source\CommitDiffSource;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
@@ -22,6 +23,7 @@ final readonly class CommitDiffFinder implements FinderInterface
 {
     public function __construct(
         private FileTreeBuilder $fileTreeBuilder = new FileTreeBuilder(),
+        private CommitRangeParser $rangeParser = new CommitRangeParser(),
     ) {}
 
     /**
@@ -44,7 +46,7 @@ final readonly class CommitDiffFinder implements FinderInterface
 
         // Get the commit range from the source
         // The CommitDiffSource now returns an already resolved range from the parser
-        $commitRange = $this->formatCommitRange($source->getCommitRange());
+        $commitRange = $this->formatCommitRange($source->commit);
 
         // Get the list of changed files
         $changedFiles = $this->getChangedFiles($source->repository, $commitRange);
@@ -141,6 +143,8 @@ final readonly class CommitDiffFinder implements FinderInterface
      */
     private function formatCommitRange(string|array $commitRange): string
     {
+        $commitRange = $this->rangeParser->resolve($commitRange);
+
         // Handle special cases
         if ($commitRange === '') {
             return '--cached'; // This will get unstaged changes in the index
