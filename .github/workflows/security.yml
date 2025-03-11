@@ -1,0 +1,59 @@
+---
+
+name: 🔐 Security analysis
+
+on: # yamllint disable-line rule:truthy
+  pull_request:
+  push:
+
+jobs:
+  security-analysis:
+    timeout-minutes: 4
+    runs-on: ${{ matrix.os }}
+    concurrency:
+      cancel-in-progress: true
+      group: security-analysis-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+    strategy:
+      fail-fast: true
+      matrix:
+        os:
+          - ubuntu-latest
+        php-version:
+          - '8.2'
+        dependencies:
+          - locked
+    steps:
+      - name: 📦 Check out the codebase
+        uses: actions/checkout@v4
+
+      - name: 🛠️ Setup PHP
+        uses: shivammathur/setup-php@2.32.0
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: none, ctype, dom, json, mbstring, phar, simplexml, tokenizer, xml, xmlwriter, sockets
+          ini-values: error_reporting=E_ALL
+          coverage: none
+
+      - name: 🛠️ Setup problem matchers
+        run: echo "::add-matcher::${{ runner.tool_cache }}/php.json"
+
+      - name: 🤖 Validate composer.json and composer.lock
+        run: composer validate --ansi --strict
+
+      - name: 🔍 Get composer cache directory
+        uses: wayofdev/gh-actions/actions/composer/get-cache-directory@v3.2.0
+
+      - name: ♻️ Restore cached dependencies installed with composer
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.COMPOSER_CACHE_DIR }}
+          key: php-${{ matrix.php-version }}-composer-${{ matrix.dependencies }}-${{ hashFiles('composer.lock') }}
+          restore-keys: php-${{ matrix.php-version }}-composer-${{ matrix.dependencies }}-
+
+      - name: 📥 Install "${{ matrix.dependencies }}" dependencies
+        uses: wayofdev/gh-actions/actions/composer/install@v3.2.0
+        with:
+          dependencies: ${{ matrix.dependencies }}
+
+      - name: 🐛 Check installed packages for security vulnerability advisories
+        run: composer audit --ansi
