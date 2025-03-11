@@ -58,7 +58,6 @@
           "type": "string",
           "enum": [
             "file",
-            "php_class",
             "url",
             "text",
             "github",
@@ -136,38 +135,6 @@
           }
         }
       ]
-    },
-    "modifiers": {
-      "type": "array",
-      "description": "List of content modifiers to apply",
-      "items": {
-        "oneOf": [
-          {
-            "type": "string",
-            "description": "Modifier identifier"
-          },
-          {
-            "type": "object",
-            "required": [
-              "name"
-            ],
-            "properties": {
-              "name": {
-                "type": "string",
-                "description": "Modifier identifier"
-              },
-              "options": {
-                "description": "Modifier options",
-                "oneOf": [
-                  {
-                    "$ref": "#/definitions/php-content-filter"
-                  }
-                ]
-              }
-            }
-          }
-        ]
-      }
     },
     "filePattern": {
       "oneOf": [
@@ -476,12 +443,7 @@
           "default": true
         },
         "modifiers": {
-          "type": "array",
-          "description": "List of content modifiers to apply",
-          "items": {
-            "type": "string"
-          },
-          "default": []
+          "$ref": "#/definitions/modifiers"
         }
       }
     },
@@ -574,6 +536,63 @@
           "type": "string",
           "description": "Regex pattern for properties to exclude"
         }
+      }
+    },
+    "modifiers": {
+      "type": "array",
+      "description": "List of content modifiers to apply",
+      "items": {
+        "allOf": [
+          {
+            "if": {
+              "type": "string"
+            },
+            "then": {
+              "type": "string",
+              "description": "Modifier identifier",
+              "enum": [
+                "php-content-filter"
+              ]
+            }
+          },
+          {
+            "if": {
+              "type": "object"
+            },
+            "then": {
+              "type": "object",
+              "required": [
+                "name"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Modifier identifier",
+                  "enum": [
+                    "php-content-filter"
+                  ]
+                },
+                "options": {
+                  "description": "Modifier options",
+                  "allOf": [
+                    {
+                      "if": {
+                        "properties": {
+                          "name": {
+                            "const": "php-content-filter"
+                          }
+                        }
+                      },
+                      "then": {
+                        "$ref": "#/definitions/php-content-filter"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
       }
     },
     "visibilityOptions": {
