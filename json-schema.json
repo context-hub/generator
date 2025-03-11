@@ -61,7 +61,8 @@
             "php_class",
             "url",
             "text",
-            "github"
+            "github",
+            "git_diff"
           ],
           "description": "Type of content source"
         },
@@ -157,6 +158,18 @@
           },
           "then": {
             "$ref": "#/definitions/githubSource"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "git_diff"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/gitCommitDiffSource"
           }
         }
       ]
@@ -442,6 +455,136 @@
         "githubToken": {
           "type": "string",
           "description": "GitHub API token for private repositories (can use env var pattern ${TOKEN_NAME})"
+        }
+      }
+    },
+    "gitCommitDiffSource": {
+      "properties": {
+        "repository": {
+          "type": "string",
+          "description": "Path to the git repository"
+        },
+        "commit": {
+          "type": "string",
+          "enum": [
+            "last",
+            "last-5",
+            "last-10",
+            "last-week",
+            "last-month",
+            "unstaged",
+            "staged",
+            "wip",
+            "main-diff",
+            "master-diff",
+            "develop-diff",
+            "today",
+            "last-24h",
+            "yesterday",
+            "last-2weeks",
+            "last-quarter",
+            "last-year",
+            "stash",
+            "stash-last",
+            "stash-1",
+            "stash-2",
+            "stash-3",
+            "stash-all",
+            "stash-latest-2",
+            "stash-latest-3",
+            "stash-latest-5",
+            "stash-before-pull",
+            "stash-wip",
+            "stash-untracked",
+            "stash-index"
+          ],
+          "description": "Git commit range (e.g., 'HEAD~5..HEAD')",
+          "default": "staged"
+        },
+        "filePattern": {
+          "oneOf": [
+            {
+              "type": "string",
+              "description": "Pattern to match files (e.g., *.php)"
+            },
+            {
+              "type": "array",
+              "description": "List of patterns to match files (e.g., ['*.php', '*.md'])",
+              "items": {
+                "type": "string"
+              }
+            }
+          ],
+          "default": "*.*"
+        },
+        "path": {
+          "oneOf": [
+            {
+              "type": "string",
+              "description": "Pattern to include only files in specific paths"
+            },
+            {
+              "type": "array",
+              "description": "List of patterns to include only files in specific paths",
+              "items": {
+                "type": "string"
+              }
+            }
+          ],
+          "default": []
+        },
+        "notPath": {
+          "type": "array",
+          "description": "Patterns to exclude files by path",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "contains": {
+          "oneOf": [
+            {
+              "type": "string",
+              "description": "Pattern to include only diffs containing specific content"
+            },
+            {
+              "type": "array",
+              "description": "List of patterns to include only diffs containing specific content",
+              "items": {
+                "type": "string"
+              }
+            }
+          ],
+          "default": []
+        },
+        "notContains": {
+          "oneOf": [
+            {
+              "type": "string",
+              "description": "Pattern to exclude diffs containing specific content"
+            },
+            {
+              "type": "array",
+              "description": "List of patterns to exclude diffs containing specific content",
+              "items": {
+                "type": "string"
+              }
+            }
+          ],
+          "default": []
+        },
+        "showStats": {
+          "type": "boolean",
+          "description": "Whether to show commit stats in output",
+          "default": true
+        },
+        "modifiers": {
+          "type": "array",
+          "description": "List of content modifiers to apply",
+          "items": {
+            "type": "string"
+          },
+          "default": []
         }
       }
     }

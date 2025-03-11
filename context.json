@@ -1,6 +1,27 @@
 {
   "documents": [
     {
+      "description": "Recent Git Changes",
+      "outputPath": "docs/recent-changes.md",
+      "sources": [
+        {
+          "type": "text",
+          "description": "Documentation Header",
+          "content": "# Recent Git Changes\n\nThis document contains recent changes from the git repository.\n"
+        },
+        {
+          "type": "git_diff",
+          "description": "Recent Commits (Last 1)",
+          "commit": "staged",
+          "notPath": [
+            "vendor",
+            "tests"
+          ],
+          "showStats": true
+        }
+      ]
+    },
+    {
       "description": "Context generator code.",
       "outputPath": "code.md",
       "sources": [
@@ -8,6 +29,20 @@
           "type": "file",
           "sourcePaths": [
             "src"
+          ],
+          "filePattern": "*.php"
+        }
+      ]
+    },
+    {
+      "description": "Git finder.",
+      "outputPath": "git_diff.md",
+      "sources": [
+        {
+          "type": "file",
+          "sourcePaths": [
+            "src/Fetcher/Git",
+            "src/Fetcher/FinderResult"
           ],
           "filePattern": "*.php"
         }

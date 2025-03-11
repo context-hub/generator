@@ -8,6 +8,7 @@ use Butschster\ContextGenerator\Document;
 use Butschster\ContextGenerator\DocumentRegistry;
 use Butschster\ContextGenerator\Source\FileSource;
 use Butschster\ContextGenerator\Source\GithubSource;
+use Butschster\ContextGenerator\Source\CommitDiffSource;
 use Butschster\ContextGenerator\Source\TextSource;
 use Butschster\ContextGenerator\Source\UrlSource;
 
@@ -54,8 +55,10 @@ final readonly class JsonConfigParser
      * Create a Source object from its configuration.
      *
      */
-    private function createSource(array $sourceData, string $path): FileSource|UrlSource|TextSource|GithubSource
-    {
+    private function createSource(
+        array $sourceData,
+        string $path,
+    ): FileSource|UrlSource|TextSource|GithubSource|CommitDiffSource {
         if (!isset($sourceData['type'])) {
             throw new \RuntimeException(
                 \sprintf('Source at path %s must have a "type" property', $path),
@@ -67,6 +70,7 @@ final readonly class JsonConfigParser
             'url' => $this->createUrlSource($sourceData, $path),
             'text' => $this->createTextSource($sourceData, $path),
             'github' => $this->createGithubSource($sourceData, $path),
+            'git_diff' => $this->createCommitDiffSource($sourceData, $path),
             default => throw new \RuntimeException(
                 \sprintf('Unknown source type "%s" at path %s', $sourceData['type'], $path),
             ),
@@ -181,5 +185,13 @@ final readonly class JsonConfigParser
     private function createTextSource(array $data, string $path): TextSource
     {
         return TextSource::fromArray($data);
+    }
+
+    /**
+     * Create a GitCommitDiffSource from its configuration.
+     */
+    private function createCommitDiffSource(array $data, string $path): CommitDiffSource
+    {
+        return CommitDiffSource::fromArray($data, $this->rootPath);
     }
 }
