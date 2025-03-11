@@ -23,7 +23,7 @@ class CommitDiffSource extends BaseSource implements FilterableSourceInterface, 
      * @param bool $showStats Whether to show commit stats in output
      */
     public function __construct(
-        public readonly string $repository,
+        public readonly string $repository = '.',
         string $description = '',
         public readonly string|array $commit = 'staged',
         public readonly string|array $filePattern = '*.*',
@@ -41,11 +41,7 @@ class CommitDiffSource extends BaseSource implements FilterableSourceInterface, 
      */
     public static function fromArray(array $data, string $rootPath = ''): self
     {
-        if (!isset($data['repository'])) {
-            throw new \RuntimeException('Git commit diff source must have a "repository" property');
-        }
-
-        $repository = $data['repository'];
+        $repository = $data['repository'] ?? '.';
         if (!\is_string($repository)) {
             throw new \RuntimeException('"repository" must be a string in source');
         }

@@ -12,7 +12,6 @@
         {
           "type": "git_diff",
           "description": "Recent Commits (Last 1)",
-          "repository": ".",
           "commitRange": "unstaged",
           "filePattern": "*.php",
           "notPath": [
