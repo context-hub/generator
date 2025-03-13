@@ -7,6 +7,36 @@
     <a href="https://raw.githubusercontent.com/butschster/context-generator/refs/heads/main/json-schema.json"><img alt="Json schema" src="https://img.shields.io/badge/json_schema-blue"></a>
 </p>
 
+- [Context Generator for LLM](#context-generator-for-llm)
+    - [How it works](#how-it-works)
+    - [Why You Need This](#why-you-need-this)
+    - [Installation](#installation)
+        - [Requirements](#requirements)
+        - [Using bash (Recommended)](#using-bash-recommended)
+        - [Using PHAR file](#using-phar-file)
+    - [Configuration](#configuration)
+        - [JSON Configuration](#json-configuration)
+    - [Document Properties](#document-properties)
+    - [Source Types](#source-types)
+        - [File Source](#file-source)
+        - [GitHub Source](#github-source)
+        - [Git Diff Source](#git-diff-source)
+        - [URL Source](#url-source)
+        - [Text Source](#text-source)
+    - [Modifiers](#modifiers)
+        - [PHP Signature Modifier](#php-signature-modifier)
+        - [PHP Content Filter Modifier](#php-content-filter-modifier)
+    - [Sanitizer Modifier](#sanitizer-modifier)
+    - [PHP-Docs (AstDocTransformer) Modifier](#php-docs-astdoctransformer-modifier)
+    - [Environment Variables](#environment-variables)
+    - [Complete Example](#complete-example)
+    - [For PHP Developers - Integration Guide](#for-php-developers---integration-guide)
+        - [For PHP Developers. Advanced Usage](#for-php-developers-advanced-usage)
+        - [Requirements](#requirements-1)
+        - [Basic Usage](#basic-usage-3)
+        - [Source Types](#source-types-1)
+        - [Content Modifiers](#content-modifiers)
+    - [License](#license)
 
 Context Generator is a tool designed to solve a common problem when working with LLMs like ChatGPT,
 Claude: providing sufficient context about your codebase.
