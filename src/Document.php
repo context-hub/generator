@@ -68,7 +68,7 @@ final class Document implements \JsonSerializable
             'description' => $this->description,
             'outputPath' => $this->outputPath,
             'overwrite' => $this->overwrite,
-            'sources' => $this->sources,
+            'sources' => \array_values($this->sources),
         ]);
     }
 }

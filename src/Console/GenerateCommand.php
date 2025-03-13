@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Cli;
+namespace Butschster\ContextGenerator\Console;
 
 use Butschster\ContextGenerator\DocumentCompiler;
 use Butschster\ContextGenerator\Fetcher\SourceFetcherRegistry;
@@ -31,7 +31,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 #[AsCommand(name: 'generate')]
-final class ContextGenerator extends Command
+final class GenerateCommand extends Command
 {
     public function __construct(
         private readonly string $rootPath,
