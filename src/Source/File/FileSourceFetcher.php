@@ -50,6 +50,14 @@ readonly class FileSourceFetcher implements SourceFetcherInterface
 
         // Process each file
         foreach ($finderResult->files as $file) {
+            if (!$file instanceof SplFileInfo && $file instanceof \SplFileInfo) {
+                $file = new SplFileInfo(
+                    file: $file->getPathname(),
+                    relativePath: $file->getPath(),
+                    relativePathname: $file->getPathname(),
+                );
+            }
+
             if (!$file instanceof SplFileInfo) {
                 throw new \RuntimeException('Expected SplFileInfo objects in finder results');
             }
