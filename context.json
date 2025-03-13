@@ -22,40 +22,46 @@
       ]
     },
     {
-      "description": "Context generator code.",
-      "outputPath": "code.md",
+      "description": "Sources.",
+      "outputPath": "api/sources.md",
       "sources": [
         {
           "type": "file",
           "sourcePaths": [
-            "src"
+            "test"
+          ],
+          "filePattern": "*.php"
+        },
+        {
+          "type": "file",
+          "sourcePaths": [
+            "srSource"
           ],
           "filePattern": "*.php"
         }
       ]
     },
     {
-      "description": "Git finder.",
-      "outputPath": "git_diff.md",
+      "description": "Modifiers",
+      "outputPath": "api/modifiers.md",
       "sources": [
         {
           "type": "file",
           "sourcePaths": [
-            "src/Fetcher/Git",
-            "src/Fetcher/FinderResult"
+            "src/Modifier"
           ],
           "filePattern": "*.php"
         }
       ]
     },
     {
-      "description": "Context generator tests.",
-      "outputPath": "tests.md",
+      "description": "Console commands",
+      "outputPath": "api/console.md",
       "sources": [
         {
           "type": "file",
           "sourcePaths": [
-            "tests"
+            "src/Console"
           ],
           "filePattern": "*.php"
         }

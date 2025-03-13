@@ -19,7 +19,7 @@ final class VersionCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $output->writeln('Current version: ' . $this->version);
+        $output->writeln(\sprintf('Current version: <comment>%s', $this->version));
 
         return Command::SUCCESS;
     }

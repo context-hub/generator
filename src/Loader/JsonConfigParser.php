@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Loader;
 
 use Butschster\ContextGenerator\Document;
-use Butschster\ContextGenerator\DocumentRegistry;
+use Butschster\ContextGenerator\Document\DocumentRegistry;
 use Butschster\ContextGenerator\Modifier\Modifier;
 use Butschster\ContextGenerator\Source\File\FileSource;
 use Butschster\ContextGenerator\Source\GitDiff\CommitDiffSource;

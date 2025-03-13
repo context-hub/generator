@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Console;
 
 use Butschster\ContextGenerator\Document;
-use Butschster\ContextGenerator\DocumentRegistry;
+use Butschster\ContextGenerator\Document\DocumentRegistry;
 use Butschster\ContextGenerator\Source\Text\TextSource;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(name: 'init')]
 final class InitCommand extends Command
@@ -34,12 +35,13 @@ final class InitCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $outputStyle = new SymfonyStyle($input, $output);
         $filename = $input->getArgument('filename');
 
         $filePath = \sprintf('%s/%s', $this->baseDir, $filename);
 
         if (\file_exists($filePath)) {
-            $output->writeln(\sprintf('<error>Config %s already exists</error>', $filePath));
+            $outputStyle->error(\sprintf('Config %s already exists', $filePath));
 
             return Command::FAILURE;
         }
@@ -56,6 +58,8 @@ final class InitCommand extends Command
         ]), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
         \file_put_contents($filePath, $content);
+
+        $outputStyle->success(\sprintf('Config %s created', $filePath));
 
         return Command::SUCCESS;
     }
