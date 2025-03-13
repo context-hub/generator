@@ -36,11 +36,6 @@ final class TextSource extends BaseSource
         );
     }
 
-    /**
-     * @return string[]
-     *
-     * @psalm-return array{type: 'text', description?: string, content?: string}
-     */
     public function jsonSerialize(): array
     {
         return \array_filter([

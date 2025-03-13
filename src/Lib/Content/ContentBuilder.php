@@ -20,15 +20,10 @@ use Butschster\ContextGenerator\Lib\Content\Renderer\RendererInterface;
  */
 final class ContentBuilder implements \Stringable
 {
-    /**
-     * @var ContentBlock The content block container
-     */
     private readonly ContentBlock $content;
 
     /**
      * Create a new ContentBuilder
-     *
-     * @param RendererInterface|null $renderer The renderer to use (defaults to MarkdownRenderer)
      */
     public function __construct(private RendererInterface $renderer = new MarkdownRenderer())
     {

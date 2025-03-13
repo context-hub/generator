@@ -38,7 +38,7 @@ final class PlainTextRenderer extends AbstractRenderer
      */
     public function renderTitleBlock(TitleBlock $block): string
     {
-        $content = $block;
+        $content = (string) $block;
         $level = $block->getLevel();
 
         // For plain text, we'll use different underline characters based on level
