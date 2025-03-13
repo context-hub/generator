@@ -7,6 +7,8 @@ namespace Butschster\ContextGenerator\Console;
 use Butschster\ContextGenerator\Document\DocumentCompiler;
 use Butschster\ContextGenerator\Error\ErrorCollection;
 use Butschster\ContextGenerator\Fetcher\SourceFetcherRegistry;
+use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
+use Butschster\ContextGenerator\Lib\Content\Renderer\MarkdownRenderer;
 use Butschster\ContextGenerator\Lib\Files;
 use Butschster\ContextGenerator\Loader\CompositeDocumentsLoader;
 use Butschster\ContextGenerator\Loader\ConfigDocumentsLoader;
@@ -71,24 +73,34 @@ final class GenerateCommand extends Command
             githubToken: $githubToken,
         );
 
+        $contentBuilderFactory = new ContentBuilderFactory(
+            defaultRenderer: new MarkdownRenderer(),
+        );
+
         $sourceFetcherRegistry = new SourceFetcherRegistry(
             fetchers: [
-                new TextSourceFetcher(),
+                new TextSourceFetcher(
+                    builderFactory: $contentBuilderFactory,
+                ),
                 new FileSourceFetcher(
                     basePath: $this->rootPath,
                     modifiers: $modifiers,
+                    builderFactory: $contentBuilderFactory,
                 ),
                 new UrlSourceFetcher(
                     httpClient: $this->httpClient,
                     requestFactory: $this->requestFactory,
                     uriFactory: $this->uriFactory,
+                    builderFactory: $contentBuilderFactory,
                 ),
                 new GithubSourceFetcher(
                     finder: $githubFinder,
                     modifiers: $modifiers,
+                    builderFactory: $contentBuilderFactory,
                 ),
                 new CommitDiffSourceFetcher(
                     modifiers: $modifiers,
+                    builderFactory: $contentBuilderFactory,
                 ),
             ],
         );
@@ -101,6 +113,7 @@ final class GenerateCommand extends Command
             files: $files,
             parser: $sourceParser,
             basePath: $this->outputPath,
+            builderFactory: $contentBuilderFactory,
         );
 
         $loader = new CompositeDocumentsLoader(

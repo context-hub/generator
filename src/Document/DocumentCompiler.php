@@ -8,6 +8,7 @@ use Butschster\ContextGenerator\Document;
 use Butschster\ContextGenerator\Error\ErrorCollection;
 use Butschster\ContextGenerator\Error\SourceError;
 use Butschster\ContextGenerator\FilesInterface;
+use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\SourceParserInterface;
 
 /**
@@ -22,6 +23,7 @@ final readonly class DocumentCompiler
         private FilesInterface $files,
         private SourceParserInterface $parser,
         private string $basePath,
+        private ContentBuilderFactory $builderFactory = new ContentBuilderFactory(),
     ) {}
 
     /**
@@ -42,7 +44,7 @@ final readonly class DocumentCompiler
 
         $this->files->ensureDirectory(\dirname($resultPath));
 
-        $this->files->write($resultPath, $compiledDocument->content);
+        $this->files->write($resultPath, (string) $compiledDocument->content);
 
         return $compiledDocument;
     }
@@ -52,20 +54,21 @@ final readonly class DocumentCompiler
      */
     private function buildContent(ErrorCollection $errors, Document $document): CompiledDocument
     {
-        // Add document description
-        $content = "## DOCUMENT: {$document->description}" . PHP_EOL . PHP_EOL;
+        $builder = $this->builderFactory->create();
+
+        $builder->addTitle($document->description);
 
 
         // Process all sources
         foreach ($document->getSources() as $source) {
             try {
                 if ($source->hasDescription()) {
-                    $content .= "SOURCE: {$source->getDescription()}" . PHP_EOL;
+                    $builder->addDescription("SOURCE: {$source->getDescription()}");
                 }
 
-                $content .= $source->parseContent($this->parser);
-                $content .= PHP_EOL;
-                $content .= '---' . PHP_EOL;
+                $builder
+                    ->addText($source->parseContent($this->parser))
+                    ->addSeparator();
             } catch (\Throwable $e) {
                 $errors->add(
                     new SourceError(
@@ -76,11 +79,9 @@ final readonly class DocumentCompiler
             }
         }
 
-        $content .= PHP_EOL;
-
         // Remove empty lines at the beginning of each line
         return new CompiledDocument(
-            content: \preg_replace('/^\s*[\r\n]+/m', '', $content),
+            content: $builder,
             errors: $errors,
         );
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Source\File;
 
 use Butschster\ContextGenerator\Fetcher\SourceFetcherInterface;
+use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Lib\Finder\FinderInterface;
 use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
 use Butschster\ContextGenerator\SourceInterface;
@@ -18,11 +19,15 @@ readonly class FileSourceFetcher implements SourceFetcherInterface
 {
     /**
      * @param string $basePath Base path for relative file references
+     * @param SourceModifierRegistry $modifiers Registry of content modifiers
+     * @param FinderInterface $finder Finder for locating files
+     * @param ContentBuilderFactory $builderFactory Factory for creating ContentBuilder instances
      */
     public function __construct(
         private string $basePath,
         private SourceModifierRegistry $modifiers,
         private FinderInterface $finder = new SymfonyFinder(),
+        private ContentBuilderFactory $builderFactory = new ContentBuilderFactory(),
     ) {}
 
     public function supports(SourceInterface $source): bool
@@ -36,7 +41,9 @@ readonly class FileSourceFetcher implements SourceFetcherInterface
             throw new \InvalidArgumentException('Source must be an instance of FileSource');
         }
 
-        $content = '';
+        $builder = $this->builderFactory
+            ->create()
+            ->addTitle($source->getDescription());
 
         // Execute find operation and get the result
         try {
@@ -56,13 +63,15 @@ readonly class FileSourceFetcher implements SourceFetcherInterface
                     ),
                 );
             }
+
+            throw new \RuntimeException(
+                \sprintf('Error while finding files: %s', $e->getMessage()),
+            );
         }
 
         // Generate tree view if requested
         if ($source->showTreeView) {
-            $content .= "```\n";
-            $content .= $finderResult->treeView;
-            $content .= "```\n\n";
+            $builder->addTreeView($finderResult->treeView);
         }
 
         // Process each file
@@ -79,11 +88,17 @@ readonly class FileSourceFetcher implements SourceFetcherInterface
             $fileName = $file->getFilename();
             $filePath = empty($relativePath) ? $fileName : "$relativePath/$fileName";
 
-            $content .= "// Path: {$filePath}\n";
-            $content .= $this->getContent($file, $source) . "\n\n";
+            $language = $this->detectLanguage($filePath);
+
+            $builder->addCodeBlock(
+                code: $this->getContent($file, $source),
+                language: $language,
+                path: $filePath,
+            );
         }
 
-        return $content;
+        // Return built content
+        return $builder->build();
     }
 
     /**
@@ -110,5 +125,16 @@ readonly class FileSourceFetcher implements SourceFetcherInterface
         }
 
         return $content;
+    }
+
+    private function detectLanguage(string $filePath): ?string
+    {
+        $extension = \pathinfo($filePath, PATHINFO_EXTENSION);
+
+        if (empty($extension)) {
+            return null;
+        }
+
+        return $extension;
     }
 }

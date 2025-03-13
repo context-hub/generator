@@ -18,6 +18,7 @@ final class TextSource extends BaseSource
     public function __construct(
         public readonly string $content,
         string $description = '',
+        public readonly string $tag = 'INSTRUCTION',
     ) {
         parent::__construct($description);
     }
@@ -31,20 +32,17 @@ final class TextSource extends BaseSource
         return new self(
             content: $data['content'],
             description: $data['description'] ?? '',
+            tag: $data['tag'] ?? 'INSTRUCTION',
         );
     }
 
-    /**
-     * @return string[]
-     *
-     * @psalm-return array{type: 'text', description?: string, content?: string}
-     */
     public function jsonSerialize(): array
     {
         return \array_filter([
             'type' => 'text',
             'description' => $this->description,
             'content' => $this->content,
+            'tag' => $this->tag,
         ]);
     }
 }

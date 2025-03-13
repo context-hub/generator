@@ -28,7 +28,7 @@ jobs:
 
       - name: Download context-generator
         run: |
-          wget https://github.com/butschster/context-generator/releases/download/1.5.0/context-generator.phar
+          wget https://github.com/butschster/context-generator/releases/download/1.7.0/context-generator.phar
           chmod +x context-generator.phar
           ./context-generator.phar version
 
