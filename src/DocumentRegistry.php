@@ -6,10 +6,12 @@ namespace Butschster\ContextGenerator;
 
 final class DocumentRegistry implements \JsonSerializable
 {
-    /**
-     * @var array<Document>
-     */
-    private array $documents = [];
+    public function __construct(
+        /**
+         * @var array<Document>
+         */
+        private array $documents = [],
+    ) {}
 
     /**
      * Register a document in the registry

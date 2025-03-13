@@ -1,6 +1,8 @@
 #!/usr/bin/env php
 <?php
 
+declare(strict_types=1);
+
 namespace Butschster\ContextGenerator;
 
 $insidePhar = \str_starts_with(__FILE__, 'phar://');
@@ -22,7 +24,7 @@ $vendorPath = (static function (): string {
         }
     }
 
-    if (null === $file) {
+    if ($file === null) {
         throw new \RuntimeException('Unable to locate autoload.php file.');
     }
 
@@ -31,8 +33,9 @@ $vendorPath = (static function (): string {
     return $file;
 })();
 
-use Butschster\ContextGenerator\Cli\ContextGenerator;
-use Butschster\ContextGenerator\Cli\GetVersion;
+use Butschster\ContextGenerator\Console\GenerateCommand;
+use Butschster\ContextGenerator\Console\InitCommand;
+use Butschster\ContextGenerator\Console\VersionCommand;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\HttpFactory;
 use Symfony\Component\Console\Application;
@@ -47,20 +50,27 @@ $appPath = \realpath($vendorPath);
 $version = \file_exists($versionFile) ? \json_decode(\file_get_contents($versionFile), true) : ['version' => 'dev'];
 
 if ($insidePhar) {
-    $appPath = getcwd();
+    $appPath = \getcwd();
 }
 
 $httpClient = new Client();
 $httpMessageFactory = new HttpFactory();
 
 $application->add(
-    new GetVersion(
+    new VersionCommand(
         version: $version['version'] ?? 'dev',
     ),
 );
 
 $application->add(
-    new ContextGenerator(
+    new InitCommand(
+        baseDir: $appPath,
+    ),
+);
+
+
+$application->add(
+    new GenerateCommand(
         rootPath: $appPath,
         outputPath: $appPath . '/.context',
         httpClient: $httpClient,
