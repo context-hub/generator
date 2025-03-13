@@ -6,6 +6,7 @@ namespace Butschster\ContextGenerator\Lib\PathFilter;
 
 /**
  * Abstract base class for GitHub content filters
+ * @implements FilterInterface<array<string, mixed>>
  */
 abstract class AbstractFilter implements FilterInterface
 {

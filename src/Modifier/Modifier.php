@@ -43,7 +43,7 @@ final readonly class Modifier implements \JsonSerializable
         }
 
         // If array, extract name and context
-        if (\is_array($data) && isset($data['name'])) {
+        if (isset($data['name'])) {
             $name = $data['name'];
             $context = $data['options'] ?? [];
 

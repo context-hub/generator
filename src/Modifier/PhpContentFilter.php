@@ -241,6 +241,7 @@ final class PhpContentFilter implements SourceModifierInterface
             // Handle attributes if needed
             if (!$this->config['keep_attributes'] && \method_exists($property, 'getAttributes')) {
                 foreach ($property->getAttributes() as $attribute) {
+                    /** @psalm-suppress UndefinedMethod */
                     $property->removeAttribute($attribute->getName());
                 }
             }
@@ -248,6 +249,7 @@ final class PhpContentFilter implements SourceModifierInterface
 
         // Remove properties that didn't pass the filter
         foreach ($propertiesToRemove as $propertyName) {
+            /** @psalm-suppress UndefinedMethod */
             $class->removeProperty($propertyName);
         }
     }
@@ -277,6 +279,7 @@ final class PhpContentFilter implements SourceModifierInterface
             // Handle attributes if needed
             if (!$this->config['keep_attributes'] && \method_exists($constant, 'getAttributes')) {
                 foreach ($constant->getAttributes() as $attribute) {
+                    /** @psalm-suppress UndefinedMethod */
                     $constant->removeAttribute($attribute->getName());
                 }
             }
@@ -284,6 +287,7 @@ final class PhpContentFilter implements SourceModifierInterface
 
         // Remove constants that didn't pass the filter
         foreach ($constantsToRemove as $constantName) {
+            /** @psalm-suppress UndefinedMethod */
             $class->removeConstant($constantName);
         }
     }
@@ -318,6 +322,7 @@ final class PhpContentFilter implements SourceModifierInterface
             // Handle attributes if needed
             if (!$this->config['keep_attributes']) {
                 foreach ($method->getAttributes() as $attribute) {
+                    /** @psalm-suppress UndefinedMethod */
                     $method->removeAttribute($attribute->getName());
                 }
             }
@@ -374,7 +379,7 @@ final class PhpContentFilter implements SourceModifierInterface
 
         // Check include pattern (when no explicit include list exists)
         if (empty($this->config['include_properties']) && $this->config['include_properties_pattern'] !== null) {
-            return \preg_match($this->config['include_properties_pattern'], $propertyName);
+            return (bool) \preg_match($this->config['include_properties_pattern'], $propertyName);
         }
 
         // No filters matched, keep the property
@@ -455,7 +460,7 @@ final class PhpContentFilter implements SourceModifierInterface
 
         // Check include pattern (when no explicit include list exists)
         if (empty($this->config['include_methods']) && $this->config['include_methods_pattern'] !== null) {
-            return \preg_match($this->config['include_methods_pattern'], $methodName);
+            return (bool) \preg_match($this->config['include_methods_pattern'], $methodName);
         }
 
         // No filters matched, keep the method

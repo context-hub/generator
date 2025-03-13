@@ -40,6 +40,7 @@ final readonly class FileHelper
         $regex = '';
         $sizeGlob = \strlen($glob);
         for ($i = 0; $i < $sizeGlob; ++$i) {
+            /** @psalm-suppress InvalidArrayOffset */
             $car = $glob[$i];
             if ($firstByte && $strictLeadingDot && $car !== '.') {
                 $regex .= '(?=[^\.])';
@@ -47,8 +48,10 @@ final readonly class FileHelper
 
             $firstByte = $car === '/';
 
+            /** @psalm-suppress InvalidArrayOffset */
             if ($firstByte && $strictWildcardSlash && isset($glob[$i + 2]) && '**' === $glob[$i + 1] . $glob[$i + 2] && (!isset($glob[$i + 3]) || $glob[$i + 3] === '/')) {
                 $car = '[^/]++/';
+                /** @psalm-suppress InvalidArrayOffset */
                 if (!isset($glob[$i + 3])) {
                     $car .= '?';
                 }
@@ -58,6 +61,7 @@ final readonly class FileHelper
                 }
 
                 $car = '/(?:' . $car . ')*';
+                /** @psalm-suppress InvalidOperand */
                 $i += 2 + isset($glob[$i + 3]);
 
                 if ($delimiter === '/') {

@@ -8,7 +8,6 @@ use Symfony\Component\Finder\SplFileInfo;
 
 /**
  * Filter items based on their content
- * @implements FilterInterface<SplFileInfo>
  */
 final class ContentsFilter extends AbstractFilter
 {
@@ -23,6 +22,7 @@ final class ContentsFilter extends AbstractFilter
             return $items;
         }
 
+        /** @psalm-suppress InvalidArgument */
         return \array_filter($items, function (SplFileInfo $item): bool {
             if ($item->isDir()) {
                 return true;
@@ -75,41 +75,5 @@ final class ContentsFilter extends AbstractFilter
         }
 
         return false;
-    }
-
-    /**
-     * Fetch content for a GitHub item
-     *
-     * @param array<string, mixed> $item GitHub API item
-     * @return string File content
-     * @throws \RuntimeException If content cannot be fetched
-     */
-    private function fetchContent(array $item): string
-    {
-        // For GitHub files, the content URL is in the "download_url" property
-        $url = $item['download_url'] ?? null;
-
-        if (!$url) {
-            throw new \RuntimeException("No download URL found for item");
-        }
-
-        $request = $this->requestFactory->createRequest('GET', $url);
-
-        // Add authentication if token is provided
-        if ($this->githubToken) {
-            $request = $request->withHeader('Authorization', 'token ' . $this->githubToken);
-        }
-
-        // Add user agent
-        $request = $request->withHeader('User-Agent', 'Context-Generator-Bot');
-
-        // Send the request
-        $response = $this->httpClient->sendRequest($request);
-
-        if ($response->getStatusCode() !== 200) {
-            throw new \RuntimeException("Failed to fetch content: " . $response->getReasonPhrase());
-        }
-
-        return $response->getBody()->getContents();
     }
 }

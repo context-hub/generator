@@ -69,11 +69,13 @@ readonly class FileSourceFetcher implements SourceFetcherInterface
      * Get and optionally modify the content of a file
      *
      * @param SplFileInfo $file The file info object
-     * @param SourceInterface $source The source containing modifiers
+     * @param FileSource $source The source containing modifiers
      * @return string The file content, possibly modified
      */
     protected function getContent(SplFileInfo $file, SourceInterface $source): string
     {
+        \assert($source instanceof FileSource);
+
         $content = $file->getContents();
 
         // Apply modifiers if available and the source is a FileSource

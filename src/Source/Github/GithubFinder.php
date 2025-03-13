@@ -71,7 +71,7 @@ final class GithubFinder implements FinderInterface
         $this->initializePathFilters($source);
 
         // Get source paths
-        $sourcePaths = $source->sourcePaths ?? [];
+        $sourcePaths = $source->sourcePaths;
         if (\is_string($sourcePaths)) {
             $sourcePaths = [$sourcePaths];
         }
@@ -87,16 +87,14 @@ final class GithubFinder implements FinderInterface
         $this->buildResultStructure($filteredItems, $owner, $repo, $files);
 
 
-        $files = (new ContentsFilter(contains: $source->contains(), notContains: $source->notContains()))
-            ->apply(
-                $files,
-            );
+        $files = (new ContentsFilter(
+            contains: $source->contains(),
+            notContains: $source->notContains(),
+        ))->apply($files);
 
-        $tree = \array_map(
-            static fn(GithubFileInfo $file) => $file->getRelativePathname(),
-            $files,
-        );
 
+        /** @psalm-suppress InvalidArgument */
+        $tree = \array_map(static fn(GithubFileInfo $file): string => $file->getRelativePathname(), $files);
 
         // Create the result
         return new FinderResult(

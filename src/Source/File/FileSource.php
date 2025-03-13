@@ -236,11 +236,6 @@ final class FileSource extends BaseSource implements FilterableSourceInterface
         return $this->ignoreUnreadableDirs;
     }
 
-    /**
-     * @return (string|string[]|true)[]
-     *
-     * @psalm-return array{type: 'file', description?: string, sourcePaths?: array<string>|string, filePattern?: array<string>|string, notPath?: array<string>, showTreeView?: true, modifiers?: array<string>, path?: array<string>|string, contains?: array<string>|string, notContains?: array<string>|string, size?: array<string>|string, date?: array<string>|string, ignoreUnreadableDirs?: true}
-     */
     public function jsonSerialize(): array
     {
         $result = [
