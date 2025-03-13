@@ -117,7 +117,7 @@ final class VersionCommand extends Command
         }
 
         // Remove 'v' prefix if present
-        return \ltrim($data['tag_name'], 'v');
+        return \ltrim((string) $data['tag_name'], 'v');
     }
 
     /**
