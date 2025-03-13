@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Loader;
 
 use Butschster\ContextGenerator\Document;
-use Butschster\ContextGenerator\DocumentRegistry;
+use Butschster\ContextGenerator\Document\DocumentRegistry;
 use Butschster\ContextGenerator\FilesInterface;
 use Butschster\ContextGenerator\Loader\JsonConfigDocumentsLoader;
 use PHPUnit\Framework\Attributes\Test;

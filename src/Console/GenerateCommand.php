@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Console;
 
-use Butschster\ContextGenerator\DocumentCompiler;
+use Butschster\ContextGenerator\Document\DocumentCompiler;
+use Butschster\ContextGenerator\Error\ErrorCollection;
 use Butschster\ContextGenerator\Fetcher\SourceFetcherRegistry;
-use Butschster\ContextGenerator\Files;
+use Butschster\ContextGenerator\Lib\Files;
 use Butschster\ContextGenerator\Loader\CompositeDocumentsLoader;
 use Butschster\ContextGenerator\Loader\ConfigDocumentsLoader;
 use Butschster\ContextGenerator\Loader\JsonConfigDocumentsLoader;
@@ -29,6 +30,7 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(name: 'generate')]
 final class GenerateCommand extends Command
@@ -47,6 +49,8 @@ final class GenerateCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $outputStyle = new SymfonyStyle($input, $output);
+
         $files = new Files();
         $modifiers = new SourceModifierRegistry();
         $modifiers->register(
@@ -108,12 +112,25 @@ final class GenerateCommand extends Command
         );
 
         foreach ($loader->load()->getDocuments() as $document) {
-            $output->writeln(\sprintf('Compiling %s', $document->description));
-            $compiler->compile($document);
-            $output->writeln(\sprintf('Document compiled into %s', $document->outputPath));
-            $output->writeln('');
+            $outputStyle->info(\sprintf('Compiling %s...', $document->description));
+
+            $compiledDocument = $compiler->compile($document);
+            if (!$compiledDocument->errors->hasErrors()) {
+                $outputStyle->success(\sprintf('Document compiled into %s', $document->outputPath));
+                continue;
+            }
+
+            $outputStyle->warning(\sprintf('Document compiled into %s with errors', $document->outputPath));
+            $outputStyle->listing(\iterator_to_array($compiledDocument->errors));
         }
 
         return Command::SUCCESS;
+    }
+
+    private function renderErrors(SymfonyStyle $output, ErrorCollection $errors): void
+    {
+        foreach ($errors as $error) {
+            $output->error($error);
+        }
     }
 }

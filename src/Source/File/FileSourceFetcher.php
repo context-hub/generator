@@ -39,7 +39,24 @@ readonly class FileSourceFetcher implements SourceFetcherInterface
         $content = '';
 
         // Execute find operation and get the result
-        $finderResult = $this->finder->find($source, $this->basePath);
+        try {
+            $finderResult = $this->finder->find($source, $this->basePath);
+        } catch (\Throwable $e) {
+            if (\str_contains($e->getMessage(), 'must call one of in() or append() methods')) {
+                throw new \RuntimeException(
+                    \sprintf(
+                        'Some directories or files contain invalid paths: %s',
+                        \implode(
+                            ', ',
+                            [
+                                ...(array) $source->in(),
+                                ...(array) $source->files(),
+                            ],
+                        ),
+                    ),
+                );
+            }
+        }
 
         // Generate tree view if requested
         if ($source->showTreeView) {
@@ -56,10 +73,6 @@ readonly class FileSourceFetcher implements SourceFetcherInterface
                     relativePath: $file->getPath(),
                     relativePathname: $file->getPathname(),
                 );
-            }
-
-            if (!$file instanceof SplFileInfo) {
-                throw new \RuntimeException('Expected SplFileInfo objects in finder results');
             }
 
             $relativePath = \trim(\str_replace($this->basePath, '', $file->getPath()));

@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator;
+namespace Butschster\ContextGenerator\Lib;
+
+use Butschster\ContextGenerator\FilesInterface;
 
 final readonly class Files implements FilesInterface
 {

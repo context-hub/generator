@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator;
 
+use Butschster\ContextGenerator\Document\DocumentRegistry;
+
 interface DocumentsLoaderInterface
 {
     /**
