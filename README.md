@@ -116,7 +116,7 @@ Alternatively, you can download the ready-to-use PHAR file directly:
 Download and make executable:
 
 ```bash
-wget https://github.com/butschster/context-generator/releases/download/1.0.2/context-generator.phar
+wget https://github.com/butschster/context-generator/releases/download/1.6.1/context-generator.phar
 chmod +x context-generator.phar
 ```
 
@@ -130,7 +130,96 @@ mv context-generator.phar ./context-generator
 mv context-generator.phar /usr/local/bin/context-generator
 ```
 
-### Configuration
+## Command Reference
+
+### Generate Context Files
+
+Generates context files according to your configuration. This is the default command that runs when no command is
+specified.
+
+```bash
+context-generator generate
+```
+
+or simply:
+
+```bash
+context-generator
+```
+
+### Initialize a Configuration File
+
+Creates a new configuration file in the current directory. The default filename is `context.json` if not specified.
+
+```bash
+context-generator init
+```
+
+### Check Version
+
+Checks for available updates by comparing your version with the latest release on GitHub, and provides update
+instructions if a newer version is available.
+
+```bash
+context-generator version
+```
+
+Displays the current version of Context Generator.
+
+```bash
+context-generator version --check-updates
+# or
+context-generator version -c
+```
+
+### Get JSON Schema
+
+Shows the URL where the JSON schema for IDE integration is hosted.
+
+```bash
+context-generator schema
+```
+
+```bash
+context-generator schema --download
+# or
+context-generator schema -d
+```
+
+Downloads the JSON schema to the current directory with the default filename (`json-schema.json`).
+
+```bash
+context-generator schema --download --output=custom-name.json
+# or
+context-generator schema -d -o custom-name.json
+```
+
+## IDE Integration
+
+To get the best experience when working with Context Generator configuration files, you can use the JSON schema for
+autocompletion and validation in your IDE:
+
+1. **Download the schema**:
+   ```bash
+   context-generator schema --download
+   ```
+
+2. **Configure your IDE**:
+    - **For PhpStorm/IntelliJ IDEA**: Add the `json-schema.json` file
+      or [url](https://raw.githubusercontent.com/butschster/context-generator/refs/heads/main/json-schema.json) to your
+      project and associate it with your
+      `context.json` file
+    - **For VS Code**: Add the following to your settings.json:
+      ```json
+      "json.schemas": [
+        {
+          "fileMatch": ["context.json"],
+          "url": "https://raw.githubusercontent.com/butschster/context-generator/refs/heads/main/json-schema.json"
+        }
+      ]
+      ```
+
+## Configuration
 
 Configuration is built around three core concepts:
 
@@ -139,15 +228,7 @@ Configuration is built around three core concepts:
 - **Source**: Where content is collected from - files, GitHub, URLs, text, or git diffs
 - **Modifiers**: Transform source content before inclusion - clean up, simplify, or enhance raw content
 
-### JSON Configuration
-
 Create a `context.json` file in your project root:
-
-> **Note:** We
->
-provide [json-schema.json](https://raw.githubusercontent.com/butschster/context-generator/refs/heads/main/json-schema.json)
-> for JSON configuration validation. You can use it to validate your JSON configuration file or for autocompletion in
-> your IDE.
 
 ```json
 {
@@ -186,7 +267,7 @@ provide [json-schema.json](https://raw.githubusercontent.com/butschster/context-
 
 As you can see it's pretty simple.
 
-## Document Properties
+### Document Properties
 
 | Property      | Type    | Default  | Description                                |
 |---------------|---------|----------|--------------------------------------------|

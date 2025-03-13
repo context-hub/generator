@@ -14,7 +14,10 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand(name: 'init')]
+#[AsCommand(
+    name: 'init',
+    description: 'Initialize a new context configuration file',
+)]
 final class InitCommand extends Command
 {
     public function __construct(public string $baseDir)
