@@ -29,6 +29,7 @@
     "nikic/php-parser": "^v4.0 | ^v5.0"
   },
   "require-dev": {
+    "buggregator/trap": "^1.13",
     "spiral/code-style": "^2.2.2",
     "phpunit/phpunit": "^10.2",
     "rector/rector": "^2.0",

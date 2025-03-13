@@ -5,14 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Cli;
 
 use Butschster\ContextGenerator\DocumentCompiler;
-use Butschster\ContextGenerator\Fetcher\CommitDiffSourceFetcher;
-use Butschster\ContextGenerator\Fetcher\FileSourceFetcher;
-use Butschster\ContextGenerator\Fetcher\Github\GithubContentFetcher;
-use Butschster\ContextGenerator\Fetcher\Github\GithubFinder;
-use Butschster\ContextGenerator\Fetcher\GithubSourceFetcher;
 use Butschster\ContextGenerator\Fetcher\SourceFetcherRegistry;
-use Butschster\ContextGenerator\Fetcher\TextSourceFetcher;
-use Butschster\ContextGenerator\Fetcher\UrlSourceFetcher;
 use Butschster\ContextGenerator\Files;
 use Butschster\ContextGenerator\Loader\CompositeDocumentsLoader;
 use Butschster\ContextGenerator\Loader\ConfigDocumentsLoader;
@@ -23,6 +16,12 @@ use Butschster\ContextGenerator\Modifier\PhpContentFilter;
 use Butschster\ContextGenerator\Modifier\PhpSignature;
 use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
 use Butschster\ContextGenerator\Parser\DefaultSourceParser;
+use Butschster\ContextGenerator\Source\File\FileSourceFetcher;
+use Butschster\ContextGenerator\Source\GitDiff\CommitDiffSourceFetcher;
+use Butschster\ContextGenerator\Source\Github\GithubFinder;
+use Butschster\ContextGenerator\Source\Github\GithubSourceFetcher;
+use Butschster\ContextGenerator\Source\Text\TextSourceFetcher;
+use Butschster\ContextGenerator\Source\Url\UrlSourceFetcher;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
@@ -62,14 +61,6 @@ final class ContextGenerator extends Command
         $githubFinder = new GithubFinder(
             httpClient: $this->httpClient,
             requestFactory: $this->requestFactory,
-            uriFactory: $this->uriFactory,
-            githubToken: $githubToken,
-        );
-
-        $githubContentFetcher = new GithubContentFetcher(
-            httpClient: $this->httpClient,
-            requestFactory: $this->requestFactory,
-            uriFactory: $this->uriFactory,
             githubToken: $githubToken,
         );
 
@@ -88,7 +79,6 @@ final class ContextGenerator extends Command
                 new GithubSourceFetcher(
                     finder: $githubFinder,
                     modifiers: $modifiers,
-                    contentFetcher: $githubContentFetcher,
                 ),
                 new CommitDiffSourceFetcher(
                     modifiers: $modifiers,

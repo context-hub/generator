@@ -28,11 +28,6 @@ final class AstDocTransformer implements SourceModifierInterface
      */
     private array $config;
 
-    /**
-     * Create a new AST to Documentation transformer
-     *
-     * @param array<string, mixed> $config Configuration options
-     */
     public function __construct(array $config = [])
     {
         // Default configuration values
@@ -63,29 +58,16 @@ final class AstDocTransformer implements SourceModifierInterface
         ], $config);
     }
 
-    /**
-     * Get the modifier identifier
-     */
     public function getIdentifier(): string
     {
         return 'php-docs';
     }
 
-    /**
-     * Check if this modifier supports the given content type
-     */
     public function supports(string $contentType): bool
     {
         return \str_ends_with($contentType, '.php');
     }
 
-    /**
-     * Transform PHP code into markdown documentation
-     *
-     * @param string $content PHP code content
-     * @param array<string, mixed> $context Additional context information
-     * @return string Formatted markdown documentation
-     */
     public function modify(string $content, array $context = []): string
     {
         // Merge context configuration with defaults

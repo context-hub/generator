@@ -162,8 +162,8 @@ class JsonConfigDocumentsLoaderTest extends TestCase
 
         $sources = $document->getSources();
         $this->assertCount(2, $sources);
-        $this->assertInstanceOf(\Butschster\ContextGenerator\Source\FileSource::class, $sources[0]);
-        $this->assertInstanceOf(\Butschster\ContextGenerator\Source\UrlSource::class, $sources[1]);
+        $this->assertInstanceOf(\Butschster\ContextGenerator\Source\File\FileSource::class, $sources[0]);
+        $this->assertInstanceOf(\Butschster\ContextGenerator\Source\Url\UrlSource::class, $sources[1]);
     }
 
     #[Test]
@@ -198,8 +198,8 @@ class JsonConfigDocumentsLoaderTest extends TestCase
 
         $apiSources = $apiDoc->getSources();
         $this->assertCount(2, $apiSources);
-        $this->assertInstanceOf(\Butschster\ContextGenerator\Source\FileSource::class, $apiSources[0]);
-        $this->assertInstanceOf(\Butschster\ContextGenerator\Source\UrlSource::class, $apiSources[1]);
+        $this->assertInstanceOf(\Butschster\ContextGenerator\Source\File\FileSource::class, $apiSources[0]);
+        $this->assertInstanceOf(\Butschster\ContextGenerator\Source\Url\UrlSource::class, $apiSources[1]);
 
         // Check file source properties
         $fileSource = $apiSources[0];
@@ -222,9 +222,9 @@ class JsonConfigDocumentsLoaderTest extends TestCase
 
         $userGuideSources = $userGuide->getSources();
         $this->assertCount(3, $userGuideSources);
-        $this->assertInstanceOf(\Butschster\ContextGenerator\Source\TextSource::class, $userGuideSources[0]);
-        $this->assertInstanceOf(\Butschster\ContextGenerator\Source\FileSource::class, $userGuideSources[1]);
-        $this->assertInstanceOf(\Butschster\ContextGenerator\Source\GithubSource::class, $userGuideSources[2]);
+        $this->assertInstanceOf(\Butschster\ContextGenerator\Source\Text\TextSource::class, $userGuideSources[0]);
+        $this->assertInstanceOf(\Butschster\ContextGenerator\Source\File\FileSource::class, $userGuideSources[1]);
+        $this->assertInstanceOf(\Butschster\ContextGenerator\Source\Github\GithubSource::class, $userGuideSources[2]);
 
         // Verify third document (Development Setup)
         $devSetup = $documents[2];
@@ -234,8 +234,8 @@ class JsonConfigDocumentsLoaderTest extends TestCase
 
         $devSetupSources = $devSetup->getSources();
         $this->assertCount(2, $devSetupSources);
-        $this->assertInstanceOf(\Butschster\ContextGenerator\Source\FileSource::class, $devSetupSources[0]);
-        $this->assertInstanceOf(\Butschster\ContextGenerator\Source\TextSource::class, $devSetupSources[1]);
+        $this->assertInstanceOf(\Butschster\ContextGenerator\Source\File\FileSource::class, $devSetupSources[0]);
+        $this->assertInstanceOf(\Butschster\ContextGenerator\Source\Text\TextSource::class, $devSetupSources[1]);
 
         // Check file source with complex modifiers
         $configFileSource = $devSetupSources[0];

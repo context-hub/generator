@@ -11,4 +11,10 @@
             <directory name="vendor"/>
         </ignoreFiles>
     </projectFiles>
+    <forbiddenFunctions>
+        <function name="var_dump"/>
+        <function name="dd"/>
+        <function name="dump"/>
+        <function name="trap"/>
+    </forbiddenFunctions>
 </psalm>

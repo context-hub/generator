@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Source;
 
-use Butschster\ContextGenerator\Source\UrlSource;
+use Butschster\ContextGenerator\Source\Url\UrlSource;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 

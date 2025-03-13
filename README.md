@@ -474,18 +474,149 @@ Pull files directly from a GitHub repository:
 
 #### Parameters
 
-| Parameter         | Type          | Default  | Description                                                                         |
-|-------------------|---------------|----------|-------------------------------------------------------------------------------------|
-| `type`            | string        | required | Must be `"github"`                                                                  |
-| `description`     | string        | `""`     | Human-readable description of the source                                            |
-| `repository`      | string        | required | GitHub repository in format `"owner/repo"`                                          |
-| `sourcePaths`     | string\|array | required | Path(s) within the repository to include                                            |
-| `branch`          | string        | `"main"` | Branch or tag to fetch from                                                         |
-| `filePattern`     | string\|array | `"*.*"`  | File pattern(s) to match                                                            |
-| `excludePatterns` | array         | `[]`     | Patterns to exclude files                                                           |
-| `showTreeView`    | boolean       | `true`   | Whether to display a directory tree visualization                                   |
-| `githubToken`     | string        | `null`   | GitHub API token for private repositories (can use env var pattern `${TOKEN_NAME}`) |
-| `modifiers`       | array         | `[]`     | Content modifiers to apply                                                          |
+| Parameter                        | Type          | Default  | Description                                                                         |
+|----------------------------------|---------------|----------|-------------------------------------------------------------------------------------|
+| `type`                           | string        | required | Must be `"github"`                                                                  |
+| `description`                    | string        | `""`     | Human-readable description of the source                                            |
+| `repository`                     | string        | required | GitHub repository in format `"owner/repo"`                                          |
+| `sourcePaths`                    | string\|array | required | Path(s) within the repository to include                                            |
+| `branch`                         | string        | `"main"` | Branch or tag to fetch from                                                         |
+| `filePattern`                    | string\|array | `"*.*"`  | File pattern(s) to match                                                            |
+| `excludePatterns`                | array         | `[]`     | Patterns to exclude files                                                           |
+| `notPath` (or `excludePatterns`) | array         | `[]`     | Patterns to exclude files                                                           |
+| `path`                           | string\|array | `[]`     | Patterns to include only files in specific paths                                    |
+| `contains`                       | string\|array | `[]`     | Patterns to include only files containing specific content                          |
+| `notContains`                    | string\|array | `[]`     | Patterns to exclude files containing specific content                               |
+| `showTreeView`                   | boolean       | `true`   | Whether to display a directory tree visualization                                   |
+| `githubToken`                    | string        | `null`   | GitHub API token for private repositories (can use env var pattern `${TOKEN_NAME}`) |
+| `modifiers`                      | array         | `[]`     | Content modifiers to apply                                                          |
+
+#### Multiple Source Paths
+
+You can include files from multiple directories:
+
+```json
+{
+  "type": "github",
+  "description": "Multiple Source Directories",
+  "sourcePaths": [
+    "src/Controllers",
+    "src/Models",
+    "config"
+  ],
+  "filePattern": "*.php",
+  "showTreeView": true
+}
+```
+
+#### Multiple File Patterns
+
+Include different file types:
+
+```json
+{
+  "type": "github",
+  "description": "Multiple File Types",
+  "sourcePaths": [
+    "src"
+  ],
+  "filePattern": [
+    "*.php",
+    "*.json",
+    "*.md"
+  ],
+  "showTreeView": true
+}
+```
+
+#### Path-Based Filtering
+
+Target specific subdirectories or files:
+
+```json
+{
+  "type": "github",
+  "description": "Only Controller Files",
+  "sourcePaths": [
+    "src"
+  ],
+  "path": "Controller",
+  "filePattern": "*.php",
+  "showTreeView": true
+}
+```
+
+This will only include files with "Controller" in their path. You can also use an array:
+
+```json
+{
+  "type": "github",
+  "description": "Controllers and Services",
+  "sourcePaths": [
+    "src"
+  ],
+  "path": [
+    "Controller",
+    "Service"
+  ],
+  "filePattern": "*.php",
+  "showTreeView": true
+}
+```
+
+#### Content-Based Filtering
+
+Include or exclude files based on their content:
+
+```json
+{
+  "type": "github",
+  "description": "Repository Classes",
+  "sourcePaths": [
+    "src"
+  ],
+  "contains": "class Repository",
+  "filePattern": "*.php",
+  "showTreeView": true
+}
+```
+
+You can also exclude files containing specific content:
+
+```json
+{
+  "type": "github",
+  "description": "Non-Deprecated Classes",
+  "sourcePaths": [
+    "src"
+  ],
+  "notContains": "@deprecated",
+  "filePattern": "*.php",
+  "showTreeView": true
+}
+```
+
+Use arrays for multiple patterns:
+
+```json
+{
+  "type": "github",
+  "description": "Service Classes",
+  "sourcePaths": [
+    "src"
+  ],
+  "contains": [
+    "class Service",
+    "implements ServiceInterface"
+  ],
+  "notContains": [
+    "@deprecated",
+    "@internal"
+  ],
+  "filePattern": "*.php",
+  "showTreeView": true
+}
+```
 
 ### Git Diff Source
 
@@ -1176,10 +1307,8 @@ Create a PHP configuration file (`context.php`):
 
 use Butschster\ContextGenerator\Document;
 use Butschster\ContextGenerator\DocumentRegistry;
-use Butschster\ContextGenerator\Source\FileSource;
-use Butschster\ContextGenerator\Source\TextSource;
-use Butschster\ContextGenerator\Source\UrlSource;
-use Butschster\ContextGenerator\Source\GithubSource;
+use Butschster\ContextGenerator\Source\File\FileSource;
+use Butschster\ContextGenerator\Source\Text\TextSource;
 
 return (new DocumentRegistry())
     ->register(
@@ -1211,7 +1340,7 @@ return (new DocumentRegistry())
 The `Butschster\ContextGenerator\Source\FileSource` allows you to include content from files and directories:
 
 ```php
-use Butschster\ContextGenerator\Source\FileSource;
+use Butschster\ContextGenerator\Source\File\FileSource;
 
 new FileSource(
     sourcePaths: __DIR__ . '/src',        // Path to directory or file
@@ -1228,7 +1357,7 @@ new FileSource(
 The `Butschster\ContextGenerator\Source\GithubSource` allows you to include content directly from a GitHub repository:
 
 ```php
-use Butschster\ContextGenerator\Source\GithubSource;
+use Butschster\ContextGenerator\Source\Github\GithubSource;
 
 new GithubSource(
     repository: 'owner/repo',             // GitHub repository in format "owner/repo"
@@ -1236,7 +1365,7 @@ new GithubSource(
     branch: 'main',                       // Branch or tag to fetch from (default: main)
     description: 'Repository files',      // Optional description
     filePattern: '*.php',                 // Pattern to match files (default: *.php)
-    excludePatterns: ['tests', 'vendor'], // Patterns to exclude
+    notPath: ['tests', 'vendor'], // Patterns to exclude
     showTreeView: true,                   // Whether to show directory tree (default: true)
     githubToken: '${GITHUB_TOKEN}',       // GitHub API token for private repos (can use env vars)
     modifiers: ['php-signature'],         // Optional content modifiers to apply
@@ -1249,7 +1378,7 @@ The `Butschster\ContextGenerator\Source\CommitDiffSource` allows you to include 
 changes:
 
 ```php
-use Butschster\ContextGenerator\Source\CommitDiffSource;
+use Butschster\ContextGenerator\Source\GitDiff\CommitDiffSource;
 
 new CommitDiffSource(
     repository: __DIR__,                  // Path to git repository (use current directory with __DIR__)
@@ -1271,7 +1400,7 @@ sections using CSS selectors.
 It also cleans the HTML content to remove unnecessary elements and converts into markdown format.
 
 ```php
-use Butschster\ContextGenerator\Source\UrlSource;
+use Butschster\ContextGenerator\Source\Url\UrlSource;
 
 new UrlSource(
     urls: ['https://example.com/docs'],  // URLs to fetch
@@ -1286,7 +1415,7 @@ The `Butschster\ContextGenerator\Source\TextSource` allows you to include plain 
 additional instructions.
 
 ```php
-use Butschster\ContextGenerator\Source\TextSource;
+use Butschster\ContextGenerator\Source\Text\TextSource;
 
 new TextSource(
     content: <<<TEXT

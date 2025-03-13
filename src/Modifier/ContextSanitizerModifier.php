@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Modifier;
 
-use Butschster\ContextGenerator\Sanitizer\ContextSanitizer;
-use Butschster\ContextGenerator\Sanitizer\RuleFactory;
+use Butschster\ContextGenerator\Lib\Sanitizer\ContextSanitizer;
+use Butschster\ContextGenerator\Lib\Sanitizer\RuleFactory;
 use Butschster\ContextGenerator\SourceModifierInterface;
 
 /**

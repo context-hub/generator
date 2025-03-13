@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Source;
 
-use Butschster\ContextGenerator\Source\TextSource;
+use Butschster\ContextGenerator\Source\Text\TextSource;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
