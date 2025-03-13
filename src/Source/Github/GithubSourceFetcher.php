@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Source\Github;
 
 use Butschster\ContextGenerator\Fetcher\SourceFetcherInterface;
+use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Lib\Finder\FinderInterface;
 use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
 use Butschster\ContextGenerator\SourceInterface;
@@ -19,6 +20,7 @@ final readonly class GithubSourceFetcher implements SourceFetcherInterface
     public function __construct(
         private FinderInterface $finder,
         private SourceModifierRegistry $modifiers,
+        private ContentBuilderFactory $builderFactory = new ContentBuilderFactory(),
     ) {}
 
     public function supports(SourceInterface $source): bool
@@ -32,22 +34,28 @@ final readonly class GithubSourceFetcher implements SourceFetcherInterface
             throw new \InvalidArgumentException('Source must be an instance of GithubSource');
         }
 
-        $content = '';
+        // Create builder
+        $builder = $this->builderFactory
+            ->create()
+            ->addTitle($source->getDescription(), 2)
+            ->addDescription(
+                \sprintf('Repository: https://github.com/%s. Branch: %s', $source->repository, $source->branch),
+            );
 
         // Find files using the finder and get the FinderResult
         $finderResult = $this->finder->find($source);
 
         // Add tree view if requested
         if ($source->showTreeView) {
-            $content .= "```\n";
-            $content .= $finderResult->treeView;
-            $content .= "```\n\n";
+            $builder->addTreeView($finderResult->treeView);
         }
 
         // Fetch and add the content of each file
         foreach ($finderResult->files as $file) {
             $fileContent = $file->getContents();
-            $path = $file->getRelativePath();
+
+            $path = $file->getRelativePathname();
+
             // Apply modifiers if available
             if (!empty($source->modifiers)) {
                 foreach ($source->modifiers as $modifierId) {
@@ -60,12 +68,26 @@ final readonly class GithubSourceFetcher implements SourceFetcherInterface
                 }
             }
 
-            $content .= "```\n";
-            $content .= "// Path: {$path}\n";
-            $content .= \trim((string) $fileContent) . "\n\n";
-            $content .= "```\n";
+            $builder
+                ->addCodeBlock(
+                    code: \trim((string) $fileContent),
+                    language: $this->detectLanguage($path),
+                    path: $path,
+                );
         }
 
-        return $content;
+        // Return built content
+        return $builder->build();
+    }
+
+    private function detectLanguage(string $filePath): ?string
+    {
+        $extension = \pathinfo($filePath, PATHINFO_EXTENSION);
+
+        if (empty($extension)) {
+            return null;
+        }
+
+        return $extension;
     }
 }

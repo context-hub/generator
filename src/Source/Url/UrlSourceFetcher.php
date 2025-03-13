@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Source\Url;
 
 use Butschster\ContextGenerator\Fetcher\SourceFetcherInterface;
+use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Lib\Html\HtmlCleaner;
 use Butschster\ContextGenerator\Lib\Html\HtmlCleanerInterface;
 use Butschster\ContextGenerator\Lib\Html\SelectorContentExtractor;
@@ -34,6 +35,7 @@ final readonly class UrlSourceFetcher implements SourceFetcherInterface
         ],
         private HtmlCleanerInterface $cleaner = new HtmlCleaner(),
         private ?SelectorContentExtractorInterface $selectorExtractor = new SelectorContentExtractor(),
+        private ContentBuilderFactory $builderFactory = new ContentBuilderFactory(),
     ) {
         if ($this->httpClient === null || $this->requestFactory === null || $this->uriFactory === null) {
             throw new \RuntimeException('To use Url source you need to install PSR-18 HTTP client');
@@ -51,7 +53,9 @@ final readonly class UrlSourceFetcher implements SourceFetcherInterface
             throw new \InvalidArgumentException('Source must be an instance of UrlSource');
         }
 
-        $content = '';
+        // Create builder
+        $builder = $this->builderFactory->create();
+
         foreach ($source->urls as $url) {
             try {
                 // Create and send the request
@@ -64,9 +68,10 @@ final readonly class UrlSourceFetcher implements SourceFetcherInterface
                 $response = $this->httpClient->sendRequest($request);
                 $statusCode = $response->getStatusCode();
                 if ($statusCode < 200 || $statusCode >= 300) {
-                    $content .= "// URL: {$url}" . PHP_EOL;
-                    $content .= "// Error: HTTP status code {$statusCode}" . PHP_EOL;
-                    $content .= '----------------------------------------------------------' . PHP_EOL;
+                    $builder
+                        ->addComment("URL: {$url}")
+                        ->addComment("Error: HTTP status code {$statusCode}")
+                        ->addSeparator();
                     continue;
                 }
                 // Get the response body
@@ -77,25 +82,31 @@ final readonly class UrlSourceFetcher implements SourceFetcherInterface
                     \assert(!empty($selector));
                     $contentFromSelector = $this->selectorExtractor->extract($html, $selector);
                     if (empty($html)) {
-                        $content .= "// URL: {$url}" . PHP_EOL;
-                        $content .= "// Warning: Selector '{$source->getSelector()}' didn't match any content" . PHP_EOL;
+                        $builder
+                            ->addComment("URL: {$url}")
+                            ->addComment("Warning: Selector '{$source->getSelector()}' didn't match any content")
+                            ->addSeparator();
                     } else {
-                        $content .= "// URL: {$url} (selector: {$source->getSelector()})" . PHP_EOL;
+                        $builder->addComment("URL: {$url} (selector: {$source->getSelector()})");
                         $html = $contentFromSelector;
                     }
                 } else {
                     // Process the whole page
-                    $content .= "// URL: {$url}" . PHP_EOL;
+                    $builder->addComment("URL: {$url}");
                 }
-                $content .= $this->cleaner->clean($html) . PHP_EOL . PHP_EOL;
-                $content .= "// END OF URL: {$url}" . PHP_EOL;
-                $content .= '----------------------------------------------------------' . PHP_EOL;
+                $builder
+                    ->addText($this->cleaner->clean($html))
+                    ->addComment("END OF URL: {$url}")
+                    ->addSeparator();
             } catch (\Throwable $e) {
-                $content .= "// URL: {$url}" . PHP_EOL;
-                $content .= "// Error: {$e->getMessage()}" . PHP_EOL;
-                $content .= '----------------------------------------------------------' . PHP_EOL;
+                $builder
+                    ->addComment("URL: {$url}")
+                    ->addComment("Error: {$e->getMessage()}")
+                    ->addSeparator();
             }
         }
-        return $content;
+
+        // Return built content
+        return $builder->build();
     }
 }

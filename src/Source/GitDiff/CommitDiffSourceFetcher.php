@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Source\GitDiff;
 
 use Butschster\ContextGenerator\Fetcher\SourceFetcherInterface;
+use Butschster\ContextGenerator\Lib\Content\ContentBuilder;
+use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Lib\Finder\FinderInterface;
 use Butschster\ContextGenerator\Lib\Finder\FinderResult;
 use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
@@ -24,6 +26,7 @@ final readonly class CommitDiffSourceFetcher implements SourceFetcherInterface
     public function __construct(
         private SourceModifierRegistry $modifiers,
         private FinderInterface $finder = new CommitDiffFinder(),
+        private ContentBuilderFactory $builderFactory = new ContentBuilderFactory(),
     ) {}
 
     public function supports(SourceInterface $source): bool
@@ -102,32 +105,37 @@ final readonly class CommitDiffSourceFetcher implements SourceFetcherInterface
         string $treeView,
         CommitDiffSource $source,
     ): string {
-        $content = '';
+        $builder = $this->builderFactory->create();
+
         // Handle empty diffs case
         if (empty($diffs)) {
-            return "# Git Diff for Commit Range: {$source->commit}\n\nNo changes found in this commit range.\n";
+            $builder
+                ->addTitle("Git Diff for Commit Range: {$source->commit}", 1)
+                ->addText("No changes found in this commit range.");
+
+            return $builder->build();
         }
 
         // Add a header with the commit range
-        $content .= "# Git Diff for Commit Range: {$source->commit}\n\n";
-
-        // Add a tree view summary of changed files
-        $content .= "## Summary of Changes\n\n";
-        $content .= "```\n";
-        $content .= $treeView;
-        $content .= "```\n\n";
+        $builder
+            ->addTitle("Git Diff for Commit Range: {$source->commit}", 1)
+            ->addTitle($source->getDescription(), 2)
+            ->addTitle("Summary of Changes", 2)
+            ->addTreeView($treeView);
 
         // Add each diff
         foreach ($diffs as $file => $diffData) {
             // Add stats if requested
             if ($source->showStats && !empty($diffData['stats'])) {
-                $content .= "## Stats for {$file}\n\n";
-                $content .= "```\n{$diffData['stats']}\n```\n\n";
+                $builder
+                    ->addTitle("Stats for {$file}", 2)
+                    ->addCodeBlock($diffData['stats']);
             }
 
             // Add the diff
-            $content .= "## Diff for {$file}\n\n";
-            $content .= "```diff\n{$diffData['diff']}\n```\n\n";
+            $builder
+                ->addTitle("Diff for {$file}", 2)
+                ->addCodeBlock($diffData['diff'], 'diff');
 
             // Apply modifiers if available
             if (!empty($source->modifiers)) {
@@ -139,13 +147,19 @@ final readonly class CommitDiffSourceFetcher implements SourceFetcherInterface
                                 'file' => $file,
                                 'source' => $source,
                             ];
+                            // Note: This approach may need to be revised since we're now using ContentBuilder
+                            // and not directly manipulating the content string
+                            $content = $builder->build();
                             $content = $modifier->modify($content, $context);
+                            // Create a new builder with the modified content
+                            $builder = ContentBuilder::create();
+                            $builder->addText($content);
                         }
                     }
                 }
             }
         }
 
-        return $content;
+        return $builder->build();
     }
 }

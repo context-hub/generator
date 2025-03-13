@@ -895,17 +895,67 @@ Include custom text content like headers, notes, or instructions.
 {
   "type": "text",
   "description": "Custom Notes",
-  "content": "# Project Notes\n\nThis is additional context for the AI."
+  "content": "# Project Notes\n\nThis is additional context for the AI.",
+  "tag": "PROJECT_NOTES"
 }
 ```
 
 #### Parameters
 
-| Parameter     | Type   | Default  | Description                              |
-|---------------|--------|----------|------------------------------------------|
-| `type`        | string | required | Must be `"text"`                         |
-| `description` | string | `""`     | Human-readable description of the source |
-| `content`     | string | required | Text content to include                  |
+| Parameter     | Type   | Default         | Description                                |
+|---------------|--------|-----------------|--------------------------------------------|
+| `type`        | string | required        | Must be `"text"`                           |
+| `description` | string | `""`            | Human-readable description of the source   |
+| `content`     | string | required        | Text content to include                    |
+| `tag`         | string | `"INSTRUCTION"` | Custom tag to identify the type of content |
+
+#### Custom Tags Example
+
+You can use custom tags to better identify the purpose of different text blocks:
+
+```json
+{
+  "documents": [
+    {
+      "description": "API Documentation",
+      "outputPath": "docs/api.md",
+      "sources": [
+        {
+          "type": "text",
+          "description": "Introduction",
+          "content": "# API Documentation\n\nThis document provides an overview of the API.",
+          "tag": "INTRO"
+        },
+        {
+          "type": "text",
+          "description": "Usage Notes",
+          "content": "## Usage Notes\n\n- Always include API key in headers\n- Rate limits apply",
+          "tag": "USAGE_NOTES"
+        }
+      ]
+    }
+  ]
+}
+```
+
+The generated output will include the specified tags:
+
+```
+<INTRO>
+# API Documentation
+
+This document provides an overview of the API.
+</INTRO>
+----------------------------------------------------------
+
+<USAGE_NOTES>
+## Usage Notes
+
+- Always include API key in headers
+- Rate limits apply
+</USAGE_NOTES>
+----------------------------------------------------------
+```
 
 ## Modifiers
 

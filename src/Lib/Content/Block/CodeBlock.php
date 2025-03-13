@@ -18,6 +18,7 @@ final readonly class CodeBlock extends AbstractBlock
     public function __construct(
         string $content,
         private ?string $language = null,
+        private ?string $filepath = null,
     ) {
         parent::__construct($content);
     }
@@ -28,6 +29,14 @@ final readonly class CodeBlock extends AbstractBlock
     public function getLanguage(): ?string
     {
         return $this->language;
+    }
+
+    /**
+     * Get the file path for the code block
+     */
+    public function getFilePath(): ?string
+    {
+        return $this->filepath;
     }
 
     /**

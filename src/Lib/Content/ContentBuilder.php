@@ -18,7 +18,7 @@ use Butschster\ContextGenerator\Lib\Content\Renderer\RendererInterface;
 /**
  * Builder for creating structured content with various block types
  */
-final class ContentBuilder
+final class ContentBuilder implements \Stringable
 {
     /**
      * @var ContentBlock The content block container
@@ -113,9 +113,9 @@ final class ContentBuilder
      * @param string $code The code content
      * @param string|null $language The language for syntax highlighting
      */
-    public function addCodeBlock(string $code, ?string $language = null): self
+    public function addCodeBlock(string $code, ?string $language = null, ?string $path = null): self
     {
-        return $this->addBlock(new CodeBlock($code, $language));
+        return $this->addBlock(new CodeBlock($code, $language, $path));
     }
 
     /**
@@ -156,16 +156,13 @@ final class ContentBuilder
      */
     public function build(): string
     {
-        return $this->content->render($this->renderer);
+        $content = $this->content->render($this->renderer);
+
+        return $content;
     }
 
-    /**
-     * Get all blocks in the content
-     *
-     * @return array The content blocks
-     */
-    public function getBlocks(): array
+    public function __toString(): string
     {
-        return $this->content->getBlocks();
+        return $this->build();
     }
 }

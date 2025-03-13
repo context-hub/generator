@@ -23,7 +23,15 @@ final class MarkdownRenderer extends AbstractRenderer
     public function renderCodeBlock(CodeBlock $block): string
     {
         $language = $block->getLanguage() ?: '';
-        return "```{$language}\n" . $block . "\n```\n\n";
+        $path = $block->getFilePath() ? "// Path: {$block->getFilePath()}\n" : '';
+
+        return <<<CODE
+            ```{$language}
+            $path
+            $block
+            ```
+            \n\n
+            CODE;
     }
 
     /**
@@ -32,17 +40,8 @@ final class MarkdownRenderer extends AbstractRenderer
     public function renderTextBlock(TextBlock $block): string
     {
         $content = (string) $block;
-        if ($block->hasTag()) {
-            $content = \sprintf(
-                <<<'TEXT'
-                    <%s>
-                    %s
-                    </%s>
-                    TEXT,
-                $block->getTag(),
-                $content,
-                $block->getTag(),
-            );
+        if (empty($content)) {
+            return '';
         }
         return $content . "\n\n";
     }
@@ -52,10 +51,15 @@ final class MarkdownRenderer extends AbstractRenderer
      */
     public function renderTitleBlock(TitleBlock $block): string
     {
+        $content = (string) $block;
+        if (empty($content)) {
+            return '';
+        }
+
         $level = $block->getLevel();
         $prefix = \str_repeat('#', \min(6, \max(1, $level)));
 
-        return "{$prefix} " . $block . "\n\n";
+        return "{$prefix} " . $content . "\n\n";
     }
 
     /**
@@ -63,7 +67,12 @@ final class MarkdownRenderer extends AbstractRenderer
      */
     public function renderDescriptionBlock(DescriptionBlock $block): string
     {
-        return "_" . $block . "_\n\n";
+        $content = (string) $block;
+        if (empty($content)) {
+            return '';
+        }
+
+        return "_" . $content . "_\n\n";
     }
 
     /**
@@ -71,7 +80,11 @@ final class MarkdownRenderer extends AbstractRenderer
      */
     public function renderTreeViewBlock(TreeViewBlock $block): string
     {
-        return "```\n" . $block . "\n```\n\n";
+        $content = (string) $block;
+        if (empty($content)) {
+            return '';
+        }
+        return "```\n" . $content . "\n```\n\n";
     }
 
     /**
@@ -87,13 +100,18 @@ final class MarkdownRenderer extends AbstractRenderer
      */
     public function renderCommentBlock(CommentBlock $block): string
     {
-        $lines = \explode("\n", (string) $block);
+        $content = (string) $block;
+        if (empty($content)) {
+            return '';
+        }
+
+        $lines = \explode("\n", $content);
         $result = '';
 
         foreach ($lines as $line) {
             $result .= "// {$line}\n";
         }
 
-        return $result . "\n";
+        return $result . "\n\n";
     }
 }

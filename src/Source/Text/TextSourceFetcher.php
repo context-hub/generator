@@ -5,14 +5,19 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Source\Text;
 
 use Butschster\ContextGenerator\Fetcher\SourceFetcherInterface;
+use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\SourceInterface;
 
 /**
  * Fetcher for text sources
  * @implements SourceFetcherInterface<TextSource>
  */
-final class TextSourceFetcher implements SourceFetcherInterface
+final readonly class TextSourceFetcher implements SourceFetcherInterface
 {
+    public function __construct(
+        private ContentBuilderFactory $builderFactory = new ContentBuilderFactory(),
+    ) {}
+
     public function supports(SourceInterface $source): bool
     {
         return $source instanceof TextSource;
@@ -24,9 +29,16 @@ final class TextSourceFetcher implements SourceFetcherInterface
             throw new \InvalidArgumentException('Source must be an instance of TextSource');
         }
 
-        return "// TEXT CONTENT:" . PHP_EOL .
-            $source->content . PHP_EOL . PHP_EOL .
-            "// END OF TEXT CONTENT" . PHP_EOL .
-            '----------------------------------------------------------' . PHP_EOL;
+        // Create builder
+        $builder = $this->builderFactory
+            ->create()
+            ->addDescription($source->getDescription())
+            ->addText(\sprintf('<%s>', $source->tag))
+            ->addText($source->content)
+            ->addText(\sprintf('</%s>', $source->tag))
+            ->addSeparator();
+
+        // Return built content
+        return $builder->build();
     }
 }

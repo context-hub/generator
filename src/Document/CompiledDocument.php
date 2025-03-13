@@ -9,7 +9,7 @@ use Butschster\ContextGenerator\Error\ErrorCollection;
 final readonly class CompiledDocument
 {
     public function __construct(
-        public string $content,
+        public string|\Stringable $content,
         public ErrorCollection $errors,
     ) {}
 }
