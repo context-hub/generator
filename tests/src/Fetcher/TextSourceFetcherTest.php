@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fetcher;
 
-use Butschster\ContextGenerator\Fetcher\TextSourceFetcher;
-use Butschster\ContextGenerator\Source\TextSource;
+use Butschster\ContextGenerator\Source\Text\TextSource;
+use Butschster\ContextGenerator\Source\Text\TextSourceFetcher;
 use Butschster\ContextGenerator\SourceInterface;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fetcher;
 
-use Butschster\ContextGenerator\Fetcher\Url\HtmlCleaner;
+use Butschster\ContextGenerator\Lib\Html\HtmlCleaner;
 use League\HTMLToMarkdown\HtmlConverter;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

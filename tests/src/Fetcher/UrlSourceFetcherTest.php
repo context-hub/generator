@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fetcher;
 
-use Butschster\ContextGenerator\Fetcher\Url\HtmlCleanerInterface;
-use Butschster\ContextGenerator\Fetcher\Url\SelectorContentExtractorInterface;
-use Butschster\ContextGenerator\Fetcher\UrlSourceFetcher;
-use Butschster\ContextGenerator\Source\UrlSource;
+use Butschster\ContextGenerator\Lib\Html\HtmlCleanerInterface;
+use Butschster\ContextGenerator\Lib\Html\SelectorContentExtractorInterface;
+use Butschster\ContextGenerator\Source\Url\UrlSource;
+use Butschster\ContextGenerator\Source\Url\UrlSourceFetcher;
 use Butschster\ContextGenerator\SourceInterface;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

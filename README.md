@@ -1176,10 +1176,8 @@ Create a PHP configuration file (`context.php`):
 
 use Butschster\ContextGenerator\Document;
 use Butschster\ContextGenerator\DocumentRegistry;
-use Butschster\ContextGenerator\Source\FileSource;
-use Butschster\ContextGenerator\Source\TextSource;
-use Butschster\ContextGenerator\Source\UrlSource;
-use Butschster\ContextGenerator\Source\GithubSource;
+use Butschster\ContextGenerator\Source\File\FileSource;
+use Butschster\ContextGenerator\Source\Text\TextSource;
 
 return (new DocumentRegistry())
     ->register(
@@ -1211,7 +1209,7 @@ return (new DocumentRegistry())
 The `Butschster\ContextGenerator\Source\FileSource` allows you to include content from files and directories:
 
 ```php
-use Butschster\ContextGenerator\Source\FileSource;
+use Butschster\ContextGenerator\Source\File\FileSource;
 
 new FileSource(
     sourcePaths: __DIR__ . '/src',        // Path to directory or file
@@ -1228,7 +1226,7 @@ new FileSource(
 The `Butschster\ContextGenerator\Source\GithubSource` allows you to include content directly from a GitHub repository:
 
 ```php
-use Butschster\ContextGenerator\Source\GithubSource;
+use Butschster\ContextGenerator\Source\Github\GithubSource;
 
 new GithubSource(
     repository: 'owner/repo',             // GitHub repository in format "owner/repo"
@@ -1249,7 +1247,7 @@ The `Butschster\ContextGenerator\Source\CommitDiffSource` allows you to include 
 changes:
 
 ```php
-use Butschster\ContextGenerator\Source\CommitDiffSource;
+use Butschster\ContextGenerator\Source\GitDiff\CommitDiffSource;
 
 new CommitDiffSource(
     repository: __DIR__,                  // Path to git repository (use current directory with __DIR__)
@@ -1271,7 +1269,7 @@ sections using CSS selectors.
 It also cleans the HTML content to remove unnecessary elements and converts into markdown format.
 
 ```php
-use Butschster\ContextGenerator\Source\UrlSource;
+use Butschster\ContextGenerator\Source\Url\UrlSource;
 
 new UrlSource(
     urls: ['https://example.com/docs'],  // URLs to fetch
@@ -1286,7 +1284,7 @@ The `Butschster\ContextGenerator\Source\TextSource` allows you to include plain 
 additional instructions.
 
 ```php
-use Butschster\ContextGenerator\Source\TextSource;
+use Butschster\ContextGenerator\Source\Text\TextSource;
 
 new TextSource(
     content: <<<TEXT

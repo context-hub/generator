@@ -7,10 +7,10 @@ namespace Tests\Loader;
 use Butschster\ContextGenerator\Document;
 use Butschster\ContextGenerator\DocumentRegistry;
 use Butschster\ContextGenerator\Loader\JsonConfigParser;
-use Butschster\ContextGenerator\Source\FileSource;
-use Butschster\ContextGenerator\Source\GithubSource;
-use Butschster\ContextGenerator\Source\TextSource;
-use Butschster\ContextGenerator\Source\UrlSource;
+use Butschster\ContextGenerator\Source\File\FileSource;
+use Butschster\ContextGenerator\Source\Github\GithubSource;
+use Butschster\ContextGenerator\Source\Text\TextSource;
+use Butschster\ContextGenerator\Source\Url\UrlSource;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fetcher;
 
-use Butschster\ContextGenerator\Fetcher\FileTreeBuilder;
+use Butschster\ContextGenerator\Lib\TreeBuilder\FileTreeBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
