@@ -32,7 +32,10 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand(name: 'generate')]
+#[AsCommand(
+    name: 'generate',
+    description: 'Generate context files from configuration',
+)]
 final class GenerateCommand extends Command
 {
     public function __construct(
