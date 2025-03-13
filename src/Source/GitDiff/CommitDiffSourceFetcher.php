@@ -8,7 +8,6 @@ use Butschster\ContextGenerator\Fetcher\SourceFetcherInterface;
 use Butschster\ContextGenerator\Lib\Finder\FinderInterface;
 use Butschster\ContextGenerator\Lib\Finder\FinderResult;
 use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
-use Butschster\ContextGenerator\Source\GitDiff\Fetcher\CommitDiffFinder;
 use Butschster\ContextGenerator\SourceInterface;
 use Symfony\Component\Finder\SplFileInfo;
 

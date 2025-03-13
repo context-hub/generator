@@ -6,19 +6,15 @@ namespace Butschster\ContextGenerator\Lib\PathFilter;
 
 /**
  * Interface for GitHub content filters
+ * @template TItem of array<string, mixed>
  */
 interface FilterInterface
 {
     /**
      * Apply the filter to the list of file items
      *
-     * @param array<array<string, mixed>> $items GitHub API response items
-     * @return array<array<string, mixed>> Filtered items
+     * @param array<TItem> $items GitHub API response items
+     * @return array<TItem> Filtered items
      */
     public function apply(array $items): array;
-
-    /**
-     * Get the filter name
-     */
-    public function getName(): string;
 }

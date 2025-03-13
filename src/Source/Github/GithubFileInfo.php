@@ -13,29 +13,22 @@ use Symfony\Component\Finder\SplFileInfo;
  */
 final class GithubFileInfo extends SplFileInfo
 {
-    /**
-     * GitHub file metadata
-     *
-     * @var array<string, mixed>
-     */
-    private array $metadata;
+    private ?string $fetchedContent = null;
 
     /**
      * Create a new GitHub file info instance
      *
-     * @param string $file File path
      * @param string $relativePath Relative path
      * @param string $relativePathname Relative pathname
      * @param array<string, mixed> $metadata GitHub file metadata
      */
     public function __construct(
-        string $file,
         string $relativePath,
         string $relativePathname,
-        array $metadata = [],
+        private readonly array $metadata,
+        private readonly \Closure $content,
     ) {
-        parent::__construct($file, $relativePath, $relativePathname);
-        $this->metadata = $metadata;
+        parent::__construct($relativePath, $relativePath, $relativePathname);
     }
 
     /**
@@ -43,7 +36,11 @@ final class GithubFileInfo extends SplFileInfo
      */
     public function getContents(): string
     {
-        return $this->metadata['content'] ?? '';
+        if ($this->fetchedContent) {
+            return $this->fetchedContent;
+        }
+
+        return \call_user_func($this->content);
     }
 
     /**
@@ -100,27 +97,5 @@ final class GithubFileInfo extends SplFileInfo
     public function getSha(): string
     {
         return $this->metadata['sha'] ?? '';
-    }
-
-    /**
-     * Get all metadata
-     *
-     * @return array<string, mixed>
-     */
-    public function getMetadata(): array
-    {
-        return $this->metadata;
-    }
-
-    /**
-     * Get a specific metadata value
-     *
-     * @param string $key Metadata key
-     * @param mixed $default Default value if key doesn't exist
-     * @return mixed Metadata value
-     */
-    public function getMetadataValue(string $key, mixed $default = null): mixed
-    {
-        return $this->metadata[$key] ?? $default;
     }
 }

@@ -10,27 +10,6 @@ namespace Butschster\ContextGenerator\Lib\PathFilter;
 abstract class AbstractFilter implements FilterInterface
 {
     /**
-     * Filter name
-     */
-    protected string $name;
-
-    /**
-     * Create a new filter
-     */
-    public function __construct(string $name)
-    {
-        $this->name = $name;
-    }
-
-    /**
-     * Get the filter name
-     */
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-    /**
      * Helper method to check if a value matches a pattern
      *
      * @param string $value The value to check
@@ -48,7 +27,6 @@ abstract class AbstractFilter implements FilterInterface
             if (!FileHelper::isRegex($pattern)) {
                 $p = FileHelper::toRegex($p);
             }
-
             if ($this->matchGlob($value, $p)) {
                 return true;
             }

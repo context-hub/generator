@@ -2,13 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Source\GitDiff\Fetcher;
+namespace Butschster\ContextGenerator\Source\GitDiff;
 
 use Butschster\ContextGenerator\Fetcher\FilterableSourceInterface;
 use Butschster\ContextGenerator\Lib\Finder\FinderInterface;
 use Butschster\ContextGenerator\Lib\Finder\FinderResult;
 use Butschster\ContextGenerator\Lib\TreeBuilder\FileTreeBuilder;
-use Butschster\ContextGenerator\Source\GitDiff\CommitDiffSource;
+use Butschster\ContextGenerator\Source\GitDiff\Fetcher\CommitRangeParser;
+use Butschster\ContextGenerator\Source\GitDiff\Fetcher\GitSourceFactory;
+use Butschster\ContextGenerator\Source\GitDiff\Fetcher\GitSourceInterface;
 use Butschster\ContextGenerator\Source\GitDiff\Fetcher\Source\CommitGitSource;
 use Butschster\ContextGenerator\Source\GitDiff\Fetcher\Source\FileAtCommitGitSource;
 use Butschster\ContextGenerator\Source\GitDiff\Fetcher\Source\StagedGitSource;

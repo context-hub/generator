@@ -10,28 +10,16 @@ namespace Butschster\ContextGenerator\Lib\PathFilter;
 final class FilePatternFilter extends AbstractFilter
 {
     /**
-     * File name pattern to match
-     *
-     * @var string|array<string>
-     */
-    private string|array $pattern;
-
-    /**
      * Create a new file pattern filter
      *
      * @param string|array<string> $pattern File pattern(s) to match
      */
-    public function __construct(string|array $pattern)
-    {
-        parent::__construct('file_pattern');
-        $this->pattern = $pattern;
-    }
+    public function __construct(
+        private readonly string|array $pattern,
+    ) {}
 
     /**
      * Apply the file pattern filter
-     *
-     * @param array<array<string, mixed>> $items GitHub API response items
-     * @return array<array<string, mixed>> Filtered items
      */
     public function apply(array $items): array
     {

@@ -7,7 +7,6 @@ namespace Butschster\ContextGenerator\Source\Github;
 use Butschster\ContextGenerator\Fetcher\SourceFetcherInterface;
 use Butschster\ContextGenerator\Lib\Finder\FinderInterface;
 use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
-use Butschster\ContextGenerator\Source\Github\Fetcher\GithubContentFetcherInterface;
 use Butschster\ContextGenerator\SourceInterface;
 
 /**
@@ -20,7 +19,6 @@ final readonly class GithubSourceFetcher implements SourceFetcherInterface
     public function __construct(
         private FinderInterface $finder,
         private SourceModifierRegistry $modifiers,
-        private GithubContentFetcherInterface $contentFetcher,
     ) {}
 
     public function supports(SourceInterface $source): bool
@@ -47,9 +45,9 @@ final readonly class GithubSourceFetcher implements SourceFetcherInterface
         }
 
         // Fetch and add the content of each file
-        foreach ($finderResult->files as $path) {
-            $fileContent = $this->contentFetcher->fetchContent($source, $path);
-
+        foreach ($finderResult->files as $file) {
+            $fileContent = $file->getContents();
+            $path = $file->getRelativePath();
             // Apply modifiers if available
             if (!empty($source->modifiers)) {
                 foreach ($source->modifiers as $modifierId) {
@@ -64,7 +62,7 @@ final readonly class GithubSourceFetcher implements SourceFetcherInterface
 
             $content .= "```\n";
             $content .= "// Path: {$path}\n";
-            $content .= \trim($fileContent) . "\n\n";
+            $content .= \trim((string) $fileContent) . "\n\n";
             $content .= "```\n";
         }
 

@@ -7,222 +7,374 @@ namespace Butschster\ContextGenerator\Source\Github;
 use Butschster\ContextGenerator\Fetcher\FilterableSourceInterface;
 use Butschster\ContextGenerator\Lib\Finder\FinderInterface;
 use Butschster\ContextGenerator\Lib\Finder\FinderResult;
-use Butschster\ContextGenerator\Lib\PathFilter\FileHelper;
+use Butschster\ContextGenerator\Lib\PathFilter\ContentsFilter;
+use Butschster\ContextGenerator\Lib\PathFilter\ExcludePathFilter;
+use Butschster\ContextGenerator\Lib\PathFilter\FilePatternFilter;
+use Butschster\ContextGenerator\Lib\PathFilter\FilterInterface;
+use Butschster\ContextGenerator\Lib\PathFilter\PathFilter;
 use Butschster\ContextGenerator\Lib\TreeBuilder\FileTreeBuilder;
-use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
-use Psr\Http\Message\UriFactoryInterface;
+use Psr\Http\Message\RequestInterface;
 
 /**
- * Finder implementation for GitHub repositories
+ * GitHub content finder implementation
  *
- * This class provides a Finder implementation for GitHub repositories
- * that works with the FilterableSourceInterface.
+ * Fetches and filters content from GitHub repositories
  */
-final readonly class GithubFinder implements FinderInterface
+final class GithubFinder implements FinderInterface
 {
+    /**
+     * GitHub API base URL
+     */
+    private const API_BASE_URL = 'https://api.github.com';
+
+    /**
+     * Repository branch or tag
+     */
+    private string $branch = 'main';
+
+    /**
+     * Filters to apply
+     *
+     * @var array<FilterInterface>
+     */
+    private array $filters = [];
+
+    /**
+     * Create a new GitHub finder
+     */
     public function __construct(
-        private ClientInterface $httpClient,
-        private RequestFactoryInterface $requestFactory,
-        private UriFactoryInterface $uriFactory,
-        private FileTreeBuilder $fileTreeBuilder = new FileTreeBuilder(),
+        private readonly ClientInterface $httpClient,
+        private readonly RequestFactoryInterface $requestFactory,
         private ?string $githubToken = null,
     ) {}
 
     /**
-     * Find files in a GitHub repository based on the given source configuration
-     *
-     * @param FilterableSourceInterface $source Source configuration with filter criteria
-     * @param string $basePath Optional base path to normalize file paths in the tree view
-     * @return FinderResult The result containing found files and tree view
+     * Find files in a GitHub repository based on source configuration
      */
     public function find(FilterableSourceInterface $source, string $basePath = ''): FinderResult
     {
         if (!$source instanceof GithubSource) {
-            throw new \InvalidArgumentException(
-                \sprintf('Source must be an instance of GithubSource, %s given', $source::class),
-            );
+            throw new \InvalidArgumentException('Source must be an instance of GithubSource');
         }
 
-        $files = $this->fetchFiles($source);
-        $treeView = $this->generateTreeView($files, $basePath);
+        if ($source->githubToken) {
+            $this->setToken($source->githubToken);
+        }
+        $this->setBranch($source->branch);
 
+        // Parse repository owner and name
+        [$owner, $repo] = $this->parseRepository($source->repository);
+
+        // Initialize path filters based on source configuration
+        $this->initializePathFilters($source);
+
+        // Get source paths
+        $sourcePaths = $source->sourcePaths ?? [];
+        if (\is_string($sourcePaths)) {
+            $sourcePaths = [$sourcePaths];
+        }
+
+        // Recursively discover all files from repository paths
+        $discoveredItems = $this->discoverRepositoryItems($owner, $repo, $sourcePaths);
+
+        // Apply path-based filters
+        $filteredItems = $this->applyFilters($discoveredItems);
+
+        // Build result structure
+        $files = [];
+        $this->buildResultStructure($filteredItems, $owner, $repo, $files);
+
+
+        $files = (new ContentsFilter(contains: $source->contains(), notContains: $source->notContains()))
+            ->apply(
+                $files,
+            );
+
+        $tree = \array_map(
+            static fn(GithubFileInfo $file) => $file->getRelativePathname(),
+            $files,
+        );
+
+
+        // Create the result
         return new FinderResult(
-            files: new \ArrayIterator($files),
-            treeView: $treeView,
+            new \ArrayIterator($files),
+            (new FileTreeBuilder())->buildTree($tree, ''),
         );
     }
 
     /**
-     * Fetch files from GitHub repository based on source configuration
-     *
-     * @param GithubSource $source The GitHub source configuration
-     * @return array<string> List of file paths
+     * Set the GitHub API authentication token
      */
-    private function fetchFiles(GithubSource $source): array
+    public function setToken(?string $token): self
     {
-        $files = [];
-        $token = $source->githubToken ?? $this->githubToken;
-        $paths = (array) $source->in();
-
-        if (empty($paths)) {
-            throw new \InvalidArgumentException('No paths provided for GitHub source');
-        }
-
-        foreach ($paths as $path) {
-            $this->fetchContentsRecursively($source, $path, $files, $token);
-        }
-
-        // Apply filters to the found files
-        return $this->applyFilters($files, $source);
+        $this->githubToken = $token;
+        return $this;
     }
 
     /**
-     * Generate a tree view of the found files
-     *
-     * @param array<string> $files The list of file paths
-     * @param string $basePath Optional base path to normalize file paths
-     * @return string Text representation of the file tree
+     * Set the repository branch or tag
      */
-    private function generateTreeView(array $files, string $basePath): string
+    public function setBranch(string $branch): self
     {
-        if (empty($files)) {
-            return "No files found.\n";
-        }
-
-        return $this->fileTreeBuilder->buildTree($files, $basePath);
+        $this->branch = $branch;
+        return $this;
     }
 
     /**
-     * Fetch repository contents recursively
-     *
-     * @param GithubSource $source GitHub source
-     * @param string $path Path to fetch
-     * @param array<string> &$files Reference to files array to populate
-     * @param string|null $token GitHub token for authentication
-     * @throws \RuntimeException If API request fails
+     * Get repository contents from the GitHub API
      */
-    private function fetchContentsRecursively(
-        GithubSource $source,
-        string $path,
-        array &$files,
-        ?string $token = null,
-    ): void {
-        try {
-            $contentsUrl = $source->getContentsUrl($path);
-            $request = $this->requestFactory->createRequest('GET', $this->uriFactory->createUri($contentsUrl));
+    public function getContents(string $owner, string $repo, string $path = ''): array
+    {
+        $url = \sprintf(
+            '/repos/%s/%s/contents/%s?ref=%s',
+            \urlencode($owner),
+            \urlencode($repo),
+            $path ? \urlencode($path) : '',
+            \urlencode($this->branch),
+        );
 
-            // Add authentication headers
-            foreach ($source->getAuthHeaders($token) as $name => $value) {
-                $request = $request->withHeader($name, $value);
+        $response = $this->sendRequest('GET', $url);
+
+        // Check if we got a single file or a directory
+        if (isset($response['type']) && $response['type'] === 'file') {
+            return [$response]; // Single file response
+        }
+
+        return $response; // Directory response (array of items)
+    }
+
+    /**
+     * Apply all filters to the GitHub API response items
+     */
+    public function applyFilters(array $items): array
+    {
+        foreach ($this->filters as $filter) {
+            $items = $filter->apply($items);
+        }
+
+        return $items;
+    }
+
+    /**
+     * Initialize path filters based on source configuration
+     *
+     * @param FilterableSourceInterface $source Source with filter criteria
+     */
+    private function initializePathFilters(FilterableSourceInterface $source): void
+    {
+        // Clear existing filters
+        $this->filters = [];
+
+        // Add file name pattern filter
+        $filePattern = $source->name();
+        if ($filePattern) {
+            $this->filters[] = new FilePatternFilter($filePattern);
+        }
+
+        // Add path inclusion filter
+        $path = $source->path();
+        if ($path) {
+            $this->filters[] = new PathFilter($path);
+        }
+
+        // Add path exclusion filter
+        $excludePatterns = $source->notPath();
+        if ($excludePatterns) {
+            $this->filters[] = new ExcludePathFilter($excludePatterns);
+        }
+    }
+
+    /**
+     * Discover all items from repository paths recursively
+     *
+     * @param string $owner Repository owner
+     * @param string $repo Repository name
+     * @param array<string> $sourcePaths Source paths to discover
+     * @return array<array<string, mixed>> Discovered items
+     */
+    private function discoverRepositoryItems(string $owner, string $repo, array $sourcePaths): array
+    {
+        $allItems = [];
+
+        foreach ($sourcePaths as $path) {
+            $items = $this->fetchDirectoryContents($owner, $repo, $path);
+            $allItems = \array_merge($allItems, $this->traverseDirectoryRecursively($items, $owner, $repo));
+        }
+
+        return $allItems;
+    }
+
+    /**
+     * Traverse directory items recursively to discover all files
+     */
+    private function traverseDirectoryRecursively(array $items, string $owner, string $repo): array
+    {
+        $result = [];
+
+        foreach ($items as $item) {
+            if (($item['type'] ?? '') === 'dir') {
+                $subItems = $this->fetchDirectoryContents($owner, $repo, $item['path']);
+                $result = \array_merge($result, $this->traverseDirectoryRecursively($subItems, $owner, $repo));
+            } else {
+                $result[] = $item;
             }
+        }
 
+        return $result;
+    }
+
+    /**
+     * Build the final result structure (files and tree)
+     */
+    private function buildResultStructure(
+        array $items,
+        string $owner,
+        string $repo,
+        array &$files,
+    ): void {
+        foreach ($items as $item) {
+            $path = $item['path'];
+
+            try {
+                $relativePath = \dirname((string) $path);
+                if ($relativePath === '.') {
+                    $relativePath = '';
+                }
+
+                // Add to files array
+                $files[] = new GithubFileInfo(
+                    $relativePath,
+                    $path,
+                    $item,
+                    fn() => $this->fetchFileContent($owner, $repo, $path),
+                );
+            } catch (\Exception) {
+                // Skip files that can't be processed
+                continue;
+            }
+        }
+    }
+
+    /**
+     * Fetch directory contents from GitHub API
+     */
+    private function fetchDirectoryContents(string $owner, string $repo, string $path = ''): array
+    {
+        $url = \sprintf(
+            '/repos/%s/%s/contents/%s?ref=%s',
+            \urlencode($owner),
+            \urlencode($repo),
+            $path ? \urlencode($path) : '',
+            \urlencode($this->branch),
+        );
+
+        $response = $this->sendRequest('GET', $url);
+
+        // Check if we got a single file or a directory
+        if (isset($response['type']) && $response['type'] === 'file') {
+            return [$response]; // Single file response
+        }
+
+        return $response; // Directory response (array of items)
+    }
+
+    /**
+     * Fetch file content from GitHub API
+     */
+    private function fetchFileContent(string $owner, string $repo, string $path): string
+    {
+        $url = \sprintf(
+            '/repos/%s/%s/contents/%s?ref=%s',
+            \urlencode($owner),
+            \urlencode($repo),
+            \urlencode($path),
+            \urlencode($this->branch),
+        );
+
+        $response = $this->sendRequest('GET', $url);
+
+        if (!isset($response['content'])) {
+            throw new \RuntimeException("Could not get content for file: $path");
+        }
+
+        // GitHub API returns base64 encoded content
+        return \base64_decode((string) $response['content'], true);
+    }
+
+    /**
+     * Parse repository string into owner and name
+     *
+     * @param string $repository Repository string in format "owner/repo"
+     * @return array{0: string, 1: string} Repository owner and name
+     * @throws \InvalidArgumentException If repository string is invalid
+     */
+    private function parseRepository(string $repository): array
+    {
+        if (!\preg_match('/^([^\/]+)\/([^\/]+)$/', $repository, $matches)) {
+            throw new \InvalidArgumentException(
+                "Invalid repository format: $repository. Expected format: owner/repo",
+            );
+        }
+
+        return [$matches[1], $matches[2]];
+    }
+
+    /**
+     * Send an HTTP request to the GitHub API
+     *
+     * @param string $method HTTP method
+     * @param string $path API path
+     * @return array<string, mixed> JSON response data
+     * @throws \RuntimeException If the request fails
+     */
+    private function sendRequest(string $method, string $path): array
+    {
+        $url = self::API_BASE_URL . $path;
+        $request = $this->requestFactory->createRequest($method, $url);
+
+        // Add authentication if token is provided
+        if ($this->githubToken) {
+            $request = $this->addAuthHeader($request);
+        }
+
+        // Add headers
+        $request = $request->withHeader('Accept', 'application/vnd.github.v3+json');
+        $request = $request->withHeader('User-Agent', 'ContextGenerator');
+
+        // Send the request
+        try {
             $response = $this->httpClient->sendRequest($request);
-            $statusCode = $response->getStatusCode();
 
+            // Check for success status code
+            $statusCode = $response->getStatusCode();
             if ($statusCode < 200 || $statusCode >= 300) {
                 throw new \RuntimeException(
-                    \sprintf('Failed to fetch repository contents with status code %d: %s', $statusCode, $path),
+                    "GitHub API request failed with status code $statusCode: " . $response->getReasonPhrase(),
                 );
             }
 
-            $contents = \json_decode((string) $response->getBody(), true);
+            // Parse JSON response
+            $body = $response->getBody()->getContents();
+            $data = \json_decode($body, true);
 
-            if (!\is_array($contents)) {
-                throw new \RuntimeException('Invalid response from GitHub API');
+            if (\json_last_error() !== JSON_ERROR_NONE) {
+                throw new \RuntimeException('Failed to parse GitHub API response: ' . \json_last_error_msg());
             }
 
-            // If it's a single file (not an array of items)
-            if (isset($contents['type']) && $contents['type'] === 'file') {
-                $files[] = $path;
-                return;
-            }
-
-            // Process each item in the directory
-            foreach ($contents as $item) {
-                $itemPath = $item['path'];
-
-                if ($item['type'] === 'file') {
-                    $files[] = $itemPath;
-                } elseif ($item['type'] === 'dir') {
-                    $this->fetchContentsRecursively($source, $itemPath, $files, $token);
-                }
-            }
-        } catch (ClientExceptionInterface $e) {
-            throw new \RuntimeException(
-                \sprintf('Failed to fetch repository contents: %s', $e->getMessage()),
-                previous: $e,
-            );
+            return $data;
+        } catch (\Throwable $e) {
+            throw new \RuntimeException('GitHub API request failed: ' . $e->getMessage(), 0, $e);
         }
     }
 
     /**
-     * Apply filters to the list of files
-     *
-     * @param array<string> $files The files to filter
-     * @param GithubSource $source The source containing filter criteria
-     *
-     * @return string[] The filtered files
-     *
-     * @psalm-return list<string>
+     * Add authentication header to request
      */
-    private function applyFilters(array $files, GithubSource $source): array
+    private function addAuthHeader(RequestInterface $request): RequestInterface
     {
-        $filteredFiles = [];
-
-        // Convert filePattern to array
-        $filePatterns = (array) $source->filePattern;
-
-        // Convert excludePatterns to array
-        $excludePatterns = $source->excludePatterns;
-
-        foreach ($files as $file) {
-            $fileName = \basename($file);
-
-            // Check if file matches include patterns
-            $includeFile = false;
-
-            if (empty($filePatterns)) {
-                $includeFile = true;
-            } else {
-                foreach ($filePatterns as $pattern) {
-                    if ($this->matchesPattern($fileName, $pattern)) {
-                        $includeFile = true;
-                        break;
-                    }
-                }
-            }
-
-            // Check if file matches exclude patterns
-            if ($includeFile && !empty($excludePatterns)) {
-                foreach ($excludePatterns as $pattern) {
-                    if ($this->matchesPattern($file, $pattern)) {
-                        $includeFile = false;
-                        break;
-                    }
-                }
-            }
-
-            if ($includeFile) {
-                $filteredFiles[] = $file;
-            }
-        }
-
-        return $filteredFiles;
-    }
-
-    /**
-     * Check if a string matches a pattern (supports glob patterns)
-     *
-     * @param string $string The string to check
-     * @param string $pattern The pattern to match against
-     * @return bool Whether the string matches the pattern
-     */
-    private function matchesPattern(string $string, string $pattern): bool
-    {
-        $pattern = FileHelper::isRegex($pattern) ? $pattern : FileHelper::toRegex($pattern);
-
-        return (bool) \preg_match($pattern, $string);
+        return $request->withHeader('Authorization', 'token ' . $this->githubToken);
     }
 }

@@ -18,7 +18,6 @@ use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
 use Butschster\ContextGenerator\Parser\DefaultSourceParser;
 use Butschster\ContextGenerator\Source\File\FileSourceFetcher;
 use Butschster\ContextGenerator\Source\GitDiff\CommitDiffSourceFetcher;
-use Butschster\ContextGenerator\Source\Github\Fetcher\GithubContentFetcher;
 use Butschster\ContextGenerator\Source\Github\GithubFinder;
 use Butschster\ContextGenerator\Source\Github\GithubSourceFetcher;
 use Butschster\ContextGenerator\Source\Text\TextSourceFetcher;
@@ -62,14 +61,6 @@ final class ContextGenerator extends Command
         $githubFinder = new GithubFinder(
             httpClient: $this->httpClient,
             requestFactory: $this->requestFactory,
-            uriFactory: $this->uriFactory,
-            githubToken: $githubToken,
-        );
-
-        $githubContentFetcher = new GithubContentFetcher(
-            httpClient: $this->httpClient,
-            requestFactory: $this->requestFactory,
-            uriFactory: $this->uriFactory,
             githubToken: $githubToken,
         );
 
@@ -88,7 +79,6 @@ final class ContextGenerator extends Command
                 new GithubSourceFetcher(
                     finder: $githubFinder,
                     modifiers: $modifiers,
-                    contentFetcher: $githubContentFetcher,
                 ),
                 new CommitDiffSourceFetcher(
                     modifiers: $modifiers,

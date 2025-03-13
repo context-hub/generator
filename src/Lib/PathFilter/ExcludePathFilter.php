@@ -10,28 +10,16 @@ namespace Butschster\ContextGenerator\Lib\PathFilter;
 class ExcludePathFilter extends AbstractFilter
 {
     /**
-     * Path patterns to exclude
-     *
-     * @var array<string>
-     */
-    private array $excludePatterns;
-
-    /**
      * Create a new exclude path filter
      *
      * @param array<string> $excludePatterns Path pattern(s) to exclude
      */
-    public function __construct(array $excludePatterns)
-    {
-        parent::__construct('exclude_path');
-        $this->excludePatterns = $excludePatterns;
-    }
+    public function __construct(
+        private readonly array $excludePatterns,
+    ) {}
 
     /**
      * Apply the exclude path filter
-     *
-     * @param array<array<string, mixed>> $items GitHub API response items
-     * @return array<array<string, mixed>> Filtered items
      */
     public function apply(array $items): array
     {
@@ -41,18 +29,39 @@ class ExcludePathFilter extends AbstractFilter
 
         return \array_filter($items, function (array $item): bool {
             $path = $item['path'] ?? '';
+            $filename = $item['name'] ?? \basename($path);
 
             foreach ($this->excludePatterns as $pattern) {
-                if (!FileHelper::isRegex($pattern)) {
-                    $p = FileHelper::toRegex($pattern);
+                // Check against full path
+                if ($this->matchesPattern($path, $pattern)) {
+                    return false;
                 }
 
-                if ($this->matchGlob($path, $pattern)) {
+                // Also check against just the filename
+                if ($this->matchesPattern($filename, $pattern)) {
                     return false;
                 }
             }
 
             return true;
         });
+    }
+
+    /**
+     * Check if a string matches a pattern
+     *
+     * @param string $string The string to check
+     * @param string $pattern The pattern to match against
+     * @return bool Whether the string matches the pattern
+     */
+    private function matchesPattern(string $string, string $pattern): bool
+    {
+        if (FileHelper::isRegex($pattern)) {
+            return (bool) \preg_match($pattern, $string);
+        }
+
+        // Convert to regex if it's not already
+        $regex = FileHelper::toRegex($pattern);
+        return (bool) \preg_match($regex, $string);
     }
 }
