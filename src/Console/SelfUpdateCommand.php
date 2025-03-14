@@ -58,7 +58,7 @@ final class SelfUpdateCommand extends Command
         $io = new SymfonyStyle($input, $output);
         $io->title('Context Generator Self Update');
 
-        $pharPath = \trim($input->getOption('phar-path') ?: self::PHAR_PATH);
+        $pharPath = \trim((string) $input->getOption('phar-path') ?: self::PHAR_PATH);
 
         // Check if running as a PHAR
         if ($pharPath === '') {
