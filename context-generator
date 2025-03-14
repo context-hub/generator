@@ -36,7 +36,10 @@ $vendorPath = (static function (): string {
 use Butschster\ContextGenerator\Console\GenerateCommand;
 use Butschster\ContextGenerator\Console\InitCommand;
 use Butschster\ContextGenerator\Console\SchemaCommand;
+use Butschster\ContextGenerator\Console\SelfUpdateCommand;
 use Butschster\ContextGenerator\Console\VersionCommand;
+use Butschster\ContextGenerator\Lib\Files;
+use Butschster\ContextGenerator\Lib\HttpClient\HttpClientFactory;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\HttpFactory;
 use Symfony\Component\Console\Application;
@@ -57,11 +60,16 @@ if ($insidePhar) {
 $httpClient = new Client();
 $httpMessageFactory = new HttpFactory();
 
+$httpClientAdapter = HttpClientFactory::create(
+    $httpClient,
+    $httpMessageFactory,
+    $httpMessageFactory,
+);
+
 $application->add(
     new VersionCommand(
         version: $version['version'] ?? 'dev',
-        httpClient: $httpClient,
-        requestFactory: $httpMessageFactory,
+        httpClient: $httpClientAdapter,
     ),
 );
 
@@ -73,8 +81,15 @@ $application->add(
 
 $application->add(
     new SchemaCommand(
-        httpClient: $httpClient,
-        requestFactory: $httpMessageFactory,
+        httpClient: $httpClientAdapter,
+    ),
+);
+
+$application->add(
+    new SelfUpdateCommand(
+        version: $version['version'] ?? 'dev',
+        httpClient: $httpClientAdapter,
+        files: new Files(),
     ),
 );
 
@@ -82,9 +97,8 @@ $application->add(
     new GenerateCommand(
         rootPath: $appPath,
         outputPath: $appPath . '/.context',
-        httpClient: $httpClient,
-        requestFactory: $httpMessageFactory,
-        uriFactory: $httpMessageFactory,
+        httpClient: $httpClientAdapter,
+        files: new Files(),
     ),
 );
 

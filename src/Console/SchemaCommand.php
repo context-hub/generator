@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Console;
 
+use Butschster\ContextGenerator\Lib\HttpClient\Exception\HttpException;
+use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Psr\Http\Client\ClientInterface;
-use Psr\Http\Message\RequestFactoryInterface;
 
 #[AsCommand(name: 'schema', description: 'Get information about or download the JSON schema for IDE integration')]
 final class SchemaCommand extends Command
@@ -25,8 +25,7 @@ final class SchemaCommand extends Command
      * Create a new schema command instance
      */
     public function __construct(
-        private readonly ?ClientInterface $httpClient = null,
-        private readonly ?RequestFactoryInterface $requestFactory = null,
+        private readonly HttpClientInterface $httpClient,
     ) {
         parent::__construct();
     }
@@ -72,10 +71,12 @@ final class SchemaCommand extends Command
 
         // Download and save the schema
         try {
-            $request = $this->requestFactory->createRequest('GET', self::SCHEMA_URL);
-            $response = $this->httpClient->sendRequest($request);
+            $response = $this->httpClient->get(self::SCHEMA_URL, [
+                'User-Agent' => 'Context-Generator-Schema-Download',
+                'Accept' => 'application/json',
+            ]);
 
-            if ($response->getStatusCode() !== 200) {
+            if (!$response->isSuccess()) {
                 $io->error(
                     \sprintf(
                         'Failed to download schema. Server returned status code %d',
@@ -85,12 +86,14 @@ final class SchemaCommand extends Command
                 return Command::FAILURE;
             }
 
-            $schemaContent = $response->getBody()->getContents();
+            $schemaContent = $response->getBody();
 
-            // Ensure the schema is valid JSON
-            $decodedSchema = \json_decode($schemaContent);
-            if (\json_last_error() !== JSON_ERROR_NONE) {
-                $io->error('Downloaded schema is not valid JSON: ' . \json_last_error_msg());
+            // Validate that the schema is proper JSON
+            try {
+                // This will throw an exception if the content is not valid JSON
+                $response->getJson();
+            } catch (HttpException $e) {
+                $io->error('Downloaded schema is not valid JSON: ' . $e->getMessage());
                 return Command::FAILURE;
             }
 
@@ -106,6 +109,7 @@ final class SchemaCommand extends Command
             $io->note([
                 'To use this schema in your IDE:',
                 '- For PhpStorm/IntelliJ IDEA: Add the json-schema.json file to your project and associate it with your context.json file',
+                '- For VS Code: Add the schema to your settings.json in the "json.schemas" section',
             ]);
 
             return Command::SUCCESS;

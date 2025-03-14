@@ -7,15 +7,13 @@ namespace Butschster\ContextGenerator\Source\Github;
 use Butschster\ContextGenerator\Fetcher\FilterableSourceInterface;
 use Butschster\ContextGenerator\Lib\Finder\FinderInterface;
 use Butschster\ContextGenerator\Lib\Finder\FinderResult;
+use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 use Butschster\ContextGenerator\Lib\PathFilter\ContentsFilter;
 use Butschster\ContextGenerator\Lib\PathFilter\ExcludePathFilter;
 use Butschster\ContextGenerator\Lib\PathFilter\FilePatternFilter;
 use Butschster\ContextGenerator\Lib\PathFilter\FilterInterface;
 use Butschster\ContextGenerator\Lib\PathFilter\PathFilter;
 use Butschster\ContextGenerator\Lib\TreeBuilder\FileTreeBuilder;
-use Psr\Http\Client\ClientInterface;
-use Psr\Http\Message\RequestFactoryInterface;
-use Psr\Http\Message\RequestInterface;
 
 /**
  * GitHub content finder implementation
@@ -45,8 +43,7 @@ final class GithubFinder implements FinderInterface
      * Create a new GitHub finder
      */
     public function __construct(
-        private readonly ClientInterface $httpClient,
-        private readonly RequestFactoryInterface $requestFactory,
+        private readonly HttpClientInterface $httpClient,
         private ?string $githubToken = null,
     ) {}
 
@@ -331,48 +328,34 @@ final class GithubFinder implements FinderInterface
     private function sendRequest(string $method, string $path): array
     {
         $url = self::API_BASE_URL . $path;
-        $request = $this->requestFactory->createRequest($method, $url);
+
+        // Add headers
+        $headers = [
+            'Accept' => 'application/vnd.github.v3+json',
+            'User-Agent' => 'ContextGenerator',
+        ];
 
         // Add authentication if token is provided
         if ($this->githubToken) {
-            $request = $this->addAuthHeader($request);
+            $headers['Authorization'] = 'token ' . $this->githubToken;
         }
-
-        // Add headers
-        $request = $request->withHeader('Accept', 'application/vnd.github.v3+json');
-        $request = $request->withHeader('User-Agent', 'ContextGenerator');
 
         // Send the request
         try {
-            $response = $this->httpClient->sendRequest($request);
+            $response = $this->httpClient->get($url, $headers);
 
             // Check for success status code
-            $statusCode = $response->getStatusCode();
-            if ($statusCode < 200 || $statusCode >= 300) {
+            if (!$response->isSuccess()) {
                 throw new \RuntimeException(
-                    "GitHub API request failed with status code $statusCode: " . $response->getReasonPhrase(),
+                    "GitHub API request failed with status code " . $response->getStatusCode(),
                 );
             }
 
             // Parse JSON response
-            $body = $response->getBody()->getContents();
-            $data = \json_decode($body, true);
-
-            if (\json_last_error() !== JSON_ERROR_NONE) {
-                throw new \RuntimeException('Failed to parse GitHub API response: ' . \json_last_error_msg());
-            }
-
+            $data = $response->getJson();
             return $data;
         } catch (\Throwable $e) {
             throw new \RuntimeException('GitHub API request failed: ' . $e->getMessage(), 0, $e);
         }
-    }
-
-    /**
-     * Add authentication header to request
-     */
-    private function addAuthHeader(RequestInterface $request): RequestInterface
-    {
-        return $request->withHeader('Authorization', 'token ' . $this->githubToken);
     }
 }

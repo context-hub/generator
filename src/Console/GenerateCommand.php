@@ -7,9 +7,10 @@ namespace Butschster\ContextGenerator\Console;
 use Butschster\ContextGenerator\Document\DocumentCompiler;
 use Butschster\ContextGenerator\Error\ErrorCollection;
 use Butschster\ContextGenerator\Fetcher\SourceFetcherRegistry;
+use Butschster\ContextGenerator\FilesInterface;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Lib\Content\Renderer\MarkdownRenderer;
-use Butschster\ContextGenerator\Lib\Files;
+use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 use Butschster\ContextGenerator\Loader\CompositeDocumentsLoader;
 use Butschster\ContextGenerator\Loader\ConfigDocumentsLoader;
 use Butschster\ContextGenerator\Loader\JsonConfigDocumentsLoader;
@@ -25,9 +26,6 @@ use Butschster\ContextGenerator\Source\Github\GithubFinder;
 use Butschster\ContextGenerator\Source\Github\GithubSourceFetcher;
 use Butschster\ContextGenerator\Source\Text\TextSourceFetcher;
 use Butschster\ContextGenerator\Source\Url\UrlSourceFetcher;
-use Psr\Http\Client\ClientInterface;
-use Psr\Http\Message\RequestFactoryInterface;
-use Psr\Http\Message\UriFactoryInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -37,15 +35,15 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 #[AsCommand(
     name: 'generate',
     description: 'Generate context files from configuration',
+    aliases: ['build', 'compile'],
 )]
 final class GenerateCommand extends Command
 {
     public function __construct(
         private readonly string $rootPath,
         private readonly string $outputPath,
-        private readonly ?ClientInterface $httpClient = null,
-        private readonly ?RequestFactoryInterface $requestFactory = null,
-        private readonly ?UriFactoryInterface $uriFactory = null,
+        private readonly HttpClientInterface $httpClient,
+        private readonly FilesInterface $files,
         private readonly string $phpConfigName = 'context.php',
         private readonly string $jsonConfigName = 'context.json',
     ) {
@@ -56,7 +54,7 @@ final class GenerateCommand extends Command
     {
         $outputStyle = new SymfonyStyle($input, $output);
 
-        $files = new Files();
+        $files = $this->files;
         $modifiers = new SourceModifierRegistry();
         $modifiers->register(
             new PhpSignature(),
@@ -69,7 +67,6 @@ final class GenerateCommand extends Command
         $githubToken = \getenv('GITHUB_TOKEN') ?: null;
         $githubFinder = new GithubFinder(
             httpClient: $this->httpClient,
-            requestFactory: $this->requestFactory,
             githubToken: $githubToken,
         );
 
@@ -89,8 +86,6 @@ final class GenerateCommand extends Command
                 ),
                 new UrlSourceFetcher(
                     httpClient: $this->httpClient,
-                    requestFactory: $this->requestFactory,
-                    uriFactory: $this->uriFactory,
                     builderFactory: $contentBuilderFactory,
                 ),
                 new GithubSourceFetcher(

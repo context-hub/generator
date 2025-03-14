@@ -10,13 +10,11 @@ use Butschster\ContextGenerator\Lib\Html\HtmlCleaner;
 use Butschster\ContextGenerator\Lib\Html\HtmlCleanerInterface;
 use Butschster\ContextGenerator\Lib\Html\SelectorContentExtractor;
 use Butschster\ContextGenerator\Lib\Html\SelectorContentExtractorInterface;
+use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 use Butschster\ContextGenerator\SourceInterface;
-use Psr\Http\Client\ClientInterface;
-use Psr\Http\Message\RequestFactoryInterface;
-use Psr\Http\Message\UriFactoryInterface;
 
 /**
- * Fetcher for URL sources using PSR-compatible HTTP client
+ * Fetcher for URL sources using Butschster HTTP client
  * @implements SourceFetcherInterface<UrlSource>
  */
 final readonly class UrlSourceFetcher implements SourceFetcherInterface
@@ -25,9 +23,7 @@ final readonly class UrlSourceFetcher implements SourceFetcherInterface
      * @param array<string, string> $defaultHeaders Default HTTP headers to use for all requests
      */
     public function __construct(
-        private ?ClientInterface $httpClient = null,
-        private ?RequestFactoryInterface $requestFactory = null,
-        private ?UriFactoryInterface $uriFactory = null,
+        private HttpClientInterface $httpClient,
         private array $defaultHeaders = [
             'User-Agent' => 'Context Generator Bot',
             'Accept' => 'text/html,application/xhtml+xml',
@@ -36,11 +32,7 @@ final readonly class UrlSourceFetcher implements SourceFetcherInterface
         private HtmlCleanerInterface $cleaner = new HtmlCleaner(),
         private ?SelectorContentExtractorInterface $selectorExtractor = new SelectorContentExtractor(),
         private ContentBuilderFactory $builderFactory = new ContentBuilderFactory(),
-    ) {
-        if ($this->httpClient === null || $this->requestFactory === null || $this->uriFactory === null) {
-            throw new \RuntimeException('To use Url source you need to install PSR-18 HTTP client');
-        }
-    }
+    ) {}
 
     public function supports(SourceInterface $source): bool
     {
@@ -58,24 +50,21 @@ final readonly class UrlSourceFetcher implements SourceFetcherInterface
 
         foreach ($source->urls as $url) {
             try {
-                // Create and send the request
-                $request = $this->requestFactory->createRequest('GET', $this->uriFactory->createUri($url));
-                // Add headers
-                foreach ($this->defaultHeaders as $name => $value) {
-                    $request = $request->withHeader($name, $value);
-                }
                 // Send the request
-                $response = $this->httpClient->sendRequest($request);
+                $response = $this->httpClient->get($url, $this->defaultHeaders);
                 $statusCode = $response->getStatusCode();
-                if ($statusCode < 200 || $statusCode >= 300) {
+
+                if (!$response->isSuccess()) {
                     $builder
                         ->addComment("URL: {$url}")
                         ->addComment("Error: HTTP status code {$statusCode}")
                         ->addSeparator();
                     continue;
                 }
+
                 // Get the response body
-                $html = (string) $response->getBody();
+                $html = $response->getBody();
+
                 // Extract content from specific selector if defined
                 if ($source->hasSelector() && $this->selectorExtractor !== null) {
                     $selector = $source->getSelector();
