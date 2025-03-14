@@ -1496,10 +1496,10 @@ Create a PHP configuration file (`context.php`):
 ```php
 <?php
 
-use Butschster\ContextGenerator\Document;
-use Butschster\ContextGenerator\Document\DocumentRegistry;
+use Butschster\ContextGenerator\Document\Document;
 use Butschster\ContextGenerator\Source\File\FileSource;
 use Butschster\ContextGenerator\Source\Text\TextSource;
+use Butschster\ContextGenerator\Loader\ConfigRegistry\DocumentRegistry;
 
 return (new DocumentRegistry())
     ->register(

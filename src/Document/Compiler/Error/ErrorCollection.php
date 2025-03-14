@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Error;
+namespace Butschster\ContextGenerator\Document\Compiler\Error;
+
+use Stringable as TError;
 
 /**
  * Collection of source errors that occurred during document compilation

@@ -4,26 +4,22 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Loader;
 
-use Butschster\ContextGenerator\Document\DocumentRegistry;
 use Butschster\ContextGenerator\DocumentsLoaderInterface;
 use Butschster\ContextGenerator\FilesInterface;
+use Butschster\ContextGenerator\Loader\ConfigRegistry\DocumentRegistry;
+use Butschster\ContextGenerator\Loader\ConfigRegistry\Parser\ConfigParserInterface;
 
 final readonly class JsonConfigDocumentsLoader implements DocumentsLoaderInterface
 {
-    private JsonConfigParser $parser;
-
     /**
      * @param string $configPath Path to JSON configuration file (relative to root or absolute)
      */
     public function __construct(
         private FilesInterface $files,
+        private ConfigParserInterface $parser,
         private string $configPath,
         string $rootPath,
-    ) {
-        $this->parser = new JsonConfigParser(
-            rootPath: $rootPath,
-        );
-    }
+    ) {}
 
     public function load(): DocumentRegistry
     {
@@ -46,7 +42,14 @@ final readonly class JsonConfigDocumentsLoader implements DocumentsLoaderInterfa
             );
         }
 
-        return $this->parser->parse($config);
+        $configRegistry = $this->parser->parse($config);
+
+        // Get the DocumentRegistry from the ConfigRegistry
+        if (!$configRegistry->has('documents')) {
+            throw new \RuntimeException('No documents found in configuration');
+        }
+
+        return $configRegistry->get('documents', DocumentRegistry::class);
     }
 
     public function isSupported(): bool

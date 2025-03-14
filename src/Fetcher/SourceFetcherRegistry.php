@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Fetcher;
 
 use Butschster\ContextGenerator\SourceInterface;
+use Butschster\ContextGenerator\SourceParserInterface;
 
 /**
  * Registry for source fetchers
  */
-final class SourceFetcherRegistry
+final class SourceFetcherRegistry implements SourceParserInterface
 {
     public function __construct(
         /**
@@ -47,5 +48,10 @@ final class SourceFetcherRegistry
                 $source::class,
             ),
         );
+    }
+
+    public function parse(SourceInterface $source): string
+    {
+        return $this->findFetcher($source)->fetch($source);
     }
 }

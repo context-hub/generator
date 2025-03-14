@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator;
+namespace Butschster\ContextGenerator\Document;
+
+use Butschster\ContextGenerator\SourceInterface;
 
 final class Document implements \JsonSerializable
 {

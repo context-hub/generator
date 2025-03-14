@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Loader;
 
-use Butschster\ContextGenerator\Document\DocumentRegistry;
 use Butschster\ContextGenerator\DocumentsLoaderInterface;
+use Butschster\ContextGenerator\Loader\ConfigRegistry\DocumentRegistry;
 
 final readonly class ConfigDocumentsLoader implements DocumentsLoaderInterface
 {

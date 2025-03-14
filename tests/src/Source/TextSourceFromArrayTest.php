@@ -70,6 +70,7 @@ class TextSourceFromArrayTest extends TestCase
             'type' => 'text',
             'description' => $description,
             'content' => $content,
+            'tag' => 'INSTRUCTION',
         ];
 
         $this->assertEquals($expected, $source->jsonSerialize());
@@ -84,6 +85,7 @@ class TextSourceFromArrayTest extends TestCase
         $expected = [
             'type' => 'text',
             'content' => $content,
+            'tag' => 'INSTRUCTION',
         ];
 
         $serialized = $source->jsonSerialize();

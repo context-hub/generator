@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Document;
+namespace Butschster\ContextGenerator\Document\Compiler;
 
-use Butschster\ContextGenerator\Document;
-use Butschster\ContextGenerator\Error\ErrorCollection;
-use Butschster\ContextGenerator\Error\SourceError;
+use Butschster\ContextGenerator\Document\Compiler\Error\ErrorCollection;
+use Butschster\ContextGenerator\Document\Compiler\Error\SourceError;
+use Butschster\ContextGenerator\Document\Document;
 use Butschster\ContextGenerator\FilesInterface;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\SourceParserInterface;

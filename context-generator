@@ -33,6 +33,7 @@ $vendorPath = (static function (): string {
     return $file;
 })();
 
+use Butschster\ContextGenerator\Console\DisplayCommand;
 use Butschster\ContextGenerator\Console\GenerateCommand;
 use Butschster\ContextGenerator\Console\InitCommand;
 use Butschster\ContextGenerator\Console\SchemaCommand;
@@ -97,6 +98,12 @@ $application->add(
         rootPath: $appPath,
         outputPath: $appPath . '/.context',
         httpClient: $httpClientAdapter,
+        files: new Files(),
+    ),
+);
+
+$application->add(
+    new DisplayCommand(
         files: new Files(),
     ),
 );

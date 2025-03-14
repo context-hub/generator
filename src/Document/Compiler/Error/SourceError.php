@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Error;
+namespace Butschster\ContextGenerator\Document\Compiler\Error;
 
 use Butschster\ContextGenerator\SourceInterface;
 

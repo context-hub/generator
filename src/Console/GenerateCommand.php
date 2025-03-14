@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Console;
 
-use Butschster\ContextGenerator\Document\DocumentCompiler;
-use Butschster\ContextGenerator\Error\ErrorCollection;
+use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
 use Butschster\ContextGenerator\Fetcher\SourceFetcherRegistry;
 use Butschster\ContextGenerator\FilesInterface;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
@@ -14,13 +13,14 @@ use Butschster\ContextGenerator\Lib\GithubClient\GithubClient;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 use Butschster\ContextGenerator\Loader\CompositeDocumentsLoader;
 use Butschster\ContextGenerator\Loader\ConfigDocumentsLoader;
+use Butschster\ContextGenerator\Loader\ConfigRegistry\ConfigParser;
+use Butschster\ContextGenerator\Loader\ConfigRegistry\DocumentsParserPlugin;
 use Butschster\ContextGenerator\Loader\JsonConfigDocumentsLoader;
 use Butschster\ContextGenerator\Modifier\AstDocTransformer;
 use Butschster\ContextGenerator\Modifier\ContextSanitizerModifier;
 use Butschster\ContextGenerator\Modifier\PhpContentFilter;
 use Butschster\ContextGenerator\Modifier\PhpSignature;
 use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
-use Butschster\ContextGenerator\Parser\DefaultSourceParser;
 use Butschster\ContextGenerator\Source\File\FileSourceFetcher;
 use Butschster\ContextGenerator\Source\GitDiff\CommitDiffSourceFetcher;
 use Butschster\ContextGenerator\Source\Github\GithubFinder;
@@ -130,13 +130,9 @@ final class GenerateCommand extends Command
             ],
         );
 
-        $sourceParser = new DefaultSourceParser(
-            fetcherRegistry: $sourceFetcherRegistry,
-        );
-
         $compiler = new DocumentCompiler(
             files: $files,
-            parser: $sourceParser,
+            parser: $sourceFetcherRegistry,
             basePath: $this->outputPath,
             builderFactory: $contentBuilderFactory,
         );
@@ -146,14 +142,19 @@ final class GenerateCommand extends Command
             new ConfigDocumentsLoader(
                 configPath: $this->rootPath . '/' . $this->phpConfigName,
             ),
+            // todo use factory
             new JsonConfigDocumentsLoader(
                 files: $files,
+                parser: new ConfigParser(
+                    rootPath: $this->rootPath,
+                    documentsParser: new DocumentsParserPlugin(),
+                ),
                 configPath: $this->rootPath . '/' . $configPath,
                 rootPath: $this->rootPath,
             ),
         );
 
-        foreach ($loader->load()->getDocuments() as $document) {
+        foreach ($loader->load()->getItems() as $document) {
             $outputStyle->info(\sprintf('Compiling %s...', $document->description));
 
             $compiledDocument = $compiler->compile($document);
@@ -167,12 +168,5 @@ final class GenerateCommand extends Command
         }
 
         return Command::SUCCESS;
-    }
-
-    private function renderErrors(SymfonyStyle $output, ErrorCollection $errors): void
-    {
-        foreach ($errors as $error) {
-            $output->error($error);
-        }
     }
 }
