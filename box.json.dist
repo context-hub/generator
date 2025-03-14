@@ -17,5 +17,5 @@
     "composer.lock",
     "version.json"
   ],
-  "output": ".build/phar/context-generator.phar"
+  "output": ".build/phar/ctx.phar"
 }
