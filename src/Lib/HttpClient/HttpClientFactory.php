@@ -6,7 +6,6 @@ namespace Butschster\ContextGenerator\Lib\HttpClient;
 
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
-use Psr\Http\Message\UriFactoryInterface;
 
 final readonly class HttpClientFactory
 {
@@ -16,11 +15,10 @@ final readonly class HttpClientFactory
     public static function create(
         ?ClientInterface $httpClient = null,
         ?RequestFactoryInterface $requestFactory = null,
-        ?UriFactoryInterface $uriFactory = null,
     ): HttpClientInterface {
         // If all required dependencies are available, use the PSR-18 client
-        if ($httpClient !== null && $requestFactory !== null && $uriFactory !== null) {
-            return new Psr18Client($httpClient, $requestFactory, $uriFactory);
+        if ($httpClient !== null && $requestFactory !== null) {
+            return new Psr18Client($httpClient, $requestFactory);
         }
 
         // Otherwise, return the null implementation

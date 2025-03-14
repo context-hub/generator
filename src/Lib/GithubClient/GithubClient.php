@@ -32,7 +32,9 @@ final class GithubClient implements GithubClientInterface
 
         $response = $this->sendRequest('GET', $url);
 
-        // Check if we got a single file or a directory
+        /**
+         * Check if we got a single file or a directory
+         */
         if (isset($response['type']) && $response['type'] === 'file') {
             return [$response];
         }

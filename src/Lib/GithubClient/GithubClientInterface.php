@@ -13,7 +13,6 @@ interface GithubClientInterface
      * @param string $repo Repository name
      * @param string $path Path within the repository
      * @param string $branch Repository branch or tag
-     * @return array<string, mixed> Repository contents
      */
     public function getContents(string $owner, string $repo, string $path = '', string $branch = 'main'): array;
 
