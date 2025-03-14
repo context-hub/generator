@@ -87,6 +87,7 @@ final class SourceRenderer
             $modifierRenderer = new ModifierRenderer();
 
             foreach ($source->modifiers as $index => $modifier) {
+                /** @psalm-suppress InvalidOperand */
                 $output .= "\n" . Style::property("Modifier") . " " . Style::itemNumber($index + 1) . ":\n";
                 $modOutput = $modifierRenderer->renderModifier($modifier);
                 $output .= Style::indent($modOutput);
@@ -137,6 +138,7 @@ final class SourceRenderer
             $modifierRenderer = new ModifierRenderer();
 
             foreach ($source->modifiers as $index => $modifier) {
+                /** @psalm-suppress InvalidOperand */
                 $output .= "\n" . Style::property("Modifier") . " " . Style::itemNumber($index + 1) . ":\n";
                 $modOutput = $modifierRenderer->renderModifier($modifier);
                 $output .= Style::indent($modOutput);
@@ -182,6 +184,7 @@ final class SourceRenderer
             $modifierRenderer = new ModifierRenderer();
 
             foreach ($source->modifiers as $index => $modifier) {
+                /** @psalm-suppress InvalidOperand */
                 $output .= "\n" . Style::property("Modifier") . " " . Style::itemNumber($index + 1) . ":\n";
                 $modOutput = $modifierRenderer->renderModifier($modifier);
                 $output .= Style::indent($modOutput);

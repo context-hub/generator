@@ -80,10 +80,11 @@ final class DisplayCommand extends Command
             $output->writeln("\n" . Style::header($title));
             $output->writeln(Style::separator('=', \strlen($title)) . "\n");
 
-            $documents = $registry->getDocuments();
+            $documents = $registry->getItems();
             $output->writeln(Style::property("Total documents") . ": " . Style::count(\count($documents)) . "\n\n");
 
             foreach ($documents as $index => $document) {
+                /** @psalm-suppress InvalidOperand */
                 $output->writeln(
                     Style::header("Document") . " " . Style::itemNumber($index + 1, \count($documents)) . ":",
                 );
