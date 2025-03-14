@@ -22,9 +22,6 @@ final class GithubClient implements GithubClientInterface
         private ?string $token = null,
     ) {}
 
-    /**
-     * @inheritDoc
-     */
     public function getContents(string $owner, string $repo, string $path = '', string $branch = 'main'): array
     {
         $url = \sprintf(
@@ -45,9 +42,6 @@ final class GithubClient implements GithubClientInterface
         return $response; // Directory response (array of items)
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getFileContent(string $owner, string $repo, string $path, string $branch = 'main'): string
     {
         $url = \sprintf(
@@ -68,9 +62,6 @@ final class GithubClient implements GithubClientInterface
         return \base64_decode((string) $response['content'], true);
     }
 
-    /**
-     * @inheritDoc
-     */
     public function setToken(?string $token): void
     {
         $this->token = $token;

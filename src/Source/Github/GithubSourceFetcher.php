@@ -7,6 +7,7 @@ namespace Butschster\ContextGenerator\Source\Github;
 use Butschster\ContextGenerator\Fetcher\SourceFetcherInterface;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Lib\Finder\FinderInterface;
+use Butschster\ContextGenerator\Lib\GithubClient\Model\GithubRepository;
 use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
 use Butschster\ContextGenerator\SourceInterface;
 
@@ -34,12 +35,15 @@ final readonly class GithubSourceFetcher implements SourceFetcherInterface
             throw new \InvalidArgumentException('Source must be an instance of GithubSource');
         }
 
+        // Parse repository from string
+        $repository = GithubRepository::fromString($source->repository, $source->branch);
+
         // Create builder
         $builder = $this->builderFactory
             ->create()
             ->addTitle($source->getDescription(), 2)
             ->addDescription(
-                \sprintf('Repository: https://github.com/%s. Branch: %s', $source->repository, $source->branch),
+                \sprintf('Repository: %s. Branch: %s', $repository->getUrl(), $repository->branch),
             );
 
         // Find files using the finder and get the FinderResult

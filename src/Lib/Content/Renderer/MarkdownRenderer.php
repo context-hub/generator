@@ -84,7 +84,7 @@ final class MarkdownRenderer extends AbstractRenderer
         if (empty($content)) {
             return '';
         }
-        return "```\n" . $content . "\n```\n\n";
+        return \sprintf("```\n// Structure of documents\n%s\n```\n\n", $content);
     }
 
     /**

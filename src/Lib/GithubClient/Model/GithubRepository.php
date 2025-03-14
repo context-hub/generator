@@ -22,7 +22,6 @@ final readonly class GithubRepository
      *
      * @param string $repository Repository string in format "owner/repo"
      * @param string $branch Repository branch or tag
-     * @return self
      * @throws \InvalidArgumentException If repository string is invalid
      */
     public static function fromString(string $repository, string $branch = 'main'): self

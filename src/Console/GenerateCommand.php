@@ -10,6 +10,7 @@ use Butschster\ContextGenerator\Fetcher\SourceFetcherRegistry;
 use Butschster\ContextGenerator\FilesInterface;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Lib\Content\Renderer\MarkdownRenderer;
+use Butschster\ContextGenerator\Lib\GithubClient\GithubClient;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 use Butschster\ContextGenerator\Loader\CompositeDocumentsLoader;
 use Butschster\ContextGenerator\Loader\ConfigDocumentsLoader;
@@ -29,6 +30,7 @@ use Butschster\ContextGenerator\Source\Url\UrlSourceFetcher;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -50,9 +52,36 @@ final class GenerateCommand extends Command
         parent::__construct();
     }
 
+    protected function configure(): void
+    {
+        $this
+            ->addOption(
+                'config',
+                'c',
+                InputOption::VALUE_REQUIRED,
+                'Path to configuration file',
+                'context.json',
+            )
+            ->addOption(
+                'github-token',
+                't',
+                InputOption::VALUE_OPTIONAL,
+                'GitHub token for authentication',
+                \getenv('GITHUB_TOKEN') ?: null,
+            );
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $outputStyle = new SymfonyStyle($input, $output);
+
+        $configPath = $input->getOption('config') ?: $this->jsonConfigName;
+
+
+        if (!\file_exists($configPath)) {
+            $outputStyle->error(\sprintf('Configuration file not found: %s', $configPath));
+            return Command::FAILURE;
+        }
 
         $files = $this->files;
         $modifiers = new SourceModifierRegistry();
@@ -63,11 +92,12 @@ final class GenerateCommand extends Command
             new AstDocTransformer(),
         );
 
+        $githubToken = $input->getOption('github-token');
+        $githubClient = new GithubClient($this->httpClient, token: $githubToken);
+
         // Create GitHub-related components
-        $githubToken = \getenv('GITHUB_TOKEN') ?: null;
         $githubFinder = new GithubFinder(
-            httpClient: $this->httpClient,
-            githubToken: $githubToken,
+            githubClient: $githubClient,
         );
 
         $contentBuilderFactory = new ContentBuilderFactory(
@@ -111,13 +141,14 @@ final class GenerateCommand extends Command
             builderFactory: $contentBuilderFactory,
         );
 
+        $outputStyle->info(\sprintf('Loading configuration from %s ...', $this->rootPath . '/' . $configPath));
         $loader = new CompositeDocumentsLoader(
             new ConfigDocumentsLoader(
                 configPath: $this->rootPath . '/' . $this->phpConfigName,
             ),
             new JsonConfigDocumentsLoader(
                 files: $files,
-                configPath: $this->rootPath . '/' . $this->jsonConfigName,
+                configPath: $this->rootPath . '/' . $configPath,
                 rootPath: $this->rootPath,
             ),
         );
