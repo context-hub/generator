@@ -13,7 +13,7 @@ YELLOW='\033[33m'
 DEFAULT='\033[0m'
 
 # Project name
-PNAME='context-generator'
+PNAME='ctx'
 REPO_OWNER='butschster'
 REPO_NAME='context-generator'
 

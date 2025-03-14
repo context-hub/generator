@@ -66,7 +66,7 @@ final class PlainTextRenderer extends AbstractRenderer
      */
     public function renderTreeViewBlock(TreeViewBlock $block): string
     {
-        return $block . "\n\n";
+        return "// Structure of documents\n" . $block . "\n\n";
     }
 
     /**

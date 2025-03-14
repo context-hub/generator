@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Console;
 
+use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
+use Butschster\ContextGenerator\Lib\HttpClient\Exception\HttpException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Psr\Http\Client\ClientInterface;
-use Psr\Http\Message\RequestFactoryInterface;
 
 #[AsCommand(
     name: 'version',
@@ -26,8 +26,7 @@ final class VersionCommand extends Command
 
     public function __construct(
         private readonly string $version,
-        private readonly ?ClientInterface $httpClient = null,
-        private readonly ?RequestFactoryInterface $requestFactory = null,
+        private readonly HttpClientInterface $httpClient,
     ) {
         parent::__construct();
     }
@@ -51,13 +50,6 @@ final class VersionCommand extends Command
         $checkUpdates = $input->getOption('check-updates');
 
         if ($checkUpdates) {
-            if ($this->httpClient === null || $this->requestFactory === null) {
-                $io->warning(
-                    'HTTP client not available. Install psr/http-client implementation (like guzzlehttp/guzzle) to check for updates.',
-                );
-                return Command::SUCCESS;
-            }
-
             $io->newLine();
             $io->section('Checking for updates...');
 
@@ -69,16 +61,19 @@ final class VersionCommand extends Command
                     $io->success("A new version is available: {$latestVersion}");
                     $io->text([
                         'You can update by running:',
-                        'curl -sSL https://raw.githubusercontent.com/butschster/context-generator/main/download-latest.sh | sh',
+                        'ctx self-update',
                         '',
-                        'Or download the latest PHAR from:',
-                        'https://github.com/butschster/context-generator/releases/download/' . $latestVersion . '/context-generator.phar',
+                        'Or with these alternative methods:',
+                        '- curl -sSL https://raw.githubusercontent.com/butschster/context-generator/main/download-latest.sh | sh',
+                        '- Download from: https://github.com/butschster/context-generator/releases/download/' . $latestVersion . '/context-generator.phar',
                     ]);
                 } else {
                     $io->success("You're using the latest version ({$this->version})");
                 }
-            } catch (\Throwable $e) {
+            } catch (HttpException $e) {
                 $io->error("Failed to check for updates: {$e->getMessage()}");
+            } catch (\Throwable $e) {
+                $io->error("Error checking for updates: {$e->getMessage()}");
             }
         } else {
             $io->newLine();
@@ -90,34 +85,33 @@ final class VersionCommand extends Command
 
     /**
      * Fetch the latest version from GitHub
+     *
+     * @throws HttpException If there's an issue with the HTTP request or response
      */
     private function fetchLatestVersion(): string
     {
-        $request = $this->requestFactory->createRequest('GET', self::GITHUB_API_LATEST_RELEASE);
-        $request = $request->withHeader('User-Agent', 'Context-Generator-Version-Check');
-        $request = $request->withHeader('Accept', 'application/vnd.github.v3+json');
+        $response = $this->httpClient->get(
+            self::GITHUB_API_LATEST_RELEASE,
+            [
+                'User-Agent' => 'Context-Generator-Version-Check',
+                'Accept' => 'application/vnd.github.v3+json',
+            ],
+        );
 
-        $response = $this->httpClient->sendRequest($request);
-
-        if ($response->getStatusCode() !== 200) {
-            throw new \RuntimeException(
-                "Failed to fetch latest version. Server returned status code {$response->getStatusCode()}",
+        if (!$response->isSuccess()) {
+            throw new HttpException(
+                \sprintf('Failed to fetch latest version. Server returned status code %d', $response->getStatusCode()),
             );
         }
 
-        $responseBody = $response->getBody()->getContents();
-        $data = \json_decode($responseBody, true);
+        $tagName = $response->getJsonValue('tag_name');
 
-        if (\json_last_error() !== JSON_ERROR_NONE) {
-            throw new \RuntimeException("Failed to parse response: " . \json_last_error_msg());
-        }
-
-        if (!isset($data['tag_name'])) {
-            throw new \RuntimeException("Invalid response format: 'tag_name' missing");
+        if ($tagName === null) {
+            throw new HttpException("Invalid response format: 'tag_name' missing");
         }
 
         // Remove 'v' prefix if present
-        return \ltrim((string) $data['tag_name'], 'v');
+        return \ltrim((string) $tagName, 'v');
     }
 
     /**
