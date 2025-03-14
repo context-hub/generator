@@ -10,6 +10,7 @@ use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -30,13 +31,26 @@ final class SelfUpdateCommand extends Command
      */
     private const GITHUB_DOWNLOAD_URL = 'https://github.com/butschster/context-generator/releases/download/%s/context-generator.phar';
 
+    private const PHAR_PATH = '/usr/local/bin/ctx';
+
     public function __construct(
         private readonly string $version,
         private readonly HttpClientInterface $httpClient,
         private readonly FilesInterface $files,
-        private readonly string $pharPath = '/usr/local/bin/context-generator',
     ) {
         parent::__construct();
+    }
+
+    protected function configure(): void
+    {
+        $this
+            ->addOption(
+                name: 'phar-path',
+                shortcut: 'p',
+                mode: InputOption::VALUE_REQUIRED,
+                description: 'Path to the PHAR file to update',
+                default: \getenv('CONTEXT_GENERATOR_PHAR_PATH') ?: self::PHAR_PATH,
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -44,8 +58,10 @@ final class SelfUpdateCommand extends Command
         $io = new SymfonyStyle($input, $output);
         $io->title('Context Generator Self Update');
 
+        $pharPath = \trim($input->getOption('phar-path') ?: self::PHAR_PATH);
+
         // Check if running as a PHAR
-        if ($this->pharPath === null) {
+        if ($pharPath === '') {
             $io->error(
                 'Self-update is only available when running the PHAR version of Context Generator.',
             );
@@ -77,12 +93,12 @@ final class SelfUpdateCommand extends Command
             $tempFile = $this->downloadLatestVersion($latestVersion, $io);
 
             $io->section('Installing the update...');
-            $this->installUpdate($tempFile, $io);
+            $this->installUpdate($tempFile, $pharPath, $io);
 
             $io->success("Successfully updated to version {$latestVersion}");
 
             return Command::SUCCESS;
-        } catch (\Butschster\ContextGenerator\Lib\HttpClient\Exception\HttpException $e) {
+        } catch (HttpException $e) {
             $io->error("HTTP error: {$e->getMessage()}");
             return Command::FAILURE;
         } catch (\Throwable $e) {
@@ -176,16 +192,16 @@ final class SelfUpdateCommand extends Command
     /**
      * Install the update by replacing the current PHAR
      */
-    private function installUpdate(string $tempFile, SymfonyStyle $io): void
+    private function installUpdate(string $tempFile, string $pharPath, SymfonyStyle $io): void
     {
         try {
-            $io->text("Replacing current PHAR at: {$this->pharPath}");
+            $io->text("Replacing current PHAR at: {$pharPath}");
 
             // On Windows, we need to delete the file first
-            if (\PHP_OS_FAMILY === 'Windows' && $this->files->exists($this->pharPath)) {
+            if (\PHP_OS_FAMILY === 'Windows' && $this->files->exists($pharPath)) {
                 // Since FilesInterface doesn't have a method to delete files,
                 // we have to use native PHP function here
-                if (!\unlink($this->pharPath)) {
+                if (!\unlink($pharPath)) {
                     throw new \RuntimeException("Failed to delete current PHAR file");
                 }
             }
@@ -197,13 +213,13 @@ final class SelfUpdateCommand extends Command
             }
 
             // Write the content to the target file
-            $this->files->write($this->pharPath, $newPharContent);
+            $this->files->write($pharPath, $newPharContent);
 
             // Make sure the new PHAR is executable
             if (\PHP_OS_FAMILY !== 'Windows') {
                 // FilesInterface doesn't provide chmod functionality,
                 // so we still need the native function here
-                if (!\chmod($this->pharPath, 0755)) {
+                if (!\chmod($pharPath, 0755)) {
                     $io->warning("Failed to set executable permissions on the new PHAR file");
                 }
             }

@@ -12,8 +12,6 @@ final readonly class NullHttpClient implements HttpClientInterface
 {
     /**
      * Always throws an exception as this client cannot perform actual requests
-     *
-     * @throws HttpClientNotAvailableException
      */
     public function get(string $url, array $headers = []): HttpResponse
     {
@@ -22,8 +20,6 @@ final readonly class NullHttpClient implements HttpClientInterface
 
     /**
      * Always throws an exception as this client cannot perform actual requests
-     *
-     * @throws HttpClientNotAvailableException
      */
     public function getWithRedirects(string $url, array $headers = []): HttpResponse
     {

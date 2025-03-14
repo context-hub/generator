@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Lib\HttpClient;
 
+use Butschster\ContextGenerator\Lib\HttpClient\Exception\HttpException;
 use Butschster\ContextGenerator\Lib\HttpClient\Exception\HttpRequestException;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
-use Psr\Http\Message\UriFactoryInterface;
 
 final readonly class Psr18Client implements HttpClientInterface
 {
@@ -16,7 +16,6 @@ final readonly class Psr18Client implements HttpClientInterface
     public function __construct(
         private ClientInterface $httpClient,
         private RequestFactoryInterface $requestFactory,
-        private UriFactoryInterface $uriFactory,
     ) {}
 
     public function get(string $url, array $headers = []): HttpResponse

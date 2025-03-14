@@ -20,6 +20,8 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 final class InitCommand extends Command
 {
+    private const DEFAULT_CONFIG_NAME = 'context.json';
+
     public function __construct(public string $baseDir)
     {
         parent::__construct();
@@ -32,14 +34,14 @@ final class InitCommand extends Command
                 name: 'filename',
                 mode: InputArgument::OPTIONAL,
                 description: 'The name of the file to create',
-                default: 'context.json',
+                default: self::DEFAULT_CONFIG_NAME,
             );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $outputStyle = new SymfonyStyle($input, $output);
-        $filename = $input->getArgument('filename');
+        $filename = $input->getArgument('filename') ?: self::DEFAULT_CONFIG_NAME;
 
         $filePath = \sprintf('%s/%s', $this->baseDir, $filename);
 

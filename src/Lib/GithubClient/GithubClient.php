@@ -8,9 +8,7 @@ use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 
 final class GithubClient implements GithubClientInterface
 {
-    /**
-     * GitHub API base URL
-     */
+    /** GitHub API base URL */
     private const API_BASE_URL = 'https://api.github.com';
 
     /**
@@ -36,10 +34,10 @@ final class GithubClient implements GithubClientInterface
 
         // Check if we got a single file or a directory
         if (isset($response['type']) && $response['type'] === 'file') {
-            return [$response]; // Single file response
+            return [$response];
         }
 
-        return $response; // Directory response (array of items)
+        return $response;
     }
 
     public function getFileContent(string $owner, string $repo, string $path, string $branch = 'main'): string

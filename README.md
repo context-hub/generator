@@ -94,19 +94,27 @@ curl -sSL https://raw.githubusercontent.com/butschster/context-generator/main/do
 
 - Detects the latest version
 - Downloads the PHAR file from GitHub releases
-- Installs it to your bin directory (default: `/usr/local/bin`)
+- Installs it (`ctx` binary) to your bin directory (default: `/usr/local/bin`)
 - Makes it executable
 
 After installation, you can use Context Generator by simply running:
 
 ```bash
-context-generator
+ctx
 ```
 
-If you want to check the version, run:
+#### Keeping Context Generator Updated
+
+Once installed, you can easily update to the latest version using the built-in self-update command:
 
 ```bash
-context-generator version
+ctx self-update
+```
+
+If you installed the PHAR in a custom location, specify the path:
+
+```bash
+ctx self-update --phar-path=/usr/local/bin/ctx
 ```
 
 ### Using PHAR file
@@ -123,11 +131,7 @@ chmod +x context-generator.phar
 Move it to a convenient location for easy access:
 
 ```bash
-# Option 1: Move to current project
-mv context-generator.phar ./context-generator
-
-# Option 2: Move to a directory in your PATH (for system-wide access)
-mv context-generator.phar /usr/local/bin/context-generator
+mv context-generator.phar /usr/local/bin/ctx
 ```
 
 ## Command Reference
@@ -138,13 +142,15 @@ Generates context files according to your configuration. This is the default com
 specified.
 
 ```bash
-context-generator generate
+ctx
 ```
 
-or simply:
+or full command:
 
 ```bash
-context-generator
+ctx generate
+# or 
+ctx build
 ```
 
 ### Initialize a Configuration File
@@ -152,7 +158,7 @@ context-generator
 Creates a new configuration file in the current directory. The default filename is `context.json` if not specified.
 
 ```bash
-context-generator init
+ctx init
 ```
 
 ### Check Version
@@ -161,15 +167,37 @@ Checks for available updates by comparing your version with the latest release o
 instructions if a newer version is available.
 
 ```bash
-context-generator version
+ctx version
+# or by first letter
+ctx v
 ```
 
 Displays the current version of Context Generator.
 
 ```bash
-context-generator version --check-updates
+ctx version --check-updates
 # or
-context-generator version -c
+ctx version -c
+```
+
+### Self-Update
+
+Updates the Context Generator to the latest version.
+
+```bash
+ctx self-update
+# or
+ctx update
+# or by first letter
+ctx u
+```
+
+If you installed the PHAR file in a non-standard location, you can specify the path:
+
+```bash
+ctx self-update --phar-path=/usr/local/bin/ctx
+# or
+ctx self-update -p /usr/local/bin/ctx
 ```
 
 ### Get JSON Schema
@@ -177,21 +205,23 @@ context-generator version -c
 Shows the URL where the JSON schema for IDE integration is hosted.
 
 ```bash
-context-generator schema
+ctx schema
+# or by first letter
+ctx s
 ```
 
 ```bash
-context-generator schema --download
+ctx schema --download
 # or
-context-generator schema -d
+ctx schema -d
 ```
 
 Downloads the JSON schema to the current directory with the default filename (`json-schema.json`).
 
 ```bash
-context-generator schema --download --output=custom-name.json
+ctx schema --download --output=custom-name.json
 # or
-context-generator schema -d -o custom-name.json
+ctx schema -d -o custom-name.json
 ```
 
 ## IDE Integration
@@ -201,7 +231,7 @@ autocompletion and validation in your IDE:
 
 1. **Download the schema**:
    ```bash
-   context-generator schema --download
+   ctx schema --download
    ```
 
 2. **Configure your IDE**:

@@ -61,10 +61,11 @@ final class VersionCommand extends Command
                     $io->success("A new version is available: {$latestVersion}");
                     $io->text([
                         'You can update by running:',
-                        'curl -sSL https://raw.githubusercontent.com/butschster/context-generator/main/download-latest.sh | sh',
+                        'ctx self-update',
                         '',
-                        'Or download the latest PHAR from:',
-                        'https://github.com/butschster/context-generator/releases/download/' . $latestVersion . '/context-generator.phar',
+                        'Or with these alternative methods:',
+                        '- curl -sSL https://raw.githubusercontent.com/butschster/context-generator/main/download-latest.sh | sh',
+                        '- Download from: https://github.com/butschster/context-generator/releases/download/' . $latestVersion . '/context-generator.phar',
                     ]);
                 } else {
                     $io->success("You're using the latest version ({$this->version})");
