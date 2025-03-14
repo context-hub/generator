@@ -18,7 +18,7 @@ jobs:
         dependencies:
           - locked
     env:
-      BIN_PHAR: ".build/phar/context-generator.phar"
+      BIN_PHAR: ".build/phar/ctx.phar"
     steps:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -54,3 +54,4 @@ jobs:
           token: "${{ secrets.RELEASE_TOKEN }}"
           files: |
             ${{ env.BIN_PHAR }}
+            ".build/phar/context-generator.phar"
