@@ -58,4 +58,4 @@ jobs:
           token: "${{ secrets.RELEASE_TOKEN }}"
           files: |
             ${{ env.BIN_PHAR }}
-            ".build/phar/context-generator.phar"
+            .build/phar/context-generator.phar
