@@ -20,7 +20,7 @@ final class ConsoleLogger extends AbstractLogger implements LoggerInterface, Has
         private readonly FormatterInterface $formatter = new SimpleFormatter(),
     ) {}
 
-    public function withPrefix(string $prefix): self
+    public function withPrefix(string $prefix): static
     {
         return new self($this->output, $this->formatter->withPrefix($prefix));
     }

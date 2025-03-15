@@ -18,7 +18,7 @@ final class NullLogger extends AbstractLogger implements LoggerInterface, HasPre
         // Intentionally do nothing
     }
 
-    public function withPrefix(string $prefix): HasPrefixLoggerInterface
+    public function withPrefix(string $prefix): static
     {
         return $this;
     }

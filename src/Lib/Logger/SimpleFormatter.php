@@ -54,7 +54,7 @@ final readonly class SimpleFormatter implements FormatterInterface
         return ' ' . \implode(' ', $parts);
     }
 
-    public function withPrefix(string $prefix): self
+    public function withPrefix(string $prefix): static
     {
         return new self(
             $prefix,
