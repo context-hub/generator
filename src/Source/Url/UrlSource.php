@@ -12,7 +12,7 @@ use Butschster\ContextGenerator\Source\BaseSource;
 final class UrlSource extends BaseSource
 {
     /**
-     * @param array<string> $urls URLs to fetch content from
+     * @param array<int, string> $urls URLs to fetch content from
      * @param string $description Human-readable description
      * @param string|null $selector CSS selector to extract specific content (null for full page)
      */

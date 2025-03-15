@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Document;
+namespace Butschster\ContextGenerator\Document\Compiler;
 
-use Butschster\ContextGenerator\Error\ErrorCollection;
+use Butschster\ContextGenerator\Document\Compiler\Error\ErrorCollection;
 
 final readonly class CompiledDocument
 {

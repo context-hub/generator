@@ -39,7 +39,22 @@
             "src/Source",
             "src/Lib/Content"
           ],
-          "filePattern": "*.php"
+          "filePattern": "*.php",
+          "modifiers": [
+            {
+              "name": "sanitizer",
+              "options": {
+                "rules": [
+                  {
+                    "type": "keyword",
+                    "keywords": [
+                      "tet"
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -50,7 +65,8 @@
         {
           "type": "file",
           "sourcePaths": [
-            "src/Modifier"
+            "src/Modifier",
+            "src/SourceModifierInterface.php"
           ],
           "filePattern": "*.php"
         }
@@ -63,7 +79,48 @@
         {
           "type": "file",
           "sourcePaths": [
-            "src/Console"
+            "src/Console",
+            "src/Lib/HttpClient"
+          ],
+          "filePattern": "*.php"
+        }
+      ]
+    },
+    {
+      "description": "Console commands",
+      "outputPath": "api/display.md",
+      "sources": [
+        {
+          "type": "file",
+          "sourcePaths": [
+            "src/Console/DisplayCommand.php",
+            "src/Console/Renderer"
+          ],
+          "filePattern": "*.php"
+        }
+      ]
+    },
+    {
+      "description": "Json Parser and loader",
+      "outputPath": "api/json-parser.md",
+      "sources": [
+        {
+          "type": "file",
+          "sourcePaths": [
+            "src/Loader"
+          ],
+          "filePattern": "*.php"
+        }
+      ]
+    },
+    {
+      "description": "Console logger",
+      "outputPath": "api/logger.md",
+      "sources": [
+        {
+          "type": "file",
+          "sourcePaths": [
+            "src/Lib/Logger"
           ],
           "filePattern": "*.php"
         }

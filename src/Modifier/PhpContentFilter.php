@@ -7,13 +7,13 @@ namespace Butschster\ContextGenerator\Modifier;
 use Butschster\ContextGenerator\SourceModifierInterface;
 use Nette\PhpGenerator\ClassLike;
 use Nette\PhpGenerator\ClassType;
+use Nette\PhpGenerator\Constant;
 use Nette\PhpGenerator\EnumType;
 use Nette\PhpGenerator\InterfaceType;
-use Nette\PhpGenerator\PhpFile;
-use Nette\PhpGenerator\TraitType;
 use Nette\PhpGenerator\Method;
+use Nette\PhpGenerator\PhpFile;
 use Nette\PhpGenerator\Property;
-use Nette\PhpGenerator\Constant;
+use Nette\PhpGenerator\TraitType;
 
 /**
  * Modifier for filtering PHP class content.

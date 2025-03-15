@@ -10,11 +10,16 @@ namespace Butschster\ContextGenerator\Lib\Finder;
 final readonly class FinderResult
 {
     /**
-     * @param \Traversable $files The found files
+     * @param array<int, mixed> $files The found files
      * @param string $treeView Text representation of the file tree structure
      */
     public function __construct(
-        public \Traversable $files,
+        public array $files,
         public string $treeView,
     ) {}
+
+    public function count(): int
+    {
+        return \count($this->files);
+    }
 }

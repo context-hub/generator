@@ -4,29 +4,32 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Console;
 
-use Butschster\ContextGenerator\Document\DocumentCompiler;
-use Butschster\ContextGenerator\Error\ErrorCollection;
+use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
 use Butschster\ContextGenerator\Fetcher\SourceFetcherRegistry;
 use Butschster\ContextGenerator\FilesInterface;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Lib\Content\Renderer\MarkdownRenderer;
 use Butschster\ContextGenerator\Lib\GithubClient\GithubClient;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
+use Butschster\ContextGenerator\Lib\Logger\HasPrefixLoggerInterface;
+use Butschster\ContextGenerator\Lib\Logger\LoggerFactory;
 use Butschster\ContextGenerator\Loader\CompositeDocumentsLoader;
 use Butschster\ContextGenerator\Loader\ConfigDocumentsLoader;
+use Butschster\ContextGenerator\Loader\ConfigRegistry\ConfigParser;
+use Butschster\ContextGenerator\Loader\ConfigRegistry\DocumentsParserPlugin;
 use Butschster\ContextGenerator\Loader\JsonConfigDocumentsLoader;
 use Butschster\ContextGenerator\Modifier\AstDocTransformer;
 use Butschster\ContextGenerator\Modifier\ContextSanitizerModifier;
 use Butschster\ContextGenerator\Modifier\PhpContentFilter;
 use Butschster\ContextGenerator\Modifier\PhpSignature;
 use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
-use Butschster\ContextGenerator\Parser\DefaultSourceParser;
 use Butschster\ContextGenerator\Source\File\FileSourceFetcher;
 use Butschster\ContextGenerator\Source\GitDiff\CommitDiffSourceFetcher;
 use Butschster\ContextGenerator\Source\Github\GithubFinder;
 use Butschster\ContextGenerator\Source\Github\GithubSourceFetcher;
 use Butschster\ContextGenerator\Source\Text\TextSourceFetcher;
 use Butschster\ContextGenerator\Source\Url\UrlSourceFetcher;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -75,8 +78,16 @@ final class GenerateCommand extends Command
     {
         $outputStyle = new SymfonyStyle($input, $output);
 
-        $configPath = $input->getOption('config') ?: $this->jsonConfigName;
+        // Create a logger specific to this command execution
+        $logger = LoggerFactory::create(
+            output: $output,
+            loggingEnabled: $output->isVerbose() || $output->isDebug() || $output->isVeryVerbose(),
+        );
 
+        \assert($logger instanceof HasPrefixLoggerInterface);
+        \assert($logger instanceof LoggerInterface);
+
+        $configPath = $input->getOption('config') ?: $this->jsonConfigName;
 
         if (!\file_exists($configPath)) {
             $outputStyle->error(\sprintf('Configuration file not found: %s', $configPath));
@@ -108,37 +119,39 @@ final class GenerateCommand extends Command
             fetchers: [
                 new TextSourceFetcher(
                     builderFactory: $contentBuilderFactory,
+                    logger: $logger->withPrefix('text-source'),
                 ),
                 new FileSourceFetcher(
                     basePath: $this->rootPath,
                     modifiers: $modifiers,
                     builderFactory: $contentBuilderFactory,
+                    logger: $logger->withPrefix('file-source'),
                 ),
                 new UrlSourceFetcher(
                     httpClient: $this->httpClient,
                     builderFactory: $contentBuilderFactory,
+                    logger: $logger->withPrefix('url-source'),
                 ),
                 new GithubSourceFetcher(
                     finder: $githubFinder,
                     modifiers: $modifiers,
                     builderFactory: $contentBuilderFactory,
+                    logger: $logger->withPrefix('github-source'),
                 ),
                 new CommitDiffSourceFetcher(
                     modifiers: $modifiers,
                     builderFactory: $contentBuilderFactory,
+                    logger: $logger->withPrefix('commit-diff-source'),
                 ),
             ],
         );
 
-        $sourceParser = new DefaultSourceParser(
-            fetcherRegistry: $sourceFetcherRegistry,
-        );
-
         $compiler = new DocumentCompiler(
             files: $files,
-            parser: $sourceParser,
+            parser: $sourceFetcherRegistry,
             basePath: $this->outputPath,
             builderFactory: $contentBuilderFactory,
+            logger: $logger->withPrefix('documents'),
         );
 
         $outputStyle->info(\sprintf('Loading configuration from %s ...', $this->rootPath . '/' . $configPath));
@@ -146,14 +159,21 @@ final class GenerateCommand extends Command
             new ConfigDocumentsLoader(
                 configPath: $this->rootPath . '/' . $this->phpConfigName,
             ),
+            // todo use factory
             new JsonConfigDocumentsLoader(
                 files: $files,
+                parser: new ConfigParser(
+                    rootPath: $this->rootPath,
+                    logger: $logger->withPrefix('parser'),
+                    documentsParser: new DocumentsParserPlugin(),
+                ),
                 configPath: $this->rootPath . '/' . $configPath,
                 rootPath: $this->rootPath,
+                logger: $logger->withPrefix('json-config'),
             ),
         );
 
-        foreach ($loader->load()->getDocuments() as $document) {
+        foreach ($loader->load()->getItems() as $document) {
             $outputStyle->info(\sprintf('Compiling %s...', $document->description));
 
             $compiledDocument = $compiler->compile($document);
@@ -167,12 +187,5 @@ final class GenerateCommand extends Command
         }
 
         return Command::SUCCESS;
-    }
-
-    private function renderErrors(SymfonyStyle $output, ErrorCollection $errors): void
-    {
-        foreach ($errors as $error) {
-            $output->error($error);
-        }
     }
 }

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Loader;
 
-use Butschster\ContextGenerator\Document\DocumentRegistry;
 use Butschster\ContextGenerator\DocumentsLoaderInterface;
+use Butschster\ContextGenerator\Loader\ConfigRegistry\DocumentRegistry;
 
 final class CompositeDocumentsLoader implements DocumentsLoaderInterface
 {
@@ -28,7 +28,7 @@ final class CompositeDocumentsLoader implements DocumentsLoaderInterface
 
             $loadedRegistry = $loader->load();
 
-            foreach ($loadedRegistry->getDocuments() as $document) {
+            foreach ($loadedRegistry->getItems() as $document) {
                 $registry->register($document);
             }
         }

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Console;
 
-use Butschster\ContextGenerator\Document;
-use Butschster\ContextGenerator\Document\DocumentRegistry;
+use Butschster\ContextGenerator\Document\Document;
+use Butschster\ContextGenerator\Loader\ConfigRegistry\DocumentRegistry;
 use Butschster\ContextGenerator\Source\Text\TextSource;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;

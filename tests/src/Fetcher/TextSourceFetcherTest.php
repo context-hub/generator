@@ -34,10 +34,10 @@ class TextSourceFetcherTest extends TestCase
         $content = "This is sample text content";
         $source = new TextSource(content: $content);
 
-        $expected = "// TEXT CONTENT:" . PHP_EOL .
+        $expected = "<INSTRUCTION>\n" . PHP_EOL .
             $content . PHP_EOL . PHP_EOL .
-            "// END OF TEXT CONTENT" . PHP_EOL .
-            '----------------------------------------------------------' . PHP_EOL;
+            "</INSTRUCTION>\n" . PHP_EOL .
+            "------------------------------------------------------------\n\n";
 
         $this->assertEquals($expected, $this->fetcher->fetch($source));
     }

@@ -8,7 +8,7 @@ namespace Butschster\ContextGenerator\Modifier;
  * Data Transfer Object for source modifiers.
  * Contains modifier name and context information.
  */
-final readonly class Modifier implements \JsonSerializable
+final readonly class Modifier implements \JsonSerializable, \Stringable
 {
     /**
      * Create a new modifier DTO.
@@ -69,5 +69,10 @@ final readonly class Modifier implements \JsonSerializable
         }
 
         return $result;
+    }
+
+    public function __toString(): string
+    {
+        return \json_encode($this->jsonSerialize(), JSON_THROW_ON_ERROR);
     }
 }

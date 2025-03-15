@@ -2,18 +2,24 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Document;
+namespace Butschster\ContextGenerator\Loader\ConfigRegistry;
 
-use Butschster\ContextGenerator\Document;
+use Butschster\ContextGenerator\Document\Document;
 
-final class DocumentRegistry implements \JsonSerializable
+/**
+ * @implements RegistryInterface<Document>
+ */
+final class DocumentRegistry implements RegistryInterface
 {
     public function __construct(
-        /**
-         * @var array<Document>
-         */
+        /** @var array<Document> */
         private array $documents = [],
     ) {}
+
+    public function getType(): string
+    {
+        return 'documents';
+    }
 
     /**
      * Register a document in the registry
@@ -25,21 +31,11 @@ final class DocumentRegistry implements \JsonSerializable
         return $this;
     }
 
-    /**
-     * Get all registered documents
-     *
-     * @return array<Document>
-     */
-    public function getDocuments(): array
+    public function getItems(): array
     {
         return $this->documents;
     }
 
-    /**
-     * @return Document[][]
-     *
-     * @psalm-return array{documents: array<Document>}
-     */
     public function jsonSerialize(): array
     {
         return [

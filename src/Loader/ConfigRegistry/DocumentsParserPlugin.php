@@ -2,28 +2,39 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Loader;
+namespace Butschster\ContextGenerator\Loader\ConfigRegistry;
 
-use Butschster\ContextGenerator\Document;
-use Butschster\ContextGenerator\Document\DocumentRegistry;
+use Butschster\ContextGenerator\Document\Document;
+use Butschster\ContextGenerator\Loader\ConfigRegistry\Parser\ConfigParserPluginInterface;
 use Butschster\ContextGenerator\Modifier\Modifier;
 use Butschster\ContextGenerator\Source\File\FileSource;
 use Butschster\ContextGenerator\Source\GitDiff\CommitDiffSource;
 use Butschster\ContextGenerator\Source\Github\GithubSource;
 use Butschster\ContextGenerator\Source\Text\TextSource;
 use Butschster\ContextGenerator\Source\Url\UrlSource;
+use Butschster\ContextGenerator\SourceInterface;
 
-final readonly class JsonConfigParser
+/**
+ * Plugin for parsing the "documents" section of the configuration
+ */
+final readonly class DocumentsParserPlugin implements ConfigParserPluginInterface
 {
-    public function __construct(
-        private string $rootPath,
-    ) {}
-
-    /**
-     * Create a DocumentRegistry from the decoded JSON configuration.
-     */
-    public function parse(array $config): DocumentRegistry
+    public function getConfigKey(): string
     {
+        return 'documents';
+    }
+
+    public function supports(array $config): bool
+    {
+        return isset($config['documents']) && \is_array($config['documents']);
+    }
+
+    public function parse(array $config, string $rootPath): ?RegistryInterface
+    {
+        if (!$this->supports($config)) {
+            return null;
+        }
+
         $registry = new DocumentRegistry();
 
         foreach ($config['documents'] as $index => $docData) {
@@ -41,7 +52,7 @@ final readonly class JsonConfigParser
 
             if (isset($docData['sources']) && \is_array($docData['sources'])) {
                 foreach ($docData['sources'] as $sourceIndex => $sourceData) {
-                    $source = $this->createSource($sourceData, "$index.$sourceIndex");
+                    $source = $this->createSource($sourceData, "$index.$sourceIndex", $rootPath);
                     $document->addSource($source);
                 }
             }
@@ -54,12 +65,12 @@ final readonly class JsonConfigParser
 
     /**
      * Create a Source object from its configuration.
-     *
      */
     private function createSource(
         array $sourceData,
         string $path,
-    ): FileSource|UrlSource|TextSource|GithubSource|CommitDiffSource {
+        string $rootPath,
+    ): SourceInterface {
         if (!isset($sourceData['type'])) {
             throw new \RuntimeException(
                 \sprintf('Source at path %s must have a "type" property', $path),
@@ -67,11 +78,11 @@ final readonly class JsonConfigParser
         }
 
         return match ($sourceData['type']) {
-            'file' => $this->createFileSource($sourceData, $path),
-            'url' => $this->createUrlSource($sourceData, $path),
-            'text' => $this->createTextSource($sourceData, $path),
-            'github' => $this->createGithubSource($sourceData, $path),
-            'git_diff' => $this->createCommitDiffSource($sourceData, $path),
+            'file' => $this->createFileSource($sourceData, $rootPath),
+            'url' => $this->createUrlSource($sourceData),
+            'text' => $this->createTextSource($sourceData),
+            'github' => $this->createGithubSource($sourceData),
+            'git_diff' => $this->createCommitDiffSource($sourceData, $rootPath),
             default => throw new \RuntimeException(
                 \sprintf('Unknown source type "%s" at path %s', $sourceData['type'], $path),
             ),
@@ -106,73 +117,31 @@ final readonly class JsonConfigParser
     /**
      * Create a GithubSource from its configuration.
      */
-    private function createGithubSource(
-        array $data,
-        string $path,
-    ): GithubSource {
+    private function createGithubSource(array $data): GithubSource
+    {
         if (isset($data['githubToken'])) {
-            $data['githubToken'] = $this->parseConfigValue($data['githubToken']);
+            $data['githubToken'] = ConfigParser::parseConfigValue($data['githubToken']);
         }
 
         return GithubSource::fromArray($data);
     }
 
     /**
-     * Parse a configuration value, resolving environment variables if needed.
-     *
-     * @param string|null $value The configuration value to parse
-     * @return string|null The parsed value
-     */
-    private function parseConfigValue(?string $value): ?string
-    {
-        if ($value === null) {
-            return null;
-        }
-
-        // Check if the value is an environment variable reference
-        if (\preg_match('/^\${([A-Za-z0-9_]+)}$/', $value, $matches)) {
-            // Get the environment variable name
-            $envName = $matches[1];
-
-            // Get the value from environment
-            $envValue = \getenv($envName);
-
-            // Return the environment variable value or null if not set
-            return $envValue !== false ? $envValue : null;
-        }
-
-        // Check if the value has embedded environment variables
-        if (\preg_match_all('/\${([A-Za-z0-9_]+)}/', $value, $matches)) {
-            // Replace all environment variables in the string
-            foreach ($matches[0] as $index => $placeholder) {
-                $envName = $matches[1][$index];
-                $envValue = \getenv($envName);
-
-                if ($envValue !== false) {
-                    $value = \str_replace($placeholder, $envValue, $value);
-                }
-            }
-        }
-
-        return $value;
-    }
-
-    /**
      * Create a FileSource from its configuration.
      */
-    private function createFileSource(array $data, string $path): FileSource
+    private function createFileSource(array $data, string $rootPath): FileSource
     {
         if (isset($data['modifiers'])) {
             $data['modifiers'] = $this->parseModifiers($data['modifiers']);
         }
 
-        return FileSource::fromArray($data, $this->rootPath);
+        return FileSource::fromArray($data, $rootPath);
     }
 
     /**
      * Create a UrlSource from its configuration.
      */
-    private function createUrlSource(array $data, string $path): UrlSource
+    private function createUrlSource(array $data): UrlSource
     {
         return UrlSource::fromArray($data);
     }
@@ -180,7 +149,7 @@ final readonly class JsonConfigParser
     /**
      * Create a TextSource from its configuration.
      */
-    private function createTextSource(array $data, string $path): TextSource
+    private function createTextSource(array $data): TextSource
     {
         return TextSource::fromArray($data);
     }
@@ -188,8 +157,8 @@ final readonly class JsonConfigParser
     /**
      * Create a GitCommitDiffSource from its configuration.
      */
-    private function createCommitDiffSource(array $data, string $path): CommitDiffSource
+    private function createCommitDiffSource(array $data, string $rootPath): CommitDiffSource
     {
-        return CommitDiffSource::fromArray($data, $this->rootPath);
+        return CommitDiffSource::fromArray($data, $rootPath);
     }
 }

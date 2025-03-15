@@ -30,6 +30,7 @@
     - [PHP-Docs (AstDocTransformer) Modifier](#php-docs-astdoctransformer-modifier)
     - [Environment Variables](#environment-variables)
     - [Complete Example](#complete-example)
+    - [Logging](#logging)
     - [For PHP Developers - Integration Guide](#for-php-developers---integration-guide)
         - [For PHP Developers. Advanced Usage](#for-php-developers-advanced-usage)
         - [Requirements](#requirements-1)
@@ -1470,6 +1471,41 @@ A comprehensive configuration example with multiple document types and sources:
 }
 ```
 
+## Logging
+
+Context Generator includes a PSR-3 compliant logging system with console output support. The logger integrates with
+Symfony Console and respects verbosity levels.
+
+### Verbosity Levels
+
+The logger's output is controlled by the verbosity level of your console command:
+
+| Verbosity Flag | Console Option | Log Levels Displayed                                         |
+|----------------|----------------|--------------------------------------------------------------|
+| Normal         | (none)         |
+| Verbose        | `-v`           | `ERROR`, `WARNING`, `NOTICE`                                 |
+| Very Verbose   | `-vv`          | `ERROR`, `WARNING`, `NOTICE`, `INFO`                         |
+| Debug          | `-vvv`         | `ERROR`, `WARNING`, `NOTICE`, `INFO`, `DEBUG`                |
+| Quiet          | `-q`           | Does not display any messages, include compiling information |
+
+### Usage Example
+
+You can control the verbosity when using the command-line interface:
+
+```bash
+# Verbose output
+ctx -v
+
+# Verbose Verbose output
+ctx -vv
+
+# Debug output
+ctx -vvv
+
+# Quiet mode
+ctx -q
+```
+
 # For PHP Developers - Integration Guide
 
 This section is for PHP developers who want to integrate Context Generator into their applications or extend its
@@ -1496,10 +1532,10 @@ Create a PHP configuration file (`context.php`):
 ```php
 <?php
 
-use Butschster\ContextGenerator\Document;
-use Butschster\ContextGenerator\Document\DocumentRegistry;
+use Butschster\ContextGenerator\Document\Document;
 use Butschster\ContextGenerator\Source\File\FileSource;
 use Butschster\ContextGenerator\Source\Text\TextSource;
+use Butschster\ContextGenerator\Loader\ConfigRegistry\DocumentRegistry;
 
 return (new DocumentRegistry())
     ->register(

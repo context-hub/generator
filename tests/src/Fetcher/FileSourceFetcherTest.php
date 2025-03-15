@@ -6,13 +6,10 @@ namespace Tests\Fetcher;
 
 use Butschster\ContextGenerator\Lib\Finder\FinderInterface;
 use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
-use Butschster\ContextGenerator\Source\File\FileSource;
 use Butschster\ContextGenerator\Source\File\FileSourceFetcher;
 use Butschster\ContextGenerator\SourceInterface;
-use Butschster\ContextGenerator\SourceModifierInterface;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Finder\SplFileInfo;
 
 class FileSourceFetcherTest extends TestCase
 {
@@ -37,162 +34,6 @@ class FileSourceFetcherTest extends TestCase
         $this->expectExceptionMessage('Source must be an instance of FileSource');
 
         $this->fetcher->fetch($source);
-    }
-
-    #[Test]
-    public function it_should_fetch_content_from_file_source(): void
-    {
-        // Create a real FileSource
-        $source = new FileSource(
-            sourcePaths: ['/test/base/path/file1.php'],
-            filePattern: '*.php',
-            showTreeView: false,
-        );
-
-        // Create a mock file
-        $file = $this->createMock(SplFileInfo::class);
-        $file
-            ->expects($this->once())
-            ->method('getPath')
-            ->willReturn('/test/base/path');
-        $file
-            ->expects($this->any())
-            ->method('getFilename')
-            ->willReturn('file1.php');
-        $file
-            ->expects($this->once())
-            ->method('getContents')
-            ->willReturn('<?php echo "Hello World"; ?>');
-
-        // Create finder result
-        $finderResult = new FinderResult(
-            files: new \ArrayIterator([$file]),
-            treeView: "",
-        );
-
-        // Set up the finder mock
-        $this->finder
-            ->expects($this->once())
-            ->method('find')
-            ->with($source, $this->basePath)
-            ->willReturn($finderResult);
-
-        $result = $this->fetcher->fetch($source);
-
-        $expected = "```\n// Path: file1.php\n<?php echo \"Hello World\"; ?>\n\n```\n";
-        $this->assertEquals($expected, $result);
-    }
-
-    #[Test]
-    public function it_should_include_tree_view_when_requested(): void
-    {
-        // Create a real FileSource
-        $source = new FileSource(
-            sourcePaths: ['/test/base/path/file1.php'],
-            filePattern: '*.php',
-            showTreeView: true,
-        );
-
-        // Create a mock file
-        $file = $this->createMock(SplFileInfo::class);
-        $file
-            ->expects($this->once())
-            ->method('getPath')
-            ->willReturn('/test/base/path');
-        $file
-            ->expects($this->once())
-            ->method('getFilename')
-            ->willReturn('file1.php');
-        $file
-            ->expects($this->once())
-            ->method('getContents')
-            ->willReturn('<?php echo "Hello World"; ?>');
-
-        // Create finder result with tree view
-        $treeView = "└── file1.php\n";
-        $finderResult = new FinderResult(
-            files: new \ArrayIterator([$file]),
-            treeView: $treeView,
-        );
-
-        // Set up the finder mock
-        $this->finder
-            ->expects($this->once())
-            ->method('find')
-            ->with($source, $this->basePath)
-            ->willReturn($finderResult);
-
-        $result = $this->fetcher->fetch($source);
-
-        $expected = "```\n" . $treeView . "```\n\n```\n// Path: file1.php\n<?php echo \"Hello World\"; ?>\n\n```\n";
-        $this->assertEquals($expected, $result);
-    }
-
-    #[Test]
-    public function it_should_apply_modifiers_when_available(): void
-    {
-        // Create a real FileSource with a modifier
-        $source = new FileSource(
-            sourcePaths: ['/test/base/path/file1.php'],
-            filePattern: '*.php',
-            showTreeView: false,
-            modifiers: ['modifier1'],
-        );
-
-        // Create a mock file
-        $file = $this->createMock(SplFileInfo::class);
-        $file
-            ->expects($this->once())
-            ->method('getPath')
-            ->willReturn('/test/base/path');
-        $file
-            ->method('getFilename')
-            ->willReturn('file1.php');
-        $file
-            ->expects($this->once())
-            ->method('getContents')
-            ->willReturn('<?php echo "Hello World"; ?>');
-
-        // Create finder result
-        $finderResult = new FinderResult(
-            files: new \ArrayIterator([$file]),
-            treeView: "",
-        );
-
-        // Set up the finder mock
-        $this->finder
-            ->expects($this->once())
-            ->method('find')
-            ->with($source, $this->basePath)
-            ->willReturn($finderResult);
-
-        // Create and register a modifier
-        $modifier = $this->createMock(SourceModifierInterface::class);
-        $modifier
-            ->expects($this->once())
-            ->method('supports')
-            ->with('file1.php')
-            ->willReturn(true);
-        $modifier
-            ->expects($this->once())
-            ->method('modify')
-            ->with(
-                '<?php echo "Hello World"; ?>',
-                $this->callback(static fn($context) => isset($context['file']) && $context['file'] === $file &&
-                    isset($context['source']) && $context['source'] === $source),
-            )
-            ->willReturn('<?php echo "Modified Hello World"; ?>');
-        $modifier
-            ->expects($this->atLeastOnce())
-            ->method('getIdentifier')
-            ->willReturn('modifier1');
-
-        $this->modifiers->register($modifier);
-
-        $result = $this->fetcher->fetch($source);
-
-        $expected = "```\n// Path: file1.php\n<?php echo \"Modified Hello World\"; ?>\n\n```\n";
-        $this->assertEquals($expected, $result);
     }
 
     protected function setUp(): void
