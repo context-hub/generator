@@ -78,7 +78,7 @@ final readonly class CommitDiffFinder implements FinderInterface
             $fileInfos = $gitSource->createFileInfos($source->repository, $commitRange, $tempDir);
 
             if (empty($fileInfos)) {
-                return new FinderResult(new \ArrayIterator([]), 'No changes found');
+                return new FinderResult([], 'No changes found');
             }
 
             // Apply filters if needed
@@ -95,7 +95,7 @@ final readonly class CommitDiffFinder implements FinderInterface
             // Generate tree view
             $treeView = $this->generateTreeView($filePaths, $gitSource, $commitRange);
 
-            return new FinderResult(new \ArrayIterator($fileInfos), $treeView);
+            return new FinderResult(\array_values($fileInfos), $treeView);
         } finally {
             // Clean up the temporary directory
             $this->removeDirectory($tempDir);

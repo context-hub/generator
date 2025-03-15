@@ -102,7 +102,7 @@ final readonly class SymfonyFinder implements FinderInterface
         $treeView = $this->generateTreeView($finder, $basePath);
 
         return new FinderResult(
-            files: $finder->getIterator(),
+            files: \array_values(\iterator_to_array($finder->getIterator())),
             treeView: $treeView,
         );
     }

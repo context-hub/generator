@@ -23,6 +23,7 @@
     "psr-discovery/http-factory-implementations": "^1.0",
     "psr/http-client": "^1.0",
     "psr/http-factory": "^1.0",
+    "psr/log": "^3.0",
     "symfony/finder": "^6.0 | ^7.0 | ^8.0",
     "symfony/console": "^6.0 | ^7.0 | ^8.0",
     "nette/php-generator": "^4.1",

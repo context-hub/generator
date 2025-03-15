@@ -12,6 +12,8 @@ use Butschster\ContextGenerator\Lib\Html\SelectorContentExtractor;
 use Butschster\ContextGenerator\Lib\Html\SelectorContentExtractorInterface;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 use Butschster\ContextGenerator\SourceInterface;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 /**
  * Fetcher for URL sources using Butschster HTTP client
@@ -21,6 +23,7 @@ final readonly class UrlSourceFetcher implements SourceFetcherInterface
 {
     /**
      * @param array<string, string> $defaultHeaders Default HTTP headers to use for all requests
+     * @param LoggerInterface|null $logger PSR Logger instance
      */
     public function __construct(
         private HttpClientInterface $httpClient,
@@ -32,29 +35,58 @@ final readonly class UrlSourceFetcher implements SourceFetcherInterface
         private HtmlCleanerInterface $cleaner = new HtmlCleaner(),
         private ?SelectorContentExtractorInterface $selectorExtractor = new SelectorContentExtractor(),
         private ContentBuilderFactory $builderFactory = new ContentBuilderFactory(),
-    ) {}
+        private ?LoggerInterface $logger = null,
+    ) {
+        $this->logger ??= new NullLogger();
+    }
 
     public function supports(SourceInterface $source): bool
     {
-        return $source instanceof UrlSource;
+        $isSupported = $source instanceof UrlSource;
+        $this->logger?->debug('Checking if source is supported', [
+            'sourceType' => $source::class,
+            'isSupported' => $isSupported,
+        ]);
+        return $isSupported;
     }
 
     public function fetch(SourceInterface $source): string
     {
         if (!$source instanceof UrlSource) {
-            throw new \InvalidArgumentException('Source must be an instance of UrlSource');
+            $errorMessage = 'Source must be an instance of UrlSource';
+            $this->logger?->error($errorMessage, [
+                'sourceType' => $source::class,
+            ]);
+            throw new \InvalidArgumentException($errorMessage);
         }
+
+        $this->logger?->info('Fetching URL source content', [
+            'urlCount' => \count($source->urls),
+            'hasSelector' => $source->hasSelector(),
+        ]);
 
         // Create builder
         $builder = $this->builderFactory->create();
 
-        foreach ($source->urls as $url) {
+        foreach ($source->urls as $index => $url) {
+            $this->logger?->debug('Processing URL', [
+                'url' => $url,
+                'index' => $index + 1,
+                'total' => \count($source->urls),
+            ]);
+
             try {
                 // Send the request
+                $this->logger?->debug('Sending HTTP request', ['url' => $url]);
                 $response = $this->httpClient->get($url, $this->defaultHeaders);
                 $statusCode = $response->getStatusCode();
 
                 if (!$response->isSuccess()) {
+                    $this->logger?->warning('HTTP request failed', [
+                        'url' => $url,
+                        'statusCode' => $statusCode,
+                    ]);
+
                     $builder
                         ->addComment("URL: {$url}")
                         ->addComment("Error: HTTP status code {$statusCode}")
@@ -62,32 +94,81 @@ final readonly class UrlSourceFetcher implements SourceFetcherInterface
                     continue;
                 }
 
+                $this->logger?->debug('HTTP request successful', [
+                    'url' => $url,
+                    'statusCode' => $statusCode,
+                ]);
+
                 // Get the response body
                 $html = $response->getBody();
+                $htmlLength = \strlen($html);
+                $this->logger?->debug('Received HTML content', [
+                    'url' => $url,
+                    'contentLength' => $htmlLength,
+                ]);
 
                 // Extract content from specific selector if defined
                 if ($source->hasSelector() && $this->selectorExtractor !== null) {
                     $selector = $source->getSelector();
                     \assert(!empty($selector));
+
+                    $this->logger?->debug('Extracting content using selector', [
+                        'url' => $url,
+                        'selector' => $selector,
+                    ]);
+
                     $contentFromSelector = $this->selectorExtractor->extract($html, $selector);
-                    if (empty($html)) {
+                    $extractedLength = \strlen($contentFromSelector);
+
+                    if (empty($contentFromSelector)) {
+                        $this->logger?->warning('Selector did not match any content', [
+                            'url' => $url,
+                            'selector' => $selector,
+                        ]);
+
                         $builder
                             ->addComment("URL: {$url}")
                             ->addComment("Warning: Selector '{$source->getSelector()}' didn't match any content")
                             ->addSeparator();
                     } else {
+                        $this->logger?->debug('Content extracted using selector', [
+                            'url' => $url,
+                            'selector' => $selector,
+                            'extractedLength' => $extractedLength,
+                            'originalLength' => $htmlLength,
+                        ]);
+
                         $builder->addComment("URL: {$url} (selector: {$source->getSelector()})");
                         $html = $contentFromSelector;
                     }
                 } else {
                     // Process the whole page
+                    $this->logger?->debug('Processing entire HTML page', ['url' => $url]);
                     $builder->addComment("URL: {$url}");
                 }
+
+                $this->logger?->debug('Cleaning HTML content', ['url' => $url]);
+                $cleanedHtml = $this->cleaner->clean($html);
+                $this->logger?->debug('HTML content cleaned', [
+                    'url' => $url,
+                    'originalLength' => \strlen($html),
+                    'cleanedLength' => \strlen($cleanedHtml),
+                ]);
+
                 $builder
-                    ->addText($this->cleaner->clean($html))
+                    ->addText($cleanedHtml)
                     ->addComment("END OF URL: {$url}")
                     ->addSeparator();
+
+                $this->logger?->debug('URL processed successfully', ['url' => $url]);
             } catch (\Throwable $e) {
+                $this->logger?->error('Error processing URL', [
+                    'url' => $url,
+                    'error' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                ]);
+
                 $builder
                     ->addComment("URL: {$url}")
                     ->addComment("Error: {$e->getMessage()}")
@@ -95,7 +176,13 @@ final readonly class UrlSourceFetcher implements SourceFetcherInterface
             }
         }
 
+        $content = $builder->build();
+        $this->logger?->info('URL source content fetched successfully', [
+            'contentLength' => \strlen($content),
+            'urlCount' => \count($source->urls),
+        ]);
+
         // Return built content
-        return $builder->build();
+        return $content;
     }
 }

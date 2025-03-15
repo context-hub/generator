@@ -11,6 +11,7 @@ use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Lib\Content\Renderer\MarkdownRenderer;
 use Butschster\ContextGenerator\Lib\GithubClient\GithubClient;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
+use Butschster\ContextGenerator\Lib\Logger\LoggerFactory;
 use Butschster\ContextGenerator\Loader\CompositeDocumentsLoader;
 use Butschster\ContextGenerator\Loader\ConfigDocumentsLoader;
 use Butschster\ContextGenerator\Loader\ConfigRegistry\ConfigParser;
@@ -75,8 +76,13 @@ final class GenerateCommand extends Command
     {
         $outputStyle = new SymfonyStyle($input, $output);
 
-        $configPath = $input->getOption('config') ?: $this->jsonConfigName;
+        // Create a logger specific to this command execution
+        $logger = LoggerFactory::create(
+            output: $output,
+            loggingEnabled: $output->isVerbose() || $output->isDebug() || $output->isVeryVerbose(),
+        );
 
+        $configPath = $input->getOption('config') ?: $this->jsonConfigName;
 
         if (!\file_exists($configPath)) {
             $outputStyle->error(\sprintf('Configuration file not found: %s', $configPath));
@@ -108,24 +114,29 @@ final class GenerateCommand extends Command
             fetchers: [
                 new TextSourceFetcher(
                     builderFactory: $contentBuilderFactory,
+                    logger: $logger->withPrefix('text-source'),
                 ),
                 new FileSourceFetcher(
                     basePath: $this->rootPath,
                     modifiers: $modifiers,
                     builderFactory: $contentBuilderFactory,
+                    logger: $logger->withPrefix('file-source'),
                 ),
                 new UrlSourceFetcher(
                     httpClient: $this->httpClient,
                     builderFactory: $contentBuilderFactory,
+                    logger: $logger->withPrefix('url-source'),
                 ),
                 new GithubSourceFetcher(
                     finder: $githubFinder,
                     modifiers: $modifiers,
                     builderFactory: $contentBuilderFactory,
+                    logger: $logger->withPrefix('github-source'),
                 ),
                 new CommitDiffSourceFetcher(
                     modifiers: $modifiers,
                     builderFactory: $contentBuilderFactory,
+                    logger: $logger->withPrefix('commit-diff-source'),
                 ),
             ],
         );
@@ -135,6 +146,7 @@ final class GenerateCommand extends Command
             parser: $sourceFetcherRegistry,
             basePath: $this->outputPath,
             builderFactory: $contentBuilderFactory,
+            logger: $logger->withPrefix('documents'),
         );
 
         $outputStyle->info(\sprintf('Loading configuration from %s ...', $this->rootPath . '/' . $configPath));
@@ -147,10 +159,12 @@ final class GenerateCommand extends Command
                 files: $files,
                 parser: new ConfigParser(
                     rootPath: $this->rootPath,
+                    logger: $logger->withPrefix('parser'),
                     documentsParser: new DocumentsParserPlugin(),
                 ),
                 configPath: $this->rootPath . '/' . $configPath,
                 rootPath: $this->rootPath,
+                logger: $logger->withPrefix('json-config'),
             ),
         );
 

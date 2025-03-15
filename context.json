@@ -112,6 +112,19 @@
           "filePattern": "*.php"
         }
       ]
+    },
+    {
+      "description": "Console logger",
+      "outputPath": "api/logger.md",
+      "sources": [
+        {
+          "type": "file",
+          "sourcePaths": [
+            "src/Lib/Logger"
+          ],
+          "filePattern": "*.php"
+        }
+      ]
     }
   ]
 }

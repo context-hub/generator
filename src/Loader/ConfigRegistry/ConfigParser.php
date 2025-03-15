@@ -6,6 +6,7 @@ namespace Butschster\ContextGenerator\Loader\ConfigRegistry;
 
 use Butschster\ContextGenerator\Loader\ConfigRegistry\Parser\ConfigParserInterface;
 use Butschster\ContextGenerator\Loader\ConfigRegistry\Parser\ConfigParserPluginInterface;
+use Psr\Log\LoggerInterface;
 
 final readonly class ConfigParser implements ConfigParserInterface
 {
@@ -18,6 +19,7 @@ final readonly class ConfigParser implements ConfigParserInterface
      */
     public function __construct(
         private string $rootPath,
+        private ?LoggerInterface $logger = null,
         ConfigParserPluginInterface ...$plugins,
     ) {
         $this->plugins = \array_values($plugins);
@@ -73,14 +75,25 @@ final readonly class ConfigParser implements ConfigParserInterface
         $registry = new ConfigRegistry();
 
         foreach ($this->plugins as $plugin) {
-            if (!$plugin->supports($config)) {
-                continue;
-            }
+            try {
+                if (!$plugin->supports($config)) {
+                    continue;
+                }
 
-            $parsedRegistry = $plugin->parse($config, $this->rootPath);
+                $parsedRegistry = $plugin->parse($config, $this->rootPath);
 
-            if ($parsedRegistry !== null) {
-                $registry->register($parsedRegistry);
+                if ($parsedRegistry !== null) {
+                    $registry->register($parsedRegistry);
+                }
+            } catch (\Throwable $e) {
+                // Log the error and continue with other plugins
+                $pluginClass = $plugin::class;
+
+                $this->logger?->error("Error parsing config with plugin '{$pluginClass}': {$e->getMessage()}", [
+                    'exception' => $e,
+                    'plugin' => $pluginClass,
+                    'configKey' => $plugin->getConfigKey(),
+                ]);
             }
         }
 

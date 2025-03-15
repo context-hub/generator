@@ -14,7 +14,12 @@ final readonly class FinderResult
      * @param string $treeView Text representation of the file tree structure
      */
     public function __construct(
-        public \Traversable $files,
+        public iterable $files,
         public string $treeView,
     ) {}
+
+    public function count(): int
+    {
+        return \iterator_count($this->files);
+    }
 }

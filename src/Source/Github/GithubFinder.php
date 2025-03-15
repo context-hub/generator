@@ -83,7 +83,7 @@ final class GithubFinder implements FinderInterface
 
         // Create the result
         return new FinderResult(
-            new \ArrayIterator($files),
+            \array_values($files),
             $this->fileTreeBuilder->buildTree($tree, ''),
         );
     }
