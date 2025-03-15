@@ -20,28 +20,16 @@ final class ConsoleLogger extends AbstractLogger implements LoggerInterface, Has
         private readonly FormatterInterface $formatter = new SimpleFormatter(),
     ) {}
 
-    /**
-     * Creates a new instance with the specified prefix.
-     */
     public function withPrefix(string $prefix): self
     {
         return new self($this->output, $this->formatter->withPrefix($prefix));
     }
 
-    /**
-     * Returns the current prefix.
-     */
     public function getPrefix(): string
     {
         return $this->formatter->getPrefix();
     }
 
-    /**
-     * Logs with an arbitrary level.
-     *
-     * @param mixed $level
-     * @param array<string, mixed> $context
-     */
     public function log($level, string|\Stringable $message, array $context = []): void
     {
         $logLevel = $this->normalizeLogLevel($level);

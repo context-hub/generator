@@ -11,6 +11,7 @@ use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Lib\Content\Renderer\MarkdownRenderer;
 use Butschster\ContextGenerator\Lib\GithubClient\GithubClient;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
+use Butschster\ContextGenerator\Lib\Logger\HasPrefixLoggerInterface;
 use Butschster\ContextGenerator\Lib\Logger\LoggerFactory;
 use Butschster\ContextGenerator\Loader\CompositeDocumentsLoader;
 use Butschster\ContextGenerator\Loader\ConfigDocumentsLoader;
@@ -28,6 +29,7 @@ use Butschster\ContextGenerator\Source\Github\GithubFinder;
 use Butschster\ContextGenerator\Source\Github\GithubSourceFetcher;
 use Butschster\ContextGenerator\Source\Text\TextSourceFetcher;
 use Butschster\ContextGenerator\Source\Url\UrlSourceFetcher;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -81,6 +83,9 @@ final class GenerateCommand extends Command
             output: $output,
             loggingEnabled: $output->isVerbose() || $output->isDebug() || $output->isVeryVerbose(),
         );
+
+        \assert($logger instanceof HasPrefixLoggerInterface);
+        \assert($logger instanceof LoggerInterface);
 
         $configPath = $input->getOption('config') ?: $this->jsonConfigName;
 

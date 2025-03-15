@@ -8,7 +8,7 @@ namespace Butschster\ContextGenerator\Lib\Logger;
  * Default formatter implementation that formats log messages with timestamp,
  * level indicator, and interpolates context data.
  */
-final readonly class SimpleFormatter implements FormatterInterface, HasPrefixLoggerInterface
+final readonly class SimpleFormatter implements FormatterInterface
 {
     /**
      * @param string $dateFormat The date format string for timestamps

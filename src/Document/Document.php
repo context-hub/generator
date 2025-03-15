@@ -52,11 +52,11 @@ final class Document implements \JsonSerializable
     /**
      * Get all sources
      *
-     * @return array<SourceInterface>
+     * @return array<int, SourceInterface>
      */
     public function getSources(): array
     {
-        return $this->sources;
+        return \array_values($this->sources);
     }
 
     /**
@@ -70,7 +70,7 @@ final class Document implements \JsonSerializable
             'description' => $this->description,
             'outputPath' => $this->outputPath,
             'overwrite' => $this->overwrite,
-            'sources' => \array_values($this->sources),
+            'sources' => $this->getSources(),
         ]);
     }
 }

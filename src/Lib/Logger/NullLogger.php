@@ -13,12 +13,6 @@ use Psr\Log\LoggerInterface;
  */
 final class NullLogger extends AbstractLogger implements LoggerInterface, HasPrefixLoggerInterface
 {
-    /**
-     * Discards the log message (no-op implementation).
-     *
-     * @param mixed $level
-     * @param array<string, mixed> $context
-     */
     public function log($level, string|\Stringable $message, array $context = []): void
     {
         // Intentionally do nothing

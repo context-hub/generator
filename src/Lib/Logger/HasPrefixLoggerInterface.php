@@ -14,7 +14,7 @@ interface HasPrefixLoggerInterface
      *
      * @param string $prefix The prefix to prepend to log messages
      */
-    public function withPrefix(string $prefix): self;
+    public function withPrefix(string $prefix): static;
 
     /**
      * Returns the current prefix used by this logger.

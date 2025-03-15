@@ -7,7 +7,7 @@ namespace Butschster\ContextGenerator\Lib\Logger;
 /**
  * Interface for log message formatters.
  */
-interface FormatterInterface
+interface FormatterInterface extends HasPrefixLoggerInterface
 {
     /**
      * Format a log message with the given level and context.
