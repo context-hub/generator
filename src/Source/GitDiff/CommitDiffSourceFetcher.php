@@ -9,7 +9,6 @@ use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Lib\Finder\FinderInterface;
 use Butschster\ContextGenerator\Lib\Finder\FinderResult;
 use Butschster\ContextGenerator\Modifier\ModifiersApplierInterface;
-use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
 use Butschster\ContextGenerator\SourceInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Finder\SplFileInfo;
@@ -21,7 +20,6 @@ use Symfony\Component\Finder\SplFileInfo;
 final readonly class CommitDiffSourceFetcher implements SourceFetcherInterface
 {
     /**
-     * @param SourceModifierRegistry $modifiers Registry of content modifiers
      * @param FinderInterface $finder Finder for filtering diffs
      * @param ContentBuilderFactory $builderFactory Factory for creating ContentBuilder instances
      * @param LoggerInterface|null $logger PSR Logger instance

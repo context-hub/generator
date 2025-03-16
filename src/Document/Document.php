@@ -12,9 +12,6 @@ final class Document implements \JsonSerializable
     /** @var array<SourceInterface> */
     private array $sources = [];
 
-    /** @var array<Modifier> */
-    private array $modifiers = [];
-
     /**
      * @param string $description Human-readable description
      * @param string $outputPath Path where to write the output
@@ -25,11 +22,10 @@ final class Document implements \JsonSerializable
         public readonly string $description,
         public readonly string $outputPath,
         public readonly bool $overwrite = true,
-        array $modifiers = [],
+        private array $modifiers = [],
         SourceInterface ...$sources,
     ) {
         $this->sources = $sources;
-        $this->modifiers = $modifiers;
     }
 
     /**
@@ -97,11 +93,6 @@ final class Document implements \JsonSerializable
         return !empty($this->modifiers);
     }
 
-    /**
-     * @return (SourceInterface[]|string|true)[]
-     *
-     * @psalm-return array{description?: string, outputPath?: string, overwrite?: true, sources?: array<SourceInterface>}
-     */
     public function jsonSerialize(): array
     {
         return \array_filter([
