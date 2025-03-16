@@ -5,9 +5,42 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator;
 
+use Butschster\ContextGenerator\Console\DisplayCommand;
+use Butschster\ContextGenerator\Console\GenerateCommand;
+use Butschster\ContextGenerator\Console\InitCommand;
+use Butschster\ContextGenerator\Console\SchemaCommand;
+use Butschster\ContextGenerator\Console\SelfUpdateCommand;
+use Butschster\ContextGenerator\Console\VersionCommand;
+use Butschster\ContextGenerator\Lib\Files;
+use Butschster\ContextGenerator\Lib\HttpClient\HttpClientFactory;
+use GuzzleHttp\Client;
+use GuzzleHttp\Psr7\HttpFactory;
+use Symfony\Component\Console\Application;
+
+// -----------------------------------------------------------------------------
+//  Prepare Global Environment
+// -----------------------------------------------------------------------------
+
+error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
+
+
+// -----------------------------------------------------------------------------
+//  Detect Environment
+// -----------------------------------------------------------------------------
+
+if (!in_array(PHP_SAPI, ['cli', 'phpdbg', 'embed', 'micro'], true)) {
+    echo PHP_EOL . 'This app may only be invoked from a command line, got "' . PHP_SAPI . '"' . PHP_EOL;
+
+    exit(1);
+}
+
+
 $insidePhar = \str_starts_with(__FILE__, 'phar://');
 
-// load dependencies
+
+// -----------------------------------------------------------------------------
+//  Load Composer's Autoloader
+// -----------------------------------------------------------------------------
 $vendorPath = (static function (): string {
     // OK, it's not, let give Composer autoloader a try!
     $possibleFiles = [
@@ -33,17 +66,10 @@ $vendorPath = (static function (): string {
     return $file;
 })();
 
-use Butschster\ContextGenerator\Console\DisplayCommand;
-use Butschster\ContextGenerator\Console\GenerateCommand;
-use Butschster\ContextGenerator\Console\InitCommand;
-use Butschster\ContextGenerator\Console\SchemaCommand;
-use Butschster\ContextGenerator\Console\SelfUpdateCommand;
-use Butschster\ContextGenerator\Console\VersionCommand;
-use Butschster\ContextGenerator\Lib\Files;
-use Butschster\ContextGenerator\Lib\HttpClient\HttpClientFactory;
-use GuzzleHttp\Client;
-use GuzzleHttp\Psr7\HttpFactory;
-use Symfony\Component\Console\Application;
+
+// -----------------------------------------------------------------------------
+//  Execute An Application
+// -----------------------------------------------------------------------------
 
 $application = new Application();
 $application->setDefaultCommand('generate');
@@ -108,4 +134,9 @@ $application->add(
     ),
 );
 
-$application->run();
+$input = new \Symfony\Component\Console\Input\ArgvInput();
+$output = new \Symfony\Component\Console\Output\ConsoleOutput();
+
+$application->run($input, $output);
+
+__HALT_COMPILER();
