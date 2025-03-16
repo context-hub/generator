@@ -11,6 +11,7 @@ use Butschster\ContextGenerator\Lib\Html\HtmlCleanerInterface;
 use Butschster\ContextGenerator\Lib\Html\SelectorContentExtractor;
 use Butschster\ContextGenerator\Lib\Html\SelectorContentExtractorInterface;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
+use Butschster\ContextGenerator\Modifier\ModifiersApplierInterface;
 use Butschster\ContextGenerator\SourceInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -50,7 +51,7 @@ final readonly class UrlSourceFetcher implements SourceFetcherInterface
         return $isSupported;
     }
 
-    public function fetch(SourceInterface $source): string
+    public function fetch(SourceInterface $source, ModifiersApplierInterface $modifiersApplier): string
     {
         if (!$source instanceof UrlSource) {
             $errorMessage = 'Source must be an instance of UrlSource';
@@ -148,7 +149,7 @@ final readonly class UrlSourceFetcher implements SourceFetcherInterface
                 }
 
                 $this->logger?->debug('Cleaning HTML content', ['url' => $url]);
-                $cleanedHtml = $this->cleaner->clean($html);
+                $cleanedHtml = $modifiersApplier->apply($this->cleaner->clean($html), $url);
                 $this->logger?->debug('HTML content cleaned', [
                     'url' => $url,
                     'originalLength' => \strlen($html),

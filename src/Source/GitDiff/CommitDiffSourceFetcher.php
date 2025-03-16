@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Source\GitDiff;
 
 use Butschster\ContextGenerator\Fetcher\SourceFetcherInterface;
-use Butschster\ContextGenerator\Lib\Content\ContentBuilder;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Lib\Finder\FinderInterface;
 use Butschster\ContextGenerator\Lib\Finder\FinderResult;
-use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
+use Butschster\ContextGenerator\Modifier\ModifiersApplierInterface;
 use Butschster\ContextGenerator\SourceInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Finder\SplFileInfo;
@@ -21,13 +20,11 @@ use Symfony\Component\Finder\SplFileInfo;
 final readonly class CommitDiffSourceFetcher implements SourceFetcherInterface
 {
     /**
-     * @param SourceModifierRegistry $modifiers Registry of content modifiers
      * @param FinderInterface $finder Finder for filtering diffs
      * @param ContentBuilderFactory $builderFactory Factory for creating ContentBuilder instances
      * @param LoggerInterface|null $logger PSR Logger instance
      */
     public function __construct(
-        private SourceModifierRegistry $modifiers,
         private FinderInterface $finder = new CommitDiffFinder(),
         private ContentBuilderFactory $builderFactory = new ContentBuilderFactory(),
         private ?LoggerInterface $logger = null,
@@ -43,7 +40,7 @@ final readonly class CommitDiffSourceFetcher implements SourceFetcherInterface
         return $isSupported;
     }
 
-    public function fetch(SourceInterface $source): string
+    public function fetch(SourceInterface $source, ModifiersApplierInterface $modifiersApplier): string
     {
         if (!$source instanceof CommitDiffSource) {
             $errorMessage = 'Source must be an instance of CommitDiffSource';
@@ -164,11 +161,8 @@ final readonly class CommitDiffSourceFetcher implements SourceFetcherInterface
      *
      * @param array<string, array{file: string, diff: string, stats: string}> $diffs
      */
-    private function formatOutput(
-        array $diffs,
-        string $treeView,
-        CommitDiffSource $source,
-    ): string {
+    private function formatOutput(array $diffs, string $treeView, CommitDiffSource $source): string
+    {
         $this->logger?->debug('Creating content builder');
         $builder = $this->builderFactory->create();
 
@@ -218,51 +212,6 @@ final readonly class CommitDiffSourceFetcher implements SourceFetcherInterface
                     'file' => $file,
                     'modifierCount' => \count($source->modifiers),
                 ]);
-
-                foreach ($source->modifiers as $modifierId) {
-                    if ($this->modifiers->has($modifierId)) {
-                        $modifier = $this->modifiers->get($modifierId);
-                        $modifierClass = $modifier::class;
-
-                        if ($modifier->supports($file)) {
-                            $this->logger?->debug('Applying modifier to file', [
-                                'file' => $file,
-                                'modifier' => $modifierClass,
-                                'modifierId' => (string) $modifierId,
-                            ]);
-
-                            $context = [
-                                'file' => $file,
-                                'source' => $source,
-                            ];
-                            // Note: This approach may need to be revised since we're now using ContentBuilder
-                            // and not directly manipulating the content string
-                            $content = $builder->build();
-                            $originalLength = \strlen($content);
-                            $content = $modifier->modify($content, $context);
-
-                            $this->logger?->debug('Modifier applied', [
-                                'file' => $file,
-                                'modifier' => $modifierClass,
-                                'originalLength' => $originalLength,
-                                'modifiedLength' => \strlen($content),
-                            ]);
-
-                            // Create a new builder with the modified content
-                            $builder = ContentBuilder::create();
-                            $builder->addText($content);
-                        } else {
-                            $this->logger?->debug('Modifier not applicable to file', [
-                                'file' => $file,
-                                'modifier' => $modifierClass,
-                            ]);
-                        }
-                    } else {
-                        $this->logger?->warning('Modifier not found', [
-                            'modifierId' => (string) $modifierId,
-                        ]);
-                    }
-                }
             }
         }
 

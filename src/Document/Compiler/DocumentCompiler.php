@@ -9,6 +9,8 @@ use Butschster\ContextGenerator\Document\Compiler\Error\SourceError;
 use Butschster\ContextGenerator\Document\Document;
 use Butschster\ContextGenerator\FilesInterface;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
+use Butschster\ContextGenerator\Modifier\ModifiersApplier;
+use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
 use Butschster\ContextGenerator\SourceParserInterface;
 use Psr\Log\LoggerInterface;
 
@@ -19,12 +21,14 @@ final readonly class DocumentCompiler
 {
     /**
      * @param string $basePath Base path for relative file references
+     * @param SourceModifierRegistry $modifierRegistry Registry for source modifiers
      * @param LoggerInterface|null $logger PSR Logger instance
      */
     public function __construct(
         private FilesInterface $files,
         private SourceParserInterface $parser,
         private string $basePath,
+        private SourceModifierRegistry $modifierRegistry,
         private ContentBuilderFactory $builderFactory = new ContentBuilderFactory(),
         private ?LoggerInterface $logger = null,
     ) {}
@@ -89,7 +93,14 @@ final readonly class DocumentCompiler
 
         $sources = $document->getSources();
         $sourceCount = \count($sources);
-        $this->logger?->info('Processing document sources', ['sourceCount' => $sourceCount]);
+        $this->logger?->info('Processing document sources', [
+            'sourceCount' => $sourceCount,
+            'hasDocumentModifiers' => $document->hasModifiers(),
+        ]);
+
+        // Create a modifiers applier with document-level modifiers if present
+        $modifiersApplier = ModifiersApplier::empty($this->modifierRegistry, $this->logger)
+            ->withModifiers($document->getModifiers());
 
         // Process all sources
         foreach ($sources as $index => $source) {
@@ -108,7 +119,7 @@ final readonly class DocumentCompiler
                 }
 
                 $this->logger?->debug('Parsing source content');
-                $content = $source->parseContent($this->parser);
+                $content = $source->parseContent($this->parser, $modifiersApplier);
                 $this->logger?->debug('Adding parsed content to builder', [
                     'contentLength' => \strlen($content),
                 ]);

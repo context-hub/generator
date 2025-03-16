@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fetcher;
 
 use Butschster\ContextGenerator\Lib\Finder\FinderInterface;
+use Butschster\ContextGenerator\Modifier\ModifiersApplier;
 use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
 use Butschster\ContextGenerator\Source\File\FileSourceFetcher;
 use Butschster\ContextGenerator\SourceInterface;
@@ -33,7 +34,7 @@ class FileSourceFetcherTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Source must be an instance of FileSource');
 
-        $this->fetcher->fetch($source);
+        $this->fetcher->fetch($source, new ModifiersApplier([]));
     }
 
     protected function setUp(): void
@@ -43,7 +44,6 @@ class FileSourceFetcherTest extends TestCase
 
         $this->fetcher = new FileSourceFetcher(
             basePath: $this->basePath,
-            modifiers: $this->modifiers,
             finder: $this->finder,
         );
     }

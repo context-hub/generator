@@ -6,9 +6,9 @@ namespace Butschster\ContextGenerator\Console;
 
 use Butschster\ContextGenerator\Console\Renderer\DocumentRenderer;
 use Butschster\ContextGenerator\Console\Renderer\Style;
+use Butschster\ContextGenerator\Document\DocumentsParserPlugin;
 use Butschster\ContextGenerator\FilesInterface;
 use Butschster\ContextGenerator\Loader\ConfigRegistry\ConfigParser;
-use Butschster\ContextGenerator\Loader\ConfigRegistry\DocumentsParserPlugin;
 use Butschster\ContextGenerator\Loader\JsonConfigDocumentsLoader;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;

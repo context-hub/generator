@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source;
 
+use Butschster\ContextGenerator\Modifier\ModifiersApplierInterface;
 use Butschster\ContextGenerator\SourceInterface;
 use Butschster\ContextGenerator\SourceParserInterface;
 
@@ -26,8 +27,17 @@ abstract class BaseSource implements SourceInterface
         return $this->getDescription() !== '';
     }
 
-    public function parseContent(SourceParserInterface $parser): string
-    {
-        return $parser->parse($this);
+    /**
+     * Parse the content from this source.
+     *
+     * @param SourceParserInterface $parser The parser to use
+     * @param ModifiersApplierInterface $modifiersApplier Optional applier for document-level modifiers
+     * @return string The parsed content
+     */
+    public function parseContent(
+        SourceParserInterface $parser,
+        ModifiersApplierInterface $modifiersApplier,
+    ): string {
+        return $parser->parse($this, $modifiersApplier);
     }
 }

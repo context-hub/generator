@@ -6,12 +6,12 @@ namespace Butschster\ContextGenerator\Source\Github;
 
 use Butschster\ContextGenerator\Fetcher\FilterableSourceInterface;
 use Butschster\ContextGenerator\Modifier\Modifier;
-use Butschster\ContextGenerator\Source\BaseSource;
+use Butschster\ContextGenerator\Source\SourceWithModifiers;
 
 /**
  * Source for GitHub repositories
  */
-final class GithubSource extends BaseSource implements FilterableSourceInterface
+final class GithubSource extends SourceWithModifiers implements FilterableSourceInterface
 {
     /**
      * @param string $repository GitHub repository in format "owner/repo"

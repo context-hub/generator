@@ -6,12 +6,12 @@ namespace Butschster\ContextGenerator\Source\File;
 
 use Butschster\ContextGenerator\Fetcher\FilterableSourceInterface;
 use Butschster\ContextGenerator\Modifier\Modifier;
-use Butschster\ContextGenerator\Source\BaseSource;
+use Butschster\ContextGenerator\Source\SourceWithModifiers;
 
 /**
  * Enhanced source for files and directories with extended Symfony Finder features
  */
-final class FileSource extends BaseSource implements FilterableSourceInterface
+final class FileSource extends SourceWithModifiers implements FilterableSourceInterface
 {
     /**
      * @param string|array<string> $sourcePaths Paths to source files or directories

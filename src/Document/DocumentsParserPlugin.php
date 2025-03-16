@@ -2,10 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Loader\ConfigRegistry;
+namespace Butschster\ContextGenerator\Document;
 
-use Butschster\ContextGenerator\Document\Document;
+use Butschster\ContextGenerator\Loader\ConfigRegistry\ConfigParser;
+use Butschster\ContextGenerator\Loader\ConfigRegistry\DocumentRegistry;
 use Butschster\ContextGenerator\Loader\ConfigRegistry\Parser\ConfigParserPluginInterface;
+use Butschster\ContextGenerator\Loader\ConfigRegistry\RegistryInterface;
+use Butschster\ContextGenerator\Modifier\Alias\ModifierResolver;
 use Butschster\ContextGenerator\Modifier\Modifier;
 use Butschster\ContextGenerator\Source\File\FileSource;
 use Butschster\ContextGenerator\Source\GitDiff\CommitDiffSource;
@@ -19,6 +22,10 @@ use Butschster\ContextGenerator\SourceInterface;
  */
 final readonly class DocumentsParserPlugin implements ConfigParserPluginInterface
 {
+    public function __construct(
+        private ModifierResolver $modifierResolver = new ModifierResolver(),
+    ) {}
+
     public function getConfigKey(): string
     {
         return 'documents';
@@ -44,10 +51,17 @@ final readonly class DocumentsParserPlugin implements ConfigParserPluginInterfac
                 );
             }
 
+            // Parse document modifiers if present
+            $documentModifiers = [];
+            if (isset($docData['modifiers']) && \is_array($docData['modifiers'])) {
+                $documentModifiers = $this->parseModifiers($docData['modifiers']);
+            }
+
             $document = Document::create(
                 description: (string) $docData['description'],
                 outputPath: (string) $docData['outputPath'],
                 overwrite: (bool) ($docData['overwrite'] ?? true),
+                modifiers: $documentModifiers,
             );
 
             if (isset($docData['sources']) && \is_array($docData['sources'])) {
@@ -92,26 +106,11 @@ final readonly class DocumentsParserPlugin implements ConfigParserPluginInterfac
     /**
      * Parse modifiers configuration
      *
-     * @param array<mixed> $modifiersConfig
      * @return array<Modifier>
      */
     private function parseModifiers(array $modifiersConfig): array
     {
-        $result = [];
-
-        foreach ($modifiersConfig as $modifier) {
-            if (\is_string($modifier)) {
-                $result[] = new Modifier(name: $modifier);
-            } elseif (\is_array($modifier) && isset($modifier['name'])) {
-                $result[] = Modifier::from($modifier);
-            } else {
-                throw new \InvalidArgumentException(
-                    \sprintf('Invalid modifier format: %s', \json_encode($modifier)),
-                );
-            }
-        }
-
-        return $result;
+        return $this->modifierResolver->resolveAll($modifiersConfig);
     }
 
     /**

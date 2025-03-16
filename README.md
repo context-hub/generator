@@ -1377,6 +1377,108 @@ For more control, you can provide configuration options:
 | `extract_routes`               | boolean | `true`  | Whether to extract route information from annotations/attributes |
 | `keep_doc_comments`            | boolean | `true`  | Whether to preserve PHPDoc comments in the output                |
 
+## Document-Level Modifiers
+
+In addition to source-specific modifiers, you can apply modifiers at the document level. Document-level modifiers
+are applied to all supported sources within a document.
+
+### Usage
+
+Add modifiers to your document configuration:
+
+```json
+{
+  "documents": [
+    {
+      "description": "API Documentation",
+      "outputPath": "docs/api.md",
+      "modifiers": [
+        "php-signature",
+        {
+          "name": "sanitizer",
+          "options": {
+            "rules": [
+              {
+                "type": "keyword",
+                "keywords": [
+                  "password",
+                  "secret"
+                ],
+                "replacement": "[REDACTED]"
+              }
+            ]
+          }
+        }
+      ],
+      "sources": [
+        {
+          "type": "file",
+          "description": "API Source Files",
+          "sourcePaths": [
+            "src/Api"
+          ],
+          "filePattern": "*.php",
+          "modifiers": [
+            "php-docs"
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+## Modifier Aliases
+
+Context Generator supports defining reusable modifier configurations through aliases. This allows you to define common
+modifier configurations once and reference them by name throughout your configuration, reducing duplication and
+improving maintainability.
+
+### Basic Usage
+
+Define your modifier aliases in the `settings.modifiers` section of your configuration:
+
+```json
+{
+  "settings": {
+    "modifiers": {
+      "api-docs": {
+        "name": "php-content-filter",
+        "options": {
+          "keep_doc_comments": false,
+          "keep_method_bodies": false
+        }
+      },
+      "docs-markdown": {
+        "name": "php-docs",
+        "options": {
+          "include_implementations": false,
+          "class_heading_level": 2
+        }
+      }
+    }
+  },
+  "documents": [
+    {
+      "description": "API Documentation",
+      "outputPath": "docs/api.md",
+      "sources": [
+        {
+          "type": "file",
+          "description": "API Controllers",
+          "sourcePaths": [
+            "src/Controller"
+          ],
+          "modifiers": [
+            "api-docs"
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
 ## Environment Variables
 
 You can use environment variables in your configuration using the `${VARIABLE_NAME}` syntax:
@@ -1387,6 +1489,7 @@ You can use environment variables in your configuration using the `${VARIABLE_NA
   "repository": "owner/repo",
   "githubToken": "${GITHUB_TOKEN}"
 }
+
 ```
 
 This will use the value of the `GITHUB_TOKEN` environment variable.

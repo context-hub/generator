@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator;
 
+use Butschster\ContextGenerator\Modifier\ModifiersApplierInterface;
+
 interface SourceInterface extends \JsonSerializable
 {
     /**
@@ -14,7 +16,14 @@ interface SourceInterface extends \JsonSerializable
     public function hasDescription(): bool;
 
     /**
-     * Parse source content using the appropriate parser
+     * Parse the content for this source
+     *
+     * @param SourceParserInterface $parser Parser for the source content
+     * @param ModifiersApplierInterface $modifiersApplier Applier for content modifiers
+     * @return string Parsed content
      */
-    public function parseContent(SourceParserInterface $parser): string;
+    public function parseContent(
+        SourceParserInterface $parser,
+        ModifiersApplierInterface $modifiersApplier,
+    ): string;
 }

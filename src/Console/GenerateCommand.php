@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Console;
 
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
+use Butschster\ContextGenerator\Document\DocumentsParserPlugin;
 use Butschster\ContextGenerator\Fetcher\SourceFetcherRegistry;
 use Butschster\ContextGenerator\FilesInterface;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
@@ -16,8 +17,10 @@ use Butschster\ContextGenerator\Lib\Logger\LoggerFactory;
 use Butschster\ContextGenerator\Loader\CompositeDocumentsLoader;
 use Butschster\ContextGenerator\Loader\ConfigDocumentsLoader;
 use Butschster\ContextGenerator\Loader\ConfigRegistry\ConfigParser;
-use Butschster\ContextGenerator\Loader\ConfigRegistry\DocumentsParserPlugin;
 use Butschster\ContextGenerator\Loader\JsonConfigDocumentsLoader;
+use Butschster\ContextGenerator\Modifier\Alias\AliasesRegistry;
+use Butschster\ContextGenerator\Modifier\Alias\ModifierAliasesParserPlugin;
+use Butschster\ContextGenerator\Modifier\Alias\ModifierResolver;
 use Butschster\ContextGenerator\Modifier\AstDocTransformer;
 use Butschster\ContextGenerator\Modifier\ContextSanitizerModifier;
 use Butschster\ContextGenerator\Modifier\PhpContentFilter;
@@ -123,7 +126,6 @@ final class GenerateCommand extends Command
                 ),
                 new FileSourceFetcher(
                     basePath: $this->rootPath,
-                    modifiers: $modifiers,
                     builderFactory: $contentBuilderFactory,
                     logger: $logger->withPrefix('file-source'),
                 ),
@@ -134,12 +136,10 @@ final class GenerateCommand extends Command
                 ),
                 new GithubSourceFetcher(
                     finder: $githubFinder,
-                    modifiers: $modifiers,
                     builderFactory: $contentBuilderFactory,
                     logger: $logger->withPrefix('github-source'),
                 ),
                 new CommitDiffSourceFetcher(
-                    modifiers: $modifiers,
                     builderFactory: $contentBuilderFactory,
                     logger: $logger->withPrefix('commit-diff-source'),
                 ),
@@ -150,11 +150,15 @@ final class GenerateCommand extends Command
             files: $files,
             parser: $sourceFetcherRegistry,
             basePath: $this->outputPath,
+            modifierRegistry: $modifiers,
             builderFactory: $contentBuilderFactory,
             logger: $logger->withPrefix('documents'),
         );
 
         $outputStyle->info(\sprintf('Loading configuration from %s ...', $this->rootPath . '/' . $configPath));
+        $modifierResolver = new ModifierResolver(
+            aliasesRegistry: $aliasesRegistry = new AliasesRegistry(),
+        );
         $loader = new CompositeDocumentsLoader(
             new ConfigDocumentsLoader(
                 configPath: $this->rootPath . '/' . $this->phpConfigName,
@@ -165,7 +169,12 @@ final class GenerateCommand extends Command
                 parser: new ConfigParser(
                     rootPath: $this->rootPath,
                     logger: $logger->withPrefix('parser'),
-                    documentsParser: new DocumentsParserPlugin(),
+                    modifierAliasesParser: new ModifierAliasesParserPlugin(
+                        aliasesRegistry: $aliasesRegistry,
+                    ),
+                    documentsParser: new DocumentsParserPlugin(
+                        modifierResolver: $modifierResolver,
+                    ),
                 ),
                 configPath: $this->rootPath . '/' . $configPath,
                 rootPath: $this->rootPath,

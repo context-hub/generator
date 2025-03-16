@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Source;
 
+use Butschster\ContextGenerator\Modifier\ModifiersApplier;
 use Butschster\ContextGenerator\Source\BaseSource;
 use Butschster\ContextGenerator\SourceParserInterface;
 use PHPUnit\Framework\Attributes\Test;
@@ -47,7 +48,7 @@ class BaseSourceConstructorTest extends TestCase
             ->with($source)
             ->willReturn('Parsed content');
 
-        $this->assertEquals('Parsed content', $source->parseContent($parser));
+        $this->assertEquals('Parsed content', $source->parseContent($parser, new ModifiersApplier([])));
     }
 
     /**

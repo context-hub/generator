@@ -11,6 +11,16 @@
     "documents"
   ],
   "properties": {
+    "settings": {
+      "type": "object",
+      "description": "Global settings for the context generator",
+      "properties": {
+        "modifiers": {
+          "type": "object",
+          "description": "Named modifier configurations that can be referenced by alias"
+        }
+      }
+    },
     "documents": {
       "type": "array",
       "description": "List of documents to generate",
@@ -49,6 +59,9 @@
           "items": {
             "$ref": "#/definitions/source"
           }
+        },
+        "modifiers": {
+          "$ref": "#/definitions/modifiers"
         }
       }
     },
@@ -759,80 +772,66 @@
       "type": "array",
       "description": "List of content modifiers to apply",
       "items": {
-        "allOf": [
+        "oneOf": [
           {
-            "if": {
-              "type": "string"
-            },
-            "then": {
-              "type": "string",
-              "description": "Modifier identifier",
-              "enum": [
-                "php-signature",
-                "php-docs"
-              ]
-            }
+            "type": "string",
+            "description": "Modifier identifier or alias"
           },
           {
-            "if": {
-              "type": "object"
-            },
-            "then": {
-              "type": "object",
-              "required": [
-                "name"
-              ],
-              "properties": {
-                "name": {
-                  "type": "string",
-                  "description": "Modifier identifier",
-                  "enum": [
-                    "php-content-filter",
-                    "php-docs",
-                    "sanitizer"
-                  ]
-                },
-                "options": {
-                  "description": "Modifier options",
-                  "allOf": [
-                    {
-                      "if": {
-                        "properties": {
-                          "name": {
-                            "const": "php-content-filter"
-                          }
+            "type": "object",
+            "required": [
+              "name"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Modifier identifier",
+                "enum": [
+                  "php-content-filter",
+                  "php-docs",
+                  "sanitizer"
+                ]
+              },
+              "options": {
+                "description": "Modifier options",
+                "allOf": [
+                  {
+                    "if": {
+                      "properties": {
+                        "name": {
+                          "const": "php-content-filter"
                         }
-                      },
-                      "then": {
-                        "$ref": "#/definitions/php-content-filter"
                       }
                     },
-                    {
-                      "if": {
-                        "properties": {
-                          "name": {
-                            "const": "php-docs"
-                          }
-                        }
-                      },
-                      "then": {
-                        "$ref": "#/definitions/php-docs"
-                      }
-                    },
-                    {
-                      "if": {
-                        "properties": {
-                          "name": {
-                            "const": "sanitizer"
-                          }
-                        }
-                      },
-                      "then": {
-                        "$ref": "#/definitions/sanitizer"
-                      }
+                    "then": {
+                      "$ref": "#/definitions/php-content-filter"
                     }
-                  ]
-                }
+                  },
+                  {
+                    "if": {
+                      "properties": {
+                        "name": {
+                          "const": "php-docs"
+                        }
+                      }
+                    },
+                    "then": {
+                      "$ref": "#/definitions/php-docs"
+                    }
+                  },
+                  {
+                    "if": {
+                      "properties": {
+                        "name": {
+                          "const": "sanitizer"
+                        }
+                      }
+                    },
+                    "then": {
+                      "$ref": "#/definitions/sanitizer"
+                    }
+                  }
+                ]
               }
             }
           }
