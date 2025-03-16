@@ -7,7 +7,7 @@ namespace Butschster\ContextGenerator\Source\File;
 use Butschster\ContextGenerator\Fetcher\SourceFetcherInterface;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Lib\Finder\FinderInterface;
-use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
+use Butschster\ContextGenerator\Modifier\ModifiersApplierInterface;
 use Butschster\ContextGenerator\SourceInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Finder\SplFileInfo;
@@ -20,14 +20,12 @@ readonly class FileSourceFetcher implements SourceFetcherInterface
 {
     /**
      * @param string $basePath Base path for relative file references
-     * @param SourceModifierRegistry $modifiers Registry of content modifiers
      * @param FinderInterface $finder Finder for locating files
      * @param ContentBuilderFactory $builderFactory Factory for creating ContentBuilder instances
      * @param LoggerInterface|null $logger PSR Logger instance
      */
     public function __construct(
         private string $basePath,
-        private SourceModifierRegistry $modifiers,
         private FinderInterface $finder = new SymfonyFinder(),
         private ContentBuilderFactory $builderFactory = new ContentBuilderFactory(),
         private ?LoggerInterface $logger = null,
@@ -43,7 +41,7 @@ readonly class FileSourceFetcher implements SourceFetcherInterface
         return $isSupported;
     }
 
-    public function fetch(SourceInterface $source): string
+    public function fetch(SourceInterface $source, ModifiersApplierInterface $modifiersApplier): string
     {
         if (!$source instanceof FileSource) {
             $errorMessage = 'Source must be an instance of FileSource';
@@ -134,7 +132,7 @@ readonly class FileSourceFetcher implements SourceFetcherInterface
             ]);
 
             $language = $this->detectLanguage($filePath);
-            $content = $this->getContent($file, $source);
+            $content = $modifiersApplier->apply($this->getContent($file, $source), $fileName);
 
             $this->logger?->debug('Adding file to content', [
                 'file' => $filePath,
@@ -172,51 +170,7 @@ readonly class FileSourceFetcher implements SourceFetcherInterface
 
         $filePath = $file->getRelativePathname();
         $this->logger?->debug('Reading file content', ['file' => $filePath]);
-        $content = $file->getContents();
-        $originalLength = \strlen($content);
-
-        // Apply modifiers if available and the source is a FileSource
-        if (!empty($source->modifiers)) {
-            $this->logger?->debug('Applying modifiers to file', [
-                'file' => $filePath,
-                'modifierCount' => \count($source->modifiers),
-            ]);
-
-            foreach ($source->modifiers as $modifierId) {
-                if ($this->modifiers->has($modifierId)) {
-                    $modifier = $this->modifiers->get($modifierId);
-                    $modifierClass = $modifier::class;
-
-                    if ($modifier->supports($file->getFilename())) {
-                        $this->logger?->debug('Applying modifier', [
-                            'file' => $filePath,
-                            'modifier' => $modifierClass,
-                            'modifierId' => (string) $modifierId,
-                        ]);
-
-                        $content = $modifier->modify($content, $modifierId->context);
-
-                        $this->logger?->debug('Modifier applied', [
-                            'file' => $filePath,
-                            'modifier' => $modifierClass,
-                            'originalLength' => $originalLength,
-                            'modifiedLength' => \strlen($content),
-                        ]);
-                    } else {
-                        $this->logger?->debug('Modifier not applicable to file', [
-                            'file' => $filePath,
-                            'modifier' => $modifierClass,
-                        ]);
-                    }
-                } else {
-                    $this->logger?->warning('Modifier not found', [
-                        'modifierId' => (string) $modifierId,
-                    ]);
-                }
-            }
-        }
-
-        return $content;
+        return $file->getContents();
     }
 
     private function detectLanguage(string $filePath): ?string

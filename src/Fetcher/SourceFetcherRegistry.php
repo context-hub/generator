@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Fetcher;
 
+use Butschster\ContextGenerator\Modifier\ModifiersApplierInterface;
 use Butschster\ContextGenerator\SourceInterface;
 use Butschster\ContextGenerator\SourceParserInterface;
 
@@ -50,8 +51,10 @@ final class SourceFetcherRegistry implements SourceParserInterface
         );
     }
 
-    public function parse(SourceInterface $source): string
-    {
-        return $this->findFetcher($source)->fetch($source);
+    public function parse(
+        SourceInterface $source,
+        ModifiersApplierInterface $modifiersApplier,
+    ): string {
+        return $this->findFetcher($source)->fetch($source, $modifiersApplier);
     }
 }

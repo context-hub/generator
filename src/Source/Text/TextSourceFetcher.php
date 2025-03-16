@@ -6,6 +6,7 @@ namespace Butschster\ContextGenerator\Source\Text;
 
 use Butschster\ContextGenerator\Fetcher\SourceFetcherInterface;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
+use Butschster\ContextGenerator\Modifier\ModifiersApplierInterface;
 use Butschster\ContextGenerator\SourceInterface;
 use Psr\Log\LoggerInterface;
 
@@ -30,7 +31,7 @@ final readonly class TextSourceFetcher implements SourceFetcherInterface
         return $isSupported;
     }
 
-    public function fetch(SourceInterface $source): string
+    public function fetch(SourceInterface $source, ModifiersApplierInterface $modifiersApplier): string
     {
         if (!$source instanceof TextSource) {
             $errorMessage = 'Source must be an instance of TextSource';
@@ -58,7 +59,7 @@ final readonly class TextSourceFetcher implements SourceFetcherInterface
 
         $builder
             ->addText(\sprintf('<%s>', $source->tag))
-            ->addText($source->content)
+            ->addText($modifiersApplier->apply($source->content, 'file.txt'))
             ->addText(\sprintf('</%s>', $source->tag))
             ->addSeparator();
 

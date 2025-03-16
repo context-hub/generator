@@ -1,6 +1,43 @@
 {
   "documents": [
     {
+      "description": "Generator loaders",
+      "outputPath": "api/loaders.md",
+      "sources": [
+        {
+          "type": "file",
+          "sourcePaths": [
+            "src/Loader",
+            "src/SourceModifierInterface.php"
+          ],
+          "filePattern": "*.php"
+        },
+        {
+          "type": "file",
+          "sourcePaths": [
+            "src/Source"
+          ],
+          "contains": [
+            "implements SourceFetcherInterface"
+          ],
+          "filePattern": "*.php"
+        }
+      ]
+    },
+    {
+      "description": "Document",
+      "outputPath": "api/document.md",
+      "sources": [
+        {
+          "type": "file",
+          "sourcePaths": [
+            "src/Document"
+          ],
+          "filePattern": "*.php"
+        }
+      ]
+    },
+    {
       "description": "Recent Git Changes",
       "outputPath": "docs/recent-changes.md",
       "sources": [

@@ -44,10 +44,17 @@ final readonly class DocumentsParserPlugin implements ConfigParserPluginInterfac
                 );
             }
 
+            // Parse document modifiers if present
+            $documentModifiers = [];
+            if (isset($docData['modifiers']) && \is_array($docData['modifiers'])) {
+                $documentModifiers = $this->parseModifiers($docData['modifiers']);
+            }
+
             $document = Document::create(
                 description: (string) $docData['description'],
                 outputPath: (string) $docData['outputPath'],
                 overwrite: (bool) ($docData['overwrite'] ?? true),
+                modifiers: $documentModifiers,
             );
 
             if (isset($docData['sources']) && \is_array($docData['sources'])) {

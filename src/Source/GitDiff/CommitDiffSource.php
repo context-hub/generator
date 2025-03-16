@@ -6,12 +6,12 @@ namespace Butschster\ContextGenerator\Source\GitDiff;
 
 use Butschster\ContextGenerator\Fetcher\FilterableSourceInterface;
 use Butschster\ContextGenerator\Modifier\Modifier;
-use Butschster\ContextGenerator\Source\BaseSource;
+use Butschster\ContextGenerator\Source\SourceWithModifiers;
 
 /**
  * Source for git commit diffs with simplified commit range support
  */
-class CommitDiffSource extends BaseSource implements FilterableSourceInterface, \JsonSerializable
+class CommitDiffSource extends SourceWithModifiers implements FilterableSourceInterface, \JsonSerializable
 {
     /**
      * @param string $repository Path to the git repository

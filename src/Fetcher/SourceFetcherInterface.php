@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Fetcher;
 
+use Butschster\ContextGenerator\Modifier\ModifiersApplierInterface;
 use Butschster\ContextGenerator\SourceInterface;
 
 /**
@@ -22,5 +23,5 @@ interface SourceFetcherInterface
      * Fetch content from the source
      * @param TSource $source
      */
-    public function fetch(SourceInterface $source): string;
+    public function fetch(SourceInterface $source, ModifiersApplierInterface $modifiersApplier): string;
 }

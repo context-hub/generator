@@ -8,6 +8,7 @@ use Butschster\ContextGenerator\Fetcher\SourceFetcherInterface;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Lib\Finder\FinderInterface;
 use Butschster\ContextGenerator\Lib\GithubClient\Model\GithubRepository;
+use Butschster\ContextGenerator\Modifier\ModifiersApplierInterface;
 use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
 use Butschster\ContextGenerator\SourceInterface;
 use Psr\Log\LoggerInterface;
@@ -21,7 +22,6 @@ final readonly class GithubSourceFetcher implements SourceFetcherInterface
 {
     public function __construct(
         private FinderInterface $finder,
-        private SourceModifierRegistry $modifiers,
         private ContentBuilderFactory $builderFactory = new ContentBuilderFactory(),
         private ?LoggerInterface $logger = null,
     ) {}
@@ -36,7 +36,7 @@ final readonly class GithubSourceFetcher implements SourceFetcherInterface
         return $isSupported;
     }
 
-    public function fetch(SourceInterface $source): string
+    public function fetch(SourceInterface $source, ModifiersApplierInterface $modifiersApplier): string
     {
         if (!$source instanceof GithubSource) {
             $errorMessage = 'Source must be an instance of GithubSource';
@@ -96,55 +96,13 @@ final readonly class GithubSourceFetcher implements SourceFetcherInterface
                 'total' => $fileCount,
             ]);
 
-            $fileContent = $file->getContents();
-            $originalLength = \strlen((string) $fileContent);
-
-            // Apply modifiers if available
-            if (!empty($source->modifiers)) {
-                $this->logger?->debug('Applying modifiers to file', [
-                    'file' => $path,
-                    'modifierCount' => \count($source->modifiers),
-                ]);
-
-                foreach ($source->modifiers as $modifierId) {
-                    if ($this->modifiers->has($modifierId)) {
-                        $modifier = $this->modifiers->get($modifierId);
-                        $modifierClass = $modifier !== null ? $modifier::class : self::class;
-
-                        if ($modifier->supports($path)) {
-                            $this->logger?->debug('Applying modifier', [
-                                'file' => $path,
-                                'modifier' => $modifierClass,
-                                'modifierId' => (string) $modifierId,
-                            ]);
-
-                            $fileContent = $modifier->modify($fileContent, $modifierId->context);
-
-                            $this->logger?->debug('Modifier applied', [
-                                'file' => $path,
-                                'modifier' => $modifierClass,
-                                'originalLength' => $originalLength,
-                                'modifiedLength' => \strlen($fileContent),
-                            ]);
-                        } else {
-                            $this->logger?->debug('Modifier not applicable to file', [
-                                'file' => $path,
-                                'modifier' => $modifierClass,
-                            ]);
-                        }
-                    } else {
-                        $this->logger?->warning('Modifier not found', [
-                            'modifierId' => (string) $modifierId,
-                        ]);
-                    }
-                }
-            }
+            $fileContent = $modifiersApplier->apply($file->getContents(), $path);
 
             $language = $this->detectLanguage($path);
             $this->logger?->debug('Adding file to content', [
                 'file' => $path,
                 'language' => $language,
-                'contentLength' => \strlen((string) $fileContent),
+                'contentLength' => \strlen($fileContent),
             ]);
 
             $builder

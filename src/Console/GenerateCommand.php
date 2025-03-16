@@ -123,7 +123,6 @@ final class GenerateCommand extends Command
                 ),
                 new FileSourceFetcher(
                     basePath: $this->rootPath,
-                    modifiers: $modifiers,
                     builderFactory: $contentBuilderFactory,
                     logger: $logger->withPrefix('file-source'),
                 ),
@@ -134,12 +133,10 @@ final class GenerateCommand extends Command
                 ),
                 new GithubSourceFetcher(
                     finder: $githubFinder,
-                    modifiers: $modifiers,
                     builderFactory: $contentBuilderFactory,
                     logger: $logger->withPrefix('github-source'),
                 ),
                 new CommitDiffSourceFetcher(
-                    modifiers: $modifiers,
                     builderFactory: $contentBuilderFactory,
                     logger: $logger->withPrefix('commit-diff-source'),
                 ),
@@ -150,6 +147,7 @@ final class GenerateCommand extends Command
             files: $files,
             parser: $sourceFetcherRegistry,
             basePath: $this->outputPath,
+            modifierRegistry: $modifiers,
             builderFactory: $contentBuilderFactory,
             logger: $logger->withPrefix('documents'),
         );
