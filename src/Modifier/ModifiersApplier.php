@@ -16,7 +16,7 @@ final readonly class ModifiersApplier implements ModifiersApplierInterface
      */
     public function __construct(
         private array $modifiers,
-        private SourceModifierRegistry $registry,
+        private SourceModifierRegistry $registry = new SourceModifierRegistry(),
         private LoggerInterface $logger = new NullLogger(),
     ) {}
 

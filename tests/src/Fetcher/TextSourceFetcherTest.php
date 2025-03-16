@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fetcher;
 
+use Butschster\ContextGenerator\Modifier\ModifiersApplier;
 use Butschster\ContextGenerator\Source\Text\TextSource;
 use Butschster\ContextGenerator\Source\Text\TextSourceFetcher;
 use Butschster\ContextGenerator\SourceInterface;
@@ -39,7 +40,7 @@ class TextSourceFetcherTest extends TestCase
             "</INSTRUCTION>\n" . PHP_EOL .
             "------------------------------------------------------------\n\n";
 
-        $this->assertEquals($expected, $this->fetcher->fetch($source));
+        $this->assertEquals($expected, $this->fetcher->fetch($source, new ModifiersApplier([])));
     }
 
     #[Test]
@@ -50,7 +51,7 @@ class TextSourceFetcherTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Source must be an instance of TextSource');
 
-        $this->fetcher->fetch($source);
+        $this->fetcher->fetch($source, new ModifiersApplier([]));
     }
 
     protected function setUp(): void
