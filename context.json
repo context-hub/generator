@@ -1,24 +1,28 @@
 {
+  "settings": {
+    "modifiers": {
+      "api-docs": {
+        "name": "php-content-filter",
+        "options": {
+          "keep_doc_comments": false,
+          "keep_method_bodies": false
+        }
+      }
+    }
+  },
   "documents": [
     {
       "description": "Generator loaders",
       "outputPath": "api/loaders.md",
+      "modifiers": [
+        "api-docs"
+      ],
       "sources": [
         {
           "type": "file",
           "sourcePaths": [
             "src/Loader",
             "src/SourceModifierInterface.php"
-          ],
-          "filePattern": "*.php"
-        },
-        {
-          "type": "file",
-          "sourcePaths": [
-            "src/Source"
-          ],
-          "contains": [
-            "implements SourceFetcherInterface"
           ],
           "filePattern": "*.php"
         }

@@ -11,6 +11,9 @@ final class SourceModifierRegistry
     /** @var array<non-empty-string, SourceModifierInterface> */
     private array $modifiers = [];
 
+    /** @var array<non-empty-string, Modifier> */
+    private array $aliases = [];
+
     /**
      * Register a modifier
      */
@@ -21,6 +24,32 @@ final class SourceModifierRegistry
         }
 
         return $this;
+    }
+
+    /**
+     * Register a named modifier configuration (alias)
+     */
+    public function registerAlias(string $alias, Modifier $modifier): self
+    {
+        $this->aliases[$alias] = $modifier;
+
+        return $this;
+    }
+
+    /**
+     * Check if an alias exists
+     */
+    public function hasAlias(string $alias): bool
+    {
+        return isset($this->aliases[$alias]);
+    }
+
+    /**
+     * Get a modifier configuration by its alias
+     */
+    public function getAlias(string $alias): ?Modifier
+    {
+        return $this->aliases[$alias] ?? null;
     }
 
     /**
