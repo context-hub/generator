@@ -9,7 +9,6 @@ use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Lib\Finder\FinderInterface;
 use Butschster\ContextGenerator\Lib\GithubClient\Model\GithubRepository;
 use Butschster\ContextGenerator\Modifier\ModifiersApplierInterface;
-use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
 use Butschster\ContextGenerator\SourceInterface;
 use Psr\Log\LoggerInterface;
 
