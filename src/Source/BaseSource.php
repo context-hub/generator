@@ -28,31 +28,16 @@ abstract class BaseSource implements SourceInterface
         return $this->getDescription() !== '';
     }
 
-    /**
-     * Get all source tags
-     *
-     * @return array<string>
-     */
     public function getTags(): array
     {
         return \array_values(\array_unique($this->tags));
     }
 
-    /**
-     * Check if source has any tags
-     */
     public function hasTags(): bool
     {
         return !empty($this->getTags());
     }
 
-    /**
-     * Parse the content from this source.
-     *
-     * @param SourceParserInterface $parser The parser to use
-     * @param ModifiersApplierInterface $modifiersApplier Optional applier for document-level modifiers
-     * @return string The parsed content
-     */
     public function parseContent(
         SourceParserInterface $parser,
         ModifiersApplierInterface $modifiersApplier,

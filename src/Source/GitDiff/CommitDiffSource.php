@@ -24,6 +24,7 @@ class CommitDiffSource extends SourceWithModifiers implements FilterableSourceIn
      * @param string|array<string> $notContains Patterns to exclude files containing specific content
      * @param bool $showStats Whether to show commit stats in output
      * @param array<Modifier> $modifiers Identifiers for content modifiers to apply
+     * @param array<non-empty-string> $tags
      */
     public function __construct(
         public readonly string $repository = '.',

@@ -26,6 +26,7 @@ final class FileSource extends SourceWithModifiers implements FilterableSourceIn
      * @param bool $ignoreUnreadableDirs Whether to ignore unreadable directories
      * @param bool $showTreeView Whether to show tree view in output
      * @param array<Modifier> $modifiers Identifiers for content modifiers to apply
+     * @param array<non-empty-string> $tags
      */
     public function __construct(
         public readonly string|array $sourcePaths,

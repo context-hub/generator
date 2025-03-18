@@ -16,6 +16,18 @@ interface SourceInterface extends \JsonSerializable
     public function hasDescription(): bool;
 
     /**
+     * Get all source tags
+     *
+     * @return array<non-empty-string>
+     */
+    public function getTags(): array;
+
+    /**
+     * Check if source has any tags
+     */
+    public function hasTags(): bool;
+
+    /**
      * Parse the content for this source
      *
      * @param SourceParserInterface $parser Parser for the source content

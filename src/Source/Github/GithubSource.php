@@ -22,6 +22,7 @@ final class GithubSource extends SourceWithModifiers implements FilterableSource
      * @param bool $showTreeView Whether to show directory tree
      * @param string|null $githubToken GitHub API token for private repositories
      * @param array<Modifier> $modifiers Identifiers for content modifiers to apply
+     * @param array<non-empty-string> $tags
      */
     public function __construct(
         public readonly string $repository,

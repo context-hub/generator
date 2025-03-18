@@ -15,6 +15,7 @@ final class UrlSource extends BaseSource
      * @param array<int, string> $urls URLs to fetch content from
      * @param string $description Human-readable description
      * @param string|null $selector CSS selector to extract specific content (null for full page)
+     * @param array<non-empty-string> $tags
      */
     public function __construct(
         public readonly array $urls,

@@ -13,7 +13,8 @@ final class TextSource extends BaseSource
 {
     /**
      * @param string $description Human-readable description
-     * @param string $content Text content
+     * @param non-empty-string $content Text content
+     * @param array<non-empty-string> $tags
      */
     public function __construct(
         public readonly string $content,
