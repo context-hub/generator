@@ -56,7 +56,14 @@ final readonly class ModifiersApplier implements ModifiersApplierInterface
         $originalLength = \strlen($content);
         $modifiedContent = $content;
 
-        foreach ($this->modifiers as $modifierId) {
+        $modifiers = \array_map(
+            static fn(Modifier|string $modifier): Modifier => \is_string($modifier)
+                ? new Modifier($modifier)
+                : $modifier,
+            $this->modifiers,
+        );
+
+        foreach ($modifiers as $modifierId) {
             if (!$this->registry->has($modifierId)) {
                 $this->logger->warning('Modifier not found', [
                     'modifierId' => (string) $modifierId,

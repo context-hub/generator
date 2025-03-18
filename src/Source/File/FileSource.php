@@ -6,11 +6,13 @@ namespace Butschster\ContextGenerator\Source\File;
 
 use Butschster\ContextGenerator\Fetcher\FilterableSourceInterface;
 use Butschster\ContextGenerator\Modifier\Modifier;
+use Butschster\ContextGenerator\Schema\Attribute\SchemaType;
 use Butschster\ContextGenerator\Source\SourceWithModifiers;
 
 /**
  * Enhanced source for files and directories with extended Symfony Finder features
  */
+#[SchemaType(name: 'file-source', description: 'File source - includes content from local filesystem')]
 final class FileSource extends SourceWithModifiers implements FilterableSourceInterface
 {
     /**

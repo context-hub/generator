@@ -177,7 +177,6 @@ final class GenerateCommand extends Command
                     ),
                 ),
                 configPath: $this->rootPath . '/' . $configPath,
-                rootPath: $this->rootPath,
                 logger: $logger->withPrefix('json-config'),
             ),
         );

@@ -6,11 +6,13 @@ namespace Butschster\ContextGenerator\Source\GitDiff;
 
 use Butschster\ContextGenerator\Fetcher\FilterableSourceInterface;
 use Butschster\ContextGenerator\Modifier\Modifier;
+use Butschster\ContextGenerator\Schema\Attribute\SchemaType;
 use Butschster\ContextGenerator\Source\SourceWithModifiers;
 
 /**
  * Source for git commit diffs with simplified commit range support
  */
+#[SchemaType(name: 'git-diff-source', description: 'Git diff source - includes changes from Git commits')]
 class CommitDiffSource extends SourceWithModifiers implements FilterableSourceInterface, \JsonSerializable
 {
     /**

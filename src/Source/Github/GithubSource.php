@@ -6,11 +6,13 @@ namespace Butschster\ContextGenerator\Source\Github;
 
 use Butschster\ContextGenerator\Fetcher\FilterableSourceInterface;
 use Butschster\ContextGenerator\Modifier\Modifier;
+use Butschster\ContextGenerator\Schema\Attribute\SchemaType;
 use Butschster\ContextGenerator\Source\SourceWithModifiers;
 
 /**
  * Source for GitHub repositories
  */
+#[SchemaType(name: 'github-source', description: 'GitHub source - pulls content from GitHub repositories')]
 final class GithubSource extends SourceWithModifiers implements FilterableSourceInterface
 {
     /**

@@ -27,7 +27,10 @@
     "symfony/finder": "^6.0 | ^7.0 | ^8.0",
     "symfony/console": "^6.0 | ^7.0 | ^8.0",
     "nette/php-generator": "^4.1",
-    "nikic/php-parser": "^v4.0 | ^v5.0"
+    "nikic/php-parser": "^v4.0 | ^v5.0",
+    "cuyz/valinor": "^1.14",
+    "typhoon/type": "^0.4.4",
+    "spiral/json-schema-generator": "^1.1"
   },
   "require-dev": {
     "buggregator/trap": "^1.13",

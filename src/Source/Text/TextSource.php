@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\Text;
 
+use Butschster\ContextGenerator\Schema\Attribute\SchemaType;
 use Butschster\ContextGenerator\Source\BaseSource;
 
 /**
  * Source for plain text content
  */
+#[SchemaType(name: 'text-source', description: 'Text source - includes custom text content')]
 final class TextSource extends BaseSource
 {
     /**

@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\Url;
 
+use Butschster\ContextGenerator\Schema\Attribute\SchemaType;
 use Butschster\ContextGenerator\Source\BaseSource;
 
 /**
  * Enhanced source for URLs with selector support
  */
+
+#[SchemaType(name: 'url-source', description: 'URL source - fetches content from websites')]
 final class UrlSource extends BaseSource
 {
     /**

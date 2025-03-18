@@ -16,7 +16,7 @@ final class Document implements \JsonSerializable
      * @param string $description Human-readable description
      * @param string $outputPath Path where to write the output
      * @param bool $overwrite Whether to overwrite the file if it already exists
-     * @param array<Modifier> $modifiers Modifiers to apply to all sources
+     * @param array<string|Modifier> $modifiers Modifiers to apply to all sources
      */
     public function __construct(
         public readonly string $description,
