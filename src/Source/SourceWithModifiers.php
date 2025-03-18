@@ -9,6 +9,14 @@ use Butschster\ContextGenerator\SourceParserInterface;
 
 abstract class SourceWithModifiers extends BaseSource
 {
+    public function __construct(
+        string $description,
+        array $tags = [],
+        private readonly array $modifiers = [],
+    ) {
+        parent::__construct(description: $description, tags: $tags);
+    }
+
     public function parseContent(
         SourceParserInterface $parser,
         ModifiersApplierInterface $modifiersApplier,
@@ -20,5 +28,13 @@ abstract class SourceWithModifiers extends BaseSource
         }
 
         return $parser->parse($this, $modifiersApplier);
+    }
+
+    public function jsonSerialize(): array
+    {
+        return [
+            ...parent::jsonSerialize(),
+            'modifiers' => $this->modifiers ?? [],
+        ];
     }
 }

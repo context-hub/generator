@@ -19,8 +19,9 @@ final class TextSource extends BaseSource
         public readonly string $content,
         string $description = '',
         public readonly string $tag = 'INSTRUCTION',
+        array $tags = [],
     ) {
-        parent::__construct($description);
+        parent::__construct(description: $description, tags: $tags);
     }
 
     public static function fromArray(array $data): self
@@ -33,6 +34,7 @@ final class TextSource extends BaseSource
             content: $data['content'],
             description: $data['description'] ?? '',
             tag: $data['tag'] ?? 'INSTRUCTION',
+            tags: $data['tags'] ?? [],
         );
     }
 
@@ -40,9 +42,9 @@ final class TextSource extends BaseSource
     {
         return \array_filter([
             'type' => 'text',
-            'description' => $this->description,
+            ...parent::jsonSerialize(),
             'content' => $this->content,
             'tag' => $this->tag,
-        ]);
+        ], static fn($value) => $value !== null && $value !== '' && $value !== []);
     }
 }

@@ -151,9 +151,7 @@ final class ContentBuilder implements \Stringable
      */
     public function build(): string
     {
-        $content = $this->content->render($this->renderer);
-
-        return $content;
+        return $this->content->render($this->renderer);
     }
 
     public function __toString(): string

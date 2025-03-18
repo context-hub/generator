@@ -35,9 +35,10 @@ final class GithubSource extends SourceWithModifiers implements FilterableSource
         public readonly string|array|null $notContains = null,
         public readonly bool $showTreeView = true,
         public readonly ?string $githubToken = null,
-        public readonly array $modifiers = [],
+        array $modifiers = [],
+        array $tags = [],
     ) {
-        parent::__construct($description);
+        parent::__construct(description: $description, tags: $tags, modifiers: $modifiers);
     }
 
     public static function fromArray(array $data): self
@@ -86,6 +87,7 @@ final class GithubSource extends SourceWithModifiers implements FilterableSource
             showTreeView: $data['showTreeView'] ?? true,
             githubToken: $data['githubToken'] ?? null,
             modifiers: $data['modifiers'] ?? [],
+            tags: $data['tags'] ?? [],
         );
     }
 
@@ -198,10 +200,10 @@ final class GithubSource extends SourceWithModifiers implements FilterableSource
     {
         return \array_filter([
             'type' => 'github',
+            ...parent::jsonSerialize(),
             'repository' => $this->repository,
             'sourcePaths' => $this->sourcePaths,
             'branch' => $this->branch,
-            'description' => $this->description,
             'filePattern' => $this->filePattern,
             'notPath' => $this->notPath,
             'path' => $this->path,
@@ -209,7 +211,6 @@ final class GithubSource extends SourceWithModifiers implements FilterableSource
             'notContains' => $this->notContains,
             'showTreeView' => $this->showTreeView,
             'githubToken' => $this->githubToken,
-            'modifiers' => $this->modifiers,
         ], static fn($value) => $value !== null && (!\is_array($value) || !empty($value)));
     }
 }

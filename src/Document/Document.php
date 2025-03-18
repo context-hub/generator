@@ -17,12 +17,14 @@ final class Document implements \JsonSerializable
      * @param string $outputPath Path where to write the output
      * @param bool $overwrite Whether to overwrite the file if it already exists
      * @param array<Modifier> $modifiers Modifiers to apply to all sources
+     * @param array<non-empty-string> $tags Tags to apply to the document
      */
     public function __construct(
         public readonly string $description,
         public readonly string $outputPath,
         public readonly bool $overwrite = true,
         private array $modifiers = [],
+        private array $tags = [],
         SourceInterface ...$sources,
     ) {
         $this->sources = $sources;
@@ -30,18 +32,21 @@ final class Document implements \JsonSerializable
 
     /**
      * @param bool $overwrite Whether to overwrite the file if it already exists
+     * @param array<non-empty-string> $tags Tags to apply to the document
      */
     public static function create(
         string $description,
         string $outputPath,
         bool $overwrite = true,
         array $modifiers = [],
+        array $tags = [],
     ): self {
         return new self(
             description: $description,
             outputPath: $outputPath,
             overwrite: $overwrite,
             modifiers: $modifiers,
+            tags: $tags,
         );
     }
 
@@ -66,16 +71,6 @@ final class Document implements \JsonSerializable
     }
 
     /**
-     * Get all sources
-     *
-     * @return array<int, SourceInterface>
-     */
-    public function getSources(): array
-    {
-        return \array_values($this->sources);
-    }
-
-    /**
      * Get all document modifiers
      *
      * @return array<Modifier>
@@ -93,6 +88,51 @@ final class Document implements \JsonSerializable
         return !empty($this->modifiers);
     }
 
+    /**
+     * Add tags to this document
+     */
+    public function addTag(string ...$tags): self
+    {
+        $this->tags = [...$this->tags, ...$tags];
+
+        return $this;
+    }
+
+    /**
+     * Get all document tags
+     *
+     * @return array<string>
+     */
+    public function getTags(bool $includeSources = true): array
+    {
+        if ($includeSources) {
+            foreach ($this->sources as $source) {
+                $this->tags = [...$this->tags, ...$source->getTags()];
+            }
+        }
+
+        return \array_values(\array_unique($this->tags));
+    }
+
+    /**
+     * Check if document has tags
+     */
+    public function hasTags(): bool
+    {
+        return !empty($this->getTags());
+    }
+
+
+    /**
+     * Get all sources
+     *
+     * @return array<int, SourceInterface>
+     */
+    public function getSources(): array
+    {
+        return \array_values($this->sources);
+    }
+
     public function jsonSerialize(): array
     {
         return \array_filter([
@@ -100,7 +140,8 @@ final class Document implements \JsonSerializable
             'outputPath' => $this->outputPath,
             'overwrite' => $this->overwrite,
             'sources' => $this->getSources(),
-            'modifiers' => $this->modifiers,
+            'modifiers' => $this->getModifiers(),
+            'tags' => $this->getTags(),
         ], static fn($value) => $value !== null && $value !== []);
     }
 }

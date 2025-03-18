@@ -39,9 +39,10 @@ final class FileSource extends SourceWithModifiers implements FilterableSourceIn
         public readonly string|array $date = [],
         public readonly bool $ignoreUnreadableDirs = false,
         public readonly bool $showTreeView = true,
-        public readonly array $modifiers = [],
+        array $modifiers = [],
+        array $tags = [],
     ) {
-        parent::__construct($description);
+        parent::__construct(description: $description, tags: $tags, modifiers: $modifiers);
     }
 
     /**
@@ -99,6 +100,7 @@ final class FileSource extends SourceWithModifiers implements FilterableSourceIn
             ignoreUnreadableDirs: $data['ignoreUnreadableDirs'] ?? false,
             showTreeView: $data['showTreeView'] ?? true,
             modifiers: $data['modifiers'] ?? [],
+            tags: $data['tags'] ?? [],
         );
     }
 
@@ -240,12 +242,11 @@ final class FileSource extends SourceWithModifiers implements FilterableSourceIn
     {
         $result = [
             'type' => 'file',
-            'description' => $this->description,
+            ...parent::jsonSerialize(),
             'sourcePaths' => $this->sourcePaths,
             'filePattern' => $this->filePattern,
             'notPath' => $this->notPath,
             'showTreeView' => $this->showTreeView,
-            'modifiers' => $this->modifiers,
         ];
 
         // Add optional properties only if they're non-empty

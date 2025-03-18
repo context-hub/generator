@@ -20,8 +20,9 @@ final class UrlSource extends BaseSource
         public readonly array $urls,
         string $description = '',
         public readonly ?string $selector = null,
+        array $tags = [],
     ) {
-        parent::__construct($description);
+        parent::__construct(description: $description, tags: $tags);
     }
 
     public static function fromArray(array $data): self
@@ -34,6 +35,7 @@ final class UrlSource extends BaseSource
             urls: $data['urls'],
             description: $data['description'] ?? '',
             selector: $data['selector'] ?? null,
+            tags: $data['tags'] ?? [],
         );
     }
 
@@ -62,9 +64,9 @@ final class UrlSource extends BaseSource
     {
         return \array_filter([
             'type' => 'url',
+            ...parent::jsonSerialize(),
             'urls' => $this->urls,
-            'description' => $this->getDescription(),
             'selector' => $this->getSelector(),
-        ]);
+        ], static fn($value) => $value !== null && $value !== '' && $value !== []);
     }
 }
