@@ -28,7 +28,7 @@ error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
 //  Detect Environment
 // -----------------------------------------------------------------------------
 
-if (!in_array(PHP_SAPI, ['cli', 'phpdbg', 'embed', 'micro'], true)) {
+if (!\in_array(PHP_SAPI, ['cli', 'phpdbg', 'embed', 'micro'], true)) {
     echo PHP_EOL . 'This app may only be invoked from a command line, got "' . PHP_SAPI . '"' . PHP_EOL;
 
     exit(1);
@@ -138,5 +138,3 @@ $input = new \Symfony\Component\Console\Input\ArgvInput();
 $output = new \Symfony\Component\Console\Output\ConsoleOutput();
 
 $application->run($input, $output);
-
-__HALT_COMPILER();

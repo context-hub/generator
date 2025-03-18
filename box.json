@@ -6,8 +6,6 @@
   ],
   "check-requirements": false,
   "dump-autoload": false,
-  "main": false,
-  "stub": "./context-generator",
   "compression": "GZ",
   "git": "git",
   "directories": [
