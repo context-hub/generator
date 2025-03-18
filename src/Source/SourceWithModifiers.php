@@ -17,7 +17,7 @@ abstract class SourceWithModifiers extends BaseSource
     public function __construct(
         string $description,
         array $tags = [],
-        private readonly array $modifiers = [],
+        public readonly array $modifiers = [],
     ) {
         parent::__construct(description: $description, tags: $tags);
     }
