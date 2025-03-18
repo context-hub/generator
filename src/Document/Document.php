@@ -122,7 +122,6 @@ final class Document implements \JsonSerializable
         return !empty($this->getTags());
     }
 
-
     /**
      * Get all sources
      *
