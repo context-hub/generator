@@ -24,6 +24,7 @@ class CommitDiffSource extends SourceWithModifiers implements FilterableSourceIn
      * @param string|array<string> $notContains Patterns to exclude files containing specific content
      * @param bool $showStats Whether to show commit stats in output
      * @param array<Modifier> $modifiers Identifiers for content modifiers to apply
+     * @param array<non-empty-string> $tags
      */
     public function __construct(
         public readonly string $repository = '.',
@@ -35,9 +36,10 @@ class CommitDiffSource extends SourceWithModifiers implements FilterableSourceIn
         public readonly string|array $contains = [],
         public readonly string|array $notContains = [],
         public readonly bool $showStats = true,
-        public readonly array $modifiers = [],
+        array $modifiers = [],
+        array $tags = [],
     ) {
-        parent::__construct($description);
+        parent::__construct(description: $description, tags: $tags, modifiers: $modifiers);
     }
 
     /**
@@ -87,6 +89,7 @@ class CommitDiffSource extends SourceWithModifiers implements FilterableSourceIn
             notContains: $data['notContains'] ?? [],
             showStats: $data['showStats'] ?? true,
             modifiers: $data['modifiers'] ?? [],
+            tags: $data['tags'] ?? [],
         );
     }
 
@@ -205,10 +208,10 @@ class CommitDiffSource extends SourceWithModifiers implements FilterableSourceIn
      */
     public function jsonSerialize(): array
     {
-        return [
+        return \array_filter([
             'type' => 'git_diff',
+            ...parent::jsonSerialize(),
             'repository' => $this->repository,
-            'description' => $this->description,
             'commitRange' => $this->commit,
             'filePattern' => $this->filePattern,
             'notPath' => $this->notPath,
@@ -216,6 +219,6 @@ class CommitDiffSource extends SourceWithModifiers implements FilterableSourceIn
             'contains' => $this->contains,
             'notContains' => $this->notContains,
             'showStats' => $this->showStats,
-        ];
+        ], static fn($value) => $value !== null && $value !== '' && $value !== []);
     }
 }

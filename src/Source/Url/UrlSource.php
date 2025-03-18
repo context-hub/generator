@@ -15,13 +15,15 @@ final class UrlSource extends BaseSource
      * @param array<int, string> $urls URLs to fetch content from
      * @param string $description Human-readable description
      * @param string|null $selector CSS selector to extract specific content (null for full page)
+     * @param array<non-empty-string> $tags
      */
     public function __construct(
         public readonly array $urls,
         string $description = '',
         public readonly ?string $selector = null,
+        array $tags = [],
     ) {
-        parent::__construct($description);
+        parent::__construct(description: $description, tags: $tags);
     }
 
     public static function fromArray(array $data): self
@@ -34,6 +36,7 @@ final class UrlSource extends BaseSource
             urls: $data['urls'],
             description: $data['description'] ?? '',
             selector: $data['selector'] ?? null,
+            tags: $data['tags'] ?? [],
         );
     }
 
@@ -62,9 +65,9 @@ final class UrlSource extends BaseSource
     {
         return \array_filter([
             'type' => 'url',
+            ...parent::jsonSerialize(),
             'urls' => $this->urls,
-            'description' => $this->getDescription(),
             'selector' => $this->getSelector(),
-        ]);
+        ], static fn($value) => $value !== null && $value !== '' && $value !== []);
     }
 }

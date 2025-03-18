@@ -43,6 +43,11 @@ final class MarkdownRenderer extends AbstractRenderer
         if (empty($content)) {
             return '';
         }
+
+        if ($block->hasTag()) {
+            $content = \sprintf("<%s>\n%s\n</%s>\n", $block->getTag(), $content, $block->getTag());
+        }
+
         return $content . "\n\n";
     }
 

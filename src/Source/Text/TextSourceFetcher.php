@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Source\Text;
 
 use Butschster\ContextGenerator\Fetcher\SourceFetcherInterface;
+use Butschster\ContextGenerator\Lib\Content\Block\TextBlock;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Modifier\ModifiersApplierInterface;
 use Butschster\ContextGenerator\SourceInterface;
@@ -58,9 +59,7 @@ final readonly class TextSourceFetcher implements SourceFetcherInterface
         ]);
 
         $builder
-            ->addText(\sprintf('<%s>', $source->tag))
-            ->addText($modifiersApplier->apply($source->content, 'file.txt'))
-            ->addText(\sprintf('</%s>', $source->tag))
+            ->addBlock(new TextBlock($modifiersApplier->apply($source->content, 'file.txt'), $source->tag))
             ->addSeparator();
 
         $content = $builder->build();

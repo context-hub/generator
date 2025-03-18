@@ -268,6 +268,11 @@ Create a `context.json` file in your project root:
       "description": "API Documentation",
       "outputPath": "docs/api.md",
       "overwrite": true,
+      "tags": [
+        "api",
+        "documentation",
+        "v1"
+      ],
       "sources": [
         {
           "type": "text",
@@ -276,19 +281,16 @@ Create a `context.json` file in your project root:
         },
         {
           "type": "file",
-          "description": "API Source Files",
-          "sourcePaths": [
-            "src/Api"
-          ],
-          "filePattern": [
-            "*.php",
-            "*.json"
-          ],
-          "excludePatterns": [
-            "tests",
-            "vendor"
-          ],
-          "showTreeView": true
+          "description": "API Controllers",
+          "sourcePaths": ["src/Controller"],
+          "filePattern": "*.php",
+          "tags": ["controllers", "php"]
+        },
+        {
+          "type": "url",
+          "description": "API Reference",
+          "urls": ["https://api.example.com/docs"],
+          "tags": ["reference", "external"]
         }
       ]
     }
@@ -306,6 +308,7 @@ As you can see it's pretty simple.
 | `outputPath`  | string  | required | Path where the document will be saved      |
 | `overwrite`   | boolean | `true`   | Whether to overwrite existing files        |
 | `sources`     | array   | required | List of content sources for this document  |
+| `tags`        | array   | []       | List of tags for this document             |
 
 ## Source Types
 
@@ -352,6 +355,7 @@ analyzing your codebase.
 | `ignoreUnreadableDirs`           | boolean       | `false`  | Whether to ignore unreadable directories                                 |
 | `showTreeView`                   | boolean       | `true`   | Whether to display a directory tree visualization                        |
 | `modifiers`                      | array         | `[]`     | Content modifiers to apply                                               |
+| `tags`                           | array         | []       | List of tags for this source                                             |
 
 #### Multiple Source Paths
 
@@ -632,6 +636,7 @@ Pull files directly from a GitHub repository:
 | `showTreeView`                   | boolean       | `true`   | Whether to display a directory tree visualization                                   |
 | `githubToken`                    | string        | `null`   | GitHub API token for private repositories (can use env var pattern `${TOKEN_NAME}`) |
 | `modifiers`                      | array         | `[]`     | Content modifiers to apply                                                          |
+| `tags`                           | array         | []       | List of tags for this source                                                        |
 
 #### Multiple Source Paths
 
@@ -796,7 +801,7 @@ The source allows you to include changes from Git commits, providing a streamlin
 | `notContains` | string\|array | `[]`       | Patterns to exclude files containing specific content      |
 | `showStats`   | boolean       | `true`     | Whether to show commit stats in output                     |
 | `modifiers`   | array         | `[]`       | Content modifiers to apply                                 |
-|               |               |            |                                                            |
+| `tags`        | array         | []         | List of tags for this source                               |
 
 #### Commit Range Presets
 
@@ -917,6 +922,7 @@ Fetch content from websites with optional CSS selector support.
 | `description` | string | `""`     | Human-readable description of the source                      |
 | `urls`        | array  | required | URLs to fetch content from                                    |
 | `selector`    | string | `null`   | CSS selector to extract specific content (null for full page) |
+| `tags`        | array  | []       | List of tags for this source                                  |
 
 ### Text Source
 
@@ -939,6 +945,7 @@ Include custom text content like headers, notes, or instructions.
 | `description` | string | `""`            | Human-readable description of the source   |
 | `content`     | string | required        | Text content to include                    |
 | `tag`         | string | `"INSTRUCTION"` | Custom tag to identify the type of content |
+| `tags`        | array  | []              | List of tags for this source               |
 
 #### Custom Tags Example
 

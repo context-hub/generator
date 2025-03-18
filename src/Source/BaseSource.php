@@ -15,6 +15,7 @@ abstract class BaseSource implements SourceInterface
      */
     public function __construct(
         protected readonly string $description,
+        protected readonly array $tags = [],
     ) {}
 
     public function getDescription(): string
@@ -27,17 +28,28 @@ abstract class BaseSource implements SourceInterface
         return $this->getDescription() !== '';
     }
 
-    /**
-     * Parse the content from this source.
-     *
-     * @param SourceParserInterface $parser The parser to use
-     * @param ModifiersApplierInterface $modifiersApplier Optional applier for document-level modifiers
-     * @return string The parsed content
-     */
+    public function getTags(): array
+    {
+        return \array_values(\array_unique($this->tags));
+    }
+
+    public function hasTags(): bool
+    {
+        return !empty($this->getTags());
+    }
+
     public function parseContent(
         SourceParserInterface $parser,
         ModifiersApplierInterface $modifiersApplier,
     ): string {
         return $parser->parse($this, $modifiersApplier);
+    }
+
+    public function jsonSerialize(): array
+    {
+        return \array_filter([
+            'description' => $this->getDescription(),
+            'tags' => $this->getTags(),
+        ], static fn($value) => $value !== null && $value !== '' && $value !== []);
     }
 }

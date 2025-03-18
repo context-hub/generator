@@ -30,7 +30,16 @@ final class PlainTextRenderer extends AbstractRenderer
      */
     public function renderTextBlock(TextBlock $block): string
     {
-        return $block . "\n\n";
+        $content = (string) $block;
+        if (empty($content)) {
+            return '';
+        }
+
+        if ($block->hasTag()) {
+            $content = \sprintf("<%s>\n%s\n</%s>\n", $block->getTag(), $content, $block->getTag());
+        }
+
+        return $content . "\n\n";
     }
 
     /**

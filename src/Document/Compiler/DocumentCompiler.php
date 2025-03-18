@@ -8,6 +8,7 @@ use Butschster\ContextGenerator\Document\Compiler\Error\ErrorCollection;
 use Butschster\ContextGenerator\Document\Compiler\Error\SourceError;
 use Butschster\ContextGenerator\Document\Document;
 use Butschster\ContextGenerator\FilesInterface;
+use Butschster\ContextGenerator\Lib\Content\Block\TextBlock;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Modifier\ModifiersApplier;
 use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
@@ -91,6 +92,13 @@ final readonly class DocumentCompiler
         $this->logger?->debug('Adding document title', ['title' => $document->description]);
         $builder->addTitle($document->description);
 
+        // Add document tags if present
+        if ($document->hasTags()) {
+            $tags = \implode(', ', $document->getTags());
+            $this->logger?->debug('Adding document tags', ['tags' => $tags]);
+            $builder->addBlock(new TextBlock($tags, 'DOCUMENT_TAGS'));
+        }
+
         $sources = $document->getSources();
         $sourceCount = \count($sources);
         $this->logger?->info('Processing document sources', [
@@ -124,9 +132,7 @@ final readonly class DocumentCompiler
                     'contentLength' => \strlen($content),
                 ]);
 
-                $builder
-                    ->addText($content)
-                    ->addSeparator();
+                $builder->addText($content);
 
                 $this->logger?->debug('Source processed successfully');
             } catch (\Throwable $e) {

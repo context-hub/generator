@@ -57,11 +57,18 @@ final readonly class DocumentsParserPlugin implements ConfigParserPluginInterfac
                 $documentModifiers = $this->parseModifiers($docData['modifiers']);
             }
 
+            // Parse document tags if present
+            $documentTags = [];
+            if (isset($docData['tags']) && \is_array($docData['tags'])) {
+                $documentTags = \array_map(\strval(...), $docData['tags']);
+            }
+
             $document = Document::create(
                 description: (string) $docData['description'],
                 outputPath: (string) $docData['outputPath'],
                 overwrite: (bool) ($docData['overwrite'] ?? true),
                 modifiers: $documentModifiers,
+                tags: $documentTags,
             );
 
             if (isset($docData['sources']) && \is_array($docData['sources'])) {
@@ -90,6 +97,15 @@ final readonly class DocumentsParserPlugin implements ConfigParserPluginInterfac
                 \sprintf('Source at path %s must have a "type" property', $path),
             );
         }
+
+        // Parse source tags if present
+        $sourceTags = [];
+        if (isset($sourceData['tags']) && \is_array($sourceData['tags'])) {
+            $sourceTags = \array_map(\strval(...), $sourceData['tags']);
+        }
+
+        // Add tags to the source data
+        $sourceData['tags'] = $sourceTags;
 
         return match ($sourceData['type']) {
             'file' => $this->createFileSource($sourceData, $rootPath),
