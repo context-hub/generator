@@ -119,23 +119,6 @@ If you installed the PHAR in a custom location, specify the path:
 ctx self-update --phar-path=/usr/local/bin/ctx
 ```
 
-### Using PHAR file
-
-Alternatively, you can download the ready-to-use PHAR file directly:
-
-Download and make executable:
-
-```bash
-wget https://github.com/butschster/context-generator/releases/download/1.6.1/context-generator.phar
-chmod +x context-generator.phar
-```
-
-Move it to a convenient location for easy access:
-
-```bash
-mv context-generator.phar /usr/local/bin/ctx
-```
-
 ## Command Reference
 
 Here's the text for the README section about the Generate Context Files command, including the new environment variable

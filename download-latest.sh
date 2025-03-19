@@ -93,7 +93,7 @@ download_and_install() {
 
   # Download the phar file
   printf "Downloading $PNAME $latestV...\n"
-  phar_url="$GITHUB_REL/$latestV/$PNAME.phar"
+  phar_url="$GITHUB_REL/$latestV/$PNAME"
 
   if ! curl --fail -L "$phar_url" -o "$bin_dir/$PNAME"; then
     printf "${RED}ERROR: Failed to download $phar_url${DEFAULT}\n"
