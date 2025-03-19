@@ -1,4 +1,9 @@
+ARG COMPOSER_VERSION="2.8.4"
+
+FROM composer:${COMPOSER_VERSION} AS composer
 FROM php:8.3-cli-alpine AS builder
+
+ENV COMPOSER_ALLOW_SUPERUSER=1
 
 # Install required packages
 RUN apk add --no-cache \
@@ -13,6 +18,7 @@ WORKDIR /app
 
 # Copy source code
 COPY . .
+COPY --from=composer /usr/bin/composer /usr/bin/composer
 
 RUN composer install --no-dev --prefer-dist
 
