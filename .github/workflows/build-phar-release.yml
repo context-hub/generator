@@ -35,7 +35,7 @@ jobs:
 
       - name: Set current version from ${{ github.ref_name }}
         run: |
-          echo "{\"version\": \"${{ github.ref_name }}\"}" > version.json
+          echo "{\"version\": \"${{ github.ref_name }}\", \"type\":\"phar\"}" > version.json
 
       - uses: ramsey/composer-install@v3
       - name: Build PHAR
