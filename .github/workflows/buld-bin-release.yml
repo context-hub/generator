@@ -1,0 +1,42 @@
+name: Build Context Generator Executable
+
+on: # yamllint disable-line rule:truthy
+  release:
+    types:
+      - published
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: 📦 Build CTX Executable
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: false
+          load: true
+          tags: ctx-builder:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Extract executable from Docker container
+        run: |
+          mkdir -p dist
+          container_id=$(docker create ctx-builder:latest)
+          docker cp $container_id:/app/.build/bin/ctx ./dist/ctx
+          docker rm $container_id
+          chmod +x ./dist/ctx
+
+      - name: Upload executable as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ctx-executable
+          path: ./dist/ctx
