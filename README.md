@@ -152,9 +152,6 @@ ctx build
 Examples of using the `--env` option:
 
 ```bash
-# Load variables from default .env file
-ctx --env
-
 # Load variables from a specific file
 ctx --env=.env.local
 

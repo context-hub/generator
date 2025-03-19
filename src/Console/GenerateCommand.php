@@ -88,7 +88,7 @@ final class GenerateCommand extends Command
             ->addOption(
                 'env',
                 'e',
-                InputOption::VALUE_OPTIONAL,
+                InputOption::VALUE_REQUIRED,
                 'Path to .env (like .env.local) file. If not provided, will ignore any .env files',
             );
     }
@@ -129,18 +129,8 @@ final class GenerateCommand extends Command
         );
 
         // Get the env file path from the command option
-        $envFileName = $input->getOption('env') ?? '.env';
-        $envFilePath = $input->hasOption('env') ? $this->rootPath : null;
-
-        if ($envFilePath !== null) {
-            $envPath = $this->rootPath . '/' . $envFileName;
-            if (!\is_file($envPath)) {
-                $outputStyle->error(\sprintf('Environment file not found: %s', $envPath));
-                return Command::FAILURE;
-            }
-
-            $outputStyle->info(\sprintf('Loaded environment variables from %s', $envPath));
-        }
+        $envFileName = $input->getOption('env') ?? null;
+        $envFilePath = $envFileName ? $this->rootPath : null;
 
         $variablesProvider = new CompositeVariableProvider(
             envProvider: new DotEnvVariableProvider(
