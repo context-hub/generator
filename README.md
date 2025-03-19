@@ -23,6 +23,7 @@
         - [Git Diff Source](#git-diff-source)
         - [URL Source](#url-source)
         - [Text Source](#text-source)
+        - [Composer Source](#composer-source)
     - [Modifiers](#modifiers)
         - [PHP Signature Modifier](#php-signature-modifier)
         - [PHP Content Filter Modifier](#php-content-filter-modifier)
@@ -282,15 +283,25 @@ Create a `context.json` file in your project root:
         {
           "type": "file",
           "description": "API Controllers",
-          "sourcePaths": ["src/Controller"],
+          "sourcePaths": [
+            "src/Controller"
+          ],
           "filePattern": "*.php",
-          "tags": ["controllers", "php"]
+          "tags": [
+            "controllers",
+            "php"
+          ]
         },
         {
           "type": "url",
           "description": "API Reference",
-          "urls": ["https://api.example.com/docs"],
-          "tags": ["reference", "external"]
+          "urls": [
+            "https://api.example.com/docs"
+          ],
+          "tags": [
+            "reference",
+            "external"
+          ]
         }
       ]
     }
@@ -923,6 +934,77 @@ Fetch content from websites with optional CSS selector support.
 | `urls`        | array  | required | URLs to fetch content from                                    |
 | `selector`    | string | `null`   | CSS selector to extract specific content (null for full page) |
 | `tags`        | array  | []       | List of tags for this source                                  |
+
+### Composer Source
+
+The Composer source allows you to include source code from your project's Composer dependencies:
+
+```json
+{
+  "type": "composer",
+  "description": "Core Dependencies",
+  "composerPath": ".",
+  "packages": [
+    "symfony/finder",
+    "psr/log"
+  ],
+  "filePattern": "*.php",
+  "notPath": [
+    "tests"
+  ]
+}
+```
+
+#### Parameters
+
+| Parameter      | Type          | Default               | Description                                                |
+|----------------|---------------|-----------------------|------------------------------------------------------------|
+| `type`         | string        | required              | Must be `"composer"`                                       |
+| `description`  | string        | `"Composer Packages"` | Human-readable description of the source                   |
+| `composerPath` | string        | `"."`                 | Path to composer.json file or directory containing it      |
+| `packages`     | string\|array | `[]`                  | Package name pattern(s) to match                           |
+| `filePattern`  | string\|array | `"*.php"`             | File pattern(s) to match                                   |
+| `notPath`      | array         | `["tests", "vendor"]` | Patterns to exclude files                                  |
+| `path`         | string\|array | `[]`                  | Patterns to include only files in specific paths           |
+| `contains`     | string\|array | `[]`                  | Patterns to include only files containing specific content |
+| `notContains`  | string\|array | `[]`                  | Patterns to exclude files containing specific content      |
+| `showTreeView` | boolean       | `true`                | Whether to display a package tree visualization            |
+| `modifiers`    | array         | `[]`                  | Content modifiers to apply                                 |
+
+#### Basic Usage
+
+First you need to specify packages you want to include:
+
+```json
+{
+  "type": "composer",
+  "description": "Symfony Components",
+  "packages": [
+    "cycle/orm",
+    "cycle/annotated"
+  ]
+}
+```
+
+#### File Filtering
+
+All filtering options from the File source type are also available:
+
+```json
+{
+  "type": "composer",
+  "description": "Controllers from Dependencies",
+  "packages": "cycle/orm",
+  "path": "Controller",
+  "notPath": [
+    "tests",
+    "Tests",
+    "vendor"
+  ],
+  "contains": "Controller",
+  "filePattern": "*.php"
+}
+```
 
 ### Text Source
 
