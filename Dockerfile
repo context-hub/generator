@@ -14,6 +14,8 @@ WORKDIR /app
 # Copy source code
 COPY . .
 
+RUN composer install --no-dev --prefer-dist
+
 # Create build directories
 RUN mkdir -p .build/phar .build/bin
 
@@ -24,9 +26,6 @@ RUN chmod +x .build/bin/box
 # Download static-php-cli tool
 RUN wget -O .build/bin/spc "https://dl.static-php.dev/static-php-cli/spc-bin/nightly/spc-linux-x86_64"
 RUN chmod +x .build/bin/spc
-
-# Prepare environment for PHP micro
-RUN .build/bin/spc dump-extensions ./ --format=text
 
 # Download required PHP extensions
 RUN .build/bin/spc download micro \
