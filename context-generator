@@ -78,7 +78,14 @@ $vendorPath = \dirname($vendorPath) . '/../';
 $versionFile = $vendorPath . '/version.json';
 $appPath = \realpath($vendorPath);
 
-$version = \file_exists($versionFile) ? \json_decode(\file_get_contents($versionFile), true) : ['version' => 'dev'];
+$version = \file_exists($versionFile)
+    ? \json_decode(\file_get_contents($versionFile), true)
+    : [
+        'version' => 'dev',
+        'type' => 'phar',
+    ];
+
+$type = $version['type'] ?? 'phar';
 
 if ($insidePhar) {
     $appPath = \getcwd();
@@ -116,6 +123,7 @@ $application->add(
         version: $version['version'] ?? 'dev',
         httpClient: $httpClientAdapter,
         files: new Files(),
+        binaryType: $type,
     ),
 );
 

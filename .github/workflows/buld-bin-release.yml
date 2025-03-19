@@ -19,7 +19,7 @@ jobs:
 
       - name: Set current version from ${{ github.ref_name }}
         run: |
-          echo "{\"version\": \"${{ github.ref_name }}\"}" > version.json
+          echo "{\"version\": \"${{ github.ref_name }}\", \"type\":\"bin\"}" > version.json
 
       - name: Build Docker image
         uses: docker/build-push-action@v4

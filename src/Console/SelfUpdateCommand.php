@@ -29,7 +29,7 @@ final class SelfUpdateCommand extends Command
     /**
      * GitHub download URL format for the PHAR file
      */
-    private const GITHUB_DOWNLOAD_URL = 'https://github.com/butschster/context-generator/releases/download/%s/context-generator.phar';
+    private const GITHUB_DOWNLOAD_URL = 'https://github.com/butschster/context-generator/releases/download/%s/%s';
 
     private const PHAR_PATH = '/usr/local/bin/ctx';
 
@@ -37,6 +37,7 @@ final class SelfUpdateCommand extends Command
         private readonly string $version,
         private readonly HttpClientInterface $httpClient,
         private readonly FilesInterface $files,
+        private readonly string $binaryType = 'phar',
     ) {
         parent::__construct();
     }
@@ -50,6 +51,13 @@ final class SelfUpdateCommand extends Command
                 mode: InputOption::VALUE_REQUIRED,
                 description: 'Path to the PHAR file to update',
                 default: \getenv('CONTEXT_GENERATOR_PHAR_PATH') ?: self::PHAR_PATH,
+            )
+            ->addOption(
+                name: 'type',
+                shortcut: 't',
+                mode: InputOption::VALUE_REQUIRED,
+                description: 'Binary type (phar or bin)',
+                default: $this->binaryType,
             );
     }
 
@@ -59,6 +67,11 @@ final class SelfUpdateCommand extends Command
         $io->title('Context Generator Self Update');
 
         $pharPath = \trim((string) $input->getOption('phar-path') ?: self::PHAR_PATH);
+        $fileName = match ($input->getOption('type')) {
+            'phar' => 'ctx.phar',
+            'bin' => 'ctx',
+            default => throw new \InvalidArgumentException('Invalid type provided'),
+        };
 
         // Check if running as a PHAR
         if ($pharPath === '') {
@@ -90,7 +103,7 @@ final class SelfUpdateCommand extends Command
 
             // Start the update process
             $io->section('Downloading the latest version...');
-            $tempFile = $this->downloadLatestVersion($latestVersion, $io);
+            $tempFile = $this->downloadLatestVersion($fileName, $latestVersion, $io);
 
             $io->section('Installing the update...');
             $this->installUpdate($tempFile, $pharPath, $io);
@@ -156,9 +169,9 @@ final class SelfUpdateCommand extends Command
     /**
      * Download the latest version to a temporary file
      */
-    private function downloadLatestVersion(string $version, SymfonyStyle $io): string
+    private function downloadLatestVersion(string $fileName, string $version, SymfonyStyle $io): string
     {
-        $downloadUrl = \sprintf(self::GITHUB_DOWNLOAD_URL, "$version");
+        $downloadUrl = \sprintf(self::GITHUB_DOWNLOAD_URL, $version, $fileName);
 
         $io->text("Requesting from: $downloadUrl");
 
