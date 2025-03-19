@@ -17,6 +17,10 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
+      - name: Set current version from ${{ github.ref_name }}
+        run: |
+          echo "{\"version\": \"${{ github.ref_name }}\"}" > version.json
+
       - name: Build Docker image
         uses: docker/build-push-action@v4
         with:
