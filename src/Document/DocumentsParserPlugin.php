@@ -136,10 +136,6 @@ final readonly class DocumentsParserPlugin implements ConfigParserPluginInterfac
      */
     private function createGithubSource(array $data): GithubSource
     {
-        if (isset($data['githubToken'])) {
-            $data['githubToken'] = ConfigParser::parseConfigValue($data['githubToken']);
-        }
-
         return GithubSource::fromArray($data);
     }
 

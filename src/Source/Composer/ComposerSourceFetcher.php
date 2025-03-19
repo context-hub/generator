@@ -7,6 +7,7 @@ namespace Butschster\ContextGenerator\Source\Composer;
 use Butschster\ContextGenerator\Fetcher\SourceFetcherInterface;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Lib\TreeBuilder\FileTreeBuilder;
+use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
 use Butschster\ContextGenerator\Modifier\ModifiersApplierInterface;
 use Butschster\ContextGenerator\Source\Composer\Provider\ComposerProviderInterface;
 use Butschster\ContextGenerator\Source\File\FileSource;
@@ -29,6 +30,7 @@ final readonly class ComposerSourceFetcher implements SourceFetcherInterface
         private string $basePath = '.',
         private ContentBuilderFactory $builderFactory = new ContentBuilderFactory(),
         private FileTreeBuilder $treeBuilder = new FileTreeBuilder(),
+        private VariableResolver $variableResolver = new VariableResolver(),
         private ?LoggerInterface $logger = null,
     ) {
         // Create a FileSourceFetcher to handle the actual file fetching
@@ -60,8 +62,10 @@ final readonly class ComposerSourceFetcher implements SourceFetcherInterface
             throw new \InvalidArgumentException($errorMessage);
         }
 
+        $description = $this->variableResolver->resolve($source->getDescription());
+
         $this->logInfo('Fetching Composer source content', [
-            'description' => $source->getDescription(),
+            'description' => $description,
             'composerPath' => $source->composerPath,
             'includeDevDependencies' => $source->includeDevDependencies,
         ]);
@@ -69,7 +73,7 @@ final readonly class ComposerSourceFetcher implements SourceFetcherInterface
         // Create a content builder
         $builder = $this->builderFactory
             ->create()
-            ->addTitle($source->getDescription());
+            ->addTitle($description);
 
         // Get packages from the provider
         $packages = $this->provider->getPackages(

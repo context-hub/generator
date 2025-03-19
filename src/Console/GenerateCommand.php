@@ -14,6 +14,11 @@ use Butschster\ContextGenerator\Lib\GithubClient\GithubClient;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 use Butschster\ContextGenerator\Lib\Logger\HasPrefixLoggerInterface;
 use Butschster\ContextGenerator\Lib\Logger\LoggerFactory;
+use Butschster\ContextGenerator\Lib\Variable\Provider\CompositeVariableProvider;
+use Butschster\ContextGenerator\Lib\Variable\Provider\EnvironmentVariableProvider;
+use Butschster\ContextGenerator\Lib\Variable\Provider\PredefinedVariableProvider;
+use Butschster\ContextGenerator\Lib\Variable\VariableReplacementProcessor;
+use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
 use Butschster\ContextGenerator\Loader\CompositeDocumentsLoader;
 use Butschster\ContextGenerator\Loader\ConfigDocumentsLoader;
 use Butschster\ContextGenerator\Loader\ConfigRegistry\ConfigParser;
@@ -111,21 +116,26 @@ final class GenerateCommand extends Command
         );
 
         $githubToken = $input->getOption('github-token');
-        $githubClient = new GithubClient($this->httpClient, token: $githubToken);
-
-        // Create GitHub-related components
-        $githubFinder = new GithubFinder(
-            githubClient: $githubClient,
-        );
 
         $contentBuilderFactory = new ContentBuilderFactory(
             defaultRenderer: new MarkdownRenderer(),
+        );
+
+        $variableResolver = new VariableResolver(
+            processor: new VariableReplacementProcessor(
+                provider: new CompositeVariableProvider(
+                    envProvider: new EnvironmentVariableProvider(),
+                    predefinedProvider: new PredefinedVariableProvider(),
+                ),
+                logger: $logger->withPrefix('variable-resolver'),
+            ),
         );
 
         $sourceFetcherRegistry = new SourceFetcherRegistry(
             fetchers: [
                 new TextSourceFetcher(
                     builderFactory: $contentBuilderFactory,
+                    variableResolver: $variableResolver,
                     logger: $logger->withPrefix('text-source'),
                 ),
                 new FileSourceFetcher(
@@ -143,15 +153,20 @@ final class GenerateCommand extends Command
                     ),
                     basePath: $this->rootPath,
                     builderFactory: $contentBuilderFactory,
+                    variableResolver: $variableResolver,
                     logger: $logger->withPrefix('composer-source'),
                 ),
                 new UrlSourceFetcher(
                     httpClient: $this->httpClient,
+                    variableResolver: $variableResolver,
                     builderFactory: $contentBuilderFactory,
                     logger: $logger->withPrefix('url-source'),
                 ),
                 new GithubSourceFetcher(
-                    finder: $githubFinder,
+                    finder: new GithubFinder(
+                        githubClient: new GithubClient($this->httpClient, token: $githubToken),
+                        variableResolver: $variableResolver,
+                    ),
                     builderFactory: $contentBuilderFactory,
                     logger: $logger->withPrefix('github-source'),
                 ),

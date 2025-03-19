@@ -15,6 +15,7 @@ use Butschster\ContextGenerator\Lib\PathFilter\FilePatternFilter;
 use Butschster\ContextGenerator\Lib\PathFilter\FilterInterface;
 use Butschster\ContextGenerator\Lib\PathFilter\PathFilter;
 use Butschster\ContextGenerator\Lib\TreeBuilder\FileTreeBuilder;
+use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
 
 /**
  * GitHub content finder implementation
@@ -35,6 +36,7 @@ final class GithubFinder implements FinderInterface
      */
     public function __construct(
         private readonly GithubClientInterface $githubClient,
+        private readonly VariableResolver $variableResolver = new VariableResolver(),
         private readonly FileTreeBuilder $fileTreeBuilder = new FileTreeBuilder(),
     ) {}
 
@@ -48,7 +50,7 @@ final class GithubFinder implements FinderInterface
         }
 
         if ($source->githubToken) {
-            $this->githubClient->setToken($source->githubToken);
+            $this->githubClient->setToken($this->variableResolver->resolve($source->githubToken));
         }
 
         // Parse repository from string
