@@ -20,7 +20,7 @@ WORKDIR /app
 COPY . .
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 
-RUN composer install --no-dev --prefer-dist
+RUN composer install --no-dev --prefer-dist --ignore-platform-reqs
 
 # Create build directories
 RUN mkdir -p .build/phar .build/bin
