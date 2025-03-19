@@ -77,9 +77,15 @@ final readonly class UrlSourceFetcher implements SourceFetcherInterface
             ]);
 
             try {
+                $requestHeaders = \array_merge($this->defaultHeaders, $source->headers);
+
                 // Send the request
-                $this->logger?->debug('Sending HTTP request', ['url' => $url]);
-                $response = $this->httpClient->get($url, $this->defaultHeaders);
+                $this->logger?->debug('Sending HTTP request', [
+                    'url' => $url,
+                    'headers' => $requestHeaders,
+                ]);
+
+                $response = $this->httpClient->get($url, $requestHeaders);
                 $statusCode = $response->getStatusCode();
 
                 if (!$response->isSuccess()) {

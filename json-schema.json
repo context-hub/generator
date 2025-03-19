@@ -310,6 +310,13 @@
         "selector": {
           "type": "string",
           "description": "CSS selector to extract specific content (null for full page)"
+        },
+        "headers": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Custom HTTP headers to send with requests"
         }
       }
     },
