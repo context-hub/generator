@@ -10,6 +10,7 @@ use Butschster\ContextGenerator\Loader\ConfigRegistry\Parser\ConfigParserPluginI
 use Butschster\ContextGenerator\Loader\ConfigRegistry\RegistryInterface;
 use Butschster\ContextGenerator\Modifier\Alias\ModifierResolver;
 use Butschster\ContextGenerator\Modifier\Modifier;
+use Butschster\ContextGenerator\Source\Composer\ComposerSource;
 use Butschster\ContextGenerator\Source\File\FileSource;
 use Butschster\ContextGenerator\Source\GitDiff\CommitDiffSource;
 use Butschster\ContextGenerator\Source\Github\GithubSource;
@@ -113,6 +114,7 @@ final readonly class DocumentsParserPlugin implements ConfigParserPluginInterfac
             'text' => $this->createTextSource($sourceData),
             'github' => $this->createGithubSource($sourceData),
             'git_diff' => $this->createCommitDiffSource($sourceData, $rootPath),
+            'composer' => $this->createComposerSource($sourceData, $rootPath),
             default => throw new \RuntimeException(
                 \sprintf('Unknown source type "%s" at path %s', $sourceData['type'], $path),
             ),
@@ -175,5 +177,14 @@ final readonly class DocumentsParserPlugin implements ConfigParserPluginInterfac
     private function createCommitDiffSource(array $data, string $rootPath): CommitDiffSource
     {
         return CommitDiffSource::fromArray($data, $rootPath);
+    }
+
+    private function createComposerSource(array $data, string $rootPath): ComposerSource
+    {
+        if (isset($data['modifiers'])) {
+            $data['modifiers'] = $this->parseModifiers($data['modifiers']);
+        }
+
+        return ComposerSource::fromArray($data, $rootPath);
     }
 }
