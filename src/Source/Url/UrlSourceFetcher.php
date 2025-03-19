@@ -11,10 +11,10 @@ use Butschster\ContextGenerator\Lib\Html\HtmlCleanerInterface;
 use Butschster\ContextGenerator\Lib\Html\SelectorContentExtractor;
 use Butschster\ContextGenerator\Lib\Html\SelectorContentExtractorInterface;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
+use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
 use Butschster\ContextGenerator\Modifier\ModifiersApplierInterface;
 use Butschster\ContextGenerator\SourceInterface;
 use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
 
 /**
  * Fetcher for URL sources using Butschster HTTP client
@@ -33,13 +33,12 @@ final readonly class UrlSourceFetcher implements SourceFetcherInterface
             'Accept' => 'text/html,application/xhtml+xml',
             'Accept-Language' => 'en-US,en;q=0.9',
         ],
+        private VariableResolver $variableResolver = new VariableResolver(),
         private HtmlCleanerInterface $cleaner = new HtmlCleaner(),
         private ?SelectorContentExtractorInterface $selectorExtractor = new SelectorContentExtractor(),
         private ContentBuilderFactory $builderFactory = new ContentBuilderFactory(),
         private ?LoggerInterface $logger = null,
-    ) {
-        $this->logger ??= new NullLogger();
-    }
+    ) {}
 
     public function supports(SourceInterface $source): bool
     {
@@ -67,9 +66,13 @@ final readonly class UrlSourceFetcher implements SourceFetcherInterface
         ]);
 
         // Create builder
-        $builder = $this->builderFactory->create();
+        $builder = $this->builderFactory
+            ->create()
+            ->addDescription($this->variableResolver->resolve($source->getDescription()));
 
         foreach ($source->urls as $index => $url) {
+            $url = $this->variableResolver->resolve($url);
+
             $this->logger?->debug('Processing URL', [
                 'url' => $url,
                 'index' => $index + 1,
@@ -77,7 +80,9 @@ final readonly class UrlSourceFetcher implements SourceFetcherInterface
             ]);
 
             try {
-                $requestHeaders = \array_merge($this->defaultHeaders, $source->headers);
+                $requestHeaders = $this->variableResolver->resolve(
+                    \array_merge($this->defaultHeaders, $source->headers),
+                );
 
                 // Send the request
                 $this->logger?->debug('Sending HTTP request', [

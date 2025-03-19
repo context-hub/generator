@@ -14,6 +14,11 @@ use Butschster\ContextGenerator\Lib\GithubClient\GithubClient;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 use Butschster\ContextGenerator\Lib\Logger\HasPrefixLoggerInterface;
 use Butschster\ContextGenerator\Lib\Logger\LoggerFactory;
+use Butschster\ContextGenerator\Lib\Variable\Provider\CompositeVariableProvider;
+use Butschster\ContextGenerator\Lib\Variable\Provider\DotEnvVariableProvider;
+use Butschster\ContextGenerator\Lib\Variable\Provider\PredefinedVariableProvider;
+use Butschster\ContextGenerator\Lib\Variable\VariableReplacementProcessor;
+use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
 use Butschster\ContextGenerator\Loader\CompositeDocumentsLoader;
 use Butschster\ContextGenerator\Loader\ConfigDocumentsLoader;
 use Butschster\ContextGenerator\Loader\ConfigRegistry\ConfigParser;
@@ -36,6 +41,7 @@ use Butschster\ContextGenerator\Source\Github\GithubFinder;
 use Butschster\ContextGenerator\Source\Github\GithubSourceFetcher;
 use Butschster\ContextGenerator\Source\Text\TextSourceFetcher;
 use Butschster\ContextGenerator\Source\Url\UrlSourceFetcher;
+use Dotenv\Repository\RepositoryBuilder;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -78,6 +84,12 @@ final class GenerateCommand extends Command
                 InputOption::VALUE_OPTIONAL,
                 'GitHub token for authentication',
                 \getenv('GITHUB_TOKEN') ?: null,
+            )
+            ->addOption(
+                'env',
+                'e',
+                InputOption::VALUE_OPTIONAL,
+                'Path to .env (like .env.local) file. If not provided, will ignore any .env files',
             );
     }
 
@@ -111,21 +123,46 @@ final class GenerateCommand extends Command
         );
 
         $githubToken = $input->getOption('github-token');
-        $githubClient = new GithubClient($this->httpClient, token: $githubToken);
-
-        // Create GitHub-related components
-        $githubFinder = new GithubFinder(
-            githubClient: $githubClient,
-        );
 
         $contentBuilderFactory = new ContentBuilderFactory(
             defaultRenderer: new MarkdownRenderer(),
+        );
+
+        // Get the env file path from the command option
+        $envFileName = $input->getOption('env') ?? '.env';
+        $envFilePath = $input->hasOption('env') ? $this->rootPath : null;
+
+        if ($envFilePath !== null) {
+            $envPath = $this->rootPath . '/' . $envFileName;
+            if (!\is_file($envPath)) {
+                $outputStyle->error(\sprintf('Environment file not found: %s', $envPath));
+                return Command::FAILURE;
+            }
+
+            $outputStyle->info(\sprintf('Loaded environment variables from %s', $envPath));
+        }
+
+        $variablesProvider = new CompositeVariableProvider(
+            envProvider: new DotEnvVariableProvider(
+                repository: RepositoryBuilder::createWithDefaultAdapters()->make(),
+                rootPath: $envFilePath,
+                envFileName: $envFileName,
+            ),
+            predefinedProvider: new PredefinedVariableProvider(),
+        );
+
+        $variableResolver = new VariableResolver(
+            processor: new VariableReplacementProcessor(
+                provider: $variablesProvider,
+                logger: $logger->withPrefix('variable-resolver'),
+            ),
         );
 
         $sourceFetcherRegistry = new SourceFetcherRegistry(
             fetchers: [
                 new TextSourceFetcher(
                     builderFactory: $contentBuilderFactory,
+                    variableResolver: $variableResolver,
                     logger: $logger->withPrefix('text-source'),
                 ),
                 new FileSourceFetcher(
@@ -143,15 +180,20 @@ final class GenerateCommand extends Command
                     ),
                     basePath: $this->rootPath,
                     builderFactory: $contentBuilderFactory,
+                    variableResolver: $variableResolver,
                     logger: $logger->withPrefix('composer-source'),
                 ),
                 new UrlSourceFetcher(
                     httpClient: $this->httpClient,
+                    variableResolver: $variableResolver,
                     builderFactory: $contentBuilderFactory,
                     logger: $logger->withPrefix('url-source'),
                 ),
                 new GithubSourceFetcher(
-                    finder: $githubFinder,
+                    finder: new GithubFinder(
+                        githubClient: new GithubClient($this->httpClient, token: $githubToken),
+                        variableResolver: $variableResolver,
+                    ),
                     builderFactory: $contentBuilderFactory,
                     logger: $logger->withPrefix('github-source'),
                 ),
