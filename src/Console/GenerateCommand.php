@@ -26,6 +26,10 @@ use Butschster\ContextGenerator\Modifier\ContextSanitizerModifier;
 use Butschster\ContextGenerator\Modifier\PhpContentFilter;
 use Butschster\ContextGenerator\Modifier\PhpSignature;
 use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
+use Butschster\ContextGenerator\Source\Composer\Client\FileSystemComposerClient;
+use Butschster\ContextGenerator\Source\Composer\ComposerSourceFetcher;
+use Butschster\ContextGenerator\Source\Composer\Provider\CompositeComposerProvider;
+use Butschster\ContextGenerator\Source\Composer\Provider\LocalComposerProvider;
 use Butschster\ContextGenerator\Source\File\FileSourceFetcher;
 use Butschster\ContextGenerator\Source\GitDiff\CommitDiffSourceFetcher;
 use Butschster\ContextGenerator\Source\Github\GithubFinder;
@@ -128,6 +132,18 @@ final class GenerateCommand extends Command
                     basePath: $this->rootPath,
                     builderFactory: $contentBuilderFactory,
                     logger: $logger->withPrefix('file-source'),
+                ),
+                new ComposerSourceFetcher(
+                    provider: new CompositeComposerProvider(
+                        logger: $logger,
+                        localProvider: new LocalComposerProvider(
+                            client: new FileSystemComposerClient(logger: $logger),
+                            logger: $logger,
+                        ),
+                    ),
+                    basePath: $this->rootPath,
+                    builderFactory: $contentBuilderFactory,
+                    logger: $logger->withPrefix('composer-source'),
                 ),
                 new UrlSourceFetcher(
                     httpClient: $this->httpClient,

@@ -85,7 +85,8 @@
             "url",
             "text",
             "github",
-            "git_diff"
+            "git_diff",
+            "composer"
           ],
           "description": "Type of content source"
         },
@@ -163,6 +164,18 @@
           },
           "then": {
             "$ref": "#/definitions/gitCommitDiffSource"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "composer"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/composerSource"
           }
         }
       ]
@@ -480,6 +493,99 @@
         },
         "modifiers": {
           "$ref": "#/definitions/modifiers"
+        }
+      }
+    },
+    "composerSource": {
+      "properties": {
+        "composerPath": {
+          "type": "string",
+          "description": "Path to composer.json file or directory containing it"
+        },
+        "packages": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ],
+          "description": "Package names to include (e.g., 'vendor/package')"
+        },
+        "filePattern": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ],
+          "description": "File pattern(s) to match"
+        },
+        "notPath": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Patterns to exclude files"
+        },
+        "path": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ],
+          "description": "Patterns to include only specific paths"
+        },
+        "contains": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ],
+          "description": "Patterns to include files containing specific content"
+        },
+        "notContains": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ],
+          "description": "Patterns to exclude files containing specific content"
+        },
+        "includeDevDependencies": {
+          "type": "boolean",
+          "description": "Whether to include dev dependencies"
+        },
+        "showTreeView": {
+          "type": "boolean",
+          "description": "Whether to show directory tree visualization"
         }
       }
     },
