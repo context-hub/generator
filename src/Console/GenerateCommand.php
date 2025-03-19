@@ -130,7 +130,7 @@ final class GenerateCommand extends Command
 
         // Get the env file path from the command option
         $envFileName = $input->getOption('env') ?? '.env';
-        $envFilePath = $input->hasOption('env') !== null ? $this->rootPath : null;
+        $envFilePath = $input->hasOption('env') ? $this->rootPath : null;
 
         if ($envFilePath !== null) {
             $envPath = $this->rootPath . '/' . $envFileName;
@@ -144,9 +144,9 @@ final class GenerateCommand extends Command
 
         $variablesProvider = new CompositeVariableProvider(
             envProvider: new DotEnvVariableProvider(
+                repository: RepositoryBuilder::createWithDefaultAdapters()->make(),
                 rootPath: $envFilePath,
                 envFileName: $envFileName,
-                repository: RepositoryBuilder::createWithDefaultAdapters()->make(),
             ),
             predefinedProvider: new PredefinedVariableProvider(),
         );
