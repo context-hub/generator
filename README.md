@@ -138,6 +138,9 @@ mv context-generator.phar /usr/local/bin/ctx
 
 ## Command Reference
 
+Here's the text for the README section about the Generate Context Files command, including the new environment variable
+support:
+
 ### Generate Context Files
 
 Generates context files according to your configuration. This is the default command that runs when no command is
@@ -147,12 +150,33 @@ specified.
 ctx
 ```
 
-or full command:
+You can also explicitly call:
 
 ```bash
 ctx generate
 # or 
 ctx build
+```
+
+#### Options
+
+| Option                 | Description                                                                                    |
+|------------------------|------------------------------------------------------------------------------------------------|
+| `--config`, `-c`       | Path to configuration file (default: `context.json`)                                           |
+| `--github-token`, `-t` | GitHub token for authentication (default: reads from `GITHUB_TOKEN` environment variable)      |
+| `--env`, `-e`          | Load environment variables from a file. If used without specifying a file, defaults to `.env`. |
+
+Examples of using the `--env` option:
+
+```bash
+# Load variables from default .env file
+ctx --env
+
+# Load variables from a specific file
+ctx --env=.env.local
+
+# Do not load any environment variables (default behavior)
+ctx
 ```
 
 ### Initialize a Configuration File
@@ -919,11 +943,12 @@ Fetch content from websites with optional CSS selector support.
   "type": "url",
   "description": "Documentation Website",
   "urls": [
-    "https://example.com/docs"
+    "https://example.com/docs",
+    "https://api.${ENV_NAME}.example.com/data"
   ],
   "selector": ".main-content",
   "headers": {
-    "Authorization": "Bearer token123",
+    "Authorization": "Bearer ${API_TOKEN}",
     "Accept-Language": "en-US"
   }
 }
@@ -931,14 +956,14 @@ Fetch content from websites with optional CSS selector support.
 
 #### Parameters
 
-| Parameter     | Type   | Default  | Description                                                   |
-|---------------|--------|----------|---------------------------------------------------------------|
-| `type`        | string | required | Must be `"url"`                                               |
-| `description` | string | `""`     | Human-readable description of the source                      |
-| `urls`        | array  | required | URLs to fetch content from                                    |
-| `selector`    | string | `null`   | CSS selector to extract specific content (null for full page) |
-| `headers`     | object | `{}`     | Custom headers to include in the request                      |
-| `tags`        | array  | []       | List of tags for this source                                  |
+| Parameter     | Type   | Default  | Description                                                      |
+|---------------|--------|----------|------------------------------------------------------------------|
+| `type`        | string | required | Must be `"url"`                                                  |
+| `description` | string | `""`     | Human-readable description of the source                         |
+| `urls`        | array  | required | URLs to fetch content from (support env variables)               |
+| `selector`    | string | `null`   | CSS selector to extract specific content (null for full page)    |
+| `headers`     | object | `{}`     | Custom headers to include in the request (support env variables) |
+| `tags`        | array  | []       | List of tags for this source                                     |
 
 ### Composer Source
 
@@ -1026,13 +1051,13 @@ Include custom text content like headers, notes, or instructions.
 
 #### Parameters
 
-| Parameter     | Type   | Default         | Description                                |
-|---------------|--------|-----------------|--------------------------------------------|
-| `type`        | string | required        | Must be `"text"`                           |
-| `description` | string | `""`            | Human-readable description of the source   |
-| `content`     | string | required        | Text content to include                    |
-| `tag`         | string | `"INSTRUCTION"` | Custom tag to identify the type of content |
-| `tags`        | array  | []              | List of tags for this source               |
+| Parameter     | Type   | Default         | Description                                                        |
+|---------------|--------|-----------------|--------------------------------------------------------------------|
+| `type`        | string | required        | Must be `"text"`                                                   |
+| `description` | string | `""`            | Human-readable description of the source                           |
+| `content`     | string | required        | Text content to include (support env variables)                    |
+| `tag`         | string | `"INSTRUCTION"` | Custom tag to identify the type of content (support env variables) |
+| `tags`        | array  | []              | List of tags for this source                                       |
 
 #### Custom Tags Example
 

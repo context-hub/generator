@@ -71,6 +71,8 @@ final readonly class UrlSourceFetcher implements SourceFetcherInterface
             ->addDescription($this->variableResolver->resolve($source->getDescription()));
 
         foreach ($source->urls as $index => $url) {
+            $url = $this->variableResolver->resolve($url);
+
             $this->logger?->debug('Processing URL', [
                 'url' => $url,
                 'index' => $index + 1,

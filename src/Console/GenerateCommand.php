@@ -15,7 +15,7 @@ use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 use Butschster\ContextGenerator\Lib\Logger\HasPrefixLoggerInterface;
 use Butschster\ContextGenerator\Lib\Logger\LoggerFactory;
 use Butschster\ContextGenerator\Lib\Variable\Provider\CompositeVariableProvider;
-use Butschster\ContextGenerator\Lib\Variable\Provider\EnvironmentVariableProvider;
+use Butschster\ContextGenerator\Lib\Variable\Provider\DotEnvVariableProvider;
 use Butschster\ContextGenerator\Lib\Variable\Provider\PredefinedVariableProvider;
 use Butschster\ContextGenerator\Lib\Variable\VariableReplacementProcessor;
 use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
@@ -41,6 +41,7 @@ use Butschster\ContextGenerator\Source\Github\GithubFinder;
 use Butschster\ContextGenerator\Source\Github\GithubSourceFetcher;
 use Butschster\ContextGenerator\Source\Text\TextSourceFetcher;
 use Butschster\ContextGenerator\Source\Url\UrlSourceFetcher;
+use Dotenv\Repository\RepositoryBuilder;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -83,6 +84,12 @@ final class GenerateCommand extends Command
                 InputOption::VALUE_OPTIONAL,
                 'GitHub token for authentication',
                 \getenv('GITHUB_TOKEN') ?: null,
+            )
+            ->addOption(
+                'env',
+                'e',
+                InputOption::VALUE_OPTIONAL,
+                'Path to .env (like .env.local) file. If not provided, will ignore any .env files',
             );
     }
 
@@ -121,12 +128,32 @@ final class GenerateCommand extends Command
             defaultRenderer: new MarkdownRenderer(),
         );
 
+        // Get the env file path from the command option
+        $envFileName = $input->getOption('env') ?? '.env';
+        $envFilePath = $input->hasOption('env') !== null ? $this->rootPath : null;
+
+        if ($envFilePath !== null) {
+            $envPath = $this->rootPath . '/' . $envFileName;
+            if (!\is_file($envPath)) {
+                $outputStyle->error(\sprintf('Environment file not found: %s', $envPath));
+                return Command::FAILURE;
+            }
+
+            $outputStyle->info(\sprintf('Loaded environment variables from %s', $envPath));
+        }
+
+        $variablesProvider = new CompositeVariableProvider(
+            envProvider: new DotEnvVariableProvider(
+                rootPath: $envFilePath,
+                envFileName: $envFileName,
+                repository: RepositoryBuilder::createWithDefaultAdapters()->make(),
+            ),
+            predefinedProvider: new PredefinedVariableProvider(),
+        );
+
         $variableResolver = new VariableResolver(
             processor: new VariableReplacementProcessor(
-                provider: new CompositeVariableProvider(
-                    envProvider: new EnvironmentVariableProvider(),
-                    predefinedProvider: new PredefinedVariableProvider(),
-                ),
+                provider: $variablesProvider,
                 logger: $logger->withPrefix('variable-resolver'),
             ),
         );
