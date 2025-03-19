@@ -146,8 +146,8 @@ final readonly class ComposerPackageInfo
         // Check classmap autoload configuration as fallback
         $classmapDirs = [];
         if (isset($this->composerConfig['autoload']['classmap']) && \is_array(
-                $this->composerConfig['autoload']['classmap'],
-            )) {
+            $this->composerConfig['autoload']['classmap'],
+        )) {
             foreach ($this->composerConfig['autoload']['classmap'] as $dir) {
                 if (\is_string($dir)) {
                     $classmapDirs[] = $dir;
