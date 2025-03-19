@@ -19,7 +19,7 @@ final readonly class EnvironmentVariableProvider implements VariableProviderInte
     public function has(string $name): bool
     {
         $envName = $this->prefix . $name;
-        return isset($_ENV[$envName]) || isset($_SERVER[$envName]) || getenv($envName) !== false;
+        return isset($_ENV[$envName]) || isset($_SERVER[$envName]) || \getenv($envName) !== false;
     }
 
     public function get(string $name): ?string
@@ -31,7 +31,7 @@ final readonly class EnvironmentVariableProvider implements VariableProviderInte
         }
 
         if (isset($_SERVER[$envName])) {
-            return $_SERVER[$envName];
+            return (string) $_SERVER[$envName];
         }
 
         $value = \getenv($envName);

@@ -18,7 +18,7 @@ final class CompositeVariableProvider implements VariableProviderInterface
      * @param array<VariableProviderInterface> $providers
      */
     public function __construct(
-        VariableProviderInterface ...$providers
+        VariableProviderInterface ...$providers,
     ) {
         foreach ($providers as $provider) {
             $this->addProvider($provider);
@@ -39,7 +39,7 @@ final class CompositeVariableProvider implements VariableProviderInterface
      */
     public function addProviderWithHighPriority(VariableProviderInterface $provider): self
     {
-        array_unshift($this->providers, $provider);
+        \array_unshift($this->providers, $provider);
         return $this;
     }
 

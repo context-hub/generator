@@ -15,9 +15,6 @@ final readonly class VariableResolver
 
     /**
      * Resolve variables in the given text
-     *
-     * @param string|array<string>|null $strings
-     * @return string|array<string>|null Text with variables replaced
      */
     public function resolve(string|array|null $strings): string|array|null
     {
@@ -26,7 +23,7 @@ final readonly class VariableResolver
         }
 
         if (\is_array($strings)) {
-            return \array_map([$this, 'resolve'], $strings);
+            return \array_map($this->resolve(...), $strings);
         }
 
         return $this->processor->process($strings);

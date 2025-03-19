@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Document;
 
-use Butschster\ContextGenerator\Loader\ConfigRegistry\ConfigParser;
 use Butschster\ContextGenerator\Loader\ConfigRegistry\DocumentRegistry;
 use Butschster\ContextGenerator\Loader\ConfigRegistry\Parser\ConfigParserPluginInterface;
 use Butschster\ContextGenerator\Loader\ConfigRegistry\RegistryInterface;

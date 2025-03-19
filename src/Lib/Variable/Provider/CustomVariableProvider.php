@@ -20,7 +20,6 @@ final class CustomVariableProvider implements VariableProviderInterface
      *
      * @param string $name Variable name
      * @param string $value Variable value
-     * @return self
      */
     public function set(string $name, string $value): self
     {
@@ -32,7 +31,6 @@ final class CustomVariableProvider implements VariableProviderInterface
      * Set multiple variables at once
      *
      * @param array<string, string> $variables Map of variable names to values
-     * @return self
      */
     public function setMany(array $variables): self
     {
@@ -44,7 +42,7 @@ final class CustomVariableProvider implements VariableProviderInterface
 
     public function has(string $name): bool
     {
-        return array_key_exists($name, $this->variables);
+        return \array_key_exists($name, $this->variables);
     }
 
     public function get(string $name): ?string
@@ -66,7 +64,6 @@ final class CustomVariableProvider implements VariableProviderInterface
      * Remove a variable
      *
      * @param string $name Variable name
-     * @return self
      */
     public function remove(string $name): self
     {
@@ -77,7 +74,6 @@ final class CustomVariableProvider implements VariableProviderInterface
     /**
      * Clear all variables
      *
-     * @return self
      */
     public function clear(): self
     {

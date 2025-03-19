@@ -27,17 +27,17 @@ final readonly class VariableReplacementProcessor
     public function process(string $text): string
     {
         // Replace ${VAR_NAME} syntax
-        $result = preg_replace_callback(
+        $result = \preg_replace_callback(
             '/\${([a-zA-Z0-9_]+)}/',
             fn(array $matches) => $this->replaceVariable($matches[1]),
             $text,
         );
 
         // Replace {{VAR_NAME}} syntax
-        return preg_replace_callback(
+        return \preg_replace_callback(
             '/{{([a-zA-Z0-9_]+)}}/',
             fn(array $matches) => $this->replaceVariable($matches[1]),
-            $result,
+            (string) $result,
         );
     }
 
