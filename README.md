@@ -921,7 +921,11 @@ Fetch content from websites with optional CSS selector support.
   "urls": [
     "https://example.com/docs"
   ],
-  "selector": ".main-content"
+  "selector": ".main-content",
+  "headers": {
+    "Authorization": "Bearer token123",
+    "Accept-Language": "en-US"
+  }
 }
 ```
 
@@ -933,6 +937,7 @@ Fetch content from websites with optional CSS selector support.
 | `description` | string | `""`     | Human-readable description of the source                      |
 | `urls`        | array  | required | URLs to fetch content from                                    |
 | `selector`    | string | `null`   | CSS selector to extract specific content (null for full page) |
+| `headers`     | object | `{}`     | Custom headers to include in the request                      |
 | `tags`        | array  | []       | List of tags for this source                                  |
 
 ### Composer Source

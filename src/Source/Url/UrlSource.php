@@ -20,6 +20,7 @@ final class UrlSource extends BaseSource
     public function __construct(
         public readonly array $urls,
         string $description = '',
+        public readonly array $headers = [],
         public readonly ?string $selector = null,
         array $tags = [],
     ) {
@@ -32,9 +33,16 @@ final class UrlSource extends BaseSource
             throw new \RuntimeException('URL source must have a "urls" array property');
         }
 
+        // Add headers validation and parsing
+        $headers = [];
+        if (isset($data['headers']) && \is_array($data['headers'])) {
+            $headers = $data['headers'];
+        }
+
         return new self(
             urls: $data['urls'],
             description: $data['description'] ?? '',
+            headers: $headers,
             selector: $data['selector'] ?? null,
             tags: $data['tags'] ?? [],
         );
@@ -68,6 +76,7 @@ final class UrlSource extends BaseSource
             ...parent::jsonSerialize(),
             'urls' => $this->urls,
             'selector' => $this->getSelector(),
+            'headers' => $this->headers,
         ], static fn($value) => $value !== null && $value !== '' && $value !== []);
     }
 }
