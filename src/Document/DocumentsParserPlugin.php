@@ -16,6 +16,7 @@ use Butschster\ContextGenerator\Source\Github\GithubSource;
 use Butschster\ContextGenerator\Source\Text\TextSource;
 use Butschster\ContextGenerator\Source\Url\UrlSource;
 use Butschster\ContextGenerator\SourceInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Plugin for parsing the "documents" section of the configuration
@@ -24,6 +25,7 @@ final readonly class DocumentsParserPlugin implements ConfigParserPluginInterfac
 {
     public function __construct(
         private ModifierResolver $modifierResolver = new ModifierResolver(),
+        private ?LoggerInterface $logger = null,
     ) {}
 
     public function getConfigKey(): string
@@ -73,8 +75,25 @@ final readonly class DocumentsParserPlugin implements ConfigParserPluginInterfac
 
             if (isset($docData['sources']) && \is_array($docData['sources'])) {
                 foreach ($docData['sources'] as $sourceIndex => $sourceData) {
-                    $source = $this->createSource($sourceData, "$index.$sourceIndex", $rootPath);
-                    $document->addSource($source);
+                    try {
+                        $this->logger?->debug(
+                            \sprintf('Creating source at index %d', $sourceIndex),
+                            [
+                                'document' => $document,
+                                'sourceData' => $sourceData,
+                            ],
+                        );
+                        $source = $this->createSource($sourceData, "$index.$sourceIndex", $rootPath);
+                        $document->addSource($source);
+                    } catch (\RuntimeException $e) {
+                        $this->logger?->error(
+                            \sprintf('Failed to create source at index %d: %s', $sourceIndex, $e->getMessage()),
+                            [
+                                'document' => $document,
+                                'sourceData' => $sourceData,
+                            ],
+                        );
+                    }
                 }
             }
 
