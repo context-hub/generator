@@ -19,7 +19,6 @@ final readonly class ConfigLoader implements ConfigLoaderInterface
         private string $configPath,
         private ReaderInterface $reader,
         private ConfigParserInterface $parser,
-        private string $rootPath,
         private ?LoggerInterface $logger = null,
     ) {}
 

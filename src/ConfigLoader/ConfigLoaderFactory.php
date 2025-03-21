@@ -64,7 +64,6 @@ final readonly class ConfigLoaderFactory
             configPath: $rootPath . '/context.json',
             reader: $jsonReader,
             parser: $compositeParser,
-            rootPath: $this->rootPath,
             logger: $this->logger,
         );
 
@@ -72,7 +71,6 @@ final readonly class ConfigLoaderFactory
             configPath: $rootPath . '/context.yaml',
             reader: $yamlReader,
             parser: $compositeParser,
-            rootPath: $this->rootPath,
             logger: $this->logger,
         );
 
@@ -80,7 +78,6 @@ final readonly class ConfigLoaderFactory
             configPath: $rootPath . '/context.yml',
             reader: $yamlReader,
             parser: $compositeParser,
-            rootPath: $this->rootPath,
             logger: $this->logger,
         );
 
@@ -88,7 +85,6 @@ final readonly class ConfigLoaderFactory
             configPath: $rootPath . '/context.php',
             reader: $phpReader,
             parser: $compositeParser,
-            rootPath: $this->rootPath,
             logger: $this->logger,
         );
 
