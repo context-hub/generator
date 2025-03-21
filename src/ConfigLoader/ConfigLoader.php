@@ -8,7 +8,6 @@ use Butschster\ContextGenerator\ConfigLoader\Exception\ConfigLoaderException;
 use Butschster\ContextGenerator\ConfigLoader\Parser\ConfigParserInterface;
 use Butschster\ContextGenerator\ConfigLoader\Reader\ReaderInterface;
 use Butschster\ContextGenerator\ConfigLoader\Registry\DocumentRegistry;
-use Butschster\ContextGenerator\Lib\Logger\HasPrefixLoggerInterface;
 use Psr\Log\LoggerInterface;
 
 /**
