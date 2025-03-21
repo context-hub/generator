@@ -1737,7 +1737,7 @@ Create a PHP configuration file (`context.php`):
 use Butschster\ContextGenerator\Document\Document;
 use Butschster\ContextGenerator\Source\File\FileSource;
 use Butschster\ContextGenerator\Source\Text\TextSource;
-use Butschster\ContextGenerator\Loader\ConfigRegistry\DocumentRegistry;
+use Butschster\ContextGenerator\ConfigLoader\Registry\DocumentRegistry;
 
 return (new DocumentRegistry())
     ->register(

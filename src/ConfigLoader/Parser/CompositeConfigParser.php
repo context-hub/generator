@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Loader\ConfigRegistry;
+namespace Butschster\ContextGenerator\ConfigLoader\Parser;
 
-use Butschster\ContextGenerator\Loader\ConfigRegistry\Parser\ConfigParserInterface;
+use Butschster\ContextGenerator\ConfigLoader\Registry\ConfigRegistry;
 
 /**
  * Combines multiple parsers into one

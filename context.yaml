@@ -1,0 +1,38 @@
+settings:
+  modifiers:
+    api-docs:
+      name: php-content-filter
+      options:
+        keep_doc_comments: false
+documents:
+  - description: 'Config loaders'
+    outputPath: api/config.md
+    sources:
+      - type: file
+        sourcePaths:
+          - src/ConfigLoader
+
+  - description: 'Generator loaders'
+    outputPath: api/loaders.md
+    sources:
+      - type: composer
+        packages:
+          - symfony/finder
+        contains:
+          - NumberComparator
+
+  - description: 'Composer source'
+    outputPath: api/source.md
+    sources:
+      - type: file
+        sourcePaths:
+          - src/Source/Url
+          - src/Lib/HttpClient
+
+  - description: 'Console logger'
+    outputPath: api/logger.md
+    sources:
+      - type: file
+        sourcePaths:
+          - src/Lib/Logger
+        filePattern: '*.php'

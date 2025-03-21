@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Modifier\Alias;
 
-use Butschster\ContextGenerator\Loader\ConfigRegistry\Parser\ConfigParserPluginInterface;
-use Butschster\ContextGenerator\Loader\ConfigRegistry\RegistryInterface;
+use Butschster\ContextGenerator\ConfigLoader\Parser\ConfigParserPluginInterface;
+use Butschster\ContextGenerator\ConfigLoader\Registry\RegistryInterface;
 use Butschster\ContextGenerator\Modifier\Modifier;
 
 /**

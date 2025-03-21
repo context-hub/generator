@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Document;
 
-use Butschster\ContextGenerator\Loader\ConfigRegistry\DocumentRegistry;
-use Butschster\ContextGenerator\Loader\ConfigRegistry\Parser\ConfigParserPluginInterface;
-use Butschster\ContextGenerator\Loader\ConfigRegistry\RegistryInterface;
+use Butschster\ContextGenerator\ConfigLoader\Parser\ConfigParserPluginInterface;
+use Butschster\ContextGenerator\ConfigLoader\Registry\DocumentRegistry;
+use Butschster\ContextGenerator\ConfigLoader\Registry\RegistryInterface;
 use Butschster\ContextGenerator\Modifier\Alias\ModifierResolver;
 use Butschster\ContextGenerator\Modifier\Modifier;
 use Butschster\ContextGenerator\Source\Composer\ComposerSource;

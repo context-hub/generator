@@ -35,7 +35,7 @@ RUN chmod +x .build/bin/spc
 
 # Download required PHP extensions
 RUN .build/bin/spc download micro \
-    --for-extensions=ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter \
+    --for-extensions=ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl \
     --with-php=8.3 \
     --prefer-pre-built
 
@@ -46,7 +46,7 @@ RUN .build/bin/spc install-pkg upx
 RUN .build/bin/spc doctor --auto-fix
 
 # Build the self-executable binary with required extensions
-RUN .build/bin/spc build ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter \
+RUN .build/bin/spc build ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl \
     --build-micro \
     --with-upx-pack
 
