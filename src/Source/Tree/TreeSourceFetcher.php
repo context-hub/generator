@@ -163,8 +163,7 @@ readonly class TreeSourceFetcher implements SourceFetcherInterface
         return $content;
     }
 
-    private
-    function getRenderer(
+    private function getRenderer(
         string $format,
     ): TreeRendererInterface {
         return new TreeRenderer\AsciiTreeRenderer();
