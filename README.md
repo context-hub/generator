@@ -24,6 +24,7 @@
         - [URL Source](#url-source)
         - [Text Source](#text-source)
         - [Composer Source](#composer-source)
+        - [Tree Source](#tree-source)
     - [Modifiers](#modifiers)
         - [PHP Signature Modifier](#php-signature-modifier)
         - [PHP Content Filter Modifier](#php-content-filter-modifier)
@@ -270,6 +271,52 @@ Configuration is built around three core concepts:
   LLMs
 - **Source**: Where content is collected from - files, GitHub, URLs, text, or git diffs
 - **Modifiers**: Transform source content before inclusion - clean up, simplify, or enhance raw content
+
+> **New!** Context Generator now supports both **JSON** and **YAML** configuration formats. Choose the one that works
+> best for your workflow.
+
+### YAML Configuration Format
+
+If you prefer YAML syntax, you can use the following format.
+
+Create a `context.yaml` file in your project root:
+
+```yaml
+documents:
+  - description: API Documentation
+    outputPath: docs/api.md
+    overwrite: true
+    tags:
+      - api
+      - documentation
+      - v1
+    sources:
+      - type: text
+        description: API Documentation Header
+        content: |
+          # API Documentation
+
+          This document contains the API source code.
+      - type: file
+        description: API Controllers
+        sourcePaths:
+          - src/Controller
+        filePattern: "*.php"
+        tags:
+          - controllers
+          - php
+      - type: url
+        description: API Reference
+        urls:
+          - https://api.example.com/docs
+        tags:
+          - reference
+          - external
+```
+
+### JSON Configuration Format
+
+If you prefer JSON syntax, you can use the following format.
 
 Create a `context.json` file in your project root:
 
@@ -1003,6 +1050,156 @@ First you need to specify packages you want to include:
 }
 ```
 
+### Tree Source
+
+The Tree source allows you to generate hierarchical visualizations of directory structures. This is useful for providing
+context about your file organization or for documenting the structure of your codebase.
+
+```json
+{
+  "type": "tree",
+  "description": "Project File Structure",
+  "sourcePaths": [
+    "src"
+  ],
+  "filePattern": "*.php",
+  "notPath": [
+    "tests",
+    "vendor"
+  ],
+  "renderFormat": "ascii",
+  "maxDepth": 3,
+  "includeFiles": true,
+  "showSize": true
+}
+```
+
+#### Parameters
+
+| Parameter          | Type          | Default  | Description                                              |
+|--------------------|---------------|----------|----------------------------------------------------------|
+| `type`             | string        | required | Must be `"tree"`                                         |
+| `description`      | string        | `""`     | Human-readable description of the source                 |
+| `sourcePaths`      | string\|array | required | Path(s) to generate tree from                            |
+| `filePattern`      | string\|array | `"*"`    | Pattern(s) to match files                                |
+| `notPath`          | array         | `[]`     | Patterns to exclude paths                                |
+| `path`             | string\|array | `[]`     | Patterns to include only specific paths                  |
+| `contains`         | string\|array | `[]`     | Patterns to include files containing specific content    |
+| `notContains`      | string\|array | `[]`     | Patterns to exclude files containing specific content    |
+| `maxDepth`         | integer       | `0`      | Maximum depth of the tree to display (0 for unlimited)   |
+| `includeFiles`     | boolean       | `true`   | Whether to include files in the tree or only directories |
+| `showSize`         | boolean       | `false`  | Include file/directory sizes in the tree                 |
+| `showLastModified` | boolean       | `false`  | Include last modified dates in the tree                  |
+| `showCharCount`    | boolean       | `false`  | Include character counts in the tree                     |
+| `dirContext`       | object        | `{}`     | Optional context/descriptions for specific directories   |
+| `tags`             | array         | `[]`     | List of tags for this source                             |
+
+#### Basic Usage
+
+Generate a simple directory tree:
+
+```json
+{
+  "documents": [
+    {
+      "description": "Project Structure",
+      "outputPath": "docs/structure.md",
+      "sources": [
+        {
+          "type": "tree",
+          "description": "Source Code Structure",
+          "sourcePaths": [
+            "src"
+          ],
+          "filePattern": "*.php",
+          "notPath": [
+            "tests",
+            "vendor"
+          ],
+          "renderFormat": "ascii"
+        }
+      ]
+    }
+  ]
+}
+```
+
+#### Advanced Usage
+
+Create a more detailed tree with size information and limited depth:
+
+```json
+{
+  "type": "tree",
+  "description": "Core Components",
+  "sourcePaths": [
+    "src/Core"
+  ],
+  "filePattern": [
+    "*.php",
+    "*.json"
+  ],
+  "maxDepth": 2,
+  "showSize": true,
+  "showLastModified": true,
+  "dirContext": {
+    "src/Core/Models": "Data models used throughout the application",
+    "src/Core/Controllers": "Request handlers and business logic"
+  }
+}
+```
+
+#### Multiple Source Paths
+
+Include trees from multiple directories:
+
+```json
+{
+  "type": "tree",
+  "description": "Application Structure",
+  "sourcePaths": [
+    "src/App",
+    "config",
+    "resources/views"
+  ],
+  "filePattern": "*.*",
+  "maxDepth": 3
+}
+```
+
+#### Content Filtering
+
+Filter files based on their content:
+
+```json
+{
+  "type": "tree",
+  "description": "Controller Classes",
+  "sourcePaths": [
+    "src"
+  ],
+  "contains": "class Controller",
+  "notContains": "@deprecated",
+  "filePattern": "*.php"
+}
+```
+
+#### Directory-Only View
+
+Generate a tree showing only directories:
+
+```json
+{
+  "type": "tree",
+  "description": "Project Directory Structure",
+  "sourcePaths": [
+    "."
+  ],
+  "includeFiles": false,
+  "maxDepth": 2
+}
+```
+
 #### File Filtering
 
 All filtering options from the File source type are also available:
@@ -1235,9 +1432,6 @@ annotations based on configurable criteria.
 | `exclude_methods_pattern`    | string  | `null`                               | Regular expression pattern for methods to exclude                               |
 | `include_properties_pattern` | string  | `null`                               | Regular expression pattern for properties to include                            |
 | `exclude_properties_pattern` | string  | `null`                               | Regular expression pattern for properties to exclude                            |
-
-I'd be happy to provide complete documentation for the AstDocTransformer ('php-docs') and ContextSanitizerModifier ('
-sanitizer') modifiers to enhance the README. Here's what I'll add to the existing documentation:
 
 ## Sanitizer Modifier
 
@@ -1602,7 +1796,7 @@ This will use the value of the `GITHUB_TOKEN` environment variable.
 
 ## Complete Example
 
-A comprehensive configuration example with multiple document types and sources:
+A configuration example with multiple document types and sources:
 
 ```json
 {
