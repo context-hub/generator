@@ -14,6 +14,7 @@ use Butschster\ContextGenerator\Source\File\FileSource;
 use Butschster\ContextGenerator\Source\GitDiff\CommitDiffSource;
 use Butschster\ContextGenerator\Source\Github\GithubSource;
 use Butschster\ContextGenerator\Source\Text\TextSource;
+use Butschster\ContextGenerator\Source\Tree\TreeSource;
 use Butschster\ContextGenerator\Source\Url\UrlSource;
 use Butschster\ContextGenerator\SourceInterface;
 use Psr\Log\LoggerInterface;
@@ -133,6 +134,7 @@ final readonly class DocumentsParserPlugin implements ConfigParserPluginInterfac
             'github' => $this->createGithubSource($sourceData),
             'git_diff' => $this->createCommitDiffSource($sourceData, $rootPath),
             'composer' => $this->createComposerSource($sourceData, $rootPath),
+            'tree' => $this->createTreeSource($sourceData, $rootPath),
             default => throw new \RuntimeException(
                 \sprintf('Unknown source type "%s" at path %s', $sourceData['type'], $path),
             ),
@@ -200,5 +202,10 @@ final readonly class DocumentsParserPlugin implements ConfigParserPluginInterfac
         }
 
         return ComposerSource::fromArray($data, $rootPath);
+    }
+
+    private function createTreeSource(array $data, string $rootPath): TreeSource
+    {
+        return TreeSource::fromArray($data, $rootPath);
     }
 }
