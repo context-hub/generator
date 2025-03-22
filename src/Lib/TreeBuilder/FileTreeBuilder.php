@@ -4,20 +4,33 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Lib\TreeBuilder;
 
+use Butschster\ContextGenerator\Lib\TreeBuilder\TreeRenderer\AsciiTreeRenderer;
+
 /**
  * File tree builder for visualizing directory structures
  */
 final readonly class FileTreeBuilder
 {
+    public function __construct(
+        private TreeRendererInterface $renderer = new AsciiTreeRenderer(),
+    ) {}
+
     /**
      * Build a file tree representation from a list of files
      *
      * @param array<string> $files List of file paths
      * @param string $basePath Base path for relative display
+     * @param array<string, mixed> $options Additional options for rendering
      * @return string Text representation of the file tree
      */
-    public function buildTree(iterable $files, string $basePath): string
-    {
+    public function buildTree(
+        iterable $files,
+        string $basePath,
+        array $options = [],
+    ): string {
+        // Get or create a renderer
+        $renderer = $this->renderer;
+
         // Normalize file paths and remove base path prefix
         $normalizedFiles = [];
         foreach ($files as $file) {
@@ -35,11 +48,11 @@ final readonly class FileTreeBuilder
         $tree = [];
         foreach ($normalizedFiles as $path) {
             $parts = \explode('/', \trim($path, '/'));
-            $this->addToTree($tree, $parts);
+            $this->addToTree($tree, $parts, $basePath . '/' . $path);
         }
 
-        // Generate tree representation
-        return $this->renderTree($tree);
+        // Generate tree representation using the renderer
+        return $renderer->render($tree, $options);
     }
 
     /**
@@ -47,47 +60,28 @@ final readonly class FileTreeBuilder
      *
      * @param array<mixed> &$tree Tree structure
      * @param array<string> $parts Path parts
+     * @param string $fullPath Full file path (for metadata access)
      */
-    private function addToTree(array &$tree, array $parts): void
+    private function addToTree(array &$tree, array $parts, string $fullPath = ''): void
     {
         $current = &$tree;
+        $path = '';
 
-        foreach ($parts as $part) {
+        foreach ($parts as $index => $part) {
+            $path .= '/' . $part;
+
             if (!isset($current[$part])) {
-                $current[$part] = [];
+                $isDirectory = $index < \count($parts) - 1;
+
+                // For directories, create an array for children
+                // For files, store the full path for metadata access
+                $current[$part] = $isDirectory ? [] : $fullPath;
             }
-            $current = &$current[$part];
-        }
-    }
 
-    /**
-     * Render tree structure as text
-     *
-     * @param array<mixed> $tree Tree structure
-     * @param string $prefix Current line prefix
-     * @param bool $isLast Whether current node is the last child
-     * @return string Text representation of the tree
-     */
-    private function renderTree(array $tree, string $prefix = '', bool $isLast = true): string
-    {
-        $result = '';
-        $count = \count($tree);
-        $i = 0;
-
-        foreach ($tree as $name => $children) {
-            $i++;
-            $isLastItem = ($i === $count);
-
-            // Add current node
-            $result .= $prefix . ($isLast ? '└── ' : '├── ') . $name . PHP_EOL;
-
-            // Add children
-            if (!empty($children)) {
-                $newPrefix = $prefix . ($isLast ? '    ' : '│   ');
-                $result .= $this->renderTree($children, $newPrefix, $isLastItem);
+            // Only continue traversing if this is a directory (array)
+            if (\is_array($current[$part])) {
+                $current = &$current[$part];
             }
         }
-
-        return $result;
     }
 }

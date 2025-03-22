@@ -86,6 +86,7 @@
             "text",
             "github",
             "git_diff",
+            "tree",
             "composer"
           ],
           "description": "Type of content source"
@@ -176,6 +177,18 @@
           },
           "then": {
             "$ref": "#/definitions/composerSource"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "tree"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/treeSource"
           }
         }
       ]
@@ -502,6 +515,140 @@
           "$ref": "#/definitions/modifiers"
         }
       }
+    },
+    "treeSource": {
+      "description": "Generates a hierarchical visualization of directory structures",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "tree",
+          "description": "Source type identifier"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of the source"
+        },
+        "sourcePaths": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ],
+          "description": "Path(s) to generate tree from"
+        },
+        "filePattern": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ],
+          "description": "Pattern(s) to match files"
+        },
+        "notPath": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Patterns to exclude from the tree"
+        },
+        "path": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ],
+          "description": "Patterns to include only specific paths"
+        },
+        "contains": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ],
+          "description": "Include files containing specific content"
+        },
+        "notContains": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ],
+          "description": "Exclude files containing specific content"
+        },
+        "maxDepth": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Maximum depth of the tree to display (0 for unlimited)"
+        },
+        "includeFiles": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to include files in the tree or only directories"
+        },
+        "showSize": {
+          "type": "boolean",
+          "default": false,
+          "description": "Include file/directory sizes in the tree"
+        },
+        "showCharCount": {
+          "type": "boolean",
+          "default": false,
+          "description": "Include character counts in the tree"
+        },
+        "showLastModified": {
+          "type": "boolean",
+          "default": false,
+          "description": "Include last modified dates in the tree"
+        },
+        "dirContext": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Optional context/descriptions for specific directories"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Tags to categorize or filter sources"
+        }
+      },
+      "required": [
+        "type",
+        "sourcePaths"
+      ]
     },
     "composerSource": {
       "properties": {

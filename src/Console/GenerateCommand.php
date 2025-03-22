@@ -39,6 +39,7 @@ use Butschster\ContextGenerator\Source\GitDiff\CommitDiffSourceFetcher;
 use Butschster\ContextGenerator\Source\Github\GithubFinder;
 use Butschster\ContextGenerator\Source\Github\GithubSourceFetcher;
 use Butschster\ContextGenerator\Source\Text\TextSourceFetcher;
+use Butschster\ContextGenerator\Source\Tree\TreeSourceFetcher;
 use Butschster\ContextGenerator\Source\Url\UrlSourceFetcher;
 use Dotenv\Repository\RepositoryBuilder;
 use Psr\Log\LoggerInterface;
@@ -173,6 +174,11 @@ final class GenerateCommand extends Command
                 new CommitDiffSourceFetcher(
                     builderFactory: $contentBuilderFactory,
                     logger: $logger->withPrefix('commit-diff-source'),
+                ),
+                new TreeSourceFetcher(
+                    basePath: $this->rootPath,
+                    builderFactory: $contentBuilderFactory,
+                    logger: $logger->withPrefix('tree-source'),
                 ),
             ],
         );
