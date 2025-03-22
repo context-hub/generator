@@ -37,7 +37,11 @@ jobs:
         run: |
           echo "{\"version\": \"${{ github.ref_name }}\", \"type\":\"phar\"}" > version.json
 
-      - uses: ramsey/composer-install@v3
+      - name: Install PHP dependencies with Composer
+        uses: ramsey/composer-install@v3
+        with:
+            composer-options: "--no-dev"
+
       - name: Build PHAR
         run: box compile
 
