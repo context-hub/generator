@@ -145,7 +145,6 @@ ctx build
 
 | Option                 | Description                                                                                    |
 |------------------------|------------------------------------------------------------------------------------------------|
-| `--config`, `-c`       | Path to configuration file (default: `context.json`)                                           |
 | `--github-token`, `-t` | GitHub token for authentication (default: reads from `GITHUB_TOKEN` environment variable)      |
 | `--env`, `-e`          | Load environment variables from a file. If used without specifying a file, defaults to `.env`. |
 
@@ -161,10 +160,18 @@ ctx
 
 ### Initialize a Configuration File
 
-Creates a new configuration file in the current directory. The default filename is `context.json` if not specified.
+Creates a new configuration file in the current directory. The default filename is `context.yaml` if not specified.
 
 ```bash
 ctx init
+```
+
+You can also specify a different file type [Supported types: `yaml`, `json`]:
+
+```bash
+ctx init --type=json
+# or
+ctx init -t json
 ```
 
 ### Check Version
@@ -1737,7 +1744,7 @@ Create a PHP configuration file (`context.php`):
 use Butschster\ContextGenerator\Document\Document;
 use Butschster\ContextGenerator\Source\File\FileSource;
 use Butschster\ContextGenerator\Source\Text\TextSource;
-use Butschster\ContextGenerator\Loader\ConfigRegistry\DocumentRegistry;
+use Butschster\ContextGenerator\ConfigLoader\Registry\DocumentRegistry;
 
 return (new DocumentRegistry())
     ->register(

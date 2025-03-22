@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Console;
 
+use Butschster\ContextGenerator\ConfigLoader\ConfigLoaderFactory;
+use Butschster\ContextGenerator\ConfigLoader\Exception\ConfigLoaderException;
+use Butschster\ContextGenerator\ConfigLoader\Parser\ConfigParserPluginInterface;
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
 use Butschster\ContextGenerator\Document\DocumentsParserPlugin;
 use Butschster\ContextGenerator\Fetcher\SourceFetcherRegistry;
@@ -19,10 +22,6 @@ use Butschster\ContextGenerator\Lib\Variable\Provider\DotEnvVariableProvider;
 use Butschster\ContextGenerator\Lib\Variable\Provider\PredefinedVariableProvider;
 use Butschster\ContextGenerator\Lib\Variable\VariableReplacementProcessor;
 use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
-use Butschster\ContextGenerator\Loader\CompositeDocumentsLoader;
-use Butschster\ContextGenerator\Loader\ConfigDocumentsLoader;
-use Butschster\ContextGenerator\Loader\ConfigRegistry\ConfigParser;
-use Butschster\ContextGenerator\Loader\JsonConfigDocumentsLoader;
 use Butschster\ContextGenerator\Modifier\Alias\AliasesRegistry;
 use Butschster\ContextGenerator\Modifier\Alias\ModifierAliasesParserPlugin;
 use Butschster\ContextGenerator\Modifier\Alias\ModifierResolver;
@@ -62,8 +61,6 @@ final class GenerateCommand extends Command
         private readonly string $outputPath,
         private readonly HttpClientInterface $httpClient,
         private readonly FilesInterface $files,
-        private readonly string $phpConfigName = 'context.php',
-        private readonly string $jsonConfigName = 'context.json',
     ) {
         parent::__construct();
     }
@@ -71,13 +68,6 @@ final class GenerateCommand extends Command
     protected function configure(): void
     {
         $this
-            ->addOption(
-                'config',
-                'c',
-                InputOption::VALUE_REQUIRED,
-                'Path to configuration file',
-                'context.json',
-            )
             ->addOption(
                 'github-token',
                 't',
@@ -105,13 +95,6 @@ final class GenerateCommand extends Command
 
         \assert($logger instanceof HasPrefixLoggerInterface);
         \assert($logger instanceof LoggerInterface);
-
-        $configPath = $input->getOption('config') ?: $this->jsonConfigName;
-
-        if (!\file_exists($configPath)) {
-            $outputStyle->error(\sprintf('Configuration file not found: %s', $configPath));
-            return Command::FAILURE;
-        }
 
         $files = $this->files;
         $modifiers = new SourceModifierRegistry();
@@ -203,32 +186,27 @@ final class GenerateCommand extends Command
             logger: $logger->withPrefix('documents'),
         );
 
-        $outputStyle->info(\sprintf('Loading configuration from %s ...', $this->rootPath . '/' . $configPath));
-        $modifierResolver = new ModifierResolver(
-            aliasesRegistry: $aliasesRegistry = new AliasesRegistry(),
-        );
-        $loader = new CompositeDocumentsLoader(
-            new ConfigDocumentsLoader(
-                configPath: $this->rootPath . '/' . $this->phpConfigName,
-            ),
-            // todo use factory
-            new JsonConfigDocumentsLoader(
-                files: $files,
-                parser: new ConfigParser(
-                    rootPath: $this->rootPath,
-                    logger: $logger->withPrefix('parser'),
-                    modifierAliasesParser: new ModifierAliasesParserPlugin(
-                        aliasesRegistry: $aliasesRegistry,
-                    ),
-                    documentsParser: new DocumentsParserPlugin(
-                        modifierResolver: $modifierResolver,
-                    ),
-                ),
-                configPath: $this->rootPath . '/' . $configPath,
+        $outputStyle->info(\sprintf('Loading configuration from %s ...', $this->rootPath));
+
+        try {
+            // Create a config loader factory
+            $loader = (new ConfigLoaderFactory(
+                files: $this->files,
                 rootPath: $this->rootPath,
-                logger: $logger->withPrefix('json-config'),
-            ),
-        );
+                logger: $logger->withPrefix('config-loader'),
+            ))->create(
+                rootPath: $this->rootPath,
+                parserPlugins: $this->getParserPlugins(),
+            );
+        } catch (ConfigLoaderException $e) {
+            $logger->error('Failed to load configuration', [
+                'error' => $e->getMessage(),
+            ]);
+
+            $outputStyle->error(\sprintf('Failed to load configuration: %s', $e->getMessage()));
+
+            return Command::FAILURE;
+        }
 
         foreach ($loader->load()->getItems() as $document) {
             $outputStyle->info(\sprintf('Compiling %s...', $document->description));
@@ -244,5 +222,26 @@ final class GenerateCommand extends Command
         }
 
         return Command::SUCCESS;
+    }
+
+    /**
+     * Get parser plugins for the config loader
+     *
+     * @return array<ConfigParserPluginInterface>
+     */
+    private function getParserPlugins(): array
+    {
+        $modifierResolver = new ModifierResolver(
+            aliasesRegistry: $aliasesRegistry = new AliasesRegistry(),
+        );
+
+        return [
+            new ModifierAliasesParserPlugin(
+                aliasesRegistry: $aliasesRegistry,
+            ),
+            new DocumentsParserPlugin(
+                modifierResolver: $modifierResolver,
+            ),
+        ];
     }
 }

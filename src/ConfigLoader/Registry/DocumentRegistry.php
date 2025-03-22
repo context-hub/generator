@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Loader\ConfigRegistry;
+namespace Butschster\ContextGenerator\ConfigLoader\Registry;
 
 use Butschster\ContextGenerator\Document\Document;
 

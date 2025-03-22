@@ -4,17 +4,21 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Console;
 
+use Butschster\ContextGenerator\ConfigLoader\ConfigLoaderFactory;
+use Butschster\ContextGenerator\ConfigLoader\Exception\ConfigLoaderException;
+use Butschster\ContextGenerator\ConfigLoader\Parser\ConfigParserPluginInterface;
 use Butschster\ContextGenerator\Console\Renderer\DocumentRenderer;
 use Butschster\ContextGenerator\Console\Renderer\Style;
 use Butschster\ContextGenerator\Document\DocumentsParserPlugin;
 use Butschster\ContextGenerator\FilesInterface;
-use Butschster\ContextGenerator\Loader\ConfigRegistry\ConfigParser;
-use Butschster\ContextGenerator\Loader\JsonConfigDocumentsLoader;
+use Butschster\ContextGenerator\Modifier\Alias\AliasesRegistry;
+use Butschster\ContextGenerator\Modifier\Alias\ModifierAliasesParserPlugin;
+use Butschster\ContextGenerator\Modifier\Alias\ModifierResolver;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
     name: 'display',
@@ -24,7 +28,6 @@ final class DisplayCommand extends Command
 {
     public function __construct(
         private readonly FilesInterface $files,
-        private readonly string $defaultConfigPath = 'context.json',
         private readonly string $rootPath = '.',
     ) {
         parent::__construct();
@@ -33,49 +36,36 @@ final class DisplayCommand extends Command
     protected function configure(): void
     {
         $this
-            ->setHelp('This command displays the context configuration in a human-readable format')
-            ->addArgument(
-                'config',
-                InputArgument::OPTIONAL,
-                'Path to the configuration file',
-                $this->defaultConfigPath,
-            );
+            ->setHelp('This command displays the context configuration in a human-readable format');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $configPath = $input->getArgument('config');
+        $outputStyle = new SymfonyStyle($input, $output);
 
-        if (!$this->files->exists($configPath)) {
-            $output->writeln("<error>Configuration file not found: $configPath</error>");
+        try {
+            // Create a config loader factory
+            $loader = (new ConfigLoaderFactory(
+                files: $this->files,
+                rootPath: $this->rootPath,
+            ))->create(
+                rootPath: $this->rootPath,
+                parserPlugins: $this->getParserPlugins(),
+            );
+        } catch (ConfigLoaderException $e) {
+            $outputStyle->error(\sprintf('Failed to load configuration: %s', $e->getMessage()));
+
             return Command::FAILURE;
         }
 
         try {
-            // Load the configuration using JsonConfigDocumentsLoader
-            // todo use factory
-            $loader = new JsonConfigDocumentsLoader(
-                files: $this->files,
-                parser: new ConfigParser(
-                    rootPath: $this->rootPath,
-                    documentsParser: new DocumentsParserPlugin(),
-                ),
-                configPath: $configPath,
-                rootPath: $this->rootPath,
-            );
-
-            if (!$loader->isSupported()) {
-                $output->writeln("<error>Configuration file format not supported: $configPath</error>");
-                return Command::FAILURE;
-            }
-
             // Load the document registry
             $registry = $loader->load();
 
             // Create renderer and render each document
             $renderer = new DocumentRenderer();
 
-            $title = "Context: {$configPath}";
+            $title = "Context: {$this->rootPath}";
 
             $output->writeln("\n" . Style::header($title));
             $output->writeln(Style::separator('=', \strlen($title)) . "\n");
@@ -95,13 +85,30 @@ final class DisplayCommand extends Command
 
             return Command::SUCCESS;
         } catch (\Exception $e) {
-            $output->writeln("<error>Error displaying configuration: {$e->getMessage()}</error>");
-
-            if ($output->isVerbose()) {
-                $output->writeln("<error>{$e->getTraceAsString()}</error>");
-            }
+            $outputStyle->error("Error displaying configuration: {$e->getMessage()}");
 
             return Command::FAILURE;
         }
+    }
+
+    /**
+     * Get parser plugins for the config loader
+     *
+     * @return array<ConfigParserPluginInterface>
+     */
+    private function getParserPlugins(): array
+    {
+        $modifierResolver = new ModifierResolver(
+            aliasesRegistry: $aliasesRegistry = new AliasesRegistry(),
+        );
+
+        return [
+            new ModifierAliasesParserPlugin(
+                aliasesRegistry: $aliasesRegistry,
+            ),
+            new DocumentsParserPlugin(
+                modifierResolver: $modifierResolver,
+            ),
+        ];
     }
 }
