@@ -1,38 +1,406 @@
-settings:
-  modifiers:
-    api-docs:
-      name: php-content-filter
-      options:
-        keep_doc_comments: false
 documents:
-  - description: 'Config loaders'
-    outputPath: api/config.md
+
+  - description: "Context Generator Project Structure"
+    outputPath: "project-structure.md"
+    sources:
+      - type: tree
+        sourcePaths: [ "src" ]
+        maxDepth: 3
+        includeFiles: true
+        showCharCount: true
+        showSize: false
+        dirContext:
+          "src": "Root directory containing all Context Generator source code."
+          "src/ConfigLoader": "Configuration loading system that reads, parses, and validates config files in JSON, PHP, and YAML formats."
+          "src/Console": "Command-line interface components providing user interaction through commands."
+          "src/Document": "Document definition and compilation system that transforms source content into output files."
+          "src/Fetcher": "Content fetching interfaces and registry for retrieving data from various sources."
+          "src/Lib": "Utility libraries providing supporting functionality for the core components."
+          "src/Modifier": "Content transformation system for filtering, formatting, and sanitizing source content."
+          "src/Source": "Source implementations for various content locations (files, URLs, GitHub, etc.)."
+          "src/Source/Composer": "Composer integration for accessing package dependencies."
+          "src/Source/File": "Local filesystem source implementation."
+          "src/Source/GitDiff": "Git diff source for accessing changes in repositories."
+          "src/Source/Github": "GitHub API integration for remote repository access."
+          "src/Source/Text": "Text source for embedding custom content."
+          "src/Source/Tree": "Directory structure visualization source."
+          "src/Source/Url": "Web URL source for retrieving online content."
+          "src/Lib/Content": "Content building and rendering system for structured document output."
+          "src/Lib/Finder": "File discovery components for locating content across different storage types."
+          "src/Lib/GithubClient": "GitHub API client for repository access."
+          "src/Lib/Html": "HTML processing utilities for web content."
+          "src/Lib/HttpClient": "HTTP client abstraction for web requests."
+          "src/Lib/Logger": "Logging system for operation visibility."
+          "src/Lib/PathFilter": "Path filtering utilities for including/excluding content by pattern."
+          "src/Lib/Sanitizer": "Content sanitization for removing sensitive information."
+          "src/Lib/TreeBuilder": "Tree visualization generation for directory structures."
+          "src/Lib/Variable": "Variable substitution system for configuration values."
+        description: >-
+          A hierarchical visualization of the Context Generator project structure, showing
+          the main directories and files with explanations of their purpose. This provides
+          a high-level overview of the project organization and helps understand the 
+          relationships between different components.
+
+  - description: "Context Generator Core Components"
+    outputPath: "core-components.md"
+    sources:
+      - type: text
+        content: >-
+          # Context Generator Core Components
+
+          The Context Generator consists of several key architectural components that work
+          together to provide its functionality. This document explains the relationships
+          between these components and their roles in the overall system.
+
+          ## High-Level Architecture
+
+          The Context Generator follows a pipeline architecture where:
+
+          1. **Configuration Loading**: Configurations are loaded from files
+          2. **Document Definition**: Documents are defined with their sources
+          3. **Source Content Fetching**: Content is retrieved from various sources
+          4. **Content Modification**: Fetched content is transformed as needed
+          5. **Document Compilation**: Processed content is compiled into output documents
+
+          ## Key Component Relationships
+
+          - **Sources & Fetchers**: Each source type (File, GitHub, URL, etc.) has a corresponding
+            fetcher that knows how to retrieve its content. The fetcher system is extensible through
+            the `SourceFetcherInterface` and `SourceFetcherRegistry`.
+
+          - **Documents & Sources**: Documents are containers that aggregate content from multiple
+            sources. The `Document` class manages the relationship to its sources.
+
+          - **Modifiers & Content**: Modifiers transform content after it's fetched from sources.
+            The `ModifiersApplier` coordinates applying a sequence of modifiers to content.
+
+          - **Configuration & Registry**: Configuration is parsed into registries that store
+            document and modifier definitions. The `DocumentRegistry` and `SourceModifierRegistry`
+            provide access to these definitions.
+
+          - **Compilation & Output**: The `DocumentCompiler` orchestrates the entire process,
+            from fetching content to applying modifiers to generating output files.
+
+      - type: tree
+        sourcePaths: [ "src" ]
+        maxDepth: 1
+        includeFiles: true
+        description: >-
+          Top-level view of the Context Generator source directory structure showing
+          the main components and their organization.
+
+  - description: "Core Source Interfaces and Base Classes"
+    outputPath: "core-sources.md"
     sources:
       - type: file
-        sourcePaths:
-          - src/ConfigLoader
+        sourcePaths: [ "src" ]
+        filePattern: [ "SourceInterface.php", "BaseSource.php", "SourceWithModifiers.php", "SourceModifierInterface.php", "SourceParserInterface.php" ]
+        description: >-
+          The fundamental interfaces and abstract classes that form the foundation of the Context Generator's source system.
+          SourceInterface defines the contract for all content sources, while BaseSource provides a common implementation.
+          SourceWithModifiers extends the base functionality with content transformation capabilities.
+          SourceModifierInterface and SourceParserInterface define contracts for modifying and parsing source content.
+          These components establish the core architecture for retrieving and processing content from various locations.
 
-  - description: 'Generator loaders'
-    outputPath: api/loaders.md
-    sources:
-      - type: composer
-        packages:
-          - symfony/finder
-        contains:
-          - NumberComparator
-
-  - description: 'Composer source'
-    outputPath: api/source.md
+  - description: "Source Type Implementations"
+    outputPath: "source-implementations.md"
     sources:
       - type: file
-        sourcePaths:
-          - src/Source/Url
-          - src/Lib/HttpClient
+        sourcePaths: [ "src/Source" ]
+        filePattern: [ "*.php" ]
+        notPath: [ "src/Source/*/", "*/Exception/*" ]
+        description: >-
+          Top-level source implementation classes that define the core source hierarchy.
+          These classes establish the base functionality for all source types and provide
+          abstract implementations that concrete sources extend. They define how sources
+          are structured, instantiated, and configured from JSON or PHP configurations.
 
-  - description: 'Console logger'
-    outputPath: api/logger.md
+      - type: file
+        sourcePaths: [ "src/Source/File", "src/Source/Text", "src/Source/Url", "src/Source/Github", "src/Source/GitDiff", "src/Source/Composer", "src/Source/Tree" ]
+        filePattern: [ "*Source.php", "*Fetcher.php" ]
+        description: >-
+          Concrete source type implementations with their corresponding fetchers:
+          - FileSource: Retrieves content from local filesystem with pattern matching and filtering
+          - TextSource: Embeds custom text content directly into documents
+          - UrlSource: Fetches content from web pages with CSS selector support
+          - GithubSource: Pulls files from GitHub repositories with authentication
+          - GitDiffSource: Extracts changes from Git commits or working tree
+          - ComposerSource: Extracts information from Composer packages
+          - TreeSource: Generates directory structure visualizations
+          Each source type has a dedicated fetcher (e.g., FileSourceFetcher) responsible for
+          retrieving and processing content according to the source's configuration.
+
+  - description: "Content Fetching System"
+    outputPath: "fetcher-system.md"
     sources:
       - type: file
-        sourcePaths:
-          - src/Lib/Logger
-        filePattern: '*.php'
+        sourcePaths: [ "src/Fetcher" ]
+        filePattern: [ "*.php" ]
+        description: >-
+          The fetcher subsystem responsible for retrieving and processing content from various sources.
+          It includes the SourceFetcherInterface that defines the contract for all fetchers,
+          FilterableSourceInterface for sources that support content filtering (like by path or content),
+          and SourceFetcherRegistry that manages fetcher selection and execution.
+          This system separates the concerns of source definition (what to fetch) from the actual
+          retrieval process (how to fetch), enabling new source types to be added easily.
+          Fetchers handle various content sources, apply filtering, and prepare content for inclusion in documents.
+
+  - description: "Document Definition and Compilation"
+    outputPath: "document-processing.md"
+    sources:
+      - type: file
+        sourcePaths: [ "src/Document", "src" ]
+        filePattern: [ "Document.php", "DocumentsLoaderInterface.php" ]
+        description: >-
+          The Document class represents a compilation target that aggregates content from multiple sources.
+          It defines properties like description, output path, and whether to overwrite existing files.
+          DocumentsLoaderInterface defines the contract for loading document definitions from configuration files.
+          These components form the bridge between configuration and content compilation.
+
+      - type: file
+        sourcePaths: [ "src/Document/Compiler" ]
+        filePattern: [ "*.php" ]
+        description: >-
+          The document compilation system responsible for transforming source definitions into final output documents.
+          DocumentCompiler coordinates fetching content from all sources, applying modifiers, handling errors,
+          and generating the final document output. CompiledDocument represents the result of compilation,
+          while error classes like SourceError and ErrorCollection manage compilation failures.
+          This system implements the core content generation workflow of the Context Generator.
+
+  - description: "Configuration Management System"
+    outputPath: "configuration-system.md"
+    sources:
+      - type: file
+        sourcePaths: [ "src/ConfigLoader" ]
+        filePattern: [ "*.php" ]
+        notPath: [ "*/Exception/*" ]
+        description: >-
+          The configuration system that loads, parses, and validates Context Generator configurations.
+          ConfigLoaderInterface defines the contract for configuration loaders, while ConfigLoader provides
+          the standard implementation. ConfigLoaderFactory creates appropriate loaders based on configuration format.
+          CompositeConfigLoader supports loading from multiple sources. This system is responsible for
+          reading configuration files and transforming them into usable object structures.
+
+      - type: file
+        sourcePaths: [ "src/ConfigLoader/Parser", "src/ConfigLoader/Reader", "src/ConfigLoader/Registry" ]
+        filePattern: [ "*.php" ]
+        description: >-
+          Specialized components of the configuration system:
+          - Parsers: Transform raw configuration data into structured objects (ConfigParser, ConfigParserPluginInterface)
+          - Readers: Read configuration from different file formats (JsonReader, PhpReader, YamlReader)
+          - Registries: Store and access parsed configuration objects (ConfigRegistry, DocumentRegistry)
+          These components work together to support multiple configuration formats, plugin-based parsing,
+          and structured access to configuration data throughout the application.
+
+  - description: "Content Building and Rendering"
+    outputPath: "content-processing.md"
+    sources:
+      - type: file
+        sourcePaths: [ "src/Lib/Content" ]
+        filePattern: [ "*.php" ]
+        description: >-
+          The content processing system responsible for constructing and rendering document content.
+          ContentBuilder provides a fluent API for creating structured content with blocks.
+          ContentBuilderFactory creates builder instances with appropriate configurations.
+          ContentBlock represents a section of content with metadata. This system abstracts
+          content construction from the specific output format, enabling consistent content
+          structure across different renderer implementations.
+
+      - type: file
+        sourcePaths: [ "src/Lib/Content/Block", "src/Lib/Content/Renderer" ]
+        filePattern: [ "*.php" ]
+        description: >-
+          Components for building and rendering structured content:
+          - Blocks: ContentBlock subclasses like CodeBlock, TitleBlock, and TreeViewBlock represent
+            different types of content with specialized formatting and metadata.
+          - Renderers: Transform structured content into specific output formats like Markdown (MarkdownRenderer)
+            or plain text (PlainTextRenderer) through the RendererInterface.
+          These components provide a flexible system for creating richly formatted document content
+          with consistent structure across different output formats.
+
+  - description: "Content Transformation System"
+    outputPath: "modifiers-system.md"
+    sources:
+      - type: file
+        sourcePaths: [ "src/Modifier" ]
+        filePattern: [ "*.php" ]
+        notPath: [ "*/Alias/*" ]
+        description: >-
+          The modifier system for transforming source content before inclusion in documents.
+          Modifier represents a named content transformer with options. ModifiersApplier coordinates
+          applying multiple modifiers to content. ModifiersApplierInterface defines the contract for
+          all modifier appliers. Concrete modifiers include:
+          - PhpContentFilter: Extracts specific parts of PHP files (methods, properties, etc.)
+          - PhpSignature: Extracts method signatures from PHP files
+          - AstDocTransformer: Generates documentation from PHP AST
+          - ContextSanitizerModifier: Removes sensitive information from content
+          This system enables flexible content transformation, filtering, and sanitization.
+
+      - type: file
+        sourcePaths: [ "src/Modifier/Alias" ]
+        filePattern: [ "*.php" ]
+        description: >-
+          The modifier alias subsystem that supports naming and reusing modifier configurations.
+          AliasesRegistry stores and retrieves named modifier configurations.
+          ModifierAliasesParserPlugin handles parsing alias definitions from configuration.
+          ModifierResolver resolves aliases to concrete modifier instances.
+          This system allows defining modifiers once and referencing them by name throughout
+          the configuration, enhancing reusability and maintainability.
+
+  - description: "Command Line Interface"
+    outputPath: "console-commands.md"
+    sources:
+      - type: file
+        sourcePaths: [ "src/Console" ]
+        filePattern: [ "*.php" ]
+        notPath: [ "*/Renderer/*" ]
+        description: >-
+          The CLI commands for interacting with the Context Generator:
+          - GenerateCommand: The main command that compiles documents from configuration
+          - InitCommand: Creates initial configuration files for new projects
+          - DisplayCommand: Shows the structure of loaded configurations
+          - SchemaCommand: Manages JSON schema for configuration validation
+          - SelfUpdateCommand: Updates the Context Generator to the latest version
+          - VersionCommand: Displays version information
+          These commands provide the user interface for the Context Generator application
+          and implement the main entry points for its functionality.
+
+      - type: file
+        sourcePaths: [ "src/Console/Renderer" ]
+        filePattern: [ "*.php" ]
+        description: >-
+          Console output rendering components for displaying information to users:
+          - Style: Defines consistent styling for console output
+          - ConfigRendererInterface: Contract for classes that render configuration objects
+          - DocumentRenderer: Renders document configuration information
+          - ModifierRenderer: Renders modifier configuration information
+          - SourceRenderer: Renders source configuration information
+          These components provide a consistent and visually appealing presentation of
+          configuration data and processing results in the console interface.
+
+  - description: "Core Utility Components"
+    outputPath: "utility-components.md"
+    sources:
+      - type: file
+        sourcePaths: [ "src/Lib/Files.php", "src/FilesInterface.php" ]
+        description: >-
+          File system abstraction layer that provides a consistent API for file operations.
+          FilesInterface defines the contract for file operations like reading, writing, and checking
+          file existence. Files implements this interface for the local filesystem.
+          These components abstract file operations to support different filesystem implementations
+          and facilitate testing.
+
+      - type: file
+        sourcePaths: [ "src/Lib/Finder" ]
+        filePattern: [ "*.php" ]
+        description: >-
+          File finding utilities that locate and filter files based on various criteria.
+          FinderInterface defines the contract for finding files from sources.
+          FinderResult represents the result of a find operation with file metadata.
+          These components provide a flexible system for discovering content across
+          different storage mechanisms like local filesystems, GitHub, and Git repositories.
+
+      - type: file
+        sourcePaths: [ "src/Lib/HttpClient" ]
+        filePattern: [ "*.php" ]
+        description: >-
+          HTTP client abstraction for retrieving content from web sources.
+          HttpClientInterface defines the contract for making HTTP requests.
+          HttpResponse represents the result of an HTTP request.
+          Implementations include Psr18Client for standard HTTP requests 
+          and NullHttpClient for testing. This abstraction enables the Context
+          Generator to work with different HTTP client libraries.
+
+      - type: file
+        sourcePaths: [ "src/Lib/Logger" ]
+        filePattern: [ "*.php" ]
+        description: >-
+          Logging system for capturing and displaying information about processing.
+          ConsoleLogger outputs log messages to the console with formatting.
+          LogLevel defines severity levels for log messages.
+          HasPrefixLoggerInterface supports prefixed logging for subsystems.
+          These components provide visibility into the inner workings of the
+          Context Generator during execution.
+
+      - type: file
+        sourcePaths: [ "src/Lib/PathFilter" ]
+        filePattern: [ "*.php" ]
+        description: >-
+          Path filtering utilities for including and excluding files based on patterns.
+          FilterInterface defines the contract for all path filters.
+          Implementations include ExcludePathFilter, PathFilter, ContentsFilter, and FilePatternFilter.
+          FileHelper provides utility methods for working with file paths.
+          These components support filtering content sources by path, pattern, and content.
+
+      - type: file
+        sourcePaths: [ "src/Lib/Sanitizer" ]
+        filePattern: [ "*.php" ]
+        description: >-
+          Content sanitization system for removing sensitive information from source content.
+          RuleInterface defines the contract for sanitization rules.
+          Implementations include KeywordRemovalRule, RegexReplacementRule, and CommentInsertionRule.
+          RuleFactory creates rule instances from configuration.
+          ContextSanitizer applies rules to content.
+          These components ensure that generated documents don't include sensitive information.
+
+      - type: file
+        sourcePaths: [ "src/Lib/Variable" ]
+        filePattern: [ "*.php" ]
+        description: >-
+          Variable resolution system for substituting environment and configuration variables.
+          VariableResolver resolves variable references to their values.
+          VariableReplacementProcessor handles replacing variables in text content.
+          Provider classes like DotEnvVariableProvider and PredefinedVariableProvider fetch
+          variable values from different sources. This system enables using environment
+          variables and other dynamic values in configuration files.
+
+  - description: "Specialized Source Implementations"
+    outputPath: "special-sources.md"
+    sources:
+      - type: file
+        sourcePaths: [ "src/Source/Composer" ]
+        filePattern: [ "*.php" ]
+        description: >-
+          Composer package source implementation for including content from Composer dependencies.
+          ComposerSource defines the configuration for accessing Composer packages.
+          ComposerSourceFetcher retrieves and processes content from packages.
+          ComposerClientInterface and implementations handle interacting with the Composer ecosystem.
+          Package classes like ComposerPackageInfo and ComposerPackageCollection represent 
+          Composer package metadata. Provider classes locate and load Composer configurations.
+          This specialized source enables including documentation and code from project dependencies.
+
+      - type: file
+        sourcePaths: [ "src/Source/GitDiff" ]
+        filePattern: [ "*.php" ]
+        description: >-
+          Git diff source implementation for including changes from Git repositories.
+          CommitDiffSource defines the configuration for accessing Git diffs.
+          CommitDiffSourceFetcher retrieves and processes Git diff content.
+          CommitDiffFinder locates changes based on commit references or time ranges.
+          Fetcher classes like CommitRangeParser interpret Git commit references.
+          Source classes implement different ways of accessing Git content, such as
+          CommitGitSource, StagedGitSource, and StashGitSource.
+          This specialized source enables focusing on recent or specific changes in repositories.
+
+      - type: file
+        sourcePaths: [ "src/Source/Github" ]
+        filePattern: [ "*.php" ]
+        description: >-
+          GitHub source implementation for retrieving content directly from GitHub repositories.
+          GithubSource defines the configuration for accessing GitHub repositories.
+          GithubSourceFetcher retrieves and processes content from GitHub.
+          GithubFinder locates files in GitHub repositories based on patterns.
+          GithubFileInfo represents metadata about files in GitHub repositories.
+          This specialized source enables including content from public or private
+          GitHub repositories without requiring local clones.
+
+      - type: file
+        sourcePaths: [ "src/Source/Tree" ]
+        filePattern: [ "*.php" ]
+        description: >-
+          Tree view source implementation for generating directory structure visualizations.
+          TreeSource defines the configuration for generating tree visualizations.
+          TreeSourceFetcher creates tree visualizations based on directory structures.
+          TreeFinder locates directories and files to include in the tree.
+          This specialized source helps provide context about project structure
+          within generated documents by creating visual directory trees.
