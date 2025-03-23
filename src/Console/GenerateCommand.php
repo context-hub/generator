@@ -81,6 +81,12 @@ final class GenerateCommand extends Command
                 'e',
                 InputOption::VALUE_REQUIRED,
                 'Path to .env (like .env.local) file. If not provided, will ignore any .env files',
+            )
+            ->addOption(
+                'config',
+                'c',
+                InputOption::VALUE_REQUIRED,
+                'Inline JSON configuration string. If provided, file-based configuration will be ignored',
             );
     }
 
@@ -192,18 +198,30 @@ final class GenerateCommand extends Command
             logger: $logger->withPrefix('documents'),
         );
 
-        $outputStyle->info(\sprintf('Loading configuration from %s ...', $this->rootPath));
+        // Check if inline configuration is provided
+        $inlineConfig = $input->getOption('config');
 
         try {
-            // Create a config loader factory
-            $loader = (new ConfigLoaderFactory(
+            $loaderFactory = new ConfigLoaderFactory(
                 files: $this->files,
                 rootPath: $this->rootPath,
                 logger: $logger->withPrefix('config-loader'),
-            ))->create(
-                rootPath: $this->rootPath,
-                parserPlugins: $this->getParserPlugins(),
             );
+
+            // Create the appropriate loader based on whether we have inline config
+            if ($inlineConfig !== null) {
+                $outputStyle->info('Using inline JSON configuration...');
+                $loader = $loaderFactory->createFromString(
+                    jsonConfig: $inlineConfig,
+                    parserPlugins: $this->getParserPlugins(),
+                );
+            } else {
+                $outputStyle->info(\sprintf('Loading configuration from %s ...', $this->rootPath));
+                $loader = $loaderFactory->create(
+                    rootPath: $this->rootPath,
+                    parserPlugins: $this->getParserPlugins(),
+                );
+            }
         } catch (ConfigLoaderException $e) {
             $logger->error('Failed to load configuration', [
                 'error' => $e->getMessage(),

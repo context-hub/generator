@@ -9,6 +9,7 @@ use Butschster\ContextGenerator\ConfigLoader\Parser\ConfigParser;
 use Butschster\ContextGenerator\ConfigLoader\Parser\ConfigParserPluginInterface;
 use Butschster\ContextGenerator\ConfigLoader\Reader\JsonReader;
 use Butschster\ContextGenerator\ConfigLoader\Reader\PhpReader;
+use Butschster\ContextGenerator\ConfigLoader\Reader\StringJsonReader;
 use Butschster\ContextGenerator\ConfigLoader\Reader\YamlReader;
 use Butschster\ContextGenerator\FilesInterface;
 use Butschster\ContextGenerator\Lib\Logger\HasPrefixLoggerInterface;
@@ -41,7 +42,6 @@ final readonly class ConfigLoaderFactory
 
         // Create composite parser
         $compositeParser = new CompositeConfigParser($parser);
-
 
         // Create readers for different formats
         $jsonReader = new JsonReader(
@@ -91,6 +91,38 @@ final readonly class ConfigLoaderFactory
         // Create composite loader
         return new CompositeConfigLoader(
             loaders: [$jsonLoader, $yamlLoader, $ymlLoader, $phpLoader],
+            logger: $this->logger,
+        );
+    }
+
+    /**
+     * Create a loader for an inline JSON configuration string
+     *
+     * @param string $jsonConfig The JSON configuration string
+     * @param array<ConfigParserPluginInterface> $parserPlugins Plugins for the config parser
+     * @return ConfigLoaderInterface The config loader
+     */
+    public function createFromString(string $jsonConfig, array $parserPlugins = []): ConfigLoaderInterface
+    {
+        \assert($this->logger instanceof HasPrefixLoggerInterface);
+
+        // Create parser
+        $parser = new ConfigParser($this->rootPath, $this->logger, ...$parserPlugins);
+
+        // Create composite parser
+        $compositeParser = new CompositeConfigParser($parser);
+
+        // Create string JSON reader
+        $stringJsonReader = new StringJsonReader(
+            jsonContent: $jsonConfig,
+            logger: $this->logger?->withPrefix('string-json-reader'),
+        );
+
+        // Create loader with a dummy path (not used by StringJsonReader)
+        return new ConfigLoader(
+            configPath: 'inline-config',
+            reader: $stringJsonReader,
+            parser: $compositeParser,
             logger: $this->logger,
         );
     }
