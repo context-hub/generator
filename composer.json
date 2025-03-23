@@ -1,6 +1,6 @@
 {
   "name": "context-hub/generator",
-  "description": "SA tool for generating contextual documentation from your codebase.",
+  "description": "A tool for generating contextual documentation from your codebase.",
   "keywords": [
     "php8",
     "php",
