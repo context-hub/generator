@@ -66,7 +66,7 @@ curl -sSL https://raw.githubusercontent.com/context-hub/generator/main/download-
 
 This installs the `ctx` command to your system (typically in `/usr/local/bin`).
 
-> **Want more options?** See the complete [Installation Guide](https://docs.ctxgithub.com/getting-started.md) for alternative installation methods.
+> **Want more options?** See the complete [Installation Guide](https://docs.ctxgithub.com/getting-started.html) for alternative installation methods.
 
 ## 2. Initialize a Configuration File
 
@@ -79,7 +79,7 @@ ctx init
 This generates a `context.yaml` file with a basic structure to get you started.
 
 > **Pro tip:** Run `ctx init --type=json` if you prefer JSON configuration format.
-> Check the [Command Reference](https://docs.ctxgithub.com/getting-started/command-reference.md) for all available commands and options.
+> Check the [Command Reference](https://docs.ctxgithub.com/getting-started/command-reference.html) for all available commands and options.
 
 ## 3. Describe Your Project Structure
 
@@ -108,12 +108,12 @@ name from the `src/Models` directory.
 
 #### Need more advanced configuration?
 
-- Learn about [Document Structure](https://docs.ctxgithub.com/documents.md) and properties
-- Explore different source types like [GitHub](https://docs.ctxgithub.com/sources/github-source.md), [Git Diff](https://docs.ctxgithub.com/sources/git-diff-source.md),
-  or [URL](https://docs.ctxgithub.com/sources/url-source.md)
-- Apply [Modifiers](https://docs.ctxgithub.com/modifiers.md) to transform your content (like extracting PHP signatures)
-- Discover how to use [Environment Variables](https://docs.ctxgithub.com/environment-variables.md) in your config
-- Use [IDE Integration](https://docs.ctxgithub.com/getting-started/ide-integration.md) for autocompletion and validation
+- Learn about [Document Structure](https://docs.ctxgithub.com/documents.html) and properties
+- Explore different source types like [GitHub](https://docs.ctxgithub.com/sources/github-source.html), [Git Diff](https://docs.ctxgithub.com/sources/git-diff-source.html),
+  or [URL](https://docs.ctxgithub.com/sources/url-source.html)
+- Apply [Modifiers](https://docs.ctxgithub.com/modifiers.html) to transform your content (like extracting PHP signatures)
+- Discover how to use [Environment Variables](https://docs.ctxgithub.com/environment-variables.html) in your config
+- Use [IDE Integration](https://docs.ctxgithub.com/getting-started/ide-integration.html) for autocompletion and validation
 
 ## 4. Build the Context
 
@@ -125,7 +125,7 @@ ctx
 
 The tool will process your configuration and create the specified output file (`auth-context.md` in our example).
 
-> **Tip**: Configure [Logging](https://docs.ctxgithub.com/advanced/logging.md) with `-v`, `-vv`, or `-vvv` for detailed output
+> **Tip**: Configure [Logging](https://docs.ctxgithub.com/advanced/logging.html) with `-v`, `-vv`, or `-vvv` for detailed output
 
 ## 5. Share with an LLM
 
@@ -137,7 +137,7 @@ Example prompt:
 > I've shared my authentication system code with you. Can you help me identify potential security vulnerabilities in the
 > user registration process?
 
-> **Next steps:** Check out [Development with Context Generator](https://docs.ctxgithub.com/advanced/development-process.md) for best practices on
+> **Next steps:** Check out [Development with Context Generator](https://docs.ctxgithub.com/advanced/development-process.html) for best practices on
 > integrating context generation into your AI-powered development workflow.
 
 That's it! You're now ready to leverage LLMs with proper context about your codebase.
@@ -154,7 +154,7 @@ ctx schema
 ctx schema --download
 ```
 
-> **Learn more:** See [IDE Integration](https://docs.ctxgithub.com/getting-started/ide-integration.md) for detailed setup instructions for VSCode,
+> **Learn more:** See [IDE Integration](https://docs.ctxgithub.com/getting-started/ide-integration.html) for detailed setup instructions for VSCode,
 > PhpStorm, and other editors.
 
 ## Full Documentation
