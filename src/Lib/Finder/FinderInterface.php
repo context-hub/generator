@@ -21,5 +21,5 @@ interface FinderInterface
      * @param string $basePath Optional base path to normalize file paths in the tree view
      * @return FinderResult The result containing found files and tree view
      */
-    public function find(FilterableSourceInterface $source, string $basePath = ''): FinderResult;
+    public function find(FilterableSourceInterface $source, string $basePath = '', array $options = []): FinderResult;
 }

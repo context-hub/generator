@@ -11,9 +11,6 @@ use Butschster\ContextGenerator\Lib\Content\Renderer\RendererInterface;
  */
 final readonly class TreeViewBlock extends AbstractBlock
 {
-    /**
-     * Render the block using the provided renderer
-     */
     public function render(RendererInterface $renderer): string
     {
         return $renderer->renderTreeViewBlock($this);

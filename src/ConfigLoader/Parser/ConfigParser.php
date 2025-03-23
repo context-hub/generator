@@ -24,11 +24,6 @@ final readonly class ConfigParser implements ConfigParserInterface
         $this->plugins = \array_values($plugins);
     }
 
-    /**
-     * Parse a JSON configuration array
-     *
-     * @param array<mixed> $config The configuration array
-     */
     public function parse(array $config): ConfigRegistry
     {
         $registry = new ConfigRegistry();

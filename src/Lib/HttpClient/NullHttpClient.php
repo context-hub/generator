@@ -10,17 +10,11 @@ namespace Butschster\ContextGenerator\Lib\HttpClient;
  */
 final readonly class NullHttpClient implements HttpClientInterface
 {
-    /**
-     * Always throws an exception as this client cannot perform actual requests
-     */
     public function get(string $url, array $headers = []): HttpResponse
     {
         throw new Exception\HttpClientNotAvailableException();
     }
 
-    /**
-     * Always throws an exception as this client cannot perform actual requests
-     */
     public function getWithRedirects(string $url, array $headers = []): HttpResponse
     {
         throw new Exception\HttpClientNotAvailableException();

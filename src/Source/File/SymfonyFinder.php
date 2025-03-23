@@ -26,14 +26,8 @@ final readonly class SymfonyFinder implements FinderInterface
      * @param string $basePath Optional base path to normalize file paths in the tree view
      * @return FinderResult The result containing found files and tree view
      */
-    public function find(FilterableSourceInterface $source, string $basePath = ''): FinderResult
+    public function find(FilterableSourceInterface $source, string $basePath = '', array $options = []): FinderResult
     {
-        if (!$source instanceof FileSource) {
-            throw new \InvalidArgumentException(
-                \sprintf('Source must be an instance of FileSource, %s given', $source::class),
-            );
-        }
-
         $finder = new Finder();
         $finder->files();
 
@@ -98,12 +92,9 @@ final readonly class SymfonyFinder implements FinderInterface
 
         $finder->sortByName();
 
-        // Generate tree view
-        $treeView = $this->generateTreeView($finder, $basePath);
-
         return new FinderResult(
             files: \array_values(\iterator_to_array($finder->getIterator())),
-            treeView: $treeView,
+            treeView: $this->generateTreeView($finder, $basePath, $options),
         );
     }
 
@@ -114,7 +105,7 @@ final readonly class SymfonyFinder implements FinderInterface
      * @param string $basePath Optional base path to normalize file paths
      * @return string Text representation of the file tree
      */
-    private function generateTreeView(Finder $finder, string $basePath): string
+    private function generateTreeView(Finder $finder, string $basePath, array $options): string
     {
         $filePaths = [];
 
@@ -126,6 +117,6 @@ final readonly class SymfonyFinder implements FinderInterface
             return "No files found.\n";
         }
 
-        return $this->fileTreeBuilder->buildTree($filePaths, $basePath);
+        return $this->fileTreeBuilder->buildTree($filePaths, $basePath, $options);
     }
 }

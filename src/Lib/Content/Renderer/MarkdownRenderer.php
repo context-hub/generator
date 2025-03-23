@@ -17,9 +17,6 @@ use Butschster\ContextGenerator\Lib\Content\Block\TreeViewBlock;
  */
 final class MarkdownRenderer extends AbstractRenderer
 {
-    /**
-     * Render a code block
-     */
     public function renderCodeBlock(CodeBlock $block): string
     {
         $language = $block->getLanguage() ?: '';
@@ -34,9 +31,6 @@ final class MarkdownRenderer extends AbstractRenderer
             CODE;
     }
 
-    /**
-     * Render a text block
-     */
     public function renderTextBlock(TextBlock $block): string
     {
         $content = (string) $block;
@@ -51,9 +45,6 @@ final class MarkdownRenderer extends AbstractRenderer
         return $content . "\n\n";
     }
 
-    /**
-     * Render a title block
-     */
     public function renderTitleBlock(TitleBlock $block): string
     {
         $content = (string) $block;
@@ -67,9 +58,6 @@ final class MarkdownRenderer extends AbstractRenderer
         return "{$prefix} " . $content . "\n\n";
     }
 
-    /**
-     * Render a description block
-     */
     public function renderDescriptionBlock(DescriptionBlock $block): string
     {
         $content = (string) $block;
@@ -80,9 +68,6 @@ final class MarkdownRenderer extends AbstractRenderer
         return "_" . $content . "_\n\n";
     }
 
-    /**
-     * Render a tree view block
-     */
     public function renderTreeViewBlock(TreeViewBlock $block): string
     {
         $content = (string) $block;
@@ -92,17 +77,11 @@ final class MarkdownRenderer extends AbstractRenderer
         return \sprintf("```\n// Structure of documents\n%s\n```\n\n", $content);
     }
 
-    /**
-     * Render a separator block
-     */
     public function renderSeparatorBlock(SeparatorBlock $block): string
     {
         return \str_repeat((string) $block, $block->getLength()) . "\n\n";
     }
 
-    /**
-     * Render a comment block
-     */
     public function renderCommentBlock(CommentBlock $block): string
     {
         $content = (string) $block;

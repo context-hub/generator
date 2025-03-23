@@ -43,7 +43,7 @@ final class GithubFinder implements FinderInterface
     /**
      * Find files in a GitHub repository based on source configuration
      */
-    public function find(FilterableSourceInterface $source, string $basePath = ''): FinderResult
+    public function find(FilterableSourceInterface $source, string $basePath = '', array $options = []): FinderResult
     {
         if (!$source instanceof GithubSource) {
             throw new \InvalidArgumentException('Source must be an instance of GithubSource');
@@ -86,7 +86,7 @@ final class GithubFinder implements FinderInterface
         // Create the result
         return new FinderResult(
             \array_values($files),
-            $this->fileTreeBuilder->buildTree($tree, ''),
+            $this->fileTreeBuilder->buildTree($tree, '', $options),
         );
     }
 

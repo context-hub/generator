@@ -51,7 +51,7 @@ final readonly class CommitDiffFinder implements FinderInterface
      * @param string $basePath Optional base path to normalize file paths in the tree view
      * @return FinderResult The result containing found diffs and tree view
      */
-    public function find(FilterableSourceInterface $source, string $basePath = ''): FinderResult
+    public function find(FilterableSourceInterface $source, string $basePath = '', array $options = []): FinderResult
     {
         if (!$source instanceof CommitDiffSource) {
             throw new \InvalidArgumentException('Source must be an instance of CommitDiffSource');
@@ -93,7 +93,7 @@ final readonly class CommitDiffFinder implements FinderInterface
             );
 
             // Generate tree view
-            $treeView = $this->generateTreeView($filePaths, $gitSource, $commitRange);
+            $treeView = $this->generateTreeView($filePaths, $gitSource, $commitRange, $options);
 
             return new FinderResult(\array_values($fileInfos), $treeView);
         } finally {
@@ -164,8 +164,12 @@ final readonly class CommitDiffFinder implements FinderInterface
      * @param string|array $commitRange Commit range for the header
      * @return string Text representation of the file tree
      */
-    private function generateTreeView(array $files, GitSourceInterface $gitSource, string|array $commitRange): string
-    {
+    private function generateTreeView(
+        array $files,
+        GitSourceInterface $gitSource,
+        string|array $commitRange,
+        array $options = [],
+    ): string {
         if (empty($files)) {
             return "No changes found\n";
         }
@@ -174,7 +178,7 @@ final readonly class CommitDiffFinder implements FinderInterface
         $treeHeader = $gitSource->formatReferenceForDisplay($commitRange) . "\n";
 
         // Build the tree
-        $tree = $this->fileTreeBuilder->buildTree($files, '');
+        $tree = $this->fileTreeBuilder->buildTree($files, '', $options);
 
         return $treeHeader . $tree;
     }

@@ -18,9 +18,6 @@ class ExcludePathFilter extends AbstractFilter
         private readonly array $excludePatterns,
     ) {}
 
-    /**
-     * Apply the exclude path filter
-     */
     public function apply(array $items): array
     {
         if (empty($this->excludePatterns)) {
