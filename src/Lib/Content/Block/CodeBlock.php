@@ -39,9 +39,6 @@ final readonly class CodeBlock extends AbstractBlock
         return $this->filepath;
     }
 
-    /**
-     * Render the block using the provided renderer
-     */
     public function render(RendererInterface $renderer): string
     {
         return $renderer->renderCodeBlock($this);

@@ -23,11 +23,6 @@ final readonly class CompositeConfigParser implements ConfigParserInterface
         $this->parsers = $parsers;
     }
 
-    /**
-     * Parse configuration using all registered parsers
-     *
-     * @param array<mixed> $config The configuration to parse
-     */
     public function parse(array $config): ConfigRegistry
     {
         $registry = new ConfigRegistry();

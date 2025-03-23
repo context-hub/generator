@@ -11,9 +11,6 @@ use Butschster\ContextGenerator\Lib\Content\Block\BlockInterface;
  */
 abstract class AbstractRenderer implements RendererInterface
 {
-    /**
-     * Render the final content by joining all blocks
-     */
     public function renderContent(array $blocks): string
     {
         $content = '';

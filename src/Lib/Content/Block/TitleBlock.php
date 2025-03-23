@@ -30,9 +30,6 @@ final readonly class TitleBlock extends AbstractBlock
         return $this->level;
     }
 
-    /**
-     * Render the block using the provided renderer
-     */
     public function render(RendererInterface $renderer): string
     {
         return $renderer->renderTitleBlock($this);

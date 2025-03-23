@@ -6,7 +6,7 @@ documents:
       - type: tree
         sourcePaths: [ "src" ]
         maxDepth: 3
-        includeFiles: true
+        includeFiles: false
         showCharCount: true
         showSize: false
         dirContext:

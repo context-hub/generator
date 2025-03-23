@@ -18,9 +18,6 @@ final class PathFilter extends AbstractFilter
         private readonly string|array $pathPattern,
     ) {}
 
-    /**
-     * Apply the path filter
-     */
     public function apply(array $items): array
     {
         if (empty($this->pathPattern)) {

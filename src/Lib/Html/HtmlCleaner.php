@@ -17,9 +17,6 @@ final readonly class HtmlCleaner implements HtmlCleanerInterface
         $this->htmlConverter->getConfig()->setOption('strip_tags', true);
     }
 
-    /**
-     * Clean HTML content and extract meaningful text
-     */
     public function clean(string $html): string
     {
         if ($html === '') {

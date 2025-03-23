@@ -18,9 +18,6 @@ final class FilePatternFilter extends AbstractFilter
         private readonly string|array $pattern,
     ) {}
 
-    /**
-     * Apply the file pattern filter
-     */
     public function apply(array $items): array
     {
         if (empty($this->pattern)) {

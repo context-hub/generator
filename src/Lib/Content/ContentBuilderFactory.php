@@ -9,7 +9,9 @@ use Butschster\ContextGenerator\Lib\Content\Renderer\RendererInterface;
 
 final readonly class ContentBuilderFactory
 {
-    public function __construct(private RendererInterface $defaultRenderer = new MarkdownRenderer()) {}
+    public function __construct(
+        private RendererInterface $defaultRenderer = new MarkdownRenderer(),
+    ) {}
 
     public function create(?RendererInterface $renderer = null): ContentBuilder
     {

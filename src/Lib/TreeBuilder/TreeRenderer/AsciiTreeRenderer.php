@@ -6,7 +6,7 @@ namespace Butschster\ContextGenerator\Lib\TreeBuilder\TreeRenderer;
 
 use Butschster\ContextGenerator\Lib\TreeBuilder\TreeRendererInterface;
 
-/*
+/**
  * Renderer for ASCII tree format
  */
 final readonly class AsciiTreeRenderer implements TreeRendererInterface
@@ -16,6 +16,7 @@ final readonly class AsciiTreeRenderer implements TreeRendererInterface
         $showSize = $options['showSize'] ?? false;
         $showLastModified = $options['showLastModified'] ?? false;
         $showCharCount = $options['showCharCount'] ?? false;
+        $includeFiles = $options['includeFiles'] ?? true;
         $dirContext = $options['dirContext'] ?? [];
 
         return $this->renderNode(
@@ -25,6 +26,7 @@ final readonly class AsciiTreeRenderer implements TreeRendererInterface
             showSize: $showSize,
             showLastModified: $showLastModified,
             showCharCount: $showCharCount,
+            includeFiles: $includeFiles,
             dirContext: $dirContext,
         );
     }
@@ -36,11 +38,12 @@ final readonly class AsciiTreeRenderer implements TreeRendererInterface
         bool $showSize = false,
         bool $showLastModified = false,
         bool $showCharCount = false,
+        bool $includeFiles = true,
         array $dirContext = [],
         string $currentPath = '',
     ): string {
         if (empty($node)) {
-            return "No files or directories found.\n";
+            return '';
         }
 
         $result = '';
@@ -51,6 +54,12 @@ final readonly class AsciiTreeRenderer implements TreeRendererInterface
             $i++;
             $isLastItem = ($i === $count);
             $isDirectory = \is_array($children);
+
+            // Skip files if includeFiles is false
+            if (!$isDirectory && !$includeFiles) {
+                continue;
+            }
+
             $fullPath = $isDirectory ? $name : $children;
 
             // Build the relative path for directory context lookups
@@ -62,8 +71,6 @@ final readonly class AsciiTreeRenderer implements TreeRendererInterface
             // Add metadata if requested
             $metadata = '';
             if ($showSize || $showLastModified || $showCharCount) {
-                $metadata = ' [';
-
                 if ($showSize) {
                     $size = $isDirectory
                         ? $this->calculateDirectorySize($children)
@@ -89,10 +96,14 @@ final readonly class AsciiTreeRenderer implements TreeRendererInterface
                     if ($showSize || $showLastModified) {
                         $metadata .= ', ';
                     }
-                    $metadata .= \number_format($charCount) . ' chars';
+                    if ($charCount > 0) {
+                        $metadata .= \number_format($charCount) . ' chars';
+                    }
                 }
+            }
 
-                $metadata .= ']';
+            if ($metadata !== '') {
+                $metadata = ' [' . $metadata . ']';
             }
 
             // Add current node
@@ -116,6 +127,7 @@ final readonly class AsciiTreeRenderer implements TreeRendererInterface
                     $showSize,
                     $showLastModified,
                     $showCharCount,
+                    $includeFiles,
                     $dirContext,
                     $relativePath,  // Pass the updated relative path
                 );
@@ -190,6 +202,10 @@ final readonly class AsciiTreeRenderer implements TreeRendererInterface
 
     private function countFileChars(string $filePath): int
     {
+        if (\is_dir($filePath)) {
+            return 0;
+        }
+
         if (!\file_exists($filePath) || !\is_readable($filePath)) {
             return 0;
         }

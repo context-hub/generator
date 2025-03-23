@@ -16,9 +16,6 @@ final readonly class TextBlock extends AbstractBlock
         parent::__construct($content);
     }
 
-    /**
-     * Render the block using the provided renderer
-     */
     public function render(RendererInterface $renderer): string
     {
         return $renderer->renderTextBlock($this);

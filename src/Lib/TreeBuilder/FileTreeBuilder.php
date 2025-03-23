@@ -28,6 +28,8 @@ final readonly class FileTreeBuilder
         string $basePath,
         array $options = [],
     ): string {
+        $files = DirectorySorter::sortPreservingSeparators($files);
+
         // Get or create a renderer
         $renderer = $this->renderer;
 
@@ -38,20 +40,34 @@ final readonly class FileTreeBuilder
             if (!\str_starts_with($normalizedPath, '/')) {
                 $normalizedPath = '/' . $normalizedPath;
             }
-            $normalizedFiles[] = $normalizedPath;
+
+            // Check if this path is a directory
+            $isDirectory = \is_dir($file);
+
+            $normalizedFiles[] = [
+                'path' => $normalizedPath,
+                'fullPath' => $file,
+                'isDirectory' => $isDirectory,
+            ];
         }
 
         // Sort files for consistent display
-        \sort($normalizedFiles);
+        \usort($normalizedFiles, static fn($a, $b) => $a['path'] <=> $b['path']);
 
-        // Build tree structure
+        // Build tree structure with all files and directories
         $tree = [];
-        foreach ($normalizedFiles as $path) {
-            $parts = \explode('/', \trim($path, '/'));
-            $this->addToTree($tree, $parts, $basePath . '/' . $path);
+        foreach ($normalizedFiles as $fileInfo) {
+            $parts = \explode('/', \trim($fileInfo['path'], '/'));
+            $this->addToTree(
+                $tree,
+                $parts,
+                $fileInfo['fullPath'],
+                $fileInfo['isDirectory'],
+            );
         }
 
         // Generate tree representation using the renderer
+        // Pass the includeFiles option to the renderer
         return $renderer->render($tree, $options);
     }
 
@@ -61,8 +77,9 @@ final readonly class FileTreeBuilder
      * @param array<mixed> &$tree Tree structure
      * @param array<string> $parts Path parts
      * @param string $fullPath Full file path (for metadata access)
+     * @param bool $isDirectoryPath Whether the path is a directory (not a file)
      */
-    private function addToTree(array &$tree, array $parts, string $fullPath = ''): void
+    private function addToTree(array &$tree, array $parts, string $fullPath = '', bool $isDirectoryPath = false): void
     {
         $current = &$tree;
         $path = '';
@@ -71,7 +88,10 @@ final readonly class FileTreeBuilder
             $path .= '/' . $part;
 
             if (!isset($current[$part])) {
-                $isDirectory = $index < \count($parts) - 1;
+                // Determine if it's a directory:
+                // - Either it's not the last segment of the path
+                // - Or the entire path represents a directory
+                $isDirectory = $index < \count($parts) - 1 || $isDirectoryPath;
 
                 // For directories, create an array for children
                 // For files, store the full path for metadata access

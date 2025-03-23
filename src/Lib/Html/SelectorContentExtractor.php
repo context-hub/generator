@@ -9,9 +9,6 @@ namespace Butschster\ContextGenerator\Lib\Html;
  */
 class SelectorContentExtractor implements SelectorContentExtractorInterface
 {
-    /**
-     * Extract content from HTML using a CSS selector
-     */
     public function extract(string $html, string $selector): string
     {
         if (empty($html)) {

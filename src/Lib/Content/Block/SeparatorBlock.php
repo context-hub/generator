@@ -32,9 +32,6 @@ final readonly class SeparatorBlock extends AbstractBlock
         return $this->length;
     }
 
-    /**
-     * Render the block using the provided renderer
-     */
     public function render(RendererInterface $renderer): string
     {
         return $renderer->renderSeparatorBlock($this);
