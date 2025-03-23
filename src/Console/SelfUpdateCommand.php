@@ -24,12 +24,12 @@ final class SelfUpdateCommand extends Command
     /**
      * GitHub API URL for latest release
      */
-    private const GITHUB_API_LATEST_RELEASE = 'https://api.github.com/repos/butschster/context-generator/releases/latest';
+    private const GITHUB_API_LATEST_RELEASE = 'https://api.github.com/repos/context-hub/generator/releases/latest';
 
     /**
      * GitHub download URL format for the PHAR file
      */
-    private const GITHUB_DOWNLOAD_URL = 'https://github.com/butschster/context-generator/releases/download/%s/%s';
+    private const GITHUB_DOWNLOAD_URL = 'https://github.com/context-hub/generator/releases/download/%s/%s';
 
     private const PHAR_PATH = '/usr/local/bin/ctx';
 

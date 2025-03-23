@@ -28,7 +28,7 @@ jobs:
 
       - name: Download context-generator
         run: |
-          wget https://github.com/butschster/context-generator/releases/download/1.14.1/ctx
+          wget https://github.com/context-hub/generator/releases/download/1.15.0/ctx
           chmod +x ctx
           ./ctx version
 

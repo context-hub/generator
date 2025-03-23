@@ -2,9 +2,9 @@
 
 <p>
     <a href="https://docs.ctxgithub.com/"><img alt="Docs" src="https://img.shields.io/badge/docs-green"></a>
-    <a href="https://raw.githubusercontent.com/butschster/context-generator/refs/heads/main/json-schema.json"><img alt="Json schema" src="https://img.shields.io/badge/json_schema-blue"></a>
-    <a href="https://packagist.org/packages/butschster/context-generator"><img alt="License" src="https://img.shields.io/packagist/l/butschster/context-generator"></a>
-    <a href="https://packagist.org/packages/butschster/context-generator"><img alt="Latest Version" src="https://img.shields.io/packagist/v/butschster/context-generator"></a>
+    <a href="https://raw.githubusercontent.com/context-hub/generator/refs/heads/main/json-schema.json"><img alt="Json schema" src="https://img.shields.io/badge/json_schema-blue"></a>
+    <a href="https://packagist.org/packages/context-hub/generator"><img alt="License" src="https://img.shields.io/packagist/l/context-hub/generator"></a>
+    <a href="https://packagist.org/packages/context-hub/generator"><img alt="Latest Version" src="https://img.shields.io/packagist/v/context-hub/generator"></a>
 </p>
 
 # Context Generator for AI-Powered Development
@@ -51,72 +51,111 @@ When working with AI-powered development tools context is everything.
 4. Organizes content into well-structured markdown documents
 5. Saves context files ready to be shared with LLMs
 
-# Installation
+# Quick Start
 
-We provide two versions of Context Generator:
+Getting started with Context Generator is straightforward. Follow these simple steps to create your first context file
+for LLMs.
 
-- a native binary
-- a PHAR file.
+## 1. Install Context Generator
 
-The native binary is the recommended version, because it does not require PHP to be installed on your system. You can
-use it on Linux and MacOS.
-
-The PHAR file can be used on any system with PHP 8.2 or higher.
-
-## Using bash (Recommended)
-
-### Requirements
-
-- Linux or MacOS
-
-The easiest way to install Context Generator is by using our installation script. This automatically downloads the
-latest version and sets it up for immediate use.
+Download and install the tool using our installation script:
 
 ```bash
-# Install to /usr/local/bin (will be added to PATH in most Linux distributions)
-curl -sSL https://raw.githubusercontent.com/butschster/context-generator/main/download-latest.sh | sh
+curl -sSL https://raw.githubusercontent.com/context-hub/generator/main/download-latest.sh | sh
 ```
 
-**What the script does**
+This installs the `ctx` command to your system (typically in `/usr/local/bin`).
 
-- Detects the latest version
-- Downloads the binary file from GitHub releases
-- Installs it (`ctx`) to your bin directory (default: `/usr/local/bin`)
-- Makes it executable
+> **Want more options?** See the complete [Installation Guide](https://docs.ctxgithub.com/getting-started.md) for alternative installation methods.
 
-After installation, you can use it by simply running the command to generate context:
+## 2. Initialize a Configuration File
+
+Create a new configuration file in your project directory:
+
+```bash
+ctx init
+```
+
+This generates a `context.yaml` file with a basic structure to get you started.
+
+> **Pro tip:** Run `ctx init --type=json` if you prefer JSON configuration format.
+> Check the [Command Reference](https://docs.ctxgithub.com/getting-started/command-reference.md) for all available commands and options.
+
+## 3. Describe Your Project Structure
+
+Edit the generated `context.yaml` file to specify what code or content you want to include. For example:
+
+```yaml
+documents:
+  - description: "User Authentication System"
+    outputPath: "auth-context.md"
+    sources:
+      - type: file
+        description: "Authentication Controllers"
+        sourcePaths:
+          - src/Auth
+        filePattern: "*.php"
+
+      - type: file
+        description: "Authentication Models"
+        sourcePaths:
+          - src/Models
+        filePattern: "*User*.php"
+```
+
+This configuration will gather all PHP files from the `src/Auth` directory and any PHP files containing "User" in their
+name from the `src/Models` directory.
+
+#### Need more advanced configuration?
+
+- Learn about [Document Structure](https://docs.ctxgithub.com/documents.md) and properties
+- Explore different source types like [GitHub](https://docs.ctxgithub.com/sources/github-source.md), [Git Diff](https://docs.ctxgithub.com/sources/git-diff-source.md),
+  or [URL](https://docs.ctxgithub.com/sources/url-source.md)
+- Apply [Modifiers](https://docs.ctxgithub.com/modifiers.md) to transform your content (like extracting PHP signatures)
+- Discover how to use [Environment Variables](https://docs.ctxgithub.com/environment-variables.md) in your config
+- Use [IDE Integration](https://docs.ctxgithub.com/getting-started/ide-integration.md) for autocompletion and validation
+
+## 4. Build the Context
+
+Generate your context file by running:
 
 ```bash
 ctx
 ```
 
-## Simple Configuration Example
+The tool will process your configuration and create the specified output file (`auth-context.md` in our example).
 
-Create a `context.yaml` file in your project root:
+> **Tip**: Configure [Logging](https://docs.ctxgithub.com/advanced/logging.md) with `-v`, `-vv`, or `-vvv` for detailed output
 
-```yaml
-documents:
-  - description: API Documentation
-    outputPath: docs/api.md
-    sources:
-      - type: text
-        description: API Documentation Header
-        content: |
-          # API Documentation
+## 5. Share with an LLM
 
-          This document contains the API source code.
+Upload or paste the generated context file to your favorite LLM (like ChatGPT or Claude). Now you can ask specific
+questions about your codebase, and the LLM will have the necessary context to provide accurate assistance.
 
-      - type: file
-        description: API Controllers
-        sourcePaths:
-          - src/Controller
-        filePattern: "*.php"
+Example prompt:
 
-      - type: url
-        description: API Reference
-        urls:
-          - https://api.example.com/docs
+> I've shared my authentication system code with you. Can you help me identify potential security vulnerabilities in the
+> user registration process?
+
+> **Next steps:** Check out [Development with Context Generator](https://docs.ctxgithub.com/advanced/development-process.md) for best practices on
+> integrating context generation into your AI-powered development workflow.
+
+That's it! You're now ready to leverage LLMs with proper context about your codebase.
+
+## JSON Schema
+
+For better editing experience, Context Generator provides a JSON schema for autocompletion and validation in your IDE:
+
+```bash
+# Show schema URL
+ctx schema
+
+# Download schema to current directory
+ctx schema --download
 ```
+
+> **Learn more:** See [IDE Integration](https://docs.ctxgithub.com/getting-started/ide-integration.md) for detailed setup instructions for VSCode,
+> PhpStorm, and other editors.
 
 ## Full Documentation
 

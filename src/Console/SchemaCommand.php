@@ -19,7 +19,7 @@ final class SchemaCommand extends Command
     /**
      * The URL where the JSON schema is hosted
      */
-    private const SCHEMA_URL = 'https://raw.githubusercontent.com/butschster/context-generator/refs/heads/main/json-schema.json';
+    private const SCHEMA_URL = 'https://raw.githubusercontent.com/context-hub/generator/refs/heads/main/json-schema.json';
 
     /**
      * Create a new schema command instance

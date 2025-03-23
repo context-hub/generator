@@ -22,7 +22,7 @@ final class VersionCommand extends Command
     /**
      * GitHub API URL for latest release
      */
-    private const GITHUB_API_LATEST_RELEASE = 'https://api.github.com/repos/butschster/context-generator/releases/latest';
+    private const GITHUB_API_LATEST_RELEASE = 'https://api.github.com/repos/context-hub/generator/releases/latest';
 
     public function __construct(
         private readonly string $version,
@@ -64,8 +64,8 @@ final class VersionCommand extends Command
                         'ctx self-update',
                         '',
                         'Or with these alternative methods:',
-                        '- curl -sSL https://raw.githubusercontent.com/butschster/context-generator/main/download-latest.sh | sh',
-                        '- Download from: https://github.com/butschster/context-generator/releases/download/' . $latestVersion . '/context-generator.phar',
+                        '- curl -sSL https://raw.githubusercontent.com/context-hub/generator/main/download-latest.sh | sh',
+                        '- Download from: https://github.com/context-hub/generator/releases/download/' . $latestVersion . '/context-generator.phar',
                     ]);
                 } else {
                     $io->success("You're using the latest version ({$this->version})");
