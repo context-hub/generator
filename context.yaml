@@ -193,7 +193,7 @@ documents:
           and structured access to configuration data throughout the application.
 
   - description: "Content Building and Rendering"
-    outputPath: "content-processing.md"
+    outputPath: "lib/content-processing.md"
     sources:
       - type: file
         sourcePaths: [ "src/Lib/Content" ]
@@ -248,7 +248,7 @@ documents:
           the configuration, enhancing reusability and maintainability.
 
   - description: "Command Line Interface"
-    outputPath: "console-commands.md"
+    outputPath: "console/commands.md"
     sources:
       - type: file
         sourcePaths: [ "src/Console" ]
@@ -279,7 +279,7 @@ documents:
           configuration data and processing results in the console interface.
 
   - description: "Core Utility Components"
-    outputPath: "utility-components.md"
+    outputPath: "lib/utility-components.md"
     sources:
       - type: file
         sourcePaths: [ "src/Lib/Files.php", "src/FilesInterface.php" ]
@@ -354,8 +354,29 @@ documents:
           variable values from different sources. This system enables using environment
           variables and other dynamic values in configuration files.
 
-  - description: "Specialized Source Implementations"
-    outputPath: "special-sources.md"
+  - description: "Fle Source Implementation"
+    outputPath: "source/file-source.md"
+    sources:
+      - type: file
+        sourcePaths: [ "src/Source/File" ]
+        filePattern: [ "*.php" ]
+
+  - description: "Text Source Implementation"
+    outputPath: "source/text-source.md"
+    sources:
+      - type: file
+        sourcePaths: [ "src/Source/Text" ]
+        filePattern: [ "*.php" ]
+
+  - description: "URL Source Implementation"
+    outputPath: "source/url-source.md"
+    sources:
+      - type: file
+        sourcePaths: [ "src/Source/Url" ]
+        filePattern: [ "*.php" ]
+
+  - description: "Composer Package Source Implementation"
+    outputPath: "source/composer-source.md"
     sources:
       - type: file
         sourcePaths: [ "src/Source/Composer" ]
@@ -369,6 +390,9 @@ documents:
           Composer package metadata. Provider classes locate and load Composer configurations.
           This specialized source enables including documentation and code from project dependencies.
 
+  - description: "Git Diff Source Implementation"
+    outputPath: "source/git-diff-source.md"
+    sources:
       - type: file
         sourcePaths: [ "src/Source/GitDiff" ]
         filePattern: [ "*.php" ]
@@ -382,6 +406,9 @@ documents:
           CommitGitSource, StagedGitSource, and StashGitSource.
           This specialized source enables focusing on recent or specific changes in repositories.
 
+  - description: "GitHub Source Implementation"
+    outputPath: "source/github-source.md"
+    sources:
       - type: file
         sourcePaths: [ "src/Source/Github" ]
         filePattern: [ "*.php" ]
@@ -394,6 +421,9 @@ documents:
           This specialized source enables including content from public or private
           GitHub repositories without requiring local clones.
 
+  - description: "Tree View Source Implementation"
+    outputPath: "source/tree-source.md"
+    sources:
       - type: file
         sourcePaths: [ "src/Source/Tree" ]
         filePattern: [ "*.php" ]
@@ -404,3 +434,20 @@ documents:
           TreeFinder locates directories and files to include in the tree.
           This specialized source helps provide context about project structure
           within generated documents by creating visual directory trees.
+
+documents:
+  - description: "Core Source Interfaces and Implementations"
+    outputPath: "source-info.md"
+    sources:
+      - type: file
+        sourcePaths: ["src"]
+        filePattern: "SourceInterface.php"
+      - type: file
+        sourcePaths: ["src/Source"]
+        filePattern: "BaseSource.php"
+      - type: file
+        sourcePaths: ["src"]
+        filePattern: "Document/DocumentBuilderInterface.php"
+      - type: file
+        sourcePaths: ["src/Document"]
+        filePattern: "DocumentBuilder.php"
