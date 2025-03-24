@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Lib\TreeBuilder\TreeRenderer;
 
+use Butschster\ContextGenerator\Lib\TokenCounter\CharTokenCounter;
+use Butschster\ContextGenerator\Lib\TokenCounter\TokenCounterInterface;
 use Butschster\ContextGenerator\Lib\TreeBuilder\TreeRendererInterface;
 
 /**
@@ -11,6 +13,10 @@ use Butschster\ContextGenerator\Lib\TreeBuilder\TreeRendererInterface;
  */
 final readonly class AsciiTreeRenderer implements TreeRendererInterface
 {
+    public function __construct(
+        private TokenCounterInterface $tokenCounter = new CharTokenCounter(),
+    ) {}
+
     public function render(array $tree, array $options = []): string
     {
         $showSize = $options['showSize'] ?? false;
@@ -91,8 +97,8 @@ final readonly class AsciiTreeRenderer implements TreeRendererInterface
                 // Add character count if requested
                 if ($showCharCount) {
                     $charCount = $isDirectory
-                        ? $this->calculateDirectoryCharCount($children)
-                        : (\file_exists($fullPath) ? $this->countFileChars($fullPath) : 0);
+                        ? $this->tokenCounter->calculateDirectoryCount($children)
+                        : (\file_exists($fullPath) ? $this->tokenCounter->countFile($fullPath) : 0);
                     if ($showSize || $showLastModified) {
                         $metadata .= ', ';
                     }
@@ -198,34 +204,5 @@ final readonly class AsciiTreeRenderer implements TreeRendererInterface
         $bytes /= (1 << (10 * $pow));
 
         return \sprintf('%.1f %s', $bytes, $units[$pow]);
-    }
-
-    private function countFileChars(string $filePath): int
-    {
-        if (\is_dir($filePath)) {
-            return 0;
-        }
-
-        if (!\file_exists($filePath) || !\is_readable($filePath)) {
-            return 0;
-        }
-
-        $content = \file_get_contents($filePath);
-        return $content === false ? 0 : \mb_strlen($content);
-    }
-
-    private function calculateDirectoryCharCount(array $directory): int
-    {
-        $totalChars = 0;
-
-        foreach ($directory as $name => $children) {
-            if (\is_array($children)) {
-                $totalChars += $this->calculateDirectoryCharCount($children);
-            } else {
-                $totalChars += $this->countFileChars($children);
-            }
-        }
-
-        return $totalChars;
     }
 }
