@@ -12,14 +12,7 @@ use Psr\Log\LoggerInterface;
  */
 final readonly class StringJsonReader implements ReaderInterface
 {
-    private string $jsonContent;
-
-    public function __construct(
-        string $jsonContent,
-        private ?LoggerInterface $logger = null,
-    ) {
-        $this->jsonContent = $jsonContent;
-    }
+    public function __construct(private string $jsonContent, private ?LoggerInterface $logger = null) {}
 
     public function read(string $path): array
     {

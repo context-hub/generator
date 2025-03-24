@@ -55,7 +55,7 @@ final readonly class CompositeConfigLoader implements ConfigLoaderInterface
         }
 
         if (!$atLeastOneLoaded) {
-            throw new ConfigLoaderException('No configuration could be loaded with any available loader');
+            throw new ConfigLoaderException('There are no loaders that can load the configuration in the given path');
         }
 
         return $registry;
