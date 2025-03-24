@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Source\Composer;
 
 use Butschster\ContextGenerator\Fetcher\FilterableSourceInterface;
+use Butschster\ContextGenerator\Lib\TreeBuilder\TreeViewConfig;
 use Butschster\ContextGenerator\Modifier\Modifier;
 use Butschster\ContextGenerator\Source\SourceWithModifiers;
 
@@ -23,7 +24,7 @@ final class ComposerSource extends SourceWithModifiers implements FilterableSour
      * @param string|array<string> $contains Patterns to include files containing specific content
      * @param string|array<string> $notContains Patterns to exclude files containing specific content
      * @param bool $includeDevDependencies Whether to include dev dependencies
-     * @param bool $showTreeView Whether to show directory tree visualization
+     * @param TreeViewConfig|bool $treeView Tree view configuration or boolean flag
      * @param array<Modifier> $modifiers Identifiers for content modifiers to apply
      * @param array<string> $tags Tags for organization
      */
@@ -37,7 +38,7 @@ final class ComposerSource extends SourceWithModifiers implements FilterableSour
         public readonly string|array $contains = [],
         public readonly string|array $notContains = [],
         public readonly bool $includeDevDependencies = false,
-        public readonly bool $showTreeView = true,
+        public readonly TreeViewConfig|bool $treeView = true,
         array $modifiers = [],
         array $tags = [],
     ) {
@@ -66,7 +67,7 @@ final class ComposerSource extends SourceWithModifiers implements FilterableSour
             contains: $data['contains'] ?? [],
             notContains: $data['notContains'] ?? [],
             includeDevDependencies: $data['includeDevDependencies'] ?? false,
-            showTreeView: $data['showTreeView'] ?? true,
+            treeView: TreeViewConfig::fromArray($data),
             modifiers: $data['modifiers'] ?? [],
             tags: $data['tags'] ?? [],
         );

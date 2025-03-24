@@ -248,6 +248,49 @@
         }
       ]
     },
+    "treeViewConfig": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether to show the tree view",
+          "default": true
+        },
+        "showSize": {
+          "type": "boolean",
+          "description": "Include file/directory sizes in the tree",
+          "default": false
+        },
+        "showLastModified": {
+          "type": "boolean",
+          "description": "Include last modified dates in the tree",
+          "default": false
+        },
+        "showCharCount": {
+          "type": "boolean",
+          "description": "Include character counts in the tree",
+          "default": false
+        },
+        "includeFiles": {
+          "type": "boolean",
+          "description": "Whether to include files in the tree or only directories",
+          "default": true
+        },
+        "maxDepth": {
+          "type": "integer",
+          "description": "Maximum depth of the tree to display (0 for unlimited)",
+          "minimum": 0,
+          "default": 0
+        },
+        "dirContext": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Optional context/descriptions for specific directories"
+        }
+      }
+    },
     "fileSource": {
       "required": [
         "sourcePaths"
@@ -300,6 +343,18 @@
           "type": "boolean",
           "description": "Whether to show directory tree",
           "default": true
+        },
+        "treeView": {
+          "oneOf": [
+            {
+              "type": "boolean",
+              "description": "Whether to show the tree view"
+            },
+            {
+              "$ref": "#/definitions/treeViewConfig"
+            }
+          ],
+          "description": "Tree view configuration"
         },
         "modifiers": {
           "$ref": "#/definitions/modifiers"
@@ -740,6 +795,21 @@
         "showTreeView": {
           "type": "boolean",
           "description": "Whether to show directory tree visualization"
+        },
+        "treeView": {
+          "oneOf": [
+            {
+              "type": "boolean",
+              "description": "Whether to show the tree view"
+            },
+            {
+              "$ref": "#/definitions/treeViewConfig"
+            }
+          ],
+          "description": "Tree view configuration"
+        },
+        "modifiers": {
+          "$ref": "#/definitions/modifiers"
         }
       }
     },

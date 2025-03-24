@@ -54,8 +54,6 @@ readonly class TreeSourceFetcher implements SourceFetcherInterface
             'description' => $source->getDescription(),
             'basePath' => $this->basePath,
             'renderFormat' => $source->renderFormat,
-            'maxDepth' => $source->maxDepth,
-            'includeFiles' => $source->includeFiles,
             'hasModifiers' => !empty($source->modifiers),
         ]);
 
@@ -65,17 +63,8 @@ readonly class TreeSourceFetcher implements SourceFetcherInterface
             ->addTitle($source->getDescription());
 
         try {
-            // Build options for the renderer
-            $options = [
-                'showSize' => $source->showSize,
-                'showLastModified' => $source->showLastModified,
-                'showCharCount' => $source->showCharCount,
-                'includeFiles' => $source->includeFiles, // Pass this option to the renderer
-                'dirContext' => $source->dirContext,
-            ];
-
             // Use SymfonyFinder to find files
-            $finderResult = $this->finder->find($source, $this->basePath, $options);
+            $finderResult = $this->finder->find($source, $this->basePath, $source->treeView->getOptions());
 
             // Add content to builder
             $builder->addCodeBlock($finderResult->treeView);

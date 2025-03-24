@@ -90,6 +90,11 @@ final readonly class SymfonyFinder implements FinderInterface
             $finder->ignoreUnreadableDirs();
         }
 
+        // Apply depth constraint if maxDepth is set
+        if (isset($options['maxDepth']) && $options['maxDepth'] > 0) {
+            $finder->depth('<= ' . $options['maxDepth']);
+        }
+
         $finder->sortByName();
 
         return new FinderResult(

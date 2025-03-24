@@ -100,7 +100,7 @@ final readonly class ComposerSourceFetcher implements SourceFetcherInterface
         ]);
 
         // Generate a tree view of selected packages if requested
-        if ($source->showTreeView) {
+        if ($source->treeView->enabled) {
             $this->logDebug('Generating package tree view');
             $builder->addTreeView($packages->generateTree());
         }
@@ -170,7 +170,7 @@ final readonly class ComposerSourceFetcher implements SourceFetcherInterface
                     path: $source->path,
                     contains: $source->contains,
                     notContains: $source->notContains,
-                    showTreeView: $source->showTreeView, // Show tree view for individual directories if requested
+                    treeView: $source->treeView, // Show tree view for individual directories if requested
                     modifiers: $source->modifiers,
                 );
 
