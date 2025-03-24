@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Source;
 
+use Butschster\ContextGenerator\Lib\TreeBuilder\TreeViewConfig;
 use Butschster\ContextGenerator\Source\File\FileSource;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -23,7 +24,7 @@ class FileSourceFromArrayTest extends TestCase
         $this->assertEquals('', $source->getDescription());
         $this->assertEquals('*.*', $source->filePattern);
         $this->assertEquals([], $source->notPath);
-        $this->assertTrue($source->showTreeView);
+        $this->assertTrue($source->treeView->enabled);
         $this->assertEquals([], $source->modifiers);
     }
 
@@ -57,7 +58,7 @@ class FileSourceFromArrayTest extends TestCase
         $this->assertEquals($data['size'], $source->size);
         $this->assertEquals($data['date'], $source->date);
         $this->assertEquals($data['ignoreUnreadableDirs'], $source->ignoreUnreadableDirs);
-        $this->assertTrue($source->showTreeView);
+        $this->assertTrue($source->treeView->enabled);
         $this->assertEquals($data['modifiers'], $source->modifiers);
     }
 
@@ -160,7 +161,7 @@ class FileSourceFromArrayTest extends TestCase
             size: ['> 10K', '< 1M'],
             date: ['since yesterday'],
             ignoreUnreadableDirs: true,
-            showTreeView: false,
+            treeView: new TreeViewConfig(false),
             modifiers: ['modifier1', 'modifier2'],
         );
 
@@ -176,10 +177,16 @@ class FileSourceFromArrayTest extends TestCase
             'size' => ['> 10K', '< 1M'],
             'date' => ['since yesterday'],
             'ignoreUnreadableDirs' => true,
+            'treeView' => [
+                'enabled' => false,
+                'showSize' => false,
+                'showLastModified' => false,
+                'showCharCount' => false,
+            ],
             'modifiers' => ['modifier1', 'modifier2'],
         ];
 
-        $this->assertEquals($expected, $source->jsonSerialize());
+        $this->assertEquals($expected, \json_decode(\json_encode($source->jsonSerialize()), true));
     }
 
     #[Test]
@@ -195,9 +202,14 @@ class FileSourceFromArrayTest extends TestCase
             'description' => 'Test description',
             'sourcePaths' => 'path/to/file.php',
             'filePattern' => '*.*',
-            'showTreeView' => true,
+            'treeView' => [
+                'enabled' => true,
+                'showSize' => false,
+                'showLastModified' => false,
+                'showCharCount' => false,
+            ],
         ];
 
-        $this->assertEquals($expected, $source->jsonSerialize());
+        $this->assertEquals($expected, \json_decode(\json_encode($source->jsonSerialize()), true));
     }
 }

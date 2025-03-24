@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Source\Tree;
 
 use Butschster\ContextGenerator\Fetcher\FilterableSourceInterface;
+use Butschster\ContextGenerator\Lib\TreeBuilder\TreeViewConfig;
 use Butschster\ContextGenerator\Source\BaseSource;
 
 /**
@@ -21,11 +22,7 @@ final class TreeSource extends BaseSource implements FilterableSourceInterface
      * @param string|array<string> $contains Patterns to include files containing specific content
      * @param string|array<string> $notContains Patterns to exclude files containing specific content
      * @param string $renderFormat Output format for the tree (ascii, markdown, json)
-     * @param int $maxDepth Maximum depth of the tree to display (0 for unlimited)
-     * @param bool $includeFiles Whether to include files in the tree or only directories
-     * @param bool $showSize Include file/directory sizes in the tree
-     * @param bool $showLastModified Include last modified dates in the tree
-     * @param array<string, string> $dirContext Optional context/descriptions for specific directories
+     * @param TreeViewConfig|bool $treeView Tree view configuration
      * @param array<non-empty-string> $tags
      */
     public function __construct(
@@ -37,12 +34,7 @@ final class TreeSource extends BaseSource implements FilterableSourceInterface
         public readonly string|array $contains = [],
         public readonly string|array $notContains = [],
         public readonly string $renderFormat = 'ascii',
-        public readonly int $maxDepth = 0,
-        public readonly bool $includeFiles = true,
-        public readonly bool $showSize = false,
-        public readonly bool $showLastModified = false,
-        public readonly bool $showCharCount = false,
-        public readonly array $dirContext = [],
+        public readonly TreeViewConfig|bool $treeView = true,
         array $tags = [],
     ) {
         parent::__construct(description: $description, tags: $tags);
@@ -90,7 +82,7 @@ final class TreeSource extends BaseSource implements FilterableSourceInterface
                 throw new \RuntimeException('renderFormat must be a string');
             }
 
-            $validFormats = ['ascii', 'markdown'];
+            $validFormats = ['ascii'];
             if (!\in_array($data['renderFormat'], $validFormats, true)) {
                 throw new \RuntimeException(
                     \sprintf(
@@ -122,12 +114,14 @@ final class TreeSource extends BaseSource implements FilterableSourceInterface
             contains: $data['contains'] ?? [],
             notContains: $data['notContains'] ?? [],
             renderFormat: $data['renderFormat'] ?? 'ascii',
-            maxDepth: $data['maxDepth'] ?? 0,
-            includeFiles: $data['includeFiles'] ?? true,
-            showSize: $data['showSize'] ?? false,
-            showLastModified: $data['showLastModified'] ?? false,
-            showCharCount: $data['showCharCount'] ?? false,
-            dirContext: $data['dirContext'] ?? [],
+            treeView: new TreeViewConfig(
+                showSize: $data['showSize'] ?? false,
+                showLastModified: $data['showLastModified'] ?? false,
+                showCharCount: $data['showCharCount'] ?? false,
+                includeFiles: $data['includeFiles'] ?? true,
+                maxDepth: $data['maxDepth'] ?? 0,
+                dirContext: $data['dirContext'] ?? [],
+            ),
             tags: $data['tags'] ?? [],
         );
     }
@@ -209,11 +203,7 @@ final class TreeSource extends BaseSource implements FilterableSourceInterface
             'filePattern' => $this->filePattern,
             'notPath' => $this->notPath,
             'renderFormat' => $this->renderFormat,
-            'maxDepth' => $this->maxDepth,
-            'includeFiles' => $this->includeFiles,
-            'showSize' => $this->showSize,
-            'showLastModified' => $this->showLastModified,
-            'showCharCount' => $this->showCharCount,
+            ...$this->treeView->jsonSerialize(),
         ];
 
         // Add optional properties only if they're non-empty

@@ -55,7 +55,6 @@ readonly class FileSourceFetcher implements SourceFetcherInterface
             'description' => $source->getDescription(),
             'basePath' => $this->basePath,
             'hasModifiers' => !empty($source->modifiers),
-            'showTreeView' => $source->showTreeView,
         ]);
 
         $this->logger?->debug('Creating content builder');
@@ -70,7 +69,7 @@ readonly class FileSourceFetcher implements SourceFetcherInterface
         ]);
 
         try {
-            $finderResult = $this->finder->find($source, $this->basePath);
+            $finderResult = $this->finder->find($source, $this->basePath, $source->treeView->getOptions());
             $fileCount = $finderResult->count();
             $this->logger?->debug('Files found', ['fileCount' => $fileCount]);
         } catch (\Throwable $e) {
@@ -101,7 +100,7 @@ readonly class FileSourceFetcher implements SourceFetcherInterface
         }
 
         // Generate tree view if requested
-        if ($source->showTreeView) {
+        if ($source->treeView->enabled) {
             $this->logger?->debug('Adding tree view to output');
             $builder->addTreeView($finderResult->treeView);
         }

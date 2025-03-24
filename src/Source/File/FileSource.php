@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Source\File;
 
 use Butschster\ContextGenerator\Fetcher\FilterableSourceInterface;
+use Butschster\ContextGenerator\Lib\TreeBuilder\TreeViewConfig;
 use Butschster\ContextGenerator\Modifier\Modifier;
 use Butschster\ContextGenerator\Source\SourceWithModifiers;
 
@@ -24,7 +25,6 @@ final class FileSource extends SourceWithModifiers implements FilterableSourceIn
      * @param string|array<string> $size Size constraints for files (e.g., '> 10K', '< 1M')
      * @param string|array<string> $date Date constraints for files (e.g., 'since yesterday', '> 2023-01-01')
      * @param bool $ignoreUnreadableDirs Whether to ignore unreadable directories
-     * @param bool $showTreeView Whether to show tree view in output
      * @param array<Modifier> $modifiers Identifiers for content modifiers to apply
      * @param array<non-empty-string> $tags
      */
@@ -39,7 +39,7 @@ final class FileSource extends SourceWithModifiers implements FilterableSourceIn
         public readonly string|array $size = [],
         public readonly string|array $date = [],
         public readonly bool $ignoreUnreadableDirs = false,
-        public readonly bool $showTreeView = true,
+        public readonly TreeViewConfig $treeView = new TreeViewConfig(),
         array $modifiers = [],
         array $tags = [],
     ) {
@@ -88,6 +88,7 @@ final class FileSource extends SourceWithModifiers implements FilterableSourceIn
         // Convert notPath to match Symfony Finder's naming convention
         $notPath = $data['excludePatterns'] ?? $data['notPath'] ?? [];
 
+        // Handle tree view configuration (either boolean or config object)
         return new self(
             sourcePaths: $sourcePaths,
             description: $data['description'] ?? '',
@@ -99,7 +100,7 @@ final class FileSource extends SourceWithModifiers implements FilterableSourceIn
             size: $data['size'] ?? [],
             date: $data['date'] ?? [],
             ignoreUnreadableDirs: $data['ignoreUnreadableDirs'] ?? false,
-            showTreeView: $data['showTreeView'] ?? true,
+            treeView: TreeViewConfig::fromArray($data),
             modifiers: $data['modifiers'] ?? [],
             tags: $data['tags'] ?? [],
         );
@@ -247,7 +248,7 @@ final class FileSource extends SourceWithModifiers implements FilterableSourceIn
             'sourcePaths' => $this->sourcePaths,
             'filePattern' => $this->filePattern,
             'notPath' => $this->notPath,
-            'showTreeView' => $this->showTreeView,
+            'treeView' => $this->treeView,
         ];
 
         // Add optional properties only if they're non-empty
