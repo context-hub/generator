@@ -25,7 +25,6 @@ final class FileSource extends SourceWithModifiers implements FilterableSourceIn
      * @param string|array<string> $size Size constraints for files (e.g., '> 10K', '< 1M')
      * @param string|array<string> $date Date constraints for files (e.g., 'since yesterday', '> 2023-01-01')
      * @param bool $ignoreUnreadableDirs Whether to ignore unreadable directories
-     * @param TreeViewConfig|bool $treeView Tree view configuration or boolean flag
      * @param array<Modifier> $modifiers Identifiers for content modifiers to apply
      * @param array<non-empty-string> $tags
      */
@@ -40,7 +39,7 @@ final class FileSource extends SourceWithModifiers implements FilterableSourceIn
         public readonly string|array $size = [],
         public readonly string|array $date = [],
         public readonly bool $ignoreUnreadableDirs = false,
-        public readonly TreeViewConfig|bool $treeView = true,
+        public readonly TreeViewConfig $treeView = new TreeViewConfig(),
         array $modifiers = [],
         array $tags = [],
     ) {

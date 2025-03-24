@@ -24,7 +24,7 @@ final class ComposerSource extends SourceWithModifiers implements FilterableSour
      * @param string|array<string> $contains Patterns to include files containing specific content
      * @param string|array<string> $notContains Patterns to exclude files containing specific content
      * @param bool $includeDevDependencies Whether to include dev dependencies
-     * @param TreeViewConfig|bool $treeView Tree view configuration or boolean flag
+     * @param TreeViewConfig $treeView Tree view configuration or boolean flag
      * @param array<Modifier> $modifiers Identifiers for content modifiers to apply
      * @param array<string> $tags Tags for organization
      */
@@ -38,7 +38,7 @@ final class ComposerSource extends SourceWithModifiers implements FilterableSour
         public readonly string|array $contains = [],
         public readonly string|array $notContains = [],
         public readonly bool $includeDevDependencies = false,
-        public readonly TreeViewConfig|bool $treeView = true,
+        public readonly TreeViewConfig $treeView = new TreeViewConfig(),
         array $modifiers = [],
         array $tags = [],
     ) {

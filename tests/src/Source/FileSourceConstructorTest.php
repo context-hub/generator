@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Source;
 
+use Butschster\ContextGenerator\Lib\TreeBuilder\TreeViewConfig;
 use Butschster\ContextGenerator\Source\File\FileSource;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -37,7 +38,7 @@ class FileSourceConstructorTest extends TestCase
             size: $size,
             date: $date,
             ignoreUnreadableDirs: $ignoreUnreadableDirs,
-            showTreeView: $showTreeView,
+            treeView: new TreeViewConfig($showTreeView),
             modifiers: $modifiers,
         );
 
@@ -51,7 +52,7 @@ class FileSourceConstructorTest extends TestCase
         $this->assertEquals($size, $source->size);
         $this->assertEquals($date, $source->date);
         $this->assertEquals($ignoreUnreadableDirs, $source->ignoreUnreadableDirs);
-        $this->assertEquals($showTreeView, $source->showTreeView);
+        $this->assertEquals($showTreeView, $source->treeView->enabled);
         $this->assertEquals($modifiers, $source->modifiers);
     }
 
@@ -96,7 +97,7 @@ class FileSourceConstructorTest extends TestCase
         $this->assertEquals([], $source->size);
         $this->assertEquals([], $source->date);
         $this->assertFalse($source->ignoreUnreadableDirs);
-        $this->assertTrue($source->showTreeView);
+        $this->assertTrue($source->treeView->enabled);
         $this->assertEquals([], $source->modifiers);
     }
 }
