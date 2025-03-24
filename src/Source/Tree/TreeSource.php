@@ -203,11 +203,7 @@ final class TreeSource extends BaseSource implements FilterableSourceInterface
             'filePattern' => $this->filePattern,
             'notPath' => $this->notPath,
             'renderFormat' => $this->renderFormat,
-            'maxDepth' => $this->maxDepth,
-            'includeFiles' => $this->includeFiles,
-            'showSize' => $this->showSize,
-            'showLastModified' => $this->showLastModified,
-            'showCharCount' => $this->showCharCount,
+            ...$this->treeView->jsonSerialize(),
         ];
 
         // Add optional properties only if they're non-empty

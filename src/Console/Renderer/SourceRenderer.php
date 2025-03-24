@@ -80,7 +80,7 @@ final class SourceRenderer
         }
 
         $output .= Style::keyValue("Ignore Unreadable Dirs", $source->ignoreUnreadableDirs) . "\n";
-        $output .= Style::keyValue("Show Tree View", $source->showTreeView) . "\n";
+        $output .= Style::keyValue("Show Tree View", $source->treeView->enabled) . "\n";
 
         if (!empty($source->modifiers)) {
             $output .= "\n" . Style::property("Modifiers") . ": " . Style::count(\count($source->modifiers)) . "\n";

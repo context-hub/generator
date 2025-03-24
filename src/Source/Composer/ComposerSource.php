@@ -169,7 +169,7 @@ final class ComposerSource extends SourceWithModifiers implements FilterableSour
             'contains' => $this->contains,
             'notContains' => $this->notContains,
             'includeDevDependencies' => $this->includeDevDependencies,
-            'showTreeView' => $this->showTreeView,
+            'treeView' => $this->treeView,
         ], static fn($value) => $value !== null && $value !== '' && $value !== []);
     }
 }

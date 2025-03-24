@@ -249,7 +249,7 @@ final class FileSource extends SourceWithModifiers implements FilterableSourceIn
             'sourcePaths' => $this->sourcePaths,
             'filePattern' => $this->filePattern,
             'notPath' => $this->notPath,
-            'showTreeView' => $this->showTreeView,
+            'treeView' => $this->treeView,
         ];
 
         // Add optional properties only if they're non-empty
