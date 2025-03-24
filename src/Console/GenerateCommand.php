@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Console;
 
 use Butschster\ContextGenerator\ConfigLoader\ConfigLoaderFactory;
+use Butschster\ContextGenerator\ConfigLoader\ConfigurationProvider;
 use Butschster\ContextGenerator\ConfigLoader\Exception\ConfigLoaderException;
 use Butschster\ContextGenerator\ConfigLoader\Parser\ConfigParserPluginInterface;
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
@@ -83,10 +84,16 @@ final class GenerateCommand extends Command
                 'Path to .env (like .env.local) file. If not provided, will ignore any .env files',
             )
             ->addOption(
-                'config',
-                'c',
+                'inline',
+                'i',
                 InputOption::VALUE_REQUIRED,
                 'Inline JSON configuration string. If provided, file-based configuration will be ignored',
+            )
+            ->addOption(
+                'config-file',
+                'c',
+                InputOption::VALUE_REQUIRED,
+                'Path to configuration file (absolute or relative to current directory).',
             );
     }
 
@@ -104,6 +111,38 @@ final class GenerateCommand extends Command
         \assert($logger instanceof LoggerInterface);
 
         $files = $this->files;
+
+
+        // Get the configuration options
+        $inlineConfig = $input->getOption('inline');
+        $configPath = $input->getOption('config-file');
+
+        // Determine the effective root path based on config file path
+        $effectiveRootPath = $this->rootPath;
+        if ($configPath !== null && $inlineConfig === null) {
+            // If config path is absolute, use its directory as root
+            if (\str_starts_with((string) $configPath, '/')) {
+                $configDir = \dirname((string) $configPath);
+            } else {
+                // If relative, resolve against the original root path
+                $fullConfigPath = \rtrim($this->rootPath, '/') . '/' . $configPath;
+                $configDir = \rtrim(\is_dir($fullConfigPath) ? $fullConfigPath : \dirname($fullConfigPath));
+            }
+
+            if ($files->exists($configDir) && \is_dir($configDir)) {
+                $effectiveRootPath = $configDir;
+                $logger->info('Updated root path based on config file location', [
+                    'original' => $this->rootPath,
+                    'effective' => $effectiveRootPath,
+                ]);
+            } else {
+                $logger->warning('Could not determine directory from config file path', [
+                    'configPath' => $configPath,
+                    'using' => $this->rootPath,
+                ]);
+            }
+        }
+
         $modifiers = new SourceModifierRegistry();
         $modifiers->register(
             new PhpSignature(),
@@ -120,7 +159,7 @@ final class GenerateCommand extends Command
 
         // Get the env file path from the command option
         $envFileName = $input->getOption('env') ?? null;
-        $envFilePath = $envFileName ? $this->rootPath : null;
+        $envFilePath = $envFileName ? $effectiveRootPath : null;
 
         $variablesProvider = new CompositeVariableProvider(
             envProvider: new DotEnvVariableProvider(
@@ -146,7 +185,7 @@ final class GenerateCommand extends Command
                     logger: $logger->withPrefix('text-source'),
                 ),
                 new FileSourceFetcher(
-                    basePath: $this->rootPath,
+                    basePath: $effectiveRootPath,
                     builderFactory: $contentBuilderFactory,
                     logger: $logger->withPrefix('file-source'),
                 ),
@@ -158,7 +197,7 @@ final class GenerateCommand extends Command
                             logger: $logger,
                         ),
                     ),
-                    basePath: $this->rootPath,
+                    basePath: $effectiveRootPath,
                     builderFactory: $contentBuilderFactory,
                     variableResolver: $variableResolver,
                     logger: $logger->withPrefix('composer-source'),
@@ -182,7 +221,7 @@ final class GenerateCommand extends Command
                     logger: $logger->withPrefix('commit-diff-source'),
                 ),
                 new TreeSourceFetcher(
-                    basePath: $this->rootPath,
+                    basePath: $effectiveRootPath,
                     builderFactory: $contentBuilderFactory,
                     logger: $logger->withPrefix('tree-source'),
                 ),
@@ -198,29 +237,29 @@ final class GenerateCommand extends Command
             logger: $logger->withPrefix('documents'),
         );
 
-        // Check if inline configuration is provided
-        $inlineConfig = $input->getOption('config');
+        $configProvider = new ConfigurationProvider(
+            loaderFactory: new ConfigLoaderFactory(
+                files: $this->files,
+                rootPath: $effectiveRootPath,
+                logger: $logger->withPrefix('config-loader'),
+            ),
+            files: $this->files,
+            rootPath: $this->rootPath,
+            logger: $logger->withPrefix('config-provider'),
+            parserPlugins: $this->getParserPlugins(),
+        );
 
         try {
-            $loaderFactory = new ConfigLoaderFactory(
-                files: $this->files,
-                rootPath: $this->rootPath,
-                logger: $logger->withPrefix('config-loader'),
-            );
-
-            // Create the appropriate loader based on whether we have inline config
+            // Get the appropriate loader based on options provided
             if ($inlineConfig !== null) {
                 $outputStyle->info('Using inline JSON configuration...');
-                $loader = $loaderFactory->createFromString(
-                    jsonConfig: $inlineConfig,
-                    parserPlugins: $this->getParserPlugins(),
-                );
+                $loader = $configProvider->fromString($inlineConfig);
+            } elseif ($configPath !== null) {
+                $outputStyle->info(\sprintf('Loading configuration from %s...', $configPath));
+                $loader = $configProvider->fromPath($configPath);
             } else {
-                $outputStyle->info(\sprintf('Loading configuration from %s ...', $this->rootPath));
-                $loader = $loaderFactory->create(
-                    rootPath: $this->rootPath,
-                    parserPlugins: $this->getParserPlugins(),
-                );
+                $outputStyle->info('Loading configuration from default location...');
+                $loader = $configProvider->fromDefaultLocation();
             }
         } catch (ConfigLoaderException $e) {
             $logger->error('Failed to load configuration', [

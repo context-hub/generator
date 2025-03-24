@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\ConfigLoader;
 
+use Butschster\ContextGenerator\ConfigLoader\Exception\ConfigLoaderException;
 use Butschster\ContextGenerator\ConfigLoader\Parser\CompositeConfigParser;
 use Butschster\ContextGenerator\ConfigLoader\Parser\ConfigParser;
 use Butschster\ContextGenerator\ConfigLoader\Parser\ConfigParserPluginInterface;
@@ -91,6 +92,46 @@ final readonly class ConfigLoaderFactory
         // Create composite loader
         return new CompositeConfigLoader(
             loaders: [$jsonLoader, $yamlLoader, $ymlLoader, $phpLoader],
+            logger: $this->logger,
+        );
+    }
+
+    // Add a new method to ConfigLoaderFactory to create a loader for a specific file path
+    public function createForFile(string $filePath, array $parserPlugins = []): ConfigLoaderInterface
+    {
+        \assert($this->logger instanceof HasPrefixLoggerInterface);
+
+        // Create parser
+        $parser = new ConfigParser($this->rootPath, $this->logger, ...$parserPlugins);
+
+        // Create composite parser
+        $compositeParser = new CompositeConfigParser($parser);
+
+        // Determine the file extension
+        $extension = \pathinfo($filePath, PATHINFO_EXTENSION);
+
+        // Create the appropriate reader based on file extension
+        $reader = match ($extension) {
+            'json' => new JsonReader(
+                files: $this->files,
+                logger: $this->logger?->withPrefix('json-reader'),
+            ),
+            'yaml', 'yml' => new YamlReader(
+                files: $this->files,
+                logger: $this->logger?->withPrefix('yaml-reader'),
+            ),
+            'php' => new PhpReader(
+                files: $this->files,
+                logger: $this->logger?->withPrefix('php-reader'),
+            ),
+            default => throw new ConfigLoaderException(\sprintf("Unsupported file extension: %s", $extension)),
+        };
+
+        // Create loader for the specific file
+        return new ConfigLoader(
+            configPath: $filePath,
+            reader: $reader,
+            parser: $compositeParser,
             logger: $this->logger,
         );
     }
