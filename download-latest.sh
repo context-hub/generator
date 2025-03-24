@@ -14,8 +14,8 @@ DEFAULT='\033[0m'
 
 # Project name
 PNAME='ctx'
-REPO_OWNER='butschster'
-REPO_NAME='context-generator'
+REPO_OWNER='context-hub'
+REPO_NAME='generator'
 
 # GitHub API address
 GITHUB_API="https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/releases"
