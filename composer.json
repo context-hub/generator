@@ -29,8 +29,7 @@
     "nette/php-generator": "^4.1",
     "nikic/php-parser": "^v4.0 | ^v5.0",
     "vlucas/phpdotenv": "^5.6",
-    "symfony/yaml": "^7.2",
-    "cycle/database": "^2.12"
+    "symfony/yaml": "^7.2"
   },
   "require-dev": {
     "buggregator/trap": "^1.13",
