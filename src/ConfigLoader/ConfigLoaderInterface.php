@@ -21,6 +21,11 @@ interface ConfigLoaderInterface
     public function load(): DocumentRegistry;
 
     /**
+     * Load raw configuration from the first supported loader
+     */
+    public function loadRawConfig(): array;
+
+    /**
      * Check if this loader can load configuration
      *
      * @return bool True if the loader can load configuration

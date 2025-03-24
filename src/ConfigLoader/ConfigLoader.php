@@ -61,6 +61,27 @@ final readonly class ConfigLoader implements ConfigLoaderInterface
         }
     }
 
+    /**
+     * Load the raw configuration without processing into a registry
+     */
+    public function loadRawConfig(): array
+    {
+        $this->logger?->debug('Loading raw configuration', [
+            'configFile' => $this->configPath,
+        ]);
+
+        try {
+            // Read configuration using the appropriate reader
+            return $this->reader->read($this->configPath);
+        } catch (\Throwable $e) {
+            // Wrap exceptions in a ConfigLoaderException
+            throw new ConfigLoaderException(
+                \sprintf('Failed to load raw configuration from %s: %s', $this->configPath, $e->getMessage()),
+                previous: $e,
+            );
+        }
+    }
+
     public function isSupported(): bool
     {
         return $this->reader->supports($this->configPath);

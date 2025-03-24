@@ -17,6 +17,18 @@ interface ConfigParserPluginInterface
     public function getConfigKey(): string;
 
     /**
+     * Update the configuration array before parsing
+     *
+     * This allows plugins to modify configuration by importing or transforming it.
+     * Return the original array if no changes are needed.
+     *
+     * @param array<mixed> $config The current configuration array
+     * @param string $rootPath The root path for resolving relative paths
+     * @return array<mixed> The updated configuration array
+     */
+    public function updateConfig(array $config, string $rootPath): array;
+
+    /**
      * Parse the configuration section and return a registry
      *
      * @param array<mixed> $config The full configuration array

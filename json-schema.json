@@ -1,7 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "fileMatch": [
-    "context.json"
+    "context.json",
+    "context.yaml"
   ],
   "id": "https://ctxgithub.com/",
   "title": "ContextHub Configuration",
@@ -11,6 +12,34 @@
     "documents"
   ],
   "properties": {
+    "import": {
+      "type": "array",
+      "description": "List of external configuration files to import",
+      "items": {
+        "oneOf": [
+          {
+            "type": "string",
+            "description": "Path to configuration file (relative to this file)"
+          },
+          {
+            "type": "object",
+            "required": [
+              "path"
+            ],
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "Path to configuration file (relative to this file)"
+              },
+              "pathPrefix": {
+                "type": "string",
+                "description": "Path prefix to apply to all source paths in the imported configuration"
+              }
+            }
+          }
+        ]
+      }
+    },
     "settings": {
       "type": "object",
       "description": "Global settings for the context generator",
