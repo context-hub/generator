@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\ConfigLoader;
 
 use Butschster\ContextGenerator\ConfigLoader\Exception\ConfigLoaderException;
+use Butschster\ContextGenerator\ConfigLoader\Import\ImportResolver;
 use Butschster\ContextGenerator\ConfigLoader\Parser\CompositeConfigParser;
 use Butschster\ContextGenerator\ConfigLoader\Parser\ConfigParser;
 use Butschster\ContextGenerator\ConfigLoader\Parser\ConfigParserPluginInterface;
+use Butschster\ContextGenerator\ConfigLoader\Parser\ImportParserPlugin;
 use Butschster\ContextGenerator\ConfigLoader\Reader\JsonReader;
 use Butschster\ContextGenerator\ConfigLoader\Reader\PhpReader;
 use Butschster\ContextGenerator\ConfigLoader\Reader\StringJsonReader;
@@ -37,6 +39,22 @@ final readonly class ConfigLoaderFactory
     public function create(string $rootPath, array $parserPlugins = []): ConfigLoaderInterface
     {
         \assert($this->logger instanceof HasPrefixLoggerInterface);
+
+        // Create import resolver
+        $importResolver = new ImportResolver(
+            files: $this->files,
+            loaderFactory: $this,
+            logger: $this->logger?->withPrefix('import-resolver'),
+        );
+
+        // Create import parser plugin
+        $importParserPlugin = new ImportParserPlugin(
+            importResolver: $importResolver,
+            logger: $this->logger?->withPrefix('import-parser'),
+        );
+
+        // Add import parser plugin first in the list
+        $parserPlugins = [$importParserPlugin, ...$parserPlugins];
 
         // Create parser
         $parser = new ConfigParser($this->rootPath, $this->logger, ...$parserPlugins);
@@ -100,6 +118,22 @@ final readonly class ConfigLoaderFactory
     public function createForFile(string $filePath, array $parserPlugins = []): ConfigLoaderInterface
     {
         \assert($this->logger instanceof HasPrefixLoggerInterface);
+
+        // Create import resolver
+        $importResolver = new ImportResolver(
+            files: $this->files,
+            loaderFactory: $this,
+            logger: $this->logger?->withPrefix('import-resolver'),
+        );
+
+        // Create import parser plugin
+        $importParserPlugin = new ImportParserPlugin(
+            importResolver: $importResolver,
+            logger: $this->logger?->withPrefix('import-parser'),
+        );
+
+        // Add import parser plugin first in the list
+        $parserPlugins = [$importParserPlugin, ...$parserPlugins];
 
         // Create parser
         $parser = new ConfigParser($this->rootPath, $this->logger, ...$parserPlugins);

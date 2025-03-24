@@ -28,6 +28,12 @@ final readonly class ModifierAliasesParserPlugin implements ConfigParserPluginIn
             && \is_array($config['settings']['modifiers']);
     }
 
+    public function updateConfig(array $config, string $rootPath): array
+    {
+        // By default, return the config unchanged
+        return $config;
+    }
+
     public function parse(array $config, string $rootPath): ?RegistryInterface
     {
         if (!$this->supports($config)) {

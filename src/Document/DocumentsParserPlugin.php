@@ -39,6 +39,12 @@ final readonly class DocumentsParserPlugin implements ConfigParserPluginInterfac
         return isset($config['documents']) && \is_array($config['documents']);
     }
 
+    public function updateConfig(array $config, string $rootPath): array
+    {
+        // By default, return the config unchanged
+        return $config;
+    }
+
     public function parse(array $config, string $rootPath): ?RegistryInterface
     {
         if (!$this->supports($config)) {
