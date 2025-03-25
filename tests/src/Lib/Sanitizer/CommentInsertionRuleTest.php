@@ -5,17 +5,20 @@ declare(strict_types=1);
 namespace Tests\Lib\Sanitizer;
 
 use Butschster\ContextGenerator\Lib\Sanitizer\CommentInsertionRule;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class CommentInsertionRuleTest extends TestCase
 {
-    public function testGetName(): void
+    #[Test]
+    public function it_should_return_correct_name(): void
     {
         $rule = new CommentInsertionRule('test-rule');
         $this->assertEquals('test-rule', $rule->getName());
     }
 
-    public function testApplyWithFileHeaderComment(): void
+    #[Test]
+    public function it_should_apply_file_header_comment(): void
     {
         $rule = new CommentInsertionRule(
             name: 'header-comment',
@@ -28,7 +31,8 @@ class CommentInsertionRuleTest extends TestCase
         $this->assertEquals($expected, $rule->apply($content));
     }
 
-    public function testApplyWithMultilineFileHeaderComment(): void
+    #[Test]
+    public function it_should_apply_multiline_file_header_comment(): void
     {
         $rule = new CommentInsertionRule(
             name: 'multiline-header',
@@ -41,7 +45,8 @@ class CommentInsertionRuleTest extends TestCase
         $this->assertEquals($expected, $rule->apply($content));
     }
 
-    public function testApplyWithClassComment(): void
+    #[Test]
+    public function it_should_apply_class_comment(): void
     {
         $rule = new CommentInsertionRule(
             name: 'class-comment',
@@ -54,7 +59,8 @@ class CommentInsertionRuleTest extends TestCase
         $this->assertEquals($expected, $rule->apply($content));
     }
 
-    public function testApplyWithMethodComment(): void
+    #[Test]
+    public function it_should_apply_method_comment(): void
     {
         $rule = new CommentInsertionRule(
             name: 'method-comment',
@@ -67,7 +73,8 @@ class CommentInsertionRuleTest extends TestCase
         $this->assertEquals($expected, $rule->apply($content));
     }
 
-    public function testApplyWithRandomComments(): void
+    #[Test]
+    public function it_should_apply_random_comments(): void
     {
         $rule = new CommentInsertionRule(
             name: 'random-comments',
@@ -84,7 +91,8 @@ class CommentInsertionRuleTest extends TestCase
         $this->assertStringContainsString('// Random comment', $result);
     }
 
-    public function testApplyWithAllOptions(): void
+    #[Test]
+    public function it_should_apply_all_comment_options(): void
     {
         $rule = new CommentInsertionRule(
             name: 'all-options',

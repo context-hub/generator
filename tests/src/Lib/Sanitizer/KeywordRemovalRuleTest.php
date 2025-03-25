@@ -5,17 +5,20 @@ declare(strict_types=1);
 namespace Tests\Lib\Sanitizer;
 
 use Butschster\ContextGenerator\Lib\Sanitizer\KeywordRemovalRule;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class KeywordRemovalRuleTest extends TestCase
 {
-    public function testGetName(): void
+    #[Test]
+    public function it_should_return_correct_name(): void
     {
         $rule = new KeywordRemovalRule('test-rule', ['keyword']);
         $this->assertEquals('test-rule', $rule->getName());
     }
 
-    public function testApplyWithEmptyKeywords(): void
+    #[Test]
+    public function it_should_not_modify_content_with_empty_keywords(): void
     {
         $rule = new KeywordRemovalRule('empty-keywords', []);
         $content = "This content should remain unchanged";
@@ -23,7 +26,8 @@ class KeywordRemovalRuleTest extends TestCase
         $this->assertEquals($content, $rule->apply($content));
     }
 
-    public function testApplyWithSingleKeyword(): void
+    #[Test]
+    public function it_should_remove_lines_with_single_keyword(): void
     {
         $rule = new KeywordRemovalRule(
             name: 'single-keyword',
@@ -37,7 +41,8 @@ class KeywordRemovalRuleTest extends TestCase
         $this->assertEquals($expected, $rule->apply($content));
     }
 
-    public function testApplyWithMultipleKeywords(): void
+    #[Test]
+    public function it_should_remove_lines_with_multiple_keywords(): void
     {
         $rule = new KeywordRemovalRule(
             name: 'multiple-keywords',
@@ -51,7 +56,8 @@ class KeywordRemovalRuleTest extends TestCase
         $this->assertEquals($expected, $rule->apply($content));
     }
 
-    public function testApplyWithCustomReplacement(): void
+    #[Test]
+    public function it_should_use_custom_replacement_text(): void
     {
         $rule = new KeywordRemovalRule(
             name: 'custom-replacement',
@@ -66,7 +72,8 @@ class KeywordRemovalRuleTest extends TestCase
         $this->assertEquals($expected, $rule->apply($content));
     }
 
-    public function testApplyWithoutRemovingLines(): void
+    #[Test]
+    public function it_should_replace_keywords_without_removing_lines(): void
     {
         $rule = new KeywordRemovalRule(
             name: 'keep-lines',
@@ -81,7 +88,8 @@ class KeywordRemovalRuleTest extends TestCase
         $this->assertEquals($expected, $rule->apply($content));
     }
 
-    public function testApplyWithCaseSensitiveMatching(): void
+    #[Test]
+    public function it_should_respect_case_sensitive_matching(): void
     {
         $rule = new KeywordRemovalRule(
             name: 'case-sensitive',
@@ -96,7 +104,8 @@ class KeywordRemovalRuleTest extends TestCase
         $this->assertEquals($expected, $rule->apply($content));
     }
 
-    public function testApplyWithCaseInsensitiveMatching(): void
+    #[Test]
+    public function it_should_respect_case_insensitive_matching(): void
     {
         $rule = new KeywordRemovalRule(
             name: 'case-insensitive',
@@ -111,7 +120,8 @@ class KeywordRemovalRuleTest extends TestCase
         $this->assertEquals($expected, $rule->apply($content));
     }
 
-    public function testApplyWithMultipleKeywordsWithoutRemovingLines(): void
+    #[Test]
+    public function it_should_replace_multiple_keywords_in_same_line(): void
     {
         $rule = new KeywordRemovalRule(
             name: 'multiple-keywords-keep-lines',

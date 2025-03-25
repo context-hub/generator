@@ -1,0 +1,1 @@
+This is a simple test file with exactly 50 characters.

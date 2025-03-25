@@ -1,0 +1,1 @@
+This file contains multibyte characters: 你好, こんにちは, привет

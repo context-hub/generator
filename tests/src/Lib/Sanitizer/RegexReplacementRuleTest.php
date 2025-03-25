@@ -5,17 +5,20 @@ declare(strict_types=1);
 namespace Tests\Lib\Sanitizer;
 
 use Butschster\ContextGenerator\Lib\Sanitizer\RegexReplacementRule;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class RegexReplacementRuleTest extends TestCase
 {
-    public function testGetName(): void
+    #[Test]
+    public function it_should_return_correct_name(): void
     {
         $rule = new RegexReplacementRule('test-rule', []);
         $this->assertEquals('test-rule', $rule->getName());
     }
 
-    public function testApplyWithEmptyPatterns(): void
+    #[Test]
+    public function it_should_not_modify_content_with_empty_patterns(): void
     {
         $rule = new RegexReplacementRule('empty-patterns', []);
         $content = "This content should remain unchanged";
@@ -23,7 +26,8 @@ class RegexReplacementRuleTest extends TestCase
         $this->assertEquals($content, $rule->apply($content));
     }
 
-    public function testApplyWithSinglePattern(): void
+    #[Test]
+    public function it_should_apply_single_regex_pattern(): void
     {
         $rule = new RegexReplacementRule(
             name: 'single-pattern',
@@ -36,7 +40,8 @@ class RegexReplacementRuleTest extends TestCase
         $this->assertEquals($expected, $rule->apply($content));
     }
 
-    public function testApplyWithMultiplePatterns(): void
+    #[Test]
+    public function it_should_apply_multiple_regex_patterns(): void
     {
         $rule = new RegexReplacementRule(
             name: 'multiple-patterns',
@@ -52,7 +57,8 @@ class RegexReplacementRuleTest extends TestCase
         $this->assertEquals($expected, $rule->apply($content));
     }
 
-    public function testApplyWithCaptureGroups(): void
+    #[Test]
+    public function it_should_handle_capture_groups_correctly(): void
     {
         $rule = new RegexReplacementRule(
             name: 'capture-groups',
@@ -67,7 +73,8 @@ class RegexReplacementRuleTest extends TestCase
         $this->assertEquals($expected, $rule->apply($content));
     }
 
-    public function testApplyWithMultilineContent(): void
+    #[Test]
+    public function it_should_work_with_multiline_content(): void
     {
         $rule = new RegexReplacementRule(
             name: 'multiline',
@@ -82,7 +89,8 @@ class RegexReplacementRuleTest extends TestCase
         $this->assertEquals($expected, $rule->apply($content));
     }
 
-    public function testApplyWithComplexPatterns(): void
+    #[Test]
+    public function it_should_handle_complex_regex_patterns(): void
     {
         $rule = new RegexReplacementRule(
             name: 'complex-patterns',
@@ -98,7 +106,8 @@ class RegexReplacementRuleTest extends TestCase
         $this->assertEquals($expected, $rule->apply($content));
     }
 
-    public function testApplyWithNoMatches(): void
+    #[Test]
+    public function it_should_return_unchanged_content_with_no_matches(): void
     {
         $rule = new RegexReplacementRule(
             name: 'no-matches',
@@ -112,7 +121,8 @@ class RegexReplacementRuleTest extends TestCase
         $this->assertEquals($content, $rule->apply($content));
     }
 
-    public function testApplyWithOverlappingPatterns(): void
+    #[Test]
+    public function it_should_handle_overlapping_patterns_correctly(): void
     {
         $rule = new RegexReplacementRule(
             name: 'overlapping-patterns',

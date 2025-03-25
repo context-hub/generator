@@ -6,17 +6,20 @@ namespace Tests\Lib\Sanitizer;
 
 use Butschster\ContextGenerator\Lib\Sanitizer\ContextSanitizer;
 use Butschster\ContextGenerator\Lib\Sanitizer\RuleInterface;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class ContextSanitizerTest extends TestCase
 {
-    public function testConstructorWithEmptyRules(): void
+    #[Test]
+    public function it_should_initialize_with_empty_rules(): void
     {
         $sanitizer = new ContextSanitizer();
         $this->assertEmpty($sanitizer->getRules());
     }
 
-    public function testConstructorWithRules(): void
+    #[Test]
+    public function it_should_initialize_with_provided_rules(): void
     {
         $rule1 = $this->createMock(RuleInterface::class);
         $rule1->method('getName')->willReturn('rule1');
@@ -34,7 +37,8 @@ class ContextSanitizerTest extends TestCase
         $this->assertSame($rule2, $sanitizer->getRules()['rule2']);
     }
 
-    public function testAddRule(): void
+    #[Test]
+    public function it_should_add_rule_correctly(): void
     {
         $sanitizer = new ContextSanitizer();
 
@@ -48,7 +52,8 @@ class ContextSanitizerTest extends TestCase
         $this->assertSame($rule, $sanitizer->getRules()['test-rule']);
     }
 
-    public function testAddMultipleRules(): void
+    #[Test]
+    public function it_should_add_multiple_rules_correctly(): void
     {
         $sanitizer = new ContextSanitizer();
 
@@ -66,7 +71,8 @@ class ContextSanitizerTest extends TestCase
         $this->assertSame($rule2, $sanitizer->getRules()['rule2']);
     }
 
-    public function testAddRuleOverwritesExistingRule(): void
+    #[Test]
+    public function it_should_overwrite_existing_rule_with_same_name(): void
     {
         $sanitizer = new ContextSanitizer();
 
@@ -83,7 +89,8 @@ class ContextSanitizerTest extends TestCase
         $this->assertSame($rule2, $sanitizer->getRules()['same-name']);
     }
 
-    public function testGetRules(): void
+    #[Test]
+    public function it_should_return_all_rules(): void
     {
         $rule1 = $this->createMock(RuleInterface::class);
         $rule1->method('getName')->willReturn('rule1');
@@ -103,7 +110,8 @@ class ContextSanitizerTest extends TestCase
         $this->assertSame($rule2, $rules['rule2']);
     }
 
-    public function testSanitizeWithNoRules(): void
+    #[Test]
+    public function it_should_not_modify_content_with_no_rules(): void
     {
         $sanitizer = new ContextSanitizer();
         $content = "This content should remain unchanged";
@@ -111,7 +119,8 @@ class ContextSanitizerTest extends TestCase
         $this->assertEquals($content, $sanitizer->sanitize($content));
     }
 
-    public function testSanitizeWithSingleRule(): void
+    #[Test]
+    public function it_should_apply_single_rule_correctly(): void
     {
         $rule = $this->createMock(RuleInterface::class);
         $rule->method('getName')->willReturn('test-rule');
@@ -123,7 +132,8 @@ class ContextSanitizerTest extends TestCase
         $this->assertEquals("Original content (sanitized)", $sanitizer->sanitize($content));
     }
 
-    public function testSanitizeWithMultipleRules(): void
+    #[Test]
+    public function it_should_apply_multiple_rules_correctly(): void
     {
         $rule1 = $this->createMock(RuleInterface::class);
         $rule1->method('getName')->willReturn('rule1');
@@ -143,7 +153,8 @@ class ContextSanitizerTest extends TestCase
         $this->assertEquals("Original content (rule1) (rule2)", $sanitizer->sanitize($content));
     }
 
-    public function testSanitizeAppliesRulesInOrder(): void
+    #[Test]
+    public function it_should_apply_rules_in_order_of_addition(): void
     {
         $rule1 = $this->createMock(RuleInterface::class);
         $rule1->method('getName')->willReturn('rule1');

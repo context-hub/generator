@@ -8,13 +8,15 @@ use Butschster\ContextGenerator\Lib\Sanitizer\CommentInsertionRule;
 use Butschster\ContextGenerator\Lib\Sanitizer\KeywordRemovalRule;
 use Butschster\ContextGenerator\Lib\Sanitizer\RegexReplacementRule;
 use Butschster\ContextGenerator\Lib\Sanitizer\RuleFactory;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class RuleFactoryTest extends TestCase
 {
     private RuleFactory $factory;
 
-    public function testCreateFromConfigWithMissingType(): void
+    #[Test]
+    public function it_should_throw_exception_for_missing_type(): void
     {
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Rule configuration must include a "type" field');
@@ -22,7 +24,8 @@ class RuleFactoryTest extends TestCase
         $this->factory->createFromConfig([]);
     }
 
-    public function testCreateFromConfigWithUnsupportedType(): void
+    #[Test]
+    public function it_should_throw_exception_for_unsupported_type(): void
     {
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Unsupported rule type: unknown');
@@ -30,7 +33,8 @@ class RuleFactoryTest extends TestCase
         $this->factory->createFromConfig(['type' => 'unknown']);
     }
 
-    public function testCreateKeywordRemovalRuleWithMissingKeywords(): void
+    #[Test]
+    public function it_should_throw_exception_for_keyword_rule_with_missing_keywords(): void
     {
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Keyword rule must include a "keywords" array');
@@ -38,7 +42,8 @@ class RuleFactoryTest extends TestCase
         $this->factory->createFromConfig(['type' => 'keyword']);
     }
 
-    public function testCreateKeywordRemovalRuleWithInvalidKeywords(): void
+    #[Test]
+    public function it_should_throw_exception_for_keyword_rule_with_invalid_keywords(): void
     {
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Keyword rule must include a "keywords" array');
@@ -49,7 +54,8 @@ class RuleFactoryTest extends TestCase
         ]);
     }
 
-    public function testCreateKeywordRemovalRuleWithMinimalConfig(): void
+    #[Test]
+    public function it_should_create_keyword_rule_with_minimal_config(): void
     {
         $rule = $this->factory->createFromConfig([
             'type' => 'keyword',
@@ -65,7 +71,8 @@ class RuleFactoryTest extends TestCase
         $this->assertEquals("[REMOVED]\nNormal line", $result);
     }
 
-    public function testCreateKeywordRemovalRuleWithFullConfig(): void
+    #[Test]
+    public function it_should_create_keyword_rule_with_full_config(): void
     {
         $rule = $this->factory->createFromConfig([
             'type' => 'keyword',
@@ -85,7 +92,8 @@ class RuleFactoryTest extends TestCase
         $this->assertEquals("Line with [REDACTED]\nLine with SECRET\nNormal line", $result);
     }
 
-    public function testCreateRegexReplacementRuleWithMissingPatterns(): void
+    #[Test]
+    public function it_should_throw_exception_for_regex_rule_with_missing_patterns(): void
     {
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Regex rule must include "patterns" or "usePatterns"');
@@ -93,7 +101,8 @@ class RuleFactoryTest extends TestCase
         $this->factory->createFromConfig(['type' => 'regex']);
     }
 
-    public function testCreateRegexReplacementRuleWithInvalidPatterns(): void
+    #[Test]
+    public function it_should_throw_exception_for_regex_rule_with_invalid_patterns(): void
     {
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Regex rule "patterns" object must be an array');
@@ -104,7 +113,8 @@ class RuleFactoryTest extends TestCase
         ]);
     }
 
-    public function testCreateRegexReplacementRuleWithPatterns(): void
+    #[Test]
+    public function it_should_create_regex_rule_with_custom_patterns(): void
     {
         $rule = $this->factory->createFromConfig([
             'type' => 'regex',
@@ -123,7 +133,8 @@ class RuleFactoryTest extends TestCase
         $this->assertEquals("Contact us at [EMAIL_REMOVED]", $result);
     }
 
-    public function testCreateRegexReplacementRuleWithPredefinedPatterns(): void
+    #[Test]
+    public function it_should_create_regex_rule_with_predefined_patterns(): void
     {
         $rule = $this->factory->createFromConfig([
             'type' => 'regex',
@@ -138,7 +149,8 @@ class RuleFactoryTest extends TestCase
         $this->assertEquals("Contact us at [EMAIL_REMOVED] or visit [IP_ADDRESS_REMOVED]", $result);
     }
 
-    public function testCreateRegexReplacementRuleWithMixedPatterns(): void
+    #[Test]
+    public function it_should_create_regex_rule_with_mixed_patterns(): void
     {
         $rule = $this->factory->createFromConfig([
             'type' => 'regex',
@@ -156,7 +168,8 @@ class RuleFactoryTest extends TestCase
         $this->assertEquals("Contact us at [EMAIL_REMOVED] or use [CUSTOM_REMOVED]", $result);
     }
 
-    public function testCreateCommentInsertionRuleWithMinimalConfig(): void
+    #[Test]
+    public function it_should_create_comment_rule_with_minimal_config(): void
     {
         $rule = $this->factory->createFromConfig([
             'type' => 'comment',
@@ -171,7 +184,8 @@ class RuleFactoryTest extends TestCase
         $this->assertEquals($content, $result);
     }
 
-    public function testCreateCommentInsertionRuleWithFullConfig(): void
+    #[Test]
+    public function it_should_create_comment_rule_with_full_config(): void
     {
         $rule = $this->factory->createFromConfig([
             'type' => 'comment',
