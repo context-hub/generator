@@ -20,6 +20,10 @@ The test structure typically mirrors the main source code structure:
 
 ### Test Naming Conventions
 
+1. **Test Class Namespace**:
+    - Use namespace `namespace Tests\` for all test classes
+    - Provide attributes for coverage: `#[CoversClass(VariableResolver::class)]`
+
 1. **Test Class Names**:
     - Name test classes after the class they're testing, followed by `Test`
     - Example: `FileSourceFetcher` -> `FileSourceFetcherTest`
