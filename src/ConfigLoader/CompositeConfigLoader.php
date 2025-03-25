@@ -61,6 +61,37 @@ final readonly class CompositeConfigLoader implements ConfigLoaderInterface
         return $registry;
     }
 
+    public function loadRawConfig(): array
+    {
+        $this->logger?->debug('Trying to load raw config with composite loader', [
+            'loaderCount' => \count($this->loaders),
+        ]);
+
+        foreach ($this->loaders as $loader) {
+            if (!$loader->isSupported()) {
+                continue;
+            }
+
+            try {
+                $rawConfig = $loader->loadRawConfig();
+
+                $this->logger?->debug('Successfully loaded raw config', [
+                    'loaderClass' => $loader::class,
+                ]);
+
+                return $rawConfig;
+            } catch (\Throwable $e) {
+                $this->logger?->warning('Failed to load raw config', [
+                    'loaderClass' => $loader::class,
+                    'error' => $e->getMessage(),
+                ]);
+                // Continue with other loaders
+            }
+        }
+
+        throw new ConfigLoaderException('There are no loaders that can load the raw configuration');
+    }
+
     public function isSupported(): bool
     {
         foreach ($this->loaders as $loader) {
