@@ -179,6 +179,112 @@ final class DocumentCompilerTest extends TestCase
         $this->assertEquals(0, \count($compiled->errors));
     }
 
+    #[Test]
+    public function it_should_include_source_description(): void
+    {
+        $document = Document::create(
+            description: 'Test Document',
+            outputPath: 'output.txt',
+            overwrite: true,
+        );
+
+        $source = $this->createMock(SourceInterface::class);
+        $source->method('hasDescription')->willReturn(true);
+        $source->method('getDescription')->willReturn('Source Description');
+        $source->method('parseContent')->willReturn('Source content');
+
+        $document = $document->addSource($source);
+
+        $this->files
+            ->expects($this->once())
+            ->method('write')
+            ->with(
+                '/base/path/output.txt',
+                $content = "# Test Document\n\n_SOURCE: Source Description_\n\nSource content\n\n",
+            );
+
+        $compiled = $this->compiler->compile($document);
+
+        $this->assertEquals($content, (string) $compiled->content);
+        $this->assertEquals(0, \count($compiled->errors));
+    }
+
+    #[Test]
+    public function it_should_handle_multiple_source_errors(): void
+    {
+        $document = Document::create(
+            description: 'Test Document',
+            outputPath: 'output.txt',
+            overwrite: true,
+        );
+
+        $source1 = $this->createMock(SourceInterface::class);
+        $source1
+            ->method('parseContent')
+            ->willThrowException(new \RuntimeException('Error 1'));
+
+        $source2 = $this->createMock(SourceInterface::class);
+        $source2
+            ->method('parseContent')
+            ->willThrowException(new \RuntimeException('Error 2'));
+
+        $document = $document->addSource($source1)->addSource($source2);
+
+        $compiled = $this->compiler->compile($document);
+
+        $this->assertEquals("# Test Document\n\n", (string) $compiled->content);
+        $this->assertEquals(2, \count($compiled->errors));
+        $errors = \iterator_to_array($compiled->errors->getIterator());
+        $this->assertInstanceOf(SourceError::class, $errors[0]);
+        $this->assertInstanceOf(SourceError::class, $errors[1]);
+        $this->assertEquals('Error 1', $errors[0]->exception->getMessage());
+        $this->assertEquals('Error 2', $errors[1]->exception->getMessage());
+    }
+
+    #[Test]
+    public function it_should_handle_invalid_output_path(): void
+    {
+        $document = Document::create(
+            description: 'Test Document',
+            outputPath: '/invalid/path/output.txt',
+            overwrite: true,
+        );
+
+        $this->files
+            ->expects($this->once())
+            ->method('ensureDirectory')
+            ->with('/base/path/invalid/path')
+            ->willThrowException(new \RuntimeException('Cannot create directory'));
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Cannot create directory');
+
+        $this->compiler->compile($document);
+    }
+
+    #[Test]
+    public function it_should_compile_empty_document(): void
+    {
+        $document = Document::create(
+            description: 'Empty Document',
+            outputPath: 'empty.txt',
+            overwrite: true,
+        );
+
+        $this->files
+            ->expects($this->once())
+            ->method('write')
+            ->with(
+                '/base/path/empty.txt',
+                $content = "# Empty Document\n\n",
+            );
+
+        $compiled = $this->compiler->compile($document);
+
+        $this->assertEquals($content, (string) $compiled->content);
+        $this->assertEquals(0, \count($compiled->errors));
+    }
+
     protected function setUp(): void
     {
         parent::setUp();
