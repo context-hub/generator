@@ -8,9 +8,17 @@
 
 # Colors
 RED='\033[31m'
+MUTED='\033[2m'
 GREEN='\033[32m'
 YELLOW='\033[33m'
+BLUE='\033[34m'
+BOLD='\033[1m'
 DEFAULT='\033[0m'
+
+# Symbols (ASCII compatible)
+CHECK_MARK="✓"
+CROSS_MARK="✗"
+ARROW="→"
 
 # Project name
 PNAME='ctx'
@@ -27,6 +35,33 @@ DEFAULT_BIN_DIR="/usr/local/bin"
 
 # FUNCTIONS
 
+# Print a section header
+print_header() {
+  printf "\n${BOLD}$1${DEFAULT}\n"
+  printf "%-${#1}s\n" | tr " " "-"
+  printf "\n"
+}
+
+# Print a status message
+print_status() {
+  printf " ${MUTED} >>  ${MUTED}$1${DEFAULT}\n"
+}
+
+# Print a success message
+print_success() {
+  printf " ${GREEN}[OK]${DEFAULT} $1\n"
+}
+
+# Print an error message
+print_error() {
+  printf " ${RED}[ERROR]${DEFAULT} $1\n"
+}
+
+# Print a warning message
+print_warning() {
+  printf " ${YELLOW}[WARNING]${DEFAULT} $1\n"
+}
+
 # Gets the version of the latest stable version by setting the $latest variable.
 # Returns 0 in case of success, 1 otherwise.
 get_latest() {
@@ -35,10 +70,12 @@ get_latest() {
   latest_release="$GITHUB_API/latest"
 
   if ! temp_file=$(mktemp -q /tmp/$PNAME.XXXXXXXXX); then
-    echo "$0: Can't create temp file."
+    print_error "Can't create temp file."
     fetch_release_failure_usage
     exit 1
   fi
+
+  print_status "Checking for latest version..."
 
   if [ -z "$GITHUB_PAT" ]; then
     curl -s "$latest_release" >"$temp_file" || return 1
@@ -50,30 +87,34 @@ get_latest() {
   latestV="$(grep <"$temp_file" '"tag_name":' | cut -d ':' -f2 | tr -d '"' | tr -d ',' | tr -d ' ')"
 
   rm -f "$temp_file"
+
+  if [ -n "$latest" ]; then
+    print_success "Latest version found: $latestV"
+  fi
+
   return 0
 }
 
 fetch_release_failure_usage() {
-  echo ''
-  printf "${RED}ERROR: Impossible to get the latest stable version of $PNAME.${DEFAULT}\n"
-  echo "Please let us know about this issue: https://github.com/$REPO_OWNER/$REPO_NAME/issues/new"
-  echo ''
-  echo "In the meantime, you can manually download the appropriate binary from the GitHub release assets here: https://github.com/$REPO_OWNER/$REPO_NAME/releases/latest"
+  print_error "Impossible to get the latest stable version of $PNAME."
+  printf "Please let us know about this issue: https://github.com/$REPO_OWNER/$REPO_NAME/issues/new\n"
+  printf "\nIn the meantime, you can manually download the appropriate binary from the GitHub release assets here: https://github.com/$REPO_OWNER/$REPO_NAME/releases/latest\n"
 }
 
 ensure_bin_dir() {
   # Create bin directory if it doesn't exist
   if [ ! -d "$bin_dir" ]; then
-    printf "${YELLOW}Creating directory $bin_dir...${DEFAULT}\n"
+    print_status "Creating directory $bin_dir..."
     mkdir -p "$bin_dir" || {
-      printf "${RED}ERROR: Could not create directory $bin_dir${DEFAULT}\n"
+      print_error "Could not create directory $bin_dir"
       exit 1
     }
+    print_success "Directory created successfully"
   fi
 
   # Check if bin_dir is in PATH
   if ! echo "$PATH" | tr ':' '\n' | grep -q "^$bin_dir$"; then
-    printf "${YELLOW}WARNING: $bin_dir is not in your PATH.${DEFAULT}\n"
+    print_warning "$bin_dir is not in your PATH."
     printf "You might want to add the following line to your shell profile (.bashrc, .zshrc, etc.):\n"
     printf "    ${GREEN}export PATH=\"\$PATH:$bin_dir\"${DEFAULT}\n\n"
   fi
@@ -81,6 +122,8 @@ ensure_bin_dir() {
 
 download_and_install() {
   # Get the latest version
+  print_header "Checking for updates"
+
   if ! get_latest; then
     fetch_release_failure_usage
     exit 1
@@ -91,36 +134,70 @@ download_and_install() {
     exit 1
   fi
 
-  # Download the phar file
-  printf "Downloading $PNAME $latestV...\n"
-  phar_url="$GITHUB_REL/$latestV/$PNAME"
+  # Download the binary file
+  print_header "Downloading the latest version"
+  print_status "Preparing download from: $GITHUB_REL/$latestV/$PNAME"
 
-  if ! curl --fail -L "$phar_url" -o "$bin_dir/$PNAME"; then
-    printf "${RED}ERROR: Failed to download $phar_url${DEFAULT}\n"
+  temp_file=$(mktemp -q /tmp/$PNAME-XXXXXXXXX)
+  if ! temp_file=$(mktemp -q /tmp/$PNAME-XXXXXXXXX); then
+    print_error "Can't create temp file for download."
+    exit 1
+  fi
+
+  echo "\n"
+
+  # Use curl with progress bar but suppress most headers
+  if ! curl --fail -L "$GITHUB_REL/$latestV/$PNAME" -o "$temp_file" \
+       --progress-bar --write-out "%{http_code}" | grep -q "^2"; then
+    printf "] ${RED}Failed!${DEFAULT}\n"
+    print_error "Failed to download $GITHUB_REL/$latestV/$PNAME"
+    rm -f "$temp_file"
+    exit 1
+  fi
+
+  echo "\n"
+
+  print_success "Successfully downloaded version $latestV"
+  print_status "Saved to temporary file: $temp_file"
+
+  # Install the binary
+  print_header "Installing the update"
+  print_status "Replacing current binary at: $bin_dir/$PNAME"
+
+  if ! mv "$temp_file" "$bin_dir/$PNAME"; then
+    print_error "Failed to move binary to $bin_dir/$PNAME"
+    rm -f "$temp_file"
     exit 1
   fi
 
   # Make executable
-  chmod +x "$bin_dir/$PNAME" || {
-    printf "${RED}ERROR: Failed to make $bin_dir/$PNAME executable${DEFAULT}\n"
+  if ! chmod +x "$bin_dir/$PNAME"; then
+    print_error "Failed to make $bin_dir/$PNAME executable"
     exit 1
-  }
+  fi
 
-  printf "${GREEN}$PNAME $latestV successfully installed to $bin_dir/$PNAME${DEFAULT}\n"
-  printf "You can now run it using: $PNAME generate\n"
+  print_success "Successfully replaced the binary file"
+  print_success "Successfully installed $PNAME $latestV to $bin_dir/$PNAME\n"
+
+  printf "     You can now run it using:\n"
+  printf "         ${BOLD}$PNAME${DEFAULT}\n\n"
+  printf "     📚 Documentation: https://docs.ctxgithub.com\n"
+  printf "     🚀 Happy AI coding!\n\n"
 }
 
 # Main script execution
-echo "Context Generator Installer"
-echo "==========================="
+printf "${BOLD}Context Generator Installer${DEFAULT}\n"
+printf "===========================\n\n"
 
 # Determine bin directory
 if [ -n "$1" ]; then
   bin_dir="$1"
+  print_status "Installation directory: $bin_dir"
 else
   bin_dir="$DEFAULT_BIN_DIR"
-  printf "No installation directory specified. Using default: $bin_dir\n"
-  printf "You can specify a different directory by passing it as an argument: $0 /path/to/bin\n\n"
+  print_status "No installation directory specified. Using default: $bin_dir\n"
+  printf "      ${MUTED}You can specify a different directory by running:${DEFAULT}\n"
+  printf "      ${MUTED}curl -sSL https://raw.githubusercontent.com/context-hub/generator/main/download-latest.sh | sh -s /path/to/bin${DEFAULT}\n\n"
 fi
 
 # Ensure bin directory exists and is in PATH
