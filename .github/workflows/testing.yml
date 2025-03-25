@@ -61,7 +61,7 @@ jobs:
         with:
           dependencies: ${{ matrix.dependencies }}
 
-      - name: 🧪 Collect code coverage with Xdebug and pestphp/pest
+      - name: 🧪 Collect code coverage with Xdebug
         run: composer test:cc
 
       - name: 📤 Upload code coverage report to Codecov

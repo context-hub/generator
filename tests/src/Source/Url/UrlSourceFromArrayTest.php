@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Source;
+namespace Tests\Source\Url;
 
 use Butschster\ContextGenerator\Source\Url\UrlSource;
 use PHPUnit\Framework\Attributes\Test;

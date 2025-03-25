@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Fetcher;
+namespace Tests\Lib\Html;
 
 use Butschster\ContextGenerator\Lib\Html\HtmlCleaner;
 use League\HTMLToMarkdown\HtmlConverter;
