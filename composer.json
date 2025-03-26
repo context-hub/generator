@@ -17,6 +17,7 @@
   ],
   "require": {
     "php": "^8.2",
+    "ext-curl": "*",
     "guzzlehttp/guzzle": "^7.0",
     "league/html-to-markdown": "^5.1",
     "psr-discovery/http-client-implementations": "^1.0",
