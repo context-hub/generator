@@ -256,5 +256,5 @@ documents:
     outputPath: "changes.md"
     sources:
       - type: git_diff
-        commit: staged
+        commit: unstaged
 

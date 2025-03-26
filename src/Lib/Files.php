@@ -36,9 +36,9 @@ final readonly class Files implements FilesInterface
         return true;
     }
 
-    public function write(string $filename, string $content): void
+    public function write(string $filename, string $content, bool $lock = true): bool
     {
-        \file_put_contents($filename, $content, LOCK_EX);
+        return (bool) \file_put_contents($filename, $content, $lock ? LOCK_EX : 0);
     }
 
     public function read(string $filename): string|false
@@ -53,6 +53,11 @@ final readonly class Files implements FilesInterface
     public function exists(string $filename): bool
     {
         return \file_exists($filename);
+    }
+
+    public function delete(string $filename): bool
+    {
+        return \unlink($filename);
     }
 
     private function setPermissions(string $filename, int $mode): bool
