@@ -183,19 +183,19 @@ final class SelfUpdateCommand extends Command
 
         if (!$response->isSuccess()) {
             throw new \RuntimeException(
-                "Failed to download PHAR. Server returned status code {$response->getStatusCode()}",
+                "Failed to download. Server returned status code {$response->getStatusCode()}",
             );
         }
 
         // Create a temporary file
-        $tempFile = \sys_get_temp_dir() . '/context-generator-' . \uniqid() . '.phar';
+        $tempFile = \sys_get_temp_dir() . '/context-generator-' . \uniqid();
 
         // Use FilesInterface to write the content
         $this->files->write($tempFile, $response->getBody());
 
         // Verify the downloaded file
         if (!$this->files->exists($tempFile)) {
-            throw new \RuntimeException("Downloaded PHAR file does not exist");
+            throw new \RuntimeException("Downloaded file does not exist");
         }
 
         $output->text("Downloaded new version to temporary file: $tempFile");
@@ -215,26 +215,30 @@ final class SelfUpdateCommand extends Command
             if (\PHP_OS_FAMILY === 'Windows' && $this->files->exists($pharPath)) {
                 // Since FilesInterface doesn't have a method to delete files,
                 // we have to use native PHP function here
-                if (!\unlink($pharPath)) {
-                    throw new \RuntimeException("Failed to delete current PHAR file");
+                if (!$this->files->delete($pharPath)) {
+                    throw new \RuntimeException("Failed to delete current file");
                 }
             }
 
             // Read the content from temp file
             $newPharContent = $this->files->read($tempFile);
             if ($newPharContent === false) {
-                throw new \RuntimeException("Failed to read the downloaded PHAR content");
+                throw new \RuntimeException("Failed to read the downloaded content");
             }
 
             // Write the content to the target file
-            $this->files->write($pharPath, $newPharContent);
+            if ($this->files->write($pharPath, $newPharContent, false)) {
+                $output->text("Successfully wrote new version to: {$pharPath}");
+            } else {
+                throw new \RuntimeException("Failed to write the new version");
+            }
 
             // Make sure the new PHAR is executable
             if (\PHP_OS_FAMILY !== 'Windows') {
                 // FilesInterface doesn't provide chmod functionality,
                 // so we still need the native function here
                 if (!\chmod($pharPath, 0755)) {
-                    $output->warning("Failed to set executable permissions on the new PHAR file");
+                    $output->warning("Failed to set executable permissions on the new file");
                 }
             }
 
@@ -242,8 +246,8 @@ final class SelfUpdateCommand extends Command
         } finally {
             // Since FilesInterface doesn't have a delete method,
             // we need to use unlink directly
-            if (\file_exists($tempFile)) {
-                \unlink($tempFile);
+            if ($this->files->exists($tempFile)) {
+                $this->files->delete($tempFile);
             }
         }
     }
