@@ -43,7 +43,7 @@ When working with AI-powered development tools context is everything.
   custom explanations. Use AI to generate user guides, API references, or developer documentation based on your actual
   code.
 
-- **Seamless AI Integration**: With MCP support, [connect](/mcp-server) Claude AI directly to your codebase, allowing
+- **Seamless AI Integration**: With MCP support, [connect](https://docs.ctxgithub.com/mcp-server.html) Claude AI directly to your codebase, allowing
   for real-time, context-aware assistance without manual context sharing.
 
 ## How it works
