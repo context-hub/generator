@@ -1,12 +1,5 @@
 documents:
   - description: "Context Generator Project Structure"
-    outputPath: "tests-structure.md"
-    sources:
-      - type: file
-        sourcePaths:
-          - tests
-
-  - description: "Context Generator Project Structure"
     outputPath: "project-structure.md"
     sources:
       - type: tree
@@ -251,3 +244,17 @@ documents:
         sourcePaths: src/Lib/Html
         filePattern: '*.php'
         showTreeView: true
+
+  - description: "Context Generator Project Structure"
+    outputPath: "tests-structure.md"
+    sources:
+      - type: file
+        sourcePaths:
+          - tests
+
+  - description: "Changes in the Project"
+    outputPath: "changes.md"
+    sources:
+      - type: git_diff
+        commit: staged
+

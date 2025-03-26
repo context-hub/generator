@@ -4,45 +4,13 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Console;
 
-use Butschster\ContextGenerator\ConfigLoader\ConfigLoaderFactory;
-use Butschster\ContextGenerator\ConfigLoader\ConfigurationProvider;
 use Butschster\ContextGenerator\ConfigLoader\Exception\ConfigLoaderException;
-use Butschster\ContextGenerator\ConfigLoader\Parser\ConfigParserPluginInterface;
-use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
-use Butschster\ContextGenerator\Document\DocumentsParserPlugin;
-use Butschster\ContextGenerator\Fetcher\SourceFetcherRegistry;
+use Butschster\ContextGenerator\ConfigurationProviderConfig;
+use Butschster\ContextGenerator\ConfigurationProviderFactory;
+use Butschster\ContextGenerator\DocumentCompilerFactory;
 use Butschster\ContextGenerator\FilesInterface;
-use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
-use Butschster\ContextGenerator\Lib\Content\Renderer\MarkdownRenderer;
-use Butschster\ContextGenerator\Lib\GithubClient\GithubClient;
-use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 use Butschster\ContextGenerator\Lib\Logger\HasPrefixLoggerInterface;
 use Butschster\ContextGenerator\Lib\Logger\LoggerFactory;
-use Butschster\ContextGenerator\Lib\Variable\Provider\CompositeVariableProvider;
-use Butschster\ContextGenerator\Lib\Variable\Provider\DotEnvVariableProvider;
-use Butschster\ContextGenerator\Lib\Variable\Provider\PredefinedVariableProvider;
-use Butschster\ContextGenerator\Lib\Variable\VariableReplacementProcessor;
-use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
-use Butschster\ContextGenerator\Modifier\Alias\AliasesRegistry;
-use Butschster\ContextGenerator\Modifier\Alias\ModifierAliasesParserPlugin;
-use Butschster\ContextGenerator\Modifier\Alias\ModifierResolver;
-use Butschster\ContextGenerator\Modifier\AstDocTransformer;
-use Butschster\ContextGenerator\Modifier\ContextSanitizerModifier;
-use Butschster\ContextGenerator\Modifier\PhpContentFilter;
-use Butschster\ContextGenerator\Modifier\PhpSignature;
-use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
-use Butschster\ContextGenerator\Source\Composer\Client\FileSystemComposerClient;
-use Butschster\ContextGenerator\Source\Composer\ComposerSourceFetcher;
-use Butschster\ContextGenerator\Source\Composer\Provider\CompositeComposerProvider;
-use Butschster\ContextGenerator\Source\Composer\Provider\LocalComposerProvider;
-use Butschster\ContextGenerator\Source\File\FileSourceFetcher;
-use Butschster\ContextGenerator\Source\GitDiff\CommitDiffSourceFetcher;
-use Butschster\ContextGenerator\Source\Github\GithubFinder;
-use Butschster\ContextGenerator\Source\Github\GithubSourceFetcher;
-use Butschster\ContextGenerator\Source\Text\TextSourceFetcher;
-use Butschster\ContextGenerator\Source\Tree\TreeSourceFetcher;
-use Butschster\ContextGenerator\Source\Url\UrlSourceFetcher;
-use Dotenv\Repository\RepositoryBuilder;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -58,11 +26,16 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 final class GenerateCommand extends Command
 {
+    use DetermineRootPath;
+
+    private LoggerInterface $logger;
+
     public function __construct(
         private readonly string $rootPath,
         private readonly string $outputPath,
-        private readonly HttpClientInterface $httpClient,
         private readonly FilesInterface $files,
+        private readonly DocumentCompilerFactory $documentCompilerFactory,
+        private readonly ConfigurationProviderFactory $configurationProviderFactory,
     ) {
         parent::__construct();
     }
@@ -97,214 +70,87 @@ final class GenerateCommand extends Command
             );
     }
 
+    /**
+     * @param SymfonyStyle $output
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $outputStyle = new SymfonyStyle($input, $output);
-
-        // Create a logger specific to this command execution
-        $logger = LoggerFactory::create(
+        $this->logger = LoggerFactory::create(
             output: $output,
             loggingEnabled: $output->isVerbose() || $output->isDebug() || $output->isVeryVerbose(),
         );
 
-        \assert($logger instanceof HasPrefixLoggerInterface);
-        \assert($logger instanceof LoggerInterface);
-
-        $files = $this->files;
-
+        \assert($this->logger instanceof HasPrefixLoggerInterface);
+        \assert($this->logger instanceof LoggerInterface);
 
         // Get the configuration options
         $inlineConfig = $input->getOption('inline');
         $configPath = $input->getOption('config-file');
+        $githubToken = $input->getOption('github-token');
+        $envFileName = $input->getOption('env') ?? null;
 
         // Determine the effective root path based on config file path
-        $effectiveRootPath = $this->rootPath;
-        if ($configPath !== null && $inlineConfig === null) {
-            // If config path is absolute, use its directory as root
-            if (\str_starts_with((string) $configPath, '/')) {
-                $configDir = \dirname((string) $configPath);
-            } else {
-                // If relative, resolve against the original root path
-                $fullConfigPath = \rtrim($this->rootPath, '/') . '/' . $configPath;
-                $configDir = \rtrim(\is_dir($fullConfigPath) ? $fullConfigPath : \dirname($fullConfigPath));
-            }
+        $effectiveRootPath = $this->determineRootPath($configPath, $inlineConfig);
 
-            if ($files->exists($configDir) && \is_dir($configDir)) {
-                $effectiveRootPath = $configDir;
-                $logger->info('Updated root path based on config file location', [
-                    'original' => $this->rootPath,
-                    'effective' => $effectiveRootPath,
-                ]);
-            } else {
-                $logger->warning('Could not determine directory from config file path', [
-                    'configPath' => $configPath,
-                    'using' => $this->rootPath,
-                ]);
-            }
-        }
-
-        $modifiers = new SourceModifierRegistry();
-        $modifiers->register(
-            new PhpSignature(),
-            new ContextSanitizerModifier(),
-            new PhpContentFilter(),
-            new AstDocTransformer(),
-        );
-
-        $githubToken = $input->getOption('github-token');
-
-        $contentBuilderFactory = new ContentBuilderFactory(
-            defaultRenderer: new MarkdownRenderer(),
-        );
-
-        // Get the env file path from the command option
-        $envFileName = $input->getOption('env') ?? null;
+        // Determine the env file path
         $envFilePath = $envFileName ? $effectiveRootPath : null;
 
-        $variablesProvider = new CompositeVariableProvider(
-            envProvider: new DotEnvVariableProvider(
-                repository: RepositoryBuilder::createWithDefaultAdapters()->make(),
-                rootPath: $envFilePath,
-                envFileName: $envFileName,
-            ),
-            predefinedProvider: new PredefinedVariableProvider(),
+        // Create the document compiler
+        $compiler = $this->documentCompilerFactory->create(
+            rootPath: $effectiveRootPath,
+            outputPath: $this->outputPath,
+            logger: $this->logger,
+            githubToken: $githubToken,
+            envFilePath: $envFilePath,
+            envFileName: $envFileName,
         );
 
-        $variableResolver = new VariableResolver(
-            processor: new VariableReplacementProcessor(
-                provider: $variablesProvider,
-                logger: $logger->withPrefix('variable-resolver'),
-            ),
-        );
-
-        $sourceFetcherRegistry = new SourceFetcherRegistry(
-            fetchers: [
-                new TextSourceFetcher(
-                    builderFactory: $contentBuilderFactory,
-                    variableResolver: $variableResolver,
-                    logger: $logger->withPrefix('text-source'),
-                ),
-                new FileSourceFetcher(
-                    basePath: $effectiveRootPath,
-                    builderFactory: $contentBuilderFactory,
-                    logger: $logger->withPrefix('file-source'),
-                ),
-                new ComposerSourceFetcher(
-                    provider: new CompositeComposerProvider(
-                        logger: $logger,
-                        localProvider: new LocalComposerProvider(
-                            client: new FileSystemComposerClient(logger: $logger),
-                            logger: $logger,
-                        ),
-                    ),
-                    basePath: $effectiveRootPath,
-                    builderFactory: $contentBuilderFactory,
-                    variableResolver: $variableResolver,
-                    logger: $logger->withPrefix('composer-source'),
-                ),
-                new UrlSourceFetcher(
-                    httpClient: $this->httpClient,
-                    variableResolver: $variableResolver,
-                    builderFactory: $contentBuilderFactory,
-                    logger: $logger->withPrefix('url-source'),
-                ),
-                new GithubSourceFetcher(
-                    finder: new GithubFinder(
-                        githubClient: new GithubClient($this->httpClient, token: $githubToken),
-                        variableResolver: $variableResolver,
-                    ),
-                    builderFactory: $contentBuilderFactory,
-                    logger: $logger->withPrefix('github-source'),
-                ),
-                new CommitDiffSourceFetcher(
-                    builderFactory: $contentBuilderFactory,
-                    logger: $logger->withPrefix('commit-diff-source'),
-                ),
-                new TreeSourceFetcher(
-                    basePath: $effectiveRootPath,
-                    builderFactory: $contentBuilderFactory,
-                    logger: $logger->withPrefix('tree-source'),
-                ),
-            ],
-        );
-
-        $compiler = new DocumentCompiler(
-            files: $files,
-            parser: $sourceFetcherRegistry,
-            basePath: $this->outputPath,
-            modifierRegistry: $modifiers,
-            builderFactory: $contentBuilderFactory,
-            logger: $logger->withPrefix('documents'),
-        );
-
-        $configProvider = new ConfigurationProvider(
-            loaderFactory: new ConfigLoaderFactory(
-                files: $this->files,
+        // Create configuration provider
+        $configProvider = $this->configurationProviderFactory->create(
+            new ConfigurationProviderConfig(
                 rootPath: $effectiveRootPath,
-                logger: $logger->withPrefix('config-loader'),
+                files: $this->files,
+                logger: $this->logger,
+                configPath: $configPath,
+                inlineConfig: $inlineConfig,
             ),
-            files: $this->files,
-            rootPath: $this->rootPath,
-            logger: $logger->withPrefix('config-provider'),
-            parserPlugins: $this->getParserPlugins(),
         );
 
         try {
             // Get the appropriate loader based on options provided
             if ($inlineConfig !== null) {
-                $outputStyle->info('Using inline JSON configuration...');
+                $output->info('Using inline JSON configuration...');
                 $loader = $configProvider->fromString($inlineConfig);
             } elseif ($configPath !== null) {
-                $outputStyle->info(\sprintf('Loading configuration from %s...', $configPath));
+                $output->info(\sprintf('Loading configuration from %s...', $configPath));
                 $loader = $configProvider->fromPath($configPath);
             } else {
-                $outputStyle->info('Loading configuration from default location...');
+                $output->info('Loading configuration from default location...');
                 $loader = $configProvider->fromDefaultLocation();
             }
         } catch (ConfigLoaderException $e) {
-            $logger->error('Failed to load configuration', [
+            $this->logger->error('Failed to load configuration', [
                 'error' => $e->getMessage(),
             ]);
 
-            $outputStyle->error(\sprintf('Failed to load configuration: %s', $e->getMessage()));
+            $output->error(\sprintf('Failed to load configuration: %s', $e->getMessage()));
 
             return Command::FAILURE;
         }
 
         foreach ($loader->load()->getItems() as $document) {
-            $outputStyle->info(\sprintf('Compiling %s...', $document->description));
+            $output->info(\sprintf('Compiling %s...', $document->description));
 
             $compiledDocument = $compiler->compile($document);
             if (!$compiledDocument->errors->hasErrors()) {
-                $outputStyle->success(\sprintf('Document compiled into %s', $document->outputPath));
+                $output->success(\sprintf('Document compiled into %s', $document->outputPath));
                 continue;
             }
 
-            $outputStyle->warning(\sprintf('Document compiled into %s with errors', $document->outputPath));
-            $outputStyle->listing(\iterator_to_array($compiledDocument->errors));
+            $output->warning(\sprintf('Document compiled into %s with errors', $document->outputPath));
+            $output->listing(\iterator_to_array($compiledDocument->errors));
         }
 
         return Command::SUCCESS;
-    }
-
-    /**
-     * Get parser plugins for the config loader
-     *
-     * @return array<ConfigParserPluginInterface>
-     */
-    private function getParserPlugins(): array
-    {
-        $modifierResolver = new ModifierResolver(
-            aliasesRegistry: $aliasesRegistry = new AliasesRegistry(),
-        );
-
-        return [
-            new ModifierAliasesParserPlugin(
-                aliasesRegistry: $aliasesRegistry,
-            ),
-            new DocumentsParserPlugin(
-                modifierResolver: $modifierResolver,
-            ),
-        ];
     }
 }
