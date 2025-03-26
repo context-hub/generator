@@ -6,7 +6,9 @@ namespace Butschster\ContextGenerator\Console;
 
 use Butschster\ContextGenerator\Document\Document;
 use Butschster\ContextGenerator\ConfigLoader\Registry\DocumentRegistry;
-use Butschster\ContextGenerator\Source\Text\TextSource;
+use Butschster\ContextGenerator\FilesInterface;
+use Butschster\ContextGenerator\Lib\TreeBuilder\TreeViewConfig;
+use Butschster\ContextGenerator\Source\Tree\TreeSource;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -21,10 +23,12 @@ use Symfony\Component\Yaml\Yaml;
 )]
 final class InitCommand extends Command
 {
-    private const DEFAULT_CONFIG_NAME = 'context.json';
+    private const DEFAULT_CONFIG_NAME = 'context.yaml';
 
-    public function __construct(public string $baseDir)
-    {
+    public function __construct(
+        public string $baseDir,
+        private readonly FilesInterface $files,
+    ) {
         parent::__construct();
     }
 
@@ -49,12 +53,13 @@ final class InitCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $outputStyle = new SymfonyStyle($input, $output);
+        \assert($output instanceof SymfonyStyle);
+
         $filename = $input->getArgument('filename') ?: self::DEFAULT_CONFIG_NAME;
 
         $type = $input->getOption('type');
         if (!\in_array($type, ['json', 'yaml'], true)) {
-            $outputStyle->error('Invalid type specified. Supported types are: json, yaml');
+            $output->error('Invalid type specified. Supported types are: json, yaml');
 
             return Command::FAILURE;
         }
@@ -62,19 +67,21 @@ final class InitCommand extends Command
         $filename = \pathinfo(\strtolower((string) $filename), PATHINFO_FILENAME) . '.' . $type;
         $filePath = \sprintf('%s/%s', $this->baseDir, $filename);
 
-        if (\file_exists($filePath)) {
-            $outputStyle->error(\sprintf('Config %s already exists', $filePath));
+        if ($this->files->exists($filePath)) {
+            $output->error(\sprintf('Config %s already exists', $filePath));
 
             return Command::FAILURE;
         }
 
         $content = new DocumentRegistry([
             new Document(
-                description: 'Your description here',
-                outputPath: 'context.md',
-                firstSource: new TextSource(
-                    content: 'My first context',
-                    description: 'First context',
+                description: 'Project structure overview',
+                outputPath: 'project-structure.md',
+                firstSource: new TreeSource(
+                    sourcePath: ['src'],
+                    treeView: new TreeViewConfig(
+                        showCharCount: true,
+                    ),
                 ),
             ),
         ]);
@@ -90,20 +97,21 @@ final class InitCommand extends Command
                 ),
             };
         } catch (\Throwable $e) {
-            $outputStyle->error(\sprintf('Failed to create config: %s', $e->getMessage()));
+            $output->error(\sprintf('Failed to create config: %s', $e->getMessage()));
 
             return Command::FAILURE;
         }
 
         if (\file_exists($filePath)) {
-            $outputStyle->error(\sprintf('Config %s already exists', $filePath));
+            $output->error(\sprintf('Config %s already exists', $filePath));
 
             return Command::FAILURE;
         }
 
-        \file_put_contents($filePath, $content);
+        $this->files->ensureDirectory(\dirname($filePath));
+        $this->files->write($filePath, $content);
 
-        $outputStyle->success(\sprintf('Config %s created', $filePath));
+        $output->success(\sprintf('Config %s created', $filePath));
 
         return Command::SUCCESS;
     }

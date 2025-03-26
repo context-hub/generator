@@ -5,23 +5,31 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator;
 
+use Butschster\ContextGenerator\ConfigLoader\Parser\ParserPluginRegistry;
 use Butschster\ContextGenerator\Console\DisplayCommand;
 use Butschster\ContextGenerator\Console\GenerateCommand;
 use Butschster\ContextGenerator\Console\InitCommand;
+use Butschster\ContextGenerator\Console\MCPServerCommand;
 use Butschster\ContextGenerator\Console\SchemaCommand;
 use Butschster\ContextGenerator\Console\SelfUpdateCommand;
 use Butschster\ContextGenerator\Console\VersionCommand;
+use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
+use Butschster\ContextGenerator\Lib\Content\Renderer\MarkdownRenderer;
 use Butschster\ContextGenerator\Lib\Files;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientFactory;
+use Butschster\ContextGenerator\Lib\Logger\LoggerFactory;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\HttpFactory;
 use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Input\ArgvInput;
+use Symfony\Component\Console\Output\ConsoleOutput;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 // -----------------------------------------------------------------------------
 //  Prepare Global Environment
 // -----------------------------------------------------------------------------
 
-error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
+\error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
 
 
 // -----------------------------------------------------------------------------
@@ -74,6 +82,9 @@ $vendorPath = (static function (): string {
 $application = new Application();
 $application->setDefaultCommand('generate');
 
+$input = new ArgvInput();
+$output = new SymfonyStyle($input, new ConsoleOutput());
+
 $vendorPath = \dirname($vendorPath) . '/../';
 $versionFile = $vendorPath . '/version.json';
 $appPath = \realpath($vendorPath);
@@ -91,14 +102,54 @@ if ($insidePhar) {
     $appPath = \getcwd();
 }
 
+// Create base services
+$files = new Files();
 $httpClient = new Client();
 $httpMessageFactory = new HttpFactory();
-
 $httpClientAdapter = HttpClientFactory::create(
     $httpClient,
     $httpMessageFactory,
 );
 
+// Create the factory chain for the GenerateCommand
+$contentBuilderFactory = new ContentBuilderFactory(
+    defaultRenderer: new MarkdownRenderer(),
+);
+
+$githubClientFactory = new GithubClientFactory(
+    httpClient: $httpClientAdapter,
+    defaultToken: \getenv('GITHUB_TOKEN') ?: null,
+);
+
+$variableResolverFactory = new VariableResolverFactory();
+$modifierRegistryFactory = new ModifierRegistryFactory();
+
+// Create the source fetcher registry factory with its dependencies
+$sourceFetcherRegistryFactory = new SourceFetcherRegistryFactory(
+    httpClient: $httpClientAdapter,
+    contentBuilderFactory: $contentBuilderFactory,
+    variableResolverFactory: $variableResolverFactory,
+    githubClientFactory: $githubClientFactory,
+);
+
+// Create the document compiler factory with its dependencies
+$documentCompilerFactory = new DocumentCompilerFactory(
+    files: $files,
+    sourceFetcherRegistryFactory: $sourceFetcherRegistryFactory,
+    modifierRegistryFactory: $modifierRegistryFactory,
+    contentBuilderFactory: $contentBuilderFactory,
+);
+
+$configProviderFactory = new ConfigurationProviderFactory(
+    parserPluginRegistry: ParserPluginRegistry::createDefault(),
+);
+
+$logger = LoggerFactory::create(
+    output: $output,
+    loggingEnabled: $output->isVerbose() || $output->isDebug() || $output->isVeryVerbose(),
+);
+
+// Register all commands
 $application->add(
     new VersionCommand(
         version: $version['version'] ?? 'dev',
@@ -109,6 +160,7 @@ $application->add(
 $application->add(
     new InitCommand(
         baseDir: $appPath,
+        files: $files,
     ),
 );
 
@@ -122,7 +174,7 @@ $application->add(
     new SelfUpdateCommand(
         version: $version['version'] ?? 'dev',
         httpClient: $httpClientAdapter,
-        files: new Files(),
+        files: $files,
         binaryType: $type,
     ),
 );
@@ -131,18 +183,28 @@ $application->add(
     new GenerateCommand(
         rootPath: $appPath,
         outputPath: $appPath . '/.context',
-        httpClient: $httpClientAdapter,
-        files: new Files(),
+        files: $files,
+        documentCompilerFactory: $documentCompilerFactory,
+        configurationProviderFactory: $configProviderFactory,
     ),
 );
 
 $application->add(
     new DisplayCommand(
-        files: new Files(),
+        rootPath: $appPath,
+        files: $files,
+        configurationProviderFactory: $configProviderFactory,
     ),
 );
 
-$input = new \Symfony\Component\Console\Input\ArgvInput();
-$output = new \Symfony\Component\Console\Output\ConsoleOutput();
+$application->add(
+    new MCPServerCommand(
+        rootPath: $appPath,
+        jsonSchemaPath: __DIR__ . '/json-schema.json',
+        files: $files,
+        documentCompilerFactory: $documentCompilerFactory,
+        configurationProviderFactory: $configProviderFactory,
+    ),
+);
 
 $application->run($input, $output);

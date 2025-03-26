@@ -84,7 +84,7 @@ final readonly class DocumentCompiler
     /**
      * Build document content from all sources
      */
-    private function buildContent(ErrorCollection $errors, Document $document): CompiledDocument
+    public function buildContent(ErrorCollection $errors, Document $document): CompiledDocument
     {
         $this->logger?->debug('Creating content builder');
         $builder = $this->builderFactory->create();
