@@ -22,14 +22,14 @@ The test structure typically mirrors the main source code structure:
 
 1. **Test Class Namespace**:
     - Use namespace `namespace Tests\` for all test classes
-    - Provide attributes for coverage: `#[CoversClass(VariableResolver::class)]`
+    - Provide attributes for coverage: `#[\PHPUnit\Framework\Attributes\CoversClass(VariableResolver::class)]`
 
 1. **Test Class Names**:
     - Name test classes after the class they're testing, followed by `Test`
     - Example: `FileSourceFetcher` -> `FileSourceFetcherTest`
 
 2. **Test Method Names**:
-    - For PHPUnit with PHP 8+, use attributes: `#[Test]`. We use PHP8.3
+    - For PHPUnit with PHP 8+, use attributes: `#[\PHPUnit\Framework\Attributes\Test]`. We use PHP8.3
     - Use descriptive names that explain what is being tested:
         - `it_should_not_support_other_sources`
         - `it_should_throw_exception_for_invalid_source_type`
