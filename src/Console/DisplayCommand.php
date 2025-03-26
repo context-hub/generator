@@ -63,11 +63,10 @@ final class DisplayCommand extends Command
             ->setHelp('This command displays the context configuration in a human-readable format');
     }
 
-    /**
-     * @param SymfonyStyle $output
-     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        \assert($output instanceof SymfonyStyle);
+
         $this->logger = LoggerFactory::create(
             output: $output,
             loggingEnabled: $output->isVerbose() || $output->isDebug() || $output->isVeryVerbose(),

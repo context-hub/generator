@@ -56,16 +56,17 @@ final class SchemaCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io = new SymfonyStyle($input, $output);
+        \assert($output instanceof SymfonyStyle);
+
         $shouldDownload = $input->getOption('download');
         $outputPath = $input->getOption('output');
 
         // Always show the URL where the schema is hosted
-        $io->info('JSON schema URL: ' . self::SCHEMA_URL);
+        $output->info('JSON schema URL: ' . self::SCHEMA_URL);
 
         // If no download requested, exit early
         if (!$shouldDownload) {
-            $io->note('Use --download option to download the schema to your current directory');
+            $output->note('Use --download option to download the schema to your current directory');
             return Command::SUCCESS;
         }
 
@@ -77,7 +78,7 @@ final class SchemaCommand extends Command
             ]);
 
             if (!$response->isSuccess()) {
-                $io->error(
+                $output->error(
                     \sprintf(
                         'Failed to download schema. Server returned status code %d',
                         $response->getStatusCode(),
@@ -93,20 +94,20 @@ final class SchemaCommand extends Command
                 // This will throw an exception if the content is not valid JSON
                 $response->getJson();
             } catch (HttpException $e) {
-                $io->error('Downloaded schema is not valid JSON: ' . $e->getMessage());
+                $output->error('Downloaded schema is not valid JSON: ' . $e->getMessage());
                 return Command::FAILURE;
             }
 
             // Save schema to file
             if (\file_put_contents($outputPath, $schemaContent) === false) {
-                $io->error(\sprintf('Failed to write schema to %s', $outputPath));
+                $output->error(\sprintf('Failed to write schema to %s', $outputPath));
                 return Command::FAILURE;
             }
 
-            $io->success(\sprintf('Schema successfully downloaded to %s', $outputPath));
+            $output->success(\sprintf('Schema successfully downloaded to %s', $outputPath));
 
             // Provide a hint about how to use the schema
-            $io->note([
+            $output->note([
                 'To use this schema in your IDE:',
                 '- For PhpStorm/IntelliJ IDEA: Add the json-schema.json file to your project and associate it with your context.json file',
                 '- For VS Code: Add the schema to your settings.json in the "json.schemas" section',
@@ -114,7 +115,7 @@ final class SchemaCommand extends Command
 
             return Command::SUCCESS;
         } catch (\Throwable $e) {
-            $io->error(\sprintf('Error downloading schema: %s', $e->getMessage()));
+            $output->error(\sprintf('Error downloading schema: %s', $e->getMessage()));
             return Command::FAILURE;
         }
     }

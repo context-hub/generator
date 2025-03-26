@@ -14,6 +14,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Yaml\Yaml;
 
 #[AsCommand(
@@ -52,6 +53,8 @@ final class InitCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        \assert($output instanceof SymfonyStyle);
+
         $filename = $input->getArgument('filename') ?: self::DEFAULT_CONFIG_NAME;
 
         $type = $input->getOption('type');

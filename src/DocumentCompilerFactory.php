@@ -6,6 +6,7 @@ namespace Butschster\ContextGenerator;
 
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
+use Butschster\ContextGenerator\Lib\Logger\HasPrefixLoggerInterface;
 use Psr\Log\LoggerInterface;
 
 final readonly class DocumentCompilerFactory
@@ -25,6 +26,8 @@ final readonly class DocumentCompilerFactory
         ?string $envFilePath = null,
         ?string $envFileName = null,
     ): DocumentCompiler {
+        \assert($logger instanceof HasPrefixLoggerInterface);
+
         $sourceFetcherRegistry = $this->sourceFetcherRegistryFactory->create(
             rootPath: $rootPath,
             logger: $logger,

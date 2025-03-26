@@ -7,6 +7,7 @@ namespace Butschster\ContextGenerator;
 use Butschster\ContextGenerator\Fetcher\SourceFetcherRegistry;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
+use Butschster\ContextGenerator\Lib\Logger\HasPrefixLoggerInterface;
 use Butschster\ContextGenerator\Source\Composer\Client\FileSystemComposerClient;
 use Butschster\ContextGenerator\Source\Composer\ComposerSourceFetcher;
 use Butschster\ContextGenerator\Source\Composer\Provider\CompositeComposerProvider;
@@ -36,6 +37,8 @@ final readonly class SourceFetcherRegistryFactory
         ?string $envFilePath = null,
         ?string $envFileName = null,
     ): SourceFetcherRegistry {
+        \assert($logger instanceof HasPrefixLoggerInterface);
+
         $variableResolver = $this->variableResolverFactory->create(
             logger: $logger,
             envFilePath: $envFilePath,

@@ -70,11 +70,10 @@ final class GenerateCommand extends Command
             );
     }
 
-    /**
-     * @param SymfonyStyle $output
-     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        \assert($output instanceof SymfonyStyle);
+
         $this->logger = LoggerFactory::create(
             output: $output,
             loggingEnabled: $output->isVerbose() || $output->isDebug() || $output->isVeryVerbose(),

@@ -63,8 +63,9 @@ final class SelfUpdateCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io = new SymfonyStyle($input, $output);
-        $io->title('Context Generator Self Update');
+        \assert($output instanceof SymfonyStyle);
+
+        $output->title('Context Generator Self Update');
 
         $pharPath = \trim((string) $input->getOption('phar-path') ?: self::PHAR_PATH);
         $fileName = match ($input->getOption('type')) {
@@ -75,14 +76,14 @@ final class SelfUpdateCommand extends Command
 
         // Check if running as a PHAR
         if ($pharPath === '') {
-            $io->error(
+            $output->error(
                 'Self-update is only available when running the PHAR version of Context Generator.',
             );
             return Command::FAILURE;
         }
 
-        $io->text('Current version: ' . $this->version);
-        $io->section('Checking for updates...');
+        $output->text('Current version: ' . $this->version);
+        $output->section('Checking for updates...');
 
         try {
             // Fetch and compare versions
@@ -90,32 +91,32 @@ final class SelfUpdateCommand extends Command
             $isUpdateAvailable = $this->isUpdateAvailable($this->version, $latestVersion);
 
             if (!$isUpdateAvailable) {
-                $io->success("You're already using the latest version ({$this->version})");
+                $output->success("You're already using the latest version ({$this->version})");
                 return Command::SUCCESS;
             }
 
-            $io->success("A new version is available: {$latestVersion}");
+            $output->success("A new version is available: {$latestVersion}");
 
             // Confirm the update
-            if (!$io->confirm('Do you want to update now?', true)) {
+            if (!$output->confirm('Do you want to update now?', true)) {
                 return Command::SUCCESS;
             }
 
             // Start the update process
-            $io->section('Downloading the latest version...');
-            $tempFile = $this->downloadLatestVersion($fileName, $latestVersion, $io);
+            $output->section('Downloading the latest version...');
+            $tempFile = $this->downloadLatestVersion($fileName, $latestVersion, $output);
 
-            $io->section('Installing the update...');
-            $this->installUpdate($tempFile, $pharPath, $io);
+            $output->section('Installing the update...');
+            $this->installUpdate($tempFile, $pharPath, $output);
 
-            $io->success("Successfully updated to version {$latestVersion}");
+            $output->success("Successfully updated to version {$latestVersion}");
 
             return Command::SUCCESS;
         } catch (HttpException $e) {
-            $io->error("HTTP error: {$e->getMessage()}");
+            $output->error("HTTP error: {$e->getMessage()}");
             return Command::FAILURE;
         } catch (\Throwable $e) {
-            $io->error("Failed to update: {$e->getMessage()}");
+            $output->error("Failed to update: {$e->getMessage()}");
             return Command::FAILURE;
         }
     }
@@ -169,11 +170,11 @@ final class SelfUpdateCommand extends Command
     /**
      * Download the latest version to a temporary file
      */
-    private function downloadLatestVersion(string $fileName, string $version, SymfonyStyle $io): string
+    private function downloadLatestVersion(string $fileName, string $version, SymfonyStyle $output): string
     {
         $downloadUrl = \sprintf(self::GITHUB_DOWNLOAD_URL, $version, $fileName);
 
-        $io->text("Requesting from: $downloadUrl");
+        $output->text("Requesting from: $downloadUrl");
 
         $response = $this->httpClient->getWithRedirects(
             $downloadUrl,
@@ -197,7 +198,7 @@ final class SelfUpdateCommand extends Command
             throw new \RuntimeException("Downloaded PHAR file does not exist");
         }
 
-        $io->text("Downloaded new version to temporary file: $tempFile");
+        $output->text("Downloaded new version to temporary file: $tempFile");
 
         return $tempFile;
     }
@@ -205,10 +206,10 @@ final class SelfUpdateCommand extends Command
     /**
      * Install the update by replacing the current PHAR
      */
-    private function installUpdate(string $tempFile, string $pharPath, SymfonyStyle $io): void
+    private function installUpdate(string $tempFile, string $pharPath, SymfonyStyle $output): void
     {
         try {
-            $io->text("Replacing current PHAR at: {$pharPath}");
+            $output->text("Replacing current PHAR at: {$pharPath}");
 
             // On Windows, we need to delete the file first
             if (\PHP_OS_FAMILY === 'Windows' && $this->files->exists($pharPath)) {
@@ -233,11 +234,11 @@ final class SelfUpdateCommand extends Command
                 // FilesInterface doesn't provide chmod functionality,
                 // so we still need the native function here
                 if (!\chmod($pharPath, 0755)) {
-                    $io->warning("Failed to set executable permissions on the new PHAR file");
+                    $output->warning("Failed to set executable permissions on the new PHAR file");
                 }
             }
 
-            $io->text("Successfully replaced the PHAR file");
+            $output->text("Successfully replaced the PHAR file");
         } finally {
             // Since FilesInterface doesn't have a delete method,
             // we need to use unlink directly

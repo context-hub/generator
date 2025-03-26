@@ -43,23 +43,24 @@ final class VersionCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io = new SymfonyStyle($input, $output);
-        $io->title('Context Generator');
-        $io->text('Current version: ' . $this->version);
+        \assert($output instanceof SymfonyStyle);
+
+        $output->title('Context Generator');
+        $output->text('Current version: ' . $this->version);
 
         $checkUpdates = $input->getOption('check-updates');
 
         if ($checkUpdates) {
-            $io->newLine();
-            $io->section('Checking for updates...');
+            $output->newLine();
+            $output->section('Checking for updates...');
 
             try {
                 $latestVersion = $this->fetchLatestVersion();
                 $isUpdateAvailable = $this->isUpdateAvailable($this->version, $latestVersion);
 
                 if ($isUpdateAvailable) {
-                    $io->success("A new version is available: {$latestVersion}");
-                    $io->text([
+                    $output->success("A new version is available: {$latestVersion}");
+                    $output->text([
                         'You can update by running:',
                         'ctx self-update',
                         '',
@@ -68,16 +69,16 @@ final class VersionCommand extends Command
                         '- Download from: https://github.com/context-hub/generator/releases/download/' . $latestVersion . '/context-generator.phar',
                     ]);
                 } else {
-                    $io->success("You're using the latest version ({$this->version})");
+                    $output->success("You're using the latest version ({$this->version})");
                 }
             } catch (HttpException $e) {
-                $io->error("Failed to check for updates: {$e->getMessage()}");
+                $output->error("Failed to check for updates: {$e->getMessage()}");
             } catch (\Throwable $e) {
-                $io->error("Error checking for updates: {$e->getMessage()}");
+                $output->error("Error checking for updates: {$e->getMessage()}");
             }
         } else {
-            $io->newLine();
-            $io->text("Run with --check-updates or -c to check for new versions");
+            $output->newLine();
+            $output->text("Run with --check-updates or -c to check for new versions");
         }
 
         return Command::SUCCESS;
