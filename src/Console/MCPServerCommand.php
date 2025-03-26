@@ -146,18 +146,16 @@ final class MCPServerCommand extends Command
 
         $server = new Server(name: 'ContextGenerator', logger: $this->logger);
 
-        $server->registerHandler('prompts/list', static function ($params) {
-            return new ListPromptsResult([
-                new Prompt(
-                    name: 'available-context',
-                    description: 'Provides a list of available contexts',
-                ),
-                new Prompt(
-                    name: 'project-structure',
-                    description: 'Tries to guess the project structure',
-                ),
-            ]);
-        });
+        $server->registerHandler('prompts/list', static fn($params) => new ListPromptsResult([
+            new Prompt(
+                name: 'available-context',
+                description: 'Provides a list of available contexts',
+            ),
+            new Prompt(
+                name: 'project-structure',
+                description: 'Tries to guess the project structure',
+            ),
+        ]));
 
         $server->registerHandler(
             'prompts/get',
