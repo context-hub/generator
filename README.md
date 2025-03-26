@@ -1,4 +1,4 @@
-# Context Generator for LLM
+# Context Generator for LLM with MCP server
 
 <p>
     <a href="https://docs.ctxgithub.com/"><img alt="Docs" src="https://img.shields.io/badge/docs-green"></a>
@@ -43,6 +43,9 @@ When working with AI-powered development tools context is everything.
   custom explanations. Use AI to generate user guides, API references, or developer documentation based on your actual
   code.
 
+- **Seamless AI Integration**: With MCP support, [connect](/mcp-server) Claude AI directly to your codebase, allowing
+  for real-time, context-aware assistance without manual context sharing.
+
 ## How it works
 
 1. Gathers code from files, directories, GitHub repositories, web pages, or custom text.
@@ -50,6 +53,8 @@ When working with AI-powered development tools context is everything.
 3. Applies optional modifiers (like extracting PHP signatures without implementation details)
 4. Organizes content into well-structured markdown documents
 5. Saves context files ready to be shared with LLMs
+6. Optionally serves context through an MCP server, allowing AI assistants like Claude to directly access project
+   information
 
 # Quick Start
 
@@ -141,6 +146,28 @@ Example prompt:
 > integrating context generation into your AI-powered development workflow.
 
 That's it! You're now ready to leverage LLMs with proper context about your codebase.
+
+## 6. Connect to Claude AI (Optional)
+
+For a more seamless experience, you can connect Context Generator directly to Claude AI using the MCP server:
+
+There is a built-in MCP server that allows you to connect Claude AI directly to your codebase.
+
+Point the MCP client to the Context Generator server:
+
+```json
+{
+  "mcpServers": {
+    "ctx": {
+      "command": "ctx server -c /path/to/your/project"
+    }
+  }
+}
+```
+
+> **Note:** Read more about [MCP Server](/mcp-server) for detailed setup instructions.
+
+Now you can ask Claude questions about your codebase without manually uploading context files!
 
 ## JSON Schema
 
