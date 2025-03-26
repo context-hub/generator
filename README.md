@@ -165,7 +165,7 @@ Point the MCP client to the Context Generator server:
 }
 ```
 
-> **Note:** Read more about [MCP Server](/mcp-server) for detailed setup instructions.
+> **Note:** Read more about [MCP Server](https://docs.ctxgithub.com/mcp-server.html) for detailed setup instructions.
 
 Now you can ask Claude questions about your codebase without manually uploading context files!
 
