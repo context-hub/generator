@@ -6,12 +6,24 @@ namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem;
 
 use Butschster\ContextGenerator\Directories;
 use Butschster\ContextGenerator\FilesInterface;
+use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
+use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
 use Mcp\Types\TextContent;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
+#[Tool(
+    name: 'file-info',
+    description: 'Get information about a file within the project directory structure',
+)]
+#[InputSchema(
+    name: 'path',
+    type: 'string',
+    description: 'Path to the file, relative to project root. Only files within project directory can be accessed.',
+    required: true,
+)]
 final readonly class FileInfoAction
 {
     public function __construct(

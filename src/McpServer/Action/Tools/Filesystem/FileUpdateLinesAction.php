@@ -1,18 +1,47 @@
 <?php
 
-
 declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem;
 
 use Butschster\ContextGenerator\Directories;
 use Butschster\ContextGenerator\FilesInterface;
+use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
+use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
 use Mcp\Types\TextContent;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
+#[Tool(
+    name: 'file-update-lines',
+    description: 'Update specific lines in a file with new content',
+)]
+#[InputSchema(
+    name: 'path',
+    type: 'string',
+    description: 'Path to the file, relative to project root. Only files within project directory can be accessed.',
+    required: true,
+)]
+#[InputSchema(
+    name: 'startLine',
+    type: 'integer',
+    description: 'Line number where the update should start (1-based indexing)',
+    required: true,
+)]
+#[InputSchema(
+    name: 'endLine',
+    type: 'integer',
+    description: 'Line number where the update should end (1-based indexing)',
+    required: true,
+)]
+#[InputSchema(
+    name: 'content',
+    type: 'string',
+    description: 'New content to replace the specified line range',
+    required: true,
+)]
 final readonly class FileUpdateLinesAction
 {
     public function __construct(
@@ -21,7 +50,7 @@ final readonly class FileUpdateLinesAction
         private Directories $dirs,
     ) {}
 
-    #[Post(path: '/tools/call/file-update-lines', name: 'tools.update-lines')]
+    #[Post(path: '/tools/call/file-update-lines', name: 'tools.file-update-lines')]
     public function __invoke(ServerRequestInterface $request): CallToolResult
     {
         $this->logger->info('Processing file-update-lines tool');

@@ -22,6 +22,7 @@ use Butschster\ContextGenerator\Lib\HttpClient\HttpClientFactory;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 use Butschster\ContextGenerator\Lib\Logger\ConsoleLogger;
 use Butschster\ContextGenerator\Lib\Logger\LoggerFactory;
+use Butschster\ContextGenerator\McpServer\Registry\McpItemsRegistry;
 use Butschster\ContextGenerator\McpServer\Routing\McpResponseStrategy;
 use Butschster\ContextGenerator\McpServer\Routing\RouteRegistrar;
 use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
@@ -166,6 +167,7 @@ $container->bindSingleton(Router::class, static function (StrategyInterface $str
     return $router;
 });
 $container->bindSingleton(RouteRegistrar::class, RouteRegistrar::class);
+$container->bindSingleton(McpItemsRegistry::class, McpItemsRegistry::class);
 
 // Register all commands
 $application->add(

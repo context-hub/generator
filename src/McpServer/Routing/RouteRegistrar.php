@@ -74,7 +74,7 @@ final readonly class RouteRegistrar
         $path = \preg_replace('#/+#', '/', $path);
 
         // Ensure path starts with a slash
-        if (!\str_starts_with($path, '/')) {
+        if (!\str_starts_with((string) $path, '/')) {
             $path = '/' . $path;
         }
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\McpServer\Action\Resources;
 
 use Butschster\ContextGenerator\ConfigLoader\ConfigLoaderInterface;
+use Butschster\ContextGenerator\McpServer\Registry\McpItemsRegistry;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Get;
 use Mcp\Types\ListResourcesResult;
 use Mcp\Types\Resource;
@@ -16,6 +17,7 @@ final readonly class ListResourcesAction
     public function __construct(
         private LoggerInterface $logger,
         private ConfigLoaderInterface $configLoader,
+        private McpItemsRegistry $registry,
     ) {}
 
     #[Get(path: '/resources/list', name: 'resources.list')]
@@ -23,22 +25,15 @@ final readonly class ListResourcesAction
     {
         $this->logger->info('Listing available resources');
 
-        $documents = $this->configLoader->load();
-        $resources = [
-            new Resource(
-                name: 'List of available contexts',
-                uri: 'ctx://list',
-                description: 'Returns a list of available contexts of project in document format',
-                mimeType: 'text/markdown',
-            ),
-            new Resource(
-                name: 'Json Schema of context generator',
-                uri: 'ctx://json-schema',
-                description: 'Returns a simplified JSON schema of the context generator',
-                mimeType: 'application/json',
-            ),
-        ];
+        $resources = [];
 
+        // Get resources from registry
+        foreach ($this->registry->getResources() as $resource) {
+            $resources[] = $resource;
+        }
+
+        // Add document resources from config loader
+        $documents = $this->configLoader->load();
         foreach ($documents->getItems() as $document) {
             $resources[] = new Resource(
                 name: $document->outputPath,

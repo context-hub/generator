@@ -12,6 +12,7 @@ use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
 use Butschster\ContextGenerator\DocumentCompilerFactory;
 use Butschster\ContextGenerator\McpServer\ServerFactory;
 use Monolog\Handler\RotatingFileHandler;
+use Monolog\Level;
 use Monolog\Logger;
 use Spiral\Core\Container;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -34,10 +35,17 @@ final class MCPServerCommand extends BaseCommand
     public function __invoke(
         DocumentCompilerFactory $documentCompilerFactory,
         ConfigurationProviderFactory $configurationProviderFactory,
-        ServerFactory $factory,
     ): int {
         $this->setLogger(new Logger('mcp', [
-            new RotatingFileHandler($this->dirs->rootPath . '/mcp.log'),
+            new RotatingFileHandler(
+                filename: $this->dirs->rootPath . '/mcp.log',
+                level: match (true) {
+                    $this->output->isVeryVerbose() => Level::Debug,
+                    $this->output->isVerbose() => Level::Info,
+                    $this->output->isQuiet() => Level::Error,
+                    default => Level::Warning,
+                },
+            ),
         ]));
 
         $this->logger->info('Starting MCP server...');
@@ -92,7 +100,7 @@ final class MCPServerCommand extends BaseCommand
 
 
         // Create and run the MCP server
-        $server = $factory->create($this->logger);
+        $server = $this->container->get(ServerFactory::class)->create($this->logger);
 
         $server->run(name: $this->input->getOption('name'));
 

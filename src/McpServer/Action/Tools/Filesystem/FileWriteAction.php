@@ -6,12 +6,36 @@ namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem;
 
 use Butschster\ContextGenerator\Directories;
 use Butschster\ContextGenerator\FilesInterface;
+use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
+use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
 use Mcp\Types\TextContent;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
+#[Tool(
+    name: 'file-write',
+    description: 'Write content to a file. Can create parent directories automatically.',
+)]
+#[InputSchema(
+    name: 'path',
+    type: 'string',
+    description: 'Relative path to the file (e.g., "src/file.txt"). Path is resolved against project root.',
+    required: true,
+)]
+#[InputSchema(
+    name: 'content',
+    type: 'string',
+    description: 'Content to write',
+    required: true,
+)]
+#[InputSchema(
+    name: 'createDirectory',
+    type: 'boolean',
+    description: 'Create directory if it does not exist',
+    default: true,
+)]
 final readonly class FileWriteAction
 {
     public function __construct(

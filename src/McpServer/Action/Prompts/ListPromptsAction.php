@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer\Action\Prompts;
 
+use Butschster\ContextGenerator\McpServer\Registry\McpItemsRegistry;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Get;
 use Mcp\Types\ListPromptsResult;
-use Mcp\Types\Prompt;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
@@ -14,6 +14,7 @@ final readonly class ListPromptsAction
 {
     public function __construct(
         private LoggerInterface $logger,
+        private McpItemsRegistry $registry,
     ) {}
 
     #[Get(path: '/prompts/list', name: 'prompts.list')]
@@ -21,16 +22,11 @@ final readonly class ListPromptsAction
     {
         $this->logger->info('Listing available prompts');
 
-        // Return available prompts in a format that can be converted to ListPromptsResult
-        return new ListPromptsResult([
-            new Prompt(
-                name: 'available-context',
-                description: 'Provides a list of available contexts',
-            ),
-            new Prompt(
-                name: 'project-structure',
-                description: 'Tries to guess the project structure',
-            ),
-        ]);
+        $prompts = [];
+        foreach ($this->registry->getPrompts() as $prompt) {
+            $prompts[] = $prompt;
+        }
+
+        return new ListPromptsResult($prompts);
     }
 }

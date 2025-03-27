@@ -6,12 +6,30 @@ namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem;
 
 use Butschster\ContextGenerator\Directories;
 use Butschster\ContextGenerator\FilesInterface;
+use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
+use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
 use Mcp\Types\TextContent;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
+#[Tool(
+    name: 'file-rename',
+    description: 'Rename a file within the project directory structure',
+)]
+#[InputSchema(
+    name: 'path',
+    type: 'string',
+    description: 'Path to the file, relative to project root. Only files within project directory can be accessed.',
+    required: true,
+)]
+#[InputSchema(
+    name: 'newPath',
+    type: 'string',
+    description: 'Path to the new file, relative to project root. Only files within project directory can be accessed.',
+    required: true,
+)]
 final readonly class FileRenameAction
 {
     public function __construct(
