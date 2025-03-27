@@ -259,6 +259,15 @@ documents:
         sourcePaths:
           - src/McpServer/Action
 
+  - description: "MCP Server routing"
+    outputPath: "mcp/routing.md"
+    sources:
+      - type: file
+        sourcePaths:
+          - src/McpServer/Routing
+          - src/McpServer/Server.php
+          - src/McpServer/ServerFactory.php
+
   - description: "Changes in the Project"
     outputPath: "changes.md"
     sources:

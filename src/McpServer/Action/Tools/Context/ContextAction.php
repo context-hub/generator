@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\McpServer\Action\Tools\Context;
 
 use Butschster\ContextGenerator\ConfigLoader\ConfigLoaderInterface;
+use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
 use Mcp\Types\TextContent;
 use Psr\Http\Message\ServerRequestInterface;
@@ -17,6 +18,7 @@ final readonly class ContextAction
         private ConfigLoaderInterface $configLoader,
     ) {}
 
+    #[Post(path: '/tools/call/context', name: 'tools.context.list')]
     public function __invoke(ServerRequestInterface $request): CallToolResult
     {
         $this->logger->info('Processing context tool');

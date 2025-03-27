@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer\Action\Prompts;
 
+use Butschster\ContextGenerator\McpServer\Routing\Attribute\Get;
 use Mcp\Types\GetPromptResult;
 use Mcp\Types\PromptMessage;
 use Mcp\Types\Role;
@@ -17,6 +18,7 @@ final readonly class GetPromptAction
         private LoggerInterface $logger,
     ) {}
 
+    #[Get(path: '/prompt/{name}', name: 'prompts.get')]
     public function __invoke(ServerRequestInterface $request): GetPromptResult
     {
         $name = $request->getAttribute('name');

@@ -23,11 +23,14 @@ use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 use Butschster\ContextGenerator\Lib\Logger\ConsoleLogger;
 use Butschster\ContextGenerator\Lib\Logger\LoggerFactory;
 use Butschster\ContextGenerator\McpServer\Routing\McpResponseStrategy;
+use Butschster\ContextGenerator\McpServer\Routing\RouteRegistrar;
 use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\HttpFactory;
+use League\Route\Router;
 use League\Route\Strategy\StrategyInterface;
 use Monolog\ErrorHandler;
+use Psr\Container\ContainerInterface;
 use Spiral\Core\Container;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\ArgvInput;
@@ -135,24 +138,34 @@ $container->bindSingleton(
     SourceModifierRegistry::class,
     static fn(ModifierRegistryFactory $factory) => $factory->create(),
 );
-$container->bindSingleton(HttpClientInterface::class, static function () {
-    $httpClient = new Client();
-    $httpMessageFactory = new HttpFactory();
-    return HttpClientFactory::create(
-        $httpClient,
-        $httpMessageFactory,
-    );
-});
+$container->bindSingleton(
+    HttpClientInterface::class,
+    static function (Client $httpClient, HttpFactory $httpMessageFactory) {
+        return HttpClientFactory::create(
+            $httpClient,
+            $httpMessageFactory,
+        );
+    },
+);
 $container->bindSingleton(RendererInterface::class, MarkdownRenderer::class);
 $container->bindSingleton(ContentBuilderFactory::class, ContentBuilderFactory::class);
-$container->bindSingleton(GithubClientInterface::class, static fn(
-    HttpClientInterface $httpClient,
-) => new GithubClientFactory(
-    httpClient: $httpClient,
-    defaultToken: \getenv('GITHUB_TOKEN') ?: null,
-));
+$container->bindSingleton(
+    GithubClientInterface::class,
+    static fn(HttpClientInterface $httpClient) => new GithubClientFactory(
+        httpClient: $httpClient,
+        defaultToken: \getenv('GITHUB_TOKEN') ?: null,
+    ),
+);
 
 $container->bindSingleton(LoggerFactory::class, LoggerFactory::class);
+$container->bindSingleton(Router::class, static function (StrategyInterface $strategy, ContainerInterface $container) {
+    $router = new Router();
+    $strategy->setContainer($container);
+    $router->setStrategy($strategy);
+
+    return $router;
+});
+$container->bindSingleton(RouteRegistrar::class, RouteRegistrar::class);
 
 // Register all commands
 $application->add(

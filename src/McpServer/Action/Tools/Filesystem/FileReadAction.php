@@ -6,11 +6,13 @@ namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem;
 
 use Butschster\ContextGenerator\Directories;
 use Butschster\ContextGenerator\FilesInterface;
+use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
 use Mcp\Types\TextContent;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
+#[Controller(prefix: '/tools/call')]
 final readonly class FileReadAction
 {
     public function __construct(
@@ -19,6 +21,7 @@ final readonly class FileReadAction
         private Directories $dirs,
     ) {}
 
+    #[Post(path: 'file-read', name: 'tools.file-read')]
     public function __invoke(ServerRequestInterface $request): CallToolResult
     {
         $this->logger->info('Processing file-read tool');

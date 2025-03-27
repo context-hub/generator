@@ -6,6 +6,7 @@ namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem;
 
 use Butschster\ContextGenerator\Directories;
 use Butschster\ContextGenerator\FilesInterface;
+use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
 use Mcp\Types\TextContent;
 use Psr\Http\Message\ServerRequestInterface;
@@ -19,6 +20,7 @@ final readonly class FileMoveAction
         private Directories $dirs,
     ) {}
 
+    #[Post(path: '/tools/call/file-move', name: 'tools.file-move')]
     public function __invoke(ServerRequestInterface $request): CallToolResult
     {
         $this->logger->info('Processing file-move tool');

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\McpServer\Action\Resources;
 
 use Butschster\ContextGenerator\ConfigLoader\ConfigLoaderInterface;
+use Butschster\ContextGenerator\McpServer\Routing\Attribute\Get;
 use Mcp\Types\ListResourcesResult;
 use Mcp\Types\Resource;
 use Psr\Http\Message\ServerRequestInterface;
@@ -17,6 +18,7 @@ final readonly class ListResourcesAction
         private ConfigLoaderInterface $configLoader,
     ) {}
 
+    #[Get(path: '/resources/list', name: 'resources.list')]
     public function __invoke(ServerRequestInterface $request): ListResourcesResult
     {
         $this->logger->info('Listing available resources');

@@ -6,6 +6,7 @@ namespace Butschster\ContextGenerator\McpServer\Action\Resources;
 
 use Butschster\ContextGenerator\Directories;
 use Butschster\ContextGenerator\FilesInterface;
+use Butschster\ContextGenerator\McpServer\Routing\Attribute\Get;
 use Mcp\Types\ReadResourceResult;
 use Mcp\Types\TextResourceContents;
 use Psr\Http\Message\ServerRequestInterface;
@@ -19,6 +20,7 @@ final readonly class GetJsonSchemaResourceAction
         private Directories $dirs,
     ) {}
 
+    #[Get(path: '/resource/ctx/json-schema', name: 'resources.ctx.json-schema')]
     public function __invoke(ServerRequestInterface $request): ReadResourceResult
     {
         $this->logger->info('Getting JSON schema');

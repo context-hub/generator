@@ -7,6 +7,7 @@ namespace Butschster\ContextGenerator\McpServer\Action\Resources;
 use Butschster\ContextGenerator\ConfigLoader\ConfigLoaderInterface;
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
 use Butschster\ContextGenerator\Document\Compiler\Error\ErrorCollection;
+use Butschster\ContextGenerator\McpServer\Routing\Attribute\Get;
 use Mcp\Types\ReadResourceResult;
 use Mcp\Types\TextResourceContents;
 use Psr\Http\Message\ServerRequestInterface;
@@ -20,6 +21,7 @@ final readonly class GetDocumentContentResourceAction
         private DocumentCompiler $compiler,
     ) {}
 
+    #[Get(path: '/resource/ctx/document/{path:.*}', name: 'resources.ctx.document')]
     public function __invoke(ServerRequestInterface $request): ReadResourceResult
     {
         $path = $request->getAttribute('path');

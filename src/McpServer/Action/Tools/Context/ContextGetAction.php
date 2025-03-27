@@ -7,6 +7,7 @@ namespace Butschster\ContextGenerator\McpServer\Action\Tools\Context;
 use Butschster\ContextGenerator\ConfigLoader\ConfigLoaderInterface;
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
 use Butschster\ContextGenerator\Document\Compiler\Error\ErrorCollection;
+use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
 use Mcp\Types\TextContent;
 use Psr\Http\Message\ServerRequestInterface;
@@ -20,6 +21,7 @@ final readonly class ContextGetAction
         private DocumentCompiler $documentCompiler,
     ) {}
 
+    #[Post(path: '/tools/call/context-get', name: 'tools.context.get')]
     public function __invoke(ServerRequestInterface $request): CallToolResult
     {
         $this->logger->info('Processing context-get tool');

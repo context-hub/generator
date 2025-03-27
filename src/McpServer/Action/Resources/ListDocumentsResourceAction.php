@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\McpServer\Action\Resources;
 
 use Butschster\ContextGenerator\ConfigLoader\ConfigLoaderInterface;
+use Butschster\ContextGenerator\McpServer\Routing\Attribute\Get;
 use Mcp\Types\ReadResourceResult;
 use Mcp\Types\TextResourceContents;
 use Psr\Http\Message\ServerRequestInterface;
@@ -17,6 +18,7 @@ final readonly class ListDocumentsResourceAction
         private ConfigLoaderInterface $configLoader,
     ) {}
 
+    #[Get(path: '/resource/ctx/list', name: 'resources.ctx.list')]
     public function __invoke(ServerRequestInterface $request): ReadResourceResult
     {
         $this->logger->info('Listing available documents');

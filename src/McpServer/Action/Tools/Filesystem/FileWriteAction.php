@@ -6,6 +6,7 @@ namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem;
 
 use Butschster\ContextGenerator\Directories;
 use Butschster\ContextGenerator\FilesInterface;
+use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
 use Mcp\Types\TextContent;
 use Psr\Http\Message\ServerRequestInterface;
@@ -19,6 +20,7 @@ final readonly class FileWriteAction
         private Directories $dirs,
     ) {}
 
+    #[Post(path: '/tools/call/file-write', name: 'tools.file-write')]
     public function __invoke(ServerRequestInterface $request): CallToolResult
     {
         $this->logger->info('Processing file-write tool');

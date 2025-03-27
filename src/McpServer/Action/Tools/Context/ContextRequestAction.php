@@ -8,6 +8,7 @@ use Butschster\ContextGenerator\ConfigurationProviderFactory;
 use Butschster\ContextGenerator\Directories;
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
 use Butschster\ContextGenerator\Document\Compiler\Error\ErrorCollection;
+use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Laminas\Diactoros\Response\JsonResponse;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -22,6 +23,7 @@ final readonly class ContextRequestAction
         private Directories $dirs,
     ) {}
 
+    #[Post(path: '/tools/call/context-request', name: 'tools.context.request')]
     public function __invoke(ServerRequestInterface $request): ResponseInterface
     {
         $this->logger->info('Handling context-request action');
