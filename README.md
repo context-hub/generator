@@ -7,10 +7,6 @@
     <a href="https://packagist.org/packages/context-hub/generator"><img alt="Latest Version" src="https://img.shields.io/packagist/v/context-hub/generator"></a>
 </p>
 
-# Context Generator for AI-Powered Development
-
-## What is Context Generator?
-
 Context Generator is a tool designed to solve a common problem when working with LLMs like ChatGPT, Claude: **providing
 sufficient context about your codebase.**
 
