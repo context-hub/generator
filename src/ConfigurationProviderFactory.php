@@ -7,31 +7,28 @@ namespace Butschster\ContextGenerator;
 use Butschster\ContextGenerator\ConfigLoader\ConfigLoaderFactory;
 use Butschster\ContextGenerator\ConfigLoader\ConfigurationProvider;
 use Butschster\ContextGenerator\ConfigLoader\Parser\ParserPluginRegistry;
+use Butschster\ContextGenerator\Lib\Logger\HasPrefixLoggerInterface;
 
 final readonly class ConfigurationProviderFactory
 {
     public function __construct(
         private ParserPluginRegistry $parserPluginRegistry,
+        private FilesInterface $files,
+        private HasPrefixLoggerInterface $logger,
     ) {}
 
-    public function create(ConfigurationProviderConfig $config): ConfigurationProvider
+    public function create(Directories $dirs): ConfigurationProvider
     {
-        // If custom parser plugins are not provided, use the ones from the registry
-        $parserPlugins = $config->parserPlugins;
-        if (empty($parserPlugins)) {
-            $parserPlugins = $this->parserPluginRegistry->getPlugins();
-        }
-
         return new ConfigurationProvider(
             loaderFactory: new ConfigLoaderFactory(
-                files: $config->files,
-                rootPath: $config->rootPath,
-                logger: $config->logger->withPrefix('config-loader'),
+                files: $this->files,
+                rootPath: $dirs->rootPath,
+                logger: $this->logger->withPrefix('config-loader'),
             ),
-            files: $config->files,
-            rootPath: $config->rootPath,
-            logger: $config->logger->withPrefix('config-provider'),
-            parserPlugins: $parserPlugins,
+            files: $this->files,
+            rootPath: $dirs->rootPath,
+            logger: $this->logger->withPrefix('config-provider'),
+            parserPlugins: $this->parserPluginRegistry->getPlugins(),
         );
     }
 }

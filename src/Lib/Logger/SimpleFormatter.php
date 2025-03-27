@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Lib\Logger;
 
+use Psr\Log\LoggerTrait;
+
 /**
  * Default formatter implementation that formats log messages with timestamp,
  * level indicator, and interpolates context data.
  */
 final readonly class SimpleFormatter implements FormatterInterface
 {
+    use LoggerTrait;
+
     /**
      * @param string $dateFormat The date format string for timestamps
      * @param bool $includeTimestamp Whether to include timestamps in log messages
@@ -66,6 +70,11 @@ final readonly class SimpleFormatter implements FormatterInterface
     public function getPrefix(): string
     {
         return $this->prefix;
+    }
+
+    public function log($level, \Stringable|string $message, array $context = []): void
+    {
+        echo $this->format($level, $message, $context);
     }
 
     /**

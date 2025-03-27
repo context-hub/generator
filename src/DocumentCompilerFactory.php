@@ -7,44 +7,29 @@ namespace Butschster\ContextGenerator;
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Lib\Logger\HasPrefixLoggerInterface;
-use Psr\Log\LoggerInterface;
+use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
 
 final readonly class DocumentCompilerFactory
 {
     public function __construct(
         private FilesInterface $files,
+        private HasPrefixLoggerInterface $logger,
         private SourceFetcherRegistryFactory $sourceFetcherRegistryFactory,
-        private ModifierRegistryFactory $modifierRegistryFactory,
+        private SourceModifierRegistry $modifierRegistry,
         private ContentBuilderFactory $contentBuilderFactory,
     ) {}
 
     public function create(
-        string $rootPath,
-        string $outputPath,
-        LoggerInterface $logger,
+        Directories $dirs,
         ?string $githubToken = null,
-        ?string $envFilePath = null,
-        ?string $envFileName = null,
     ): DocumentCompiler {
-        \assert($logger instanceof HasPrefixLoggerInterface);
-
-        $sourceFetcherRegistry = $this->sourceFetcherRegistryFactory->create(
-            rootPath: $rootPath,
-            logger: $logger,
-            githubToken: $githubToken,
-            envFilePath: $envFilePath,
-            envFileName: $envFileName,
-        );
-
-        $modifierRegistry = $this->modifierRegistryFactory->create();
-
         return new DocumentCompiler(
             files: $this->files,
-            parser: $sourceFetcherRegistry,
-            basePath: $outputPath,
-            modifierRegistry: $modifierRegistry,
+            parser: $this->sourceFetcherRegistryFactory->create(dirs: $dirs, githubToken: $githubToken),
+            basePath: $dirs->outputPath,
+            modifierRegistry: $this->modifierRegistry,
             builderFactory: $this->contentBuilderFactory,
-            logger: $logger->withPrefix('documents'),
+            logger: $this->logger->withPrefix('documents'),
         );
     }
 }

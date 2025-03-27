@@ -1,0 +1,56 @@
+documents:
+  - description: Source Implementations - File
+    outputPath: sources/file-source.md
+    sources:
+      - type: file
+        sourcePaths: ./File
+        filePattern: '*.php'
+        showTreeView: true
+
+  - description: Source Implementations - GitHub
+    outputPath: sources/github-source.md
+    sources:
+      - type: file
+        sourcePaths: ./Github
+        filePattern: '*.php'
+        showTreeView: true
+
+  - description: Source Implementations - URL
+    outputPath: sources/url-source.md
+    sources:
+      - type: file
+        sourcePaths: ./Url
+        filePattern: '*.php'
+        showTreeView: true
+
+  - description: Source Implementations - Text
+    outputPath: sources/text-source.md
+    sources:
+      - type: file
+        sourcePaths: ./Text
+        filePattern: '*.php'
+        showTreeView: true
+
+  - description: Source Implementations - Git Diff
+    outputPath: sources/git-diff-source.md
+    sources:
+      - type: file
+        sourcePaths: ./GitDiff
+        filePattern: '*.php'
+        showTreeView: true
+
+  - description: Source Implementations - Composer
+    outputPath: sources/composer-source.md
+    sources:
+      - type: file
+        sourcePaths: ./Composer
+        filePattern: '*.php'
+        showTreeView: true
+
+  - description: Source Implementations - Tree
+    outputPath: sources/tree-source.md
+    sources:
+      - type: file
+        sourcePaths: ./Tree
+        filePattern: '*.php'
+        showTreeView: true

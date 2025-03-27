@@ -199,7 +199,7 @@ final class TreeSource extends BaseSource implements FilterableSourceInterface
         $result = [
             'type' => 'tree',
             ...parent::jsonSerialize(),
-            'sourcePath' => $this->sourcePath,
+            'sourcePaths' => $this->sourcePath,
             'filePattern' => $this->filePattern,
             'notPath' => $this->notPath,
             'renderFormat' => $this->renderFormat,

@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Lib\Logger;
 
+use Psr\Log\LoggerInterface;
+
 /**
  * Interface for loggers that support message prefixing.
  */
-interface HasPrefixLoggerInterface
+interface HasPrefixLoggerInterface extends LoggerInterface
 {
     /**
      * Creates a new logger instance with the specified prefix.

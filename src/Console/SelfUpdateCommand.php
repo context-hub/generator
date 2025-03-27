@@ -7,19 +7,19 @@ namespace Butschster\ContextGenerator\Console;
 use Butschster\ContextGenerator\FilesInterface;
 use Butschster\ContextGenerator\Lib\HttpClient\Exception\HttpException;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
+use Spiral\Core\Container;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
     name: 'self-update',
     description: 'Update the Context Generator to the latest version',
     aliases: ['update'],
 )]
-final class SelfUpdateCommand extends Command
+final class SelfUpdateCommand extends BaseCommand
 {
     /**
      * GitHub API URL for latest release
@@ -34,12 +34,71 @@ final class SelfUpdateCommand extends Command
     private const PHAR_PATH = '/usr/local/bin/ctx';
 
     public function __construct(
+        Container $container,
         private readonly string $version,
         private readonly HttpClientInterface $httpClient,
         private readonly FilesInterface $files,
         private readonly string $binaryType = 'phar',
     ) {
-        parent::__construct();
+        parent::__construct($container);
+    }
+
+    public function __invoke(InputInterface $input, OutputInterface $output): int
+    {
+        $this->output->title('Context Generator Self Update');
+
+        $pharPath = \trim((string) $this->input->getOption('phar-path') ?: self::PHAR_PATH);
+        $fileName = match ($this->input->getOption('type')) {
+            'phar' => 'ctx.phar',
+            'bin' => 'ctx',
+            default => throw new \InvalidArgumentException('Invalid type provided'),
+        };
+
+        // Check if running as a PHAR
+        if ($pharPath === '') {
+            $this->output->error(
+                'Self-update is only available when running the PHAR version of Context Generator.',
+            );
+            return Command::FAILURE;
+        }
+
+        $this->output->text('Current version: ' . $this->version);
+        $this->output->section('Checking for updates...');
+
+        try {
+            // Fetch and compare versions
+            $latestVersion = $this->fetchLatestVersion();
+            $isUpdateAvailable = $this->isUpdateAvailable($this->version, $latestVersion);
+
+            if (!$isUpdateAvailable) {
+                $this->output->success("You're already using the latest version ({$this->version})");
+                return Command::SUCCESS;
+            }
+
+            $this->output->success("A new version is available: {$latestVersion}");
+
+            // Confirm the update
+            if (!$this->output->confirm('Do you want to update now?', true)) {
+                return Command::SUCCESS;
+            }
+
+            // Start the update process
+            $this->output->section('Downloading the latest version...');
+            $tempFile = $this->downloadLatestVersion($fileName, $latestVersion);
+
+            $this->output->section('Installing the update...');
+            $this->installUpdate($tempFile, $pharPath);
+
+            $this->output->success("Successfully updated to version {$latestVersion}");
+
+            return Command::SUCCESS;
+        } catch (HttpException $e) {
+            $this->output->error("HTTP error: {$e->getMessage()}");
+            return Command::FAILURE;
+        } catch (\Throwable $e) {
+            $this->output->error("Failed to update: {$e->getMessage()}");
+            return Command::FAILURE;
+        }
     }
 
     protected function configure(): void
@@ -59,66 +118,6 @@ final class SelfUpdateCommand extends Command
                 description: 'Binary type (phar or bin)',
                 default: $this->binaryType,
             );
-    }
-
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
-        \assert($output instanceof SymfonyStyle);
-
-        $output->title('Context Generator Self Update');
-
-        $pharPath = \trim((string) $input->getOption('phar-path') ?: self::PHAR_PATH);
-        $fileName = match ($input->getOption('type')) {
-            'phar' => 'ctx.phar',
-            'bin' => 'ctx',
-            default => throw new \InvalidArgumentException('Invalid type provided'),
-        };
-
-        // Check if running as a PHAR
-        if ($pharPath === '') {
-            $output->error(
-                'Self-update is only available when running the PHAR version of Context Generator.',
-            );
-            return Command::FAILURE;
-        }
-
-        $output->text('Current version: ' . $this->version);
-        $output->section('Checking for updates...');
-
-        try {
-            // Fetch and compare versions
-            $latestVersion = $this->fetchLatestVersion();
-            $isUpdateAvailable = $this->isUpdateAvailable($this->version, $latestVersion);
-
-            if (!$isUpdateAvailable) {
-                $output->success("You're already using the latest version ({$this->version})");
-                return Command::SUCCESS;
-            }
-
-            $output->success("A new version is available: {$latestVersion}");
-
-            // Confirm the update
-            if (!$output->confirm('Do you want to update now?', true)) {
-                return Command::SUCCESS;
-            }
-
-            // Start the update process
-            $output->section('Downloading the latest version...');
-            $tempFile = $this->downloadLatestVersion($fileName, $latestVersion, $output);
-
-            $output->section('Installing the update...');
-            $this->installUpdate($tempFile, $pharPath, $output);
-
-            $output->success("Successfully updated to version {$latestVersion}");
-
-            return Command::SUCCESS;
-        } catch (HttpException $e) {
-            $output->error("HTTP error: {$e->getMessage()}");
-            return Command::FAILURE;
-        } catch (\Throwable $e) {
-            $output->error("Failed to update: {$e->getMessage()}");
-            return Command::FAILURE;
-        }
     }
 
     /**
@@ -170,11 +169,11 @@ final class SelfUpdateCommand extends Command
     /**
      * Download the latest version to a temporary file
      */
-    private function downloadLatestVersion(string $fileName, string $version, SymfonyStyle $output): string
+    private function downloadLatestVersion(string $fileName, string $version): string
     {
         $downloadUrl = \sprintf(self::GITHUB_DOWNLOAD_URL, $version, $fileName);
 
-        $output->text("Requesting from: $downloadUrl");
+        $this->output->text("Requesting from: $downloadUrl");
 
         $response = $this->httpClient->getWithRedirects(
             $downloadUrl,
@@ -198,7 +197,7 @@ final class SelfUpdateCommand extends Command
             throw new \RuntimeException("Downloaded file does not exist");
         }
 
-        $output->text("Downloaded new version to temporary file: $tempFile");
+        $this->output->text("Downloaded new version to temporary file: $tempFile");
 
         return $tempFile;
     }
@@ -206,10 +205,10 @@ final class SelfUpdateCommand extends Command
     /**
      * Install the update by replacing the current PHAR
      */
-    private function installUpdate(string $tempFile, string $pharPath, SymfonyStyle $output): void
+    private function installUpdate(string $tempFile, string $pharPath): void
     {
         try {
-            $output->text("Replacing current PHAR at: {$pharPath}");
+            $this->output->text("Replacing current PHAR at: {$pharPath}");
 
             // On Windows, we need to delete the file first
             if (\PHP_OS_FAMILY === 'Windows' && $this->files->exists($pharPath)) {
@@ -228,7 +227,7 @@ final class SelfUpdateCommand extends Command
 
             // Write the content to the target file
             if ($this->files->write($pharPath, $newPharContent, false)) {
-                $output->text("Successfully wrote new version to: {$pharPath}");
+                $this->output->text("Successfully wrote new version to: {$pharPath}");
             } else {
                 throw new \RuntimeException("Failed to write the new version");
             }
@@ -238,11 +237,11 @@ final class SelfUpdateCommand extends Command
                 // FilesInterface doesn't provide chmod functionality,
                 // so we still need the native function here
                 if (!\chmod($pharPath, 0755)) {
-                    $output->warning("Failed to set executable permissions on the new file");
+                    $this->output->warning("Failed to set executable permissions on the new file");
                 }
             }
 
-            $output->text("Successfully replaced the PHAR file");
+            $this->output->text("Successfully replaced the PHAR file");
         } finally {
             // Since FilesInterface doesn't have a delete method,
             // we need to use unlink directly
