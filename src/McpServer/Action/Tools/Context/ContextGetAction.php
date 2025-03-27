@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\McpServer\Action\Tools;
+namespace Butschster\ContextGenerator\McpServer\Action\Tools\Context;
 
 use Butschster\ContextGenerator\ConfigLoader\ConfigLoaderInterface;
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;

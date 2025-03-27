@@ -10,9 +10,14 @@ use Butschster\ContextGenerator\McpServer\Action\Resources\GetDocumentContentRes
 use Butschster\ContextGenerator\McpServer\Action\Resources\GetJsonSchemaResourceAction;
 use Butschster\ContextGenerator\McpServer\Action\Resources\ListDocumentsResourceAction;
 use Butschster\ContextGenerator\McpServer\Action\Resources\ListResourcesAction;
-use Butschster\ContextGenerator\McpServer\Action\Tools\ContextAction;
-use Butschster\ContextGenerator\McpServer\Action\Tools\ContextGetAction;
-use Butschster\ContextGenerator\McpServer\Action\Tools\ContextRequestAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Context\ContextAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Context\ContextGetAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Context\ContextRequestAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileInfoAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileMoveAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileReadAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileRenameAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileWriteAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\ListToolsAction;
 use Butschster\ContextGenerator\McpServer\Routing\McpResponseStrategy;
 use League\Route\Router;
@@ -53,6 +58,13 @@ final readonly class RouteProvider
         $router->post('/tools/call/context-request', $this->container->get(ContextRequestAction::class));
         $router->post('/tools/call/context-get', $this->container->get(ContextGetAction::class));
         $router->post('/tools/call/context', $this->container->get(ContextAction::class));
+
+        // filesystem tool routes
+        $router->post('/tools/call/file-read', $this->container->get(FileReadAction::class));
+        $router->post('/tools/call/file-write', $this->container->get(FileWriteAction::class));
+        $router->post('/tools/call/file-rename', $this->container->get(FileRenameAction::class));
+        $router->post('/tools/call/file-move', $this->container->get(FileMoveAction::class));
+        $router->post('/tools/call/file-info', $this->container->get(FileInfoAction::class));
 
         return $router;
     }

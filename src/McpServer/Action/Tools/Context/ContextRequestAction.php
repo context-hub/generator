@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\McpServer\Action\Tools;
+namespace Butschster\ContextGenerator\McpServer\Action\Tools\Context;
 
-use Butschster\ContextGenerator\Directories;
 use Butschster\ContextGenerator\ConfigurationProviderFactory;
+use Butschster\ContextGenerator\Directories;
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
 use Butschster\ContextGenerator\Document\Compiler\Error\ErrorCollection;
+use Laminas\Diactoros\Response\JsonResponse;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Laminas\Diactoros\Response\JsonResponse;
 use Psr\Log\LoggerInterface;
 
 final readonly class ContextRequestAction
