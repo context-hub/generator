@@ -65,7 +65,7 @@ final readonly class ListToolsAction
                         'properties' => [
                             'path' => [
                                 'type' => 'string',
-                                'description' => 'Path to the file',
+                                'description' => 'Path to the file, relative to project root. Only files within project directory can be accessed.',
                             ],
                             'encoding' => [
                                 'type' => 'string',
@@ -75,7 +75,7 @@ final readonly class ListToolsAction
                         ],
                         'required' => ['path'],
                     ],
-                    'description' => 'Read content from a file',
+                    'description' => 'Read content from a file within the project directory structure',
                 ],
                 [
                     'name' => 'file-write',
@@ -84,7 +84,7 @@ final readonly class ListToolsAction
                         'properties' => [
                             'path' => [
                                 'type' => 'string',
-                                'description' => 'Relative path to the file like src/file.txt',
+                                'description' => 'Relative path to the file (e.g., "src/file.txt"). Path is resolved against project root.',
                             ],
                             'content' => [
                                 'type' => 'string',
@@ -98,7 +98,7 @@ final readonly class ListToolsAction
                         ],
                         'required' => ['path', 'content'],
                     ],
-                    'description' => 'Write content to a file',
+                    'description' => 'Write content to a file. Can create parent directories automatically.',
                 ],
                 [
                     'name' => 'file-rename',
@@ -107,16 +107,16 @@ final readonly class ListToolsAction
                         'properties' => [
                             'path' => [
                                 'type' => 'string',
-                                'description' => 'Current relative path.',
+                                'description' => 'Current relative path of the file/directory. Must exist within project directory.',
                             ],
                             'newPath' => [
                                 'type' => 'string',
-                                'description' => 'New relative path',
+                                'description' => 'New relative path for the file/directory. Must remain within project directory.',
                             ],
                         ],
                         'required' => ['path', 'newPath'],
                     ],
-                    'description' => 'Rename a file or directory',
+                    'description' => 'Rename a file or directory. Verifies source exists and destination doesn\'t.',
                 ],
                 [
                     'name' => 'file-move',
@@ -125,11 +125,11 @@ final readonly class ListToolsAction
                         'properties' => [
                             'source' => [
                                 'type' => 'string',
-                                'description' => 'Source relative path',
+                                'description' => 'Source relative path of the file to move. Must exist within project directory.',
                             ],
                             'destination' => [
                                 'type' => 'string',
-                                'description' => 'Destination relative path',
+                                'description' => 'Destination relative path where file will be moved. Must remain within project directory.',
                             ],
                             'createDirectory' => [
                                 'type' => 'boolean',
@@ -139,7 +139,7 @@ final readonly class ListToolsAction
                         ],
                         'required' => ['source', 'destination'],
                     ],
-                    'description' => 'Move a file to another location',
+                    'description' => 'Move a file to another location. Implemented as copy+delete for safety.',
                 ],
                 [
                     'name' => 'file-info',
@@ -148,12 +148,12 @@ final readonly class ListToolsAction
                         'properties' => [
                             'path' => [
                                 'type' => 'string',
-                                'description' => 'Path to the file or directory',
+                                'description' => 'Path to the file or directory, relative to project root. Returns detailed metadata.',
                             ],
                         ],
                         'required' => ['path'],
                     ],
-                    'description' => 'Get information about a file or directory',
+                    'description' => 'Get information about a file or directory including type, size, permissions, and modification time.',
                 ],
             ],
         ];
