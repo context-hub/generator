@@ -15,11 +15,20 @@ use Butschster\ContextGenerator\Console\SelfUpdateCommand;
 use Butschster\ContextGenerator\Console\VersionCommand;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Lib\Content\Renderer\MarkdownRenderer;
+use Butschster\ContextGenerator\Lib\Content\Renderer\RendererInterface;
 use Butschster\ContextGenerator\Lib\Files;
+use Butschster\ContextGenerator\Lib\GithubClient\GithubClientInterface;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientFactory;
+use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
+use Butschster\ContextGenerator\Lib\Logger\ConsoleLogger;
 use Butschster\ContextGenerator\Lib\Logger\LoggerFactory;
+use Butschster\ContextGenerator\McpServer\Routing\McpResponseStrategy;
+use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\HttpFactory;
+use League\Route\Strategy\StrategyInterface;
+use Monolog\ErrorHandler;
+use Spiral\Core\Container;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
@@ -29,7 +38,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 //  Prepare Global Environment
 // -----------------------------------------------------------------------------
 
-\error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
+\error_reporting(E_ERROR);
 
 
 // -----------------------------------------------------------------------------
@@ -85,6 +94,11 @@ $application->setDefaultCommand('generate');
 $input = new ArgvInput();
 $output = new SymfonyStyle($input, new ConsoleOutput());
 
+$errorHandler = new ErrorHandler(new ConsoleLogger($output));
+$errorHandler->registerExceptionHandler();
+$errorHandler->registerErrorHandler();
+$errorHandler->registerFatalHandler();
+
 $vendorPath = \dirname($vendorPath) . '/../';
 $versionFile = $vendorPath . '/version.json';
 $appPath = \realpath($vendorPath);
@@ -102,109 +116,76 @@ if ($insidePhar) {
     $appPath = \getcwd();
 }
 
-// Create base services
-$files = new Files();
-$httpClient = new Client();
-$httpMessageFactory = new HttpFactory();
-$httpClientAdapter = HttpClientFactory::create(
-    $httpClient,
-    $httpMessageFactory,
+$container = new Container();
+$container->bindSingleton(
+    Directories::class,
+    new Directories(
+        rootPath: $appPath,
+        outputPath: $appPath . '/.context',
+        configPath: $appPath,
+        jsonSchemaPath: __DIR__ . '/json-schema.json',
+    ),
 );
 
-// Create the factory chain for the GenerateCommand
-$contentBuilderFactory = new ContentBuilderFactory(
-    defaultRenderer: new MarkdownRenderer(),
+$container->bindSingleton(ParserPluginRegistry::class, static fn() => ParserPluginRegistry::createDefault());
+$container->bindSingleton(ConfigurationProviderFactory::class, ConfigurationProviderFactory::class);
+$container->bindSingleton(FilesInterface::class, Files::class);
+$container->bindSingleton(StrategyInterface::class, McpResponseStrategy::class);
+$container->bindSingleton(
+    SourceModifierRegistry::class,
+    static fn(ModifierRegistryFactory $factory) => $factory->create(),
 );
-
-$githubClientFactory = new GithubClientFactory(
-    httpClient: $httpClientAdapter,
+$container->bindSingleton(HttpClientInterface::class, static function () {
+    $httpClient = new Client();
+    $httpMessageFactory = new HttpFactory();
+    return HttpClientFactory::create(
+        $httpClient,
+        $httpMessageFactory,
+    );
+});
+$container->bindSingleton(RendererInterface::class, MarkdownRenderer::class);
+$container->bindSingleton(ContentBuilderFactory::class, ContentBuilderFactory::class);
+$container->bindSingleton(GithubClientInterface::class, static fn(
+    HttpClientInterface $httpClient,
+) => new GithubClientFactory(
+    httpClient: $httpClient,
     defaultToken: \getenv('GITHUB_TOKEN') ?: null,
-);
+));
 
-$variableResolverFactory = new VariableResolverFactory();
-$modifierRegistryFactory = new ModifierRegistryFactory();
-
-// Create the source fetcher registry factory with its dependencies
-$sourceFetcherRegistryFactory = new SourceFetcherRegistryFactory(
-    httpClient: $httpClientAdapter,
-    contentBuilderFactory: $contentBuilderFactory,
-    variableResolverFactory: $variableResolverFactory,
-    githubClientFactory: $githubClientFactory,
-);
-
-// Create the document compiler factory with its dependencies
-$documentCompilerFactory = new DocumentCompilerFactory(
-    files: $files,
-    sourceFetcherRegistryFactory: $sourceFetcherRegistryFactory,
-    modifierRegistryFactory: $modifierRegistryFactory,
-    contentBuilderFactory: $contentBuilderFactory,
-);
-
-$configProviderFactory = new ConfigurationProviderFactory(
-    parserPluginRegistry: ParserPluginRegistry::createDefault(),
-);
-
-$logger = LoggerFactory::create(
-    output: $output,
-    loggingEnabled: $output->isVerbose() || $output->isDebug() || $output->isVeryVerbose(),
-);
+$container->bindSingleton(LoggerFactory::class, LoggerFactory::class);
 
 // Register all commands
 $application->add(
-    new VersionCommand(
-        version: $version['version'] ?? 'dev',
-        httpClient: $httpClientAdapter,
-    ),
+    $container->make(VersionCommand::class, [
+        'version' => $version['version'] ?? 'dev',
+    ]),
 );
 
 $application->add(
-    new InitCommand(
-        baseDir: $appPath,
-        files: $files,
-    ),
+    $container->make(InitCommand::class),
 );
 
 $application->add(
-    new SchemaCommand(
-        httpClient: $httpClientAdapter,
-    ),
+    $container->make(SchemaCommand::class),
 );
 
 $application->add(
-    new SelfUpdateCommand(
-        version: $version['version'] ?? 'dev',
-        httpClient: $httpClientAdapter,
-        files: $files,
-        binaryType: $type,
-    ),
+    $container->make(SelfUpdateCommand::class, [
+        'version' => $version['version'] ?? 'dev',
+        'binaryType' => $type,
+    ]),
 );
 
 $application->add(
-    new GenerateCommand(
-        rootPath: $appPath,
-        outputPath: $appPath . '/.context',
-        files: $files,
-        documentCompilerFactory: $documentCompilerFactory,
-        configurationProviderFactory: $configProviderFactory,
-    ),
+    $container->make(GenerateCommand::class),
 );
 
 $application->add(
-    new DisplayCommand(
-        rootPath: $appPath,
-        files: $files,
-        configurationProviderFactory: $configProviderFactory,
-    ),
+    $container->make(DisplayCommand::class),
 );
 
 $application->add(
-    new MCPServerCommand(
-        rootPath: $appPath,
-        jsonSchemaPath: __DIR__ . '/json-schema.json',
-        files: $files,
-        documentCompilerFactory: $documentCompilerFactory,
-        configurationProviderFactory: $configProviderFactory,
-    ),
+    $container->make(MCPServerCommand::class),
 );
 
 $application->run($input, $output);

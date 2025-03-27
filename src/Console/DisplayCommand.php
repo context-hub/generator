@@ -4,38 +4,91 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Console;
 
+use Butschster\ContextGenerator\Directories;
 use Butschster\ContextGenerator\ConfigLoader\Exception\ConfigLoaderException;
-use Butschster\ContextGenerator\ConfigurationProviderConfig;
 use Butschster\ContextGenerator\ConfigurationProviderFactory;
 use Butschster\ContextGenerator\Console\Renderer\DocumentRenderer;
 use Butschster\ContextGenerator\Console\Renderer\Style;
-use Butschster\ContextGenerator\FilesInterface;
-use Butschster\ContextGenerator\Lib\Logger\HasPrefixLoggerInterface;
-use Butschster\ContextGenerator\Lib\Logger\LoggerFactory;
-use Psr\Log\LoggerInterface;
+use Spiral\Core\Container;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
     name: 'display',
     description: 'Display the context configuration in a human-readable format',
 )]
-final class DisplayCommand extends Command
+final class DisplayCommand extends BaseCommand
 {
-    use DetermineRootPath;
-
-    private LoggerInterface $logger;
-
     public function __construct(
-        private readonly string $rootPath,
-        private readonly FilesInterface $files,
-        private readonly ConfigurationProviderFactory $configurationProviderFactory,
+        Container $container,
+        private readonly Directories $dirs,
     ) {
-        parent::__construct();
+        parent::__construct($container);
+    }
+
+    public function __invoke(
+        ConfigurationProviderFactory $configurationProviderFactory,
+        DocumentRenderer $renderer,
+    ): int {
+        // Get the configuration options
+        $inlineConfig = $this->input->getOption('inline');
+        $configPath = $this->input->getOption('config-file');
+
+        // Create configuration provider
+        $configProvider = $configurationProviderFactory->create($this->dirs);
+
+        try {
+            // Get the appropriate loader based on options provided
+            if ($inlineConfig !== null) {
+                $this->output->info('Using inline JSON configuration...');
+                $loader = $configProvider->fromString($inlineConfig);
+            } elseif ($configPath !== null) {
+                $this->output->info(\sprintf('Loading configuration from %s...', $configPath));
+                $loader = $configProvider->fromPath($configPath);
+            } else {
+                $this->output->info('Loading configuration from default location...');
+                $loader = $configProvider->fromDefaultLocation();
+            }
+        } catch (ConfigLoaderException $e) {
+            $this->logger->error('Failed to load configuration', [
+                'error' => $e->getMessage(),
+            ]);
+
+            $this->output->error(\sprintf('Failed to load configuration: %s', $e->getMessage()));
+
+            return Command::FAILURE;
+        }
+
+        try {
+            // Load the document registry
+            $registry = $loader->load();
+
+            $title = "Context: {$this->dirs->rootPath}";
+
+            $this->output->writeln("\n" . Style::header($title));
+            $this->output->writeln(Style::separator('=', \strlen($title)) . "\n");
+            $documents = $registry->getItems();
+            $this->output->writeln(
+                Style::property("Total documents") . ": " . Style::count(\count($documents)) . "\n\n",
+            );
+
+            foreach ($documents as $index => $document) {
+                /** @psalm-suppress InvalidOperand */
+                $this->output->writeln(
+                    Style::header("Document") . " " . Style::itemNumber($index + 1, \count($documents)) . ":",
+                );
+                $this->output->writeln(Style::separator('=', \strlen($title)) . "\n");
+                $this->output->writeln(Style::indent($renderer->renderDocument($document)));
+                $this->output->writeln("");
+            }
+
+            return Command::SUCCESS;
+        } catch (\Exception $e) {
+            $this->output->error(\sprintf("Error displaying configuration: %s", $e->getMessage()));
+
+            return Command::FAILURE;
+        }
     }
 
     protected function configure(): void
@@ -61,87 +114,5 @@ final class DisplayCommand extends Command
                 'Path to configuration file (absolute or relative to current directory).',
             )
             ->setHelp('This command displays the context configuration in a human-readable format');
-    }
-
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
-        \assert($output instanceof SymfonyStyle);
-
-        $this->logger = LoggerFactory::create(
-            output: $output,
-            loggingEnabled: $output->isVerbose() || $output->isDebug() || $output->isVeryVerbose(),
-        );
-
-        \assert($this->logger instanceof HasPrefixLoggerInterface);
-        \assert($this->logger instanceof LoggerInterface);
-
-        // Get the configuration options
-        $inlineConfig = $input->getOption('inline');
-        $configPath = $input->getOption('config-file');
-
-        // Create configuration provider
-        $configProvider = $this->configurationProviderFactory->create(
-            new ConfigurationProviderConfig(
-                rootPath: $this->rootPath,
-                files: $this->files,
-                configPath: $configPath,
-                inlineConfig: $inlineConfig,
-                logger: $this->logger,
-            ),
-        );
-
-        try {
-            // Get the appropriate loader based on options provided
-            if ($inlineConfig !== null) {
-                $output->info('Using inline JSON configuration...');
-                $loader = $configProvider->fromString($inlineConfig);
-            } elseif ($configPath !== null) {
-                $output->info(\sprintf('Loading configuration from %s...', $configPath));
-                $loader = $configProvider->fromPath($configPath);
-            } else {
-                $output->info('Loading configuration from default location...');
-                $loader = $configProvider->fromDefaultLocation();
-            }
-        } catch (ConfigLoaderException $e) {
-            $this->logger->error('Failed to load configuration', [
-                'error' => $e->getMessage(),
-            ]);
-
-            $output->error(\sprintf('Failed to load configuration: %s', $e->getMessage()));
-
-            return Command::FAILURE;
-        }
-
-        try {
-            // Load the document registry
-            $registry = $loader->load();
-
-            // Create renderer and render each document
-            $renderer = new DocumentRenderer();
-
-            $title = "Context: {$this->rootPath}";
-
-            $output->writeln("\n" . Style::header($title));
-            $output->writeln(Style::separator('=', \strlen($title)) . "\n");
-
-            $documents = $registry->getItems();
-            $output->writeln(Style::property("Total documents") . ": " . Style::count(\count($documents)) . "\n\n");
-
-            foreach ($documents as $index => $document) {
-                /** @psalm-suppress InvalidOperand */
-                $output->writeln(
-                    Style::header("Document") . " " . Style::itemNumber($index + 1, \count($documents)) . ":",
-                );
-                $output->writeln(Style::separator('=', \strlen($title)) . "\n");
-                $output->writeln(Style::indent($renderer->renderDocument($document)));
-                $output->writeln("");
-            }
-
-            return Command::SUCCESS;
-        } catch (\Exception $e) {
-            $output->error("Error displaying configuration: {$e->getMessage()}");
-
-            return Command::FAILURE;
-        }
     }
 }

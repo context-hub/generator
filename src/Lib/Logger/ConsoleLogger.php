@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Lib\Logger;
 
 use Psr\Log\AbstractLogger;
-use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel as PsrLogLevel;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -13,7 +12,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  * PSR-3 compatible console logger that outputs to a Symfony Console OutputInterface.
  * Respects the verbosity levels of the Console component.
  */
-final class ConsoleLogger extends AbstractLogger implements LoggerInterface, HasPrefixLoggerInterface
+final class ConsoleLogger extends AbstractLogger implements HasPrefixLoggerInterface
 {
     public function __construct(
         private readonly OutputInterface $output,

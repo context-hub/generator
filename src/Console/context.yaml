@@ -1,0 +1,34 @@
+documents:
+  - description: Console Commands
+    outputPath: console/commands.md
+    sources:
+      - type: file
+        sourcePaths: .
+        filePattern: '*Command.php'
+        showTreeView: true
+
+  - description: Console Renderers
+    outputPath: console/renderers.md
+    sources:
+      - type: file
+        sourcePaths: ./Renderer
+        filePattern: '*.php'
+        showTreeView: true
+
+  - description: MCPServer
+    outputPath: console/mcp-server.md
+    sources:
+      - type: file
+        sourcePaths:
+          - ./MCPServerCommand.php
+          - ../McpServer
+        filePattern: '*.php'
+        showTreeView: true
+
+      - type: composer
+        packages:
+          - logiscape/mcp-sdk-php
+        sourcePaths:
+          - src/Types
+          - src/Server
+

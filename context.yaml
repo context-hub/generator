@@ -252,6 +252,13 @@ documents:
         sourcePaths:
           - tests
 
+  - description: "MCP Server Actions"
+    outputPath: "mcp/actions.md"
+    sources:
+      - type: file
+        sourcePaths:
+          - src/McpServer/Action
+
   - description: "Changes in the Project"
     outputPath: "changes.md"
     sources:

@@ -19,11 +19,11 @@ use Butschster\ContextGenerator\Source\Github\GithubSourceFetcher;
 use Butschster\ContextGenerator\Source\Text\TextSourceFetcher;
 use Butschster\ContextGenerator\Source\Tree\TreeSourceFetcher;
 use Butschster\ContextGenerator\Source\Url\UrlSourceFetcher;
-use Psr\Log\LoggerInterface;
 
 final readonly class SourceFetcherRegistryFactory
 {
     public function __construct(
+        private HasPrefixLoggerInterface $logger,
         private HttpClientInterface $httpClient,
         private ContentBuilderFactory $contentBuilderFactory,
         private VariableResolverFactory $variableResolverFactory,
@@ -31,19 +31,10 @@ final readonly class SourceFetcherRegistryFactory
     ) {}
 
     public function create(
-        string $rootPath,
-        LoggerInterface $logger,
+        Directories $dirs,
         ?string $githubToken = null,
-        ?string $envFilePath = null,
-        ?string $envFileName = null,
     ): SourceFetcherRegistry {
-        \assert($logger instanceof HasPrefixLoggerInterface);
-
-        $variableResolver = $this->variableResolverFactory->create(
-            logger: $logger,
-            envFilePath: $envFilePath,
-            envFileName: $envFileName,
-        );
+        $variableResolver = $this->variableResolverFactory->create(dirs: $dirs);
 
         $githubClient = $this->githubClientFactory->create($githubToken);
 
@@ -52,31 +43,31 @@ final readonly class SourceFetcherRegistryFactory
                 new TextSourceFetcher(
                     builderFactory: $this->contentBuilderFactory,
                     variableResolver: $variableResolver,
-                    logger: $logger->withPrefix('text-source'),
+                    logger: $this->logger->withPrefix('text-source'),
                 ),
                 new FileSourceFetcher(
-                    basePath: $rootPath,
+                    basePath: $dirs->rootPath,
                     builderFactory: $this->contentBuilderFactory,
-                    logger: $logger->withPrefix('file-source'),
+                    logger: $this->logger->withPrefix('file-source'),
                 ),
                 new ComposerSourceFetcher(
                     provider: new CompositeComposerProvider(
-                        logger: $logger,
+                        logger: $this->logger,
                         localProvider: new LocalComposerProvider(
-                            client: new FileSystemComposerClient(logger: $logger),
-                            logger: $logger,
+                            client: new FileSystemComposerClient(logger: $this->logger),
+                            logger: $this->logger,
                         ),
                     ),
-                    basePath: $rootPath,
+                    basePath: $dirs->rootPath,
                     builderFactory: $this->contentBuilderFactory,
                     variableResolver: $variableResolver,
-                    logger: $logger->withPrefix('composer-source'),
+                    logger: $this->logger->withPrefix('composer-source'),
                 ),
                 new UrlSourceFetcher(
                     httpClient: $this->httpClient,
                     variableResolver: $variableResolver,
                     builderFactory: $this->contentBuilderFactory,
-                    logger: $logger->withPrefix('url-source'),
+                    logger: $this->logger->withPrefix('url-source'),
                 ),
                 new GithubSourceFetcher(
                     finder: new GithubFinder(
@@ -84,16 +75,16 @@ final readonly class SourceFetcherRegistryFactory
                         variableResolver: $variableResolver,
                     ),
                     builderFactory: $this->contentBuilderFactory,
-                    logger: $logger->withPrefix('github-source'),
+                    logger: $this->logger->withPrefix('github-source'),
                 ),
                 new CommitDiffSourceFetcher(
                     builderFactory: $this->contentBuilderFactory,
-                    logger: $logger->withPrefix('commit-diff-source'),
+                    logger: $this->logger->withPrefix('commit-diff-source'),
                 ),
                 new TreeSourceFetcher(
-                    basePath: $rootPath,
+                    basePath: $dirs->rootPath,
                     builderFactory: $this->contentBuilderFactory,
-                    logger: $logger->withPrefix('tree-source'),
+                    logger: $this->logger->withPrefix('tree-source'),
                 ),
             ],
         );

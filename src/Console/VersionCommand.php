@@ -6,18 +6,18 @@ namespace Butschster\ContextGenerator\Console;
 
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 use Butschster\ContextGenerator\Lib\HttpClient\Exception\HttpException;
+use Spiral\Core\Container;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
     name: 'version',
     description: 'Display the current version and check for updates',
 )]
-final class VersionCommand extends Command
+final class VersionCommand extends BaseCommand
 {
     /**
      * GitHub API URL for latest release
@@ -25,10 +25,52 @@ final class VersionCommand extends Command
     private const GITHUB_API_LATEST_RELEASE = 'https://api.github.com/repos/context-hub/generator/releases/latest';
 
     public function __construct(
+        Container $container,
         private readonly string $version,
         private readonly HttpClientInterface $httpClient,
     ) {
-        parent::__construct();
+        parent::__construct($container);
+    }
+
+    public function __invoke(InputInterface $input, OutputInterface $output): int
+    {
+        $this->output->title('Context Generator');
+        $this->output->text('Current version: ' . $this->version);
+
+        $checkUpdates = $this->input->getOption('check-updates');
+
+        if ($checkUpdates) {
+            $this->output->newLine();
+            $this->output->section('Checking for updates...');
+
+            try {
+                $latestVersion = $this->fetchLatestVersion();
+                $isUpdateAvailable = $this->isUpdateAvailable($this->version, $latestVersion);
+
+                if ($isUpdateAvailable) {
+                    $this->output->success("A new version is available: {$latestVersion}");
+                    $this->output->text([
+                        'You can update by running:',
+                        'ctx self-update',
+                        '',
+                        'Or with these alternative methods:',
+                        '- curl -sSL https://raw.githubusercontent.com/context-hub/generator/main/download-latest.sh | sh',
+                        '- Download from: https://github.com/context-hub/generator/releases/download/' . $latestVersion . '/context-generator.phar',
+                    ]);
+                } else {
+                    $this->output->success("You're using the latest version ({$this->version})");
+                }
+            } catch (HttpException $e) {
+                $this->output->error("Failed to check for updates: {$e->getMessage()}");
+            } catch (\Throwable $e) {
+                $this->output->error("Error checking for updates: {$e->getMessage()}");
+            }
+        } else {
+            $this->output->newLine();
+            $this->output->text("Run with --check-updates or -c to check for new versions");
+        }
+
+        return Command::SUCCESS;
     }
 
     protected function configure(): void
@@ -39,49 +81,6 @@ final class VersionCommand extends Command
             mode: InputOption::VALUE_NONE,
             description: 'Check for updates',
         );
-    }
-
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
-        \assert($output instanceof SymfonyStyle);
-
-        $output->title('Context Generator');
-        $output->text('Current version: ' . $this->version);
-
-        $checkUpdates = $input->getOption('check-updates');
-
-        if ($checkUpdates) {
-            $output->newLine();
-            $output->section('Checking for updates...');
-
-            try {
-                $latestVersion = $this->fetchLatestVersion();
-                $isUpdateAvailable = $this->isUpdateAvailable($this->version, $latestVersion);
-
-                if ($isUpdateAvailable) {
-                    $output->success("A new version is available: {$latestVersion}");
-                    $output->text([
-                        'You can update by running:',
-                        'ctx self-update',
-                        '',
-                        'Or with these alternative methods:',
-                        '- curl -sSL https://raw.githubusercontent.com/context-hub/generator/main/download-latest.sh | sh',
-                        '- Download from: https://github.com/context-hub/generator/releases/download/' . $latestVersion . '/context-generator.phar',
-                    ]);
-                } else {
-                    $output->success("You're using the latest version ({$this->version})");
-                }
-            } catch (HttpException $e) {
-                $output->error("Failed to check for updates: {$e->getMessage()}");
-            } catch (\Throwable $e) {
-                $output->error("Error checking for updates: {$e->getMessage()}");
-            }
-        } else {
-            $output->newLine();
-            $output->text("Run with --check-updates or -c to check for new versions");
-        }
-
-        return Command::SUCCESS;
     }
 
     /**
