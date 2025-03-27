@@ -20,7 +20,6 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  */
 abstract class BaseCommand extends Command implements LoggerAwareInterface
 {
-    use DetermineRootPath;
     use LoggerAwareTrait;
 
     protected InputInterface $input;
@@ -66,6 +65,7 @@ abstract class BaseCommand extends Command implements LoggerAwareInterface
             throw new \RuntimeException('The __invoke method is not defined in the command class.');
         }
 
+        /** @psalm-suppress InvalidArgument */
         return $this->container->invoke([$this, '__invoke']);
     }
 }

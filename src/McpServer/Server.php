@@ -50,42 +50,38 @@ final readonly class Server
      */
     private function configureServer(McpServer $server): void
     {
-        try {
-            // Register prompts handlers
-            $server->registerHandler(
-                'prompts/list',
-                fn() => $this->handleRoute('prompts/list', ListPromptsResult::class),
-            );
+        // Register prompts handlers
+        $server->registerHandler(
+            'prompts/list',
+            fn() => $this->handleRoute('prompts/list', ListPromptsResult::class),
+        );
 
-            $server->registerHandler(
-                'prompts/get',
-                fn($params) => $this->handlePromptGetRoute($params),
-            );
+        $server->registerHandler(
+            'prompts/get',
+            fn($params) => $this->handlePromptGetRoute($params),
+        );
 
-            // Register resources handlers
-            $server->registerHandler(
-                'resources/list',
-                fn() => $this->handleRoute('resources/list', ListResourcesResult::class),
-            );
+        // Register resources handlers
+        $server->registerHandler(
+            'resources/list',
+            fn() => $this->handleRoute('resources/list', ListResourcesResult::class),
+        );
 
-            $server->registerHandler(
-                'resources/read',
-                fn($params) => $this->handleResourceRead($params),
-            );
+        $server->registerHandler(
+            'resources/read',
+            fn($params) => $this->handleResourceRead($params),
+        );
 
-            // Register tools handlers
-            $server->registerHandler(
-                'tools/list',
-                fn() => $this->handleRoute('tools/list', ListToolsResult::class),
-            );
+        // Register tools handlers
+        $server->registerHandler(
+            'tools/list',
+            fn() => $this->handleRoute('tools/list', ListToolsResult::class),
+        );
 
-            $server->registerHandler(
-                'tools/call',
-                fn($params) => $this->handleToolCall($params),
-            );
-        } catch (\Throwable $e) {
-            trap($e);
-        }
+        $server->registerHandler(
+            'tools/call',
+            fn($params) => $this->handleToolCall($params),
+        );
     }
 
     /**
