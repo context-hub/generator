@@ -45,7 +45,7 @@ final readonly class RouteProvider
         $router->get('/prompt/{name}', $this->container->get(GetPromptAction::class));
 
         // Resources routes
-        $router->get('/resource/list', $this->container->get(ListResourcesAction::class));
+        $router->get('/resources/list', $this->container->get(ListResourcesAction::class));
         $router->get('/resource/ctx/list', $this->container->get(ListDocumentsResourceAction::class));
         $router->get('/resource/ctx/json-schema', $this->container->get(GetJsonSchemaResourceAction::class));
         $router->get(

@@ -84,7 +84,7 @@ final readonly class ListToolsAction
                         'properties' => [
                             'path' => [
                                 'type' => 'string',
-                                'description' => 'Path to the file',
+                                'description' => 'Relative path to the file like src/file.txt',
                             ],
                             'content' => [
                                 'type' => 'string',
@@ -107,11 +107,11 @@ final readonly class ListToolsAction
                         'properties' => [
                             'path' => [
                                 'type' => 'string',
-                                'description' => 'Current path',
+                                'description' => 'Current relative path.',
                             ],
                             'newPath' => [
                                 'type' => 'string',
-                                'description' => 'New path',
+                                'description' => 'New relative path',
                             ],
                         ],
                         'required' => ['path', 'newPath'],
@@ -125,11 +125,11 @@ final readonly class ListToolsAction
                         'properties' => [
                             'source' => [
                                 'type' => 'string',
-                                'description' => 'Source path',
+                                'description' => 'Source relative path',
                             ],
                             'destination' => [
                                 'type' => 'string',
-                                'description' => 'Destination path',
+                                'description' => 'Destination relative path',
                             ],
                             'createDirectory' => [
                                 'type' => 'boolean',
