@@ -253,3 +253,19 @@ documents:
     sources:
       - type: git_diff
         commit: unstaged
+
+  - description: "IDEA Integration"
+    outputPath: "idea-integration.md"
+    sources:
+      - type: file
+        sourcePaths: src/Console/IdeaIntegrationCommand.php
+        filePattern: '*.php'
+        showTreeView: true
+
+  - description: "IDEA Configuration"
+    outputPath: "idea-configuration.md"
+    sources:
+      - type: file
+        sourcePaths: .idea
+        filePattern: '*.xml'
+        showTreeView: true

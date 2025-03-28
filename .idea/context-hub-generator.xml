@@ -1,0 +1,26 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Run ctx" type="PHPUnit" factoryName="PHPUnit" temporary="false">
+    <module name="context-hub-generator" />
+    <option name="method" value="run" />
+    <option name="directory" value="$PROJECT_DIR$" />
+    <option name="scriptName" value="$PROJECT_DIR$/ctx" />
+    <option name="arguments" value="" />
+    <option name="interpreter" value="PHP 7.4" />
+    <option name="envs">
+      <env name="APP_ENV" value="dev" />
+    </option>
+    <method v="2" />
+  </configuration>
+  <configuration default="false" name="Show Tree View" type="PHPUnit" factoryName="PHPUnit" temporary="false">
+    <module name="context-hub-generator" />
+    <option name="method" value="run" />
+    <option name="directory" value="$PROJECT_DIR$" />
+    <option name="scriptName" value="$PROJECT_DIR$/ctx" />
+    <option name="arguments" value="--tree-view" />
+    <option name="interpreter" value="PHP 7.4" />
+    <option name="envs">
+      <env name="APP_ENV" value="dev" />
+    </option>
+    <method v="2" />
+  </configuration>
+</component>

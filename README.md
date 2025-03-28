@@ -165,6 +165,39 @@ Point the MCP client to the Context Generator server:
 
 Now you can ask Claude questions about your codebase without manually uploading context files!
 
+## 7. IDEA Integration
+
+For a more seamless experience, you can integrate Context Generator with IntelliJ IDEA:
+
+### Setup
+
+1. Open your project in IntelliJ IDEA.
+2. Go to `File > Project Structure > Project Settings > Modules`.
+3. Click on the `+` icon to add a new module.
+4. Select `Import Module` and choose the `context-hub-generator.xml` file located in the `.idea` directory.
+5. Follow the prompts to complete the module import.
+
+### Usage
+
+- To run `ctx` within IDEA, go to `Run > Edit Configurations`.
+- Click on the `+` icon to add a new configuration.
+- Select `PHPUnit` and name it `Run ctx`.
+- Set the `Script` field to `$PROJECT_DIR$/ctx`.
+- Set the `Interpreter` field to `PHP 7.4`.
+- Click `OK` to save the configuration.
+
+To show the tree view of config files:
+
+- Go to `Run > Edit Configurations`.
+- Click on the `+` icon to add a new configuration.
+- Select `PHPUnit` and name it `Show Tree View`.
+- Set the `Script` field to `$PROJECT_DIR$/ctx`.
+- Set the `Arguments` field to `--tree-view`.
+- Set the `Interpreter` field to `PHP 7.4`.
+- Click `OK` to save the configuration.
+
+Now you can run `ctx` and view the tree structure of your config files directly within IDEA.
+
 ## JSON Schema
 
 For better editing experience, Context Generator provides a JSON schema for autocompletion and validation in your IDE:
