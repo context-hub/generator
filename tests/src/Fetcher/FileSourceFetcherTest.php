@@ -55,7 +55,7 @@ class FileSourceFetcherTest extends TestCase
         $source->method('getDescription')->willReturn('Test Description');
         $source->method('in')->willReturn(['/test/path']);
         $source->method('files')->willReturn(['file1.txt', 'file2.txt']);
-        $source->method('treeView')->willReturn((object)['enabled' => false, 'getOptions' => []]);
+        $source->method('treeView')->willReturn((object) ['enabled' => false, 'getOptions' => []]);
 
         $file1 = $this->createMock(SplFileInfo::class);
         $file1->method('getPathname')->willReturn('/test/base/path/file1.txt');
@@ -71,7 +71,7 @@ class FileSourceFetcherTest extends TestCase
         $file2->method('getSize')->willReturn(200);
         $file2->method('getContents')->willReturn('Content of file2');
 
-        $this->finder->method('find')->willReturn((object)[
+        $this->finder->method('find')->willReturn((object) [
             'count' => 2,
             'files' => [$file1, $file2],
             'treeView' => null,
