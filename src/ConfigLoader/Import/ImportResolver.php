@@ -24,12 +24,6 @@ final readonly class ImportResolver
 
     /**
      * Process imports in a configuration
-     *
-     * @param array<mixed> $config The configuration containing imports
-     * @param string $basePath The base path for resolving relative paths
-     * @param array<string> $parsedImports Already processed import paths to avoid duplicates
-     * @param CircularImportDetector $detector Circular import detector
-     * @return array<mixed> The merged configuration with imports processed
      */
     public function resolveImports(
         array $config,
