@@ -58,13 +58,9 @@ final class MCPServerCommand extends BaseCommand
             ->determineRootPath($configPath)
             ->withEnvFile($envFileName);
 
-        $this->logger->info(\sprintf('Using root path: %s', $dirs->rootPath));
+        $this->container->bindSingleton(Directories::class, $dirs);
 
-        $this->container->bindSingleton(
-            Directories::class,
-            $dirs = $this->dirs
-                ->withConfigPath($configPath),
-        );
+        $this->logger->info(\sprintf('Using root path: %s', $dirs->rootPath));
 
         // Create the document compiler
         $compiler = $documentCompilerFactory->create(dirs: $dirs);
