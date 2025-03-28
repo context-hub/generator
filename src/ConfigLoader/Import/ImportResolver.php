@@ -15,12 +15,16 @@ use Psr\Log\LoggerInterface;
  */
 final readonly class ImportResolver
 {
+    private WildcardPathFinder $pathFinder;
+
     public function __construct(
         private Directories $dirs,
         private FilesInterface $files,
         private ConfigLoaderFactory $loaderFactory,
         private ?LoggerInterface $logger = null,
-    ) {}
+    ) {
+        $this->pathFinder = new WildcardPathFinder($files, $logger);
+    }
 
     /**
      * Process imports in a configuration
@@ -49,6 +53,19 @@ final readonly class ImportResolver
         foreach ($imports as $importConfig) {
             $importCfg = ImportConfig::fromArray($importConfig, $basePath);
 
+            // Handle wildcard paths
+            if ($importCfg->hasWildcard) {
+                $this->processWildcardImport(
+                    $importCfg,
+                    $basePath,
+                    $parsedImports,
+                    $detector,
+                    $importedConfigs,
+                    $importConfig,
+                );
+                continue;
+            }
+
             // Skip if already processed
             if (\in_array($importCfg->absolutePath, $parsedImports, true)) {
                 $this->logger?->debug('Skipping already processed import', [
@@ -58,39 +75,15 @@ final readonly class ImportResolver
                 continue;
             }
 
-            // Check for circular imports
-            $detector->beginProcessing($importCfg->absolutePath);
-
-            try {
-                // Load the import configuration
-                $importedConfig = $this->loadImportConfig($importCfg);
-
-                // Recursively process nested imports
-                $dirname = \dirname($importCfg->absolutePath);
-                $importedConfig = $this->resolveImports(
-                    $importedConfig,
-                    $dirname,
-                    $parsedImports,
-                    $detector,
-                );
-
-                // Apply path prefix if specified
-                $importedConfig = $this->applyPathPrefix($importedConfig, \dirname((string) $importConfig['path']));
-
-                // Store for later merging
-                $importedConfigs[] = $importedConfig;
-
-                // Mark as processed
-                $parsedImports[] = $importCfg->absolutePath;
-
-                $this->logger?->debug('Successfully processed import', [
-                    'path' => $importCfg->path,
-                    'absolutePath' => $importCfg->absolutePath,
-                ]);
-            } finally {
-                // Always end processing to maintain stack integrity
-                $detector->endProcessing($importCfg->absolutePath);
-            }
+            // Process a single standard import
+            $this->processSingleImport(
+                $importCfg,
+                $basePath,
+                $parsedImports,
+                $detector,
+                $importedConfigs,
+                $importConfig,
+            );
         }
 
         // Remove the import directive from the original config
@@ -98,6 +91,117 @@ final readonly class ImportResolver
 
         // Merge all configurations
         return $this->mergeConfigurations([$config, ...$importedConfigs]);
+    }
+
+    /**
+     * Process a wildcard import pattern
+     */
+    private function processWildcardImport(
+        ImportConfig $importCfg,
+        string $basePath,
+        array &$parsedImports,
+        CircularImportDetector $detector,
+        array &$importedConfigs,
+        array $importConfig,
+    ): void {
+        // Find all files that match the pattern
+        $matchingPaths = $this->pathFinder->findMatchingPaths($importCfg->path, $basePath);
+
+        if (empty($matchingPaths)) {
+            $this->logger?->warning('No files match the wildcard pattern', [
+                'pattern' => $importCfg->path,
+                'basePath' => $basePath,
+            ]);
+            return;
+        }
+
+        $this->logger?->debug('Found files matching wildcard pattern', [
+            'pattern' => $importCfg->path,
+            'count' => \count($matchingPaths),
+            'paths' => $matchingPaths,
+        ]);
+
+        // Process each matching file
+        foreach ($matchingPaths as $matchingPath) {
+            // Skip if already processed
+            if (\in_array($matchingPath, $parsedImports, true)) {
+                $this->logger?->debug('Skipping already processed wildcard match', [
+                    'path' => $matchingPath,
+                ]);
+                continue;
+            }
+
+            // Create a single import config for this match
+            $singleImportCfg = new ImportConfig(
+                path: $matchingPath, // Use the actual file path
+                absolutePath: $matchingPath, // The path finder returns absolute paths
+                pathPrefix: $importCfg->pathPrefix,
+                hasWildcard: false,
+            );
+
+            // Process it using the standard import logic
+            $this->processSingleImport(
+                $singleImportCfg,
+                \dirname($matchingPath), // Base path is the directory of the matched file
+                $parsedImports,
+                $detector,
+                $importedConfigs,
+                $importConfig,
+            );
+        }
+    }
+
+    /**
+     * Process a single non-wildcard import
+     */
+    private function processSingleImport(
+        ImportConfig $importCfg,
+        string $basePath,
+        array &$parsedImports,
+        CircularImportDetector $detector,
+        array &$importedConfigs,
+        array $importConfig,
+    ): void {
+        // Check for circular imports
+        $detector->beginProcessing($importCfg->absolutePath);
+
+        try {
+            // Load the import configuration
+            $importedConfig = $this->loadImportConfig($importCfg);
+
+            // Recursively process nested imports
+            $dirname = \dirname($importCfg->absolutePath);
+            $importedConfig = $this->resolveImports(
+                $importedConfig,
+                $dirname,
+                $parsedImports,
+                $detector,
+            );
+
+            // Apply path prefix if specified
+            $importedConfig = $this->applyPathPrefix($importedConfig, \dirname((string) $importConfig['path']));
+
+            // Store for later merging
+            $importedConfigs[] = $importedConfig;
+
+            // Mark as processed
+            $parsedImports[] = $importCfg->absolutePath;
+
+            $this->logger?->debug('Successfully processed import', [
+                'path' => $importCfg->path,
+                'absolutePath' => $importCfg->absolutePath,
+            ]);
+        } catch (\Throwable $e) {
+            $this->logger?->error('Failed to process import', [
+                'path' => $importCfg->path,
+                'absolutePath' => $importCfg->absolutePath,
+                'error' => $e->getMessage(),
+            ]);
+            throw $e;
+        } finally {
+            // Always end processing to maintain stack integrity
+            $detector->endProcessing($importCfg->absolutePath);
+        }
     }
 
     /**

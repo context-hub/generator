@@ -1,5 +1,5 @@
 import:
-  - path: src/Console/context.yaml
+  - path: src/**/context.yaml
   - path: src/ConfigLoader/context.yaml
 
 documents:
@@ -60,8 +60,8 @@ documents:
     sources:
       - type: file
         sourcePaths: src/Document
-        filePattern: '*.php'
-        showTreeView: true
+        contains:
+          - implements
 
   - description: Source Implementations - File
     outputPath: sources/file-source.md
@@ -253,3 +253,16 @@ documents:
     sources:
       - type: git_diff
         commit: unstaged
+
+  - description: Import documents docs
+    outputPath: docs/import-docs.md
+    sources:
+      - type: file
+        sourcePaths:
+          - src/ConfigLoader/Import
+        showTreeView: true
+      - type: github
+        repository: context-hub/docs
+        branch: main
+        sourcePaths:
+          - docs/configuration.md

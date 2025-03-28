@@ -13,6 +13,7 @@ final readonly class ImportConfig
         public string $path,
         public string $absolutePath,
         public ?string $pathPrefix = null,
+        public bool $hasWildcard = false,
     ) {}
 
     /**
@@ -27,13 +28,18 @@ final readonly class ImportConfig
         $path = $config['path'];
         $pathPrefix = $config['pathPrefix'] ?? null;
 
+        // Check if the path contains wildcards
+        $hasWildcard = PathMatcher::containsWildcard($path);
+
         // Resolve relative path to absolute path
+        // Note: For wildcard paths, this will be used as a base path for pattern matching
         $absolutePath = self::resolvePath($path, $basePath);
 
         return new self(
             path: $path,
             absolutePath: $absolutePath,
             pathPrefix: $pathPrefix,
+            hasWildcard: $hasWildcard,
         );
     }
 
