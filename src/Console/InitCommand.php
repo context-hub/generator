@@ -59,7 +59,7 @@ final class InitCommand extends BaseCommand
                 description: 'Project structure overview',
                 outputPath: 'project-structure.md',
                 firstSource: new TreeSource(
-                    sourcePath: ['src'],
+                    sourcePaths: ['src'],
                     treeView: new TreeViewConfig(
                         showCharCount: true,
                     ),
