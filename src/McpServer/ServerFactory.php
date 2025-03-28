@@ -9,7 +9,6 @@ use Butschster\ContextGenerator\McpServer\Action\Prompts\ListPromptsAction;
 use Butschster\ContextGenerator\McpServer\Action\Prompts\ProjectStructurePromptAction;
 use Butschster\ContextGenerator\McpServer\Action\Resources\GetDocumentContentResourceAction;
 use Butschster\ContextGenerator\McpServer\Action\Resources\JsonSchemaResourceAction;
-use Butschster\ContextGenerator\McpServer\Action\Resources\ListDocumentsResourceAction;
 use Butschster\ContextGenerator\McpServer\Action\Resources\ListResourcesAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Context\ContextAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Context\ContextGetAction;
@@ -46,7 +45,6 @@ final readonly class ServerFactory
 
             // Resources controllers
             ListResourcesAction::class,
-            ListDocumentsResourceAction::class,
             JsonSchemaResourceAction::class,
             GetDocumentContentResourceAction::class,
 

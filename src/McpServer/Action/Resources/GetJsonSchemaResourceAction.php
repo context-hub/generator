@@ -25,6 +25,7 @@ final readonly class GetJsonSchemaResourceAction
     {
         $this->logger->info('Getting JSON schema');
 
+        trap($this->getJsonSchema());
         return new ReadResourceResult([
             new TextResourceContents(
                 text: $this->getJsonSchema(),

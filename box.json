@@ -18,7 +18,8 @@
     "LICENSE",
     "composer.json",
     "composer.lock",
-    "version.json"
+    "version.json",
+    "json-schema.json"
   ],
   "output": ".build/phar/ctx.phar"
 }
