@@ -42,6 +42,7 @@ final readonly class ConfigLoaderFactory
 
         // Create import resolver
         $importResolver = new ImportResolver(
+            dirs: $dirs,
             files: $this->files,
             loaderFactory: $this,
             logger: $this->logger?->withPrefix('import-resolver'),
@@ -121,6 +122,7 @@ final readonly class ConfigLoaderFactory
 
         // Create import resolver
         $importResolver = new ImportResolver(
+            dirs: $dirs,
             files: $this->files,
             loaderFactory: $this,
             logger: $this->logger?->withPrefix('import-resolver'),

@@ -54,7 +54,7 @@
     }
   },
   "bin": [
-    "context-generator"
+    "ctx"
   ],
   "scripts": {
     "cs-check": "vendor/bin/php-cs-fixer fix --dry-run",
