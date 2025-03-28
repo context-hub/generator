@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\ConfigLoader;
 
 use Butschster\ContextGenerator\ConfigLoader\Exception\ConfigLoaderException;
+use Butschster\ContextGenerator\Directories;
 use Butschster\ContextGenerator\FilesInterface;
 use Psr\Log\LoggerInterface;
 
@@ -16,7 +17,7 @@ final readonly class ConfigurationProvider
     public function __construct(
         private ConfigLoaderFactory $loaderFactory,
         private FilesInterface $files,
-        private string $rootPath,
+        private Directories $dirs,
         private ?LoggerInterface $logger = null,
         private array $parserPlugins = [],
     ) {}
@@ -47,7 +48,7 @@ final readonly class ConfigurationProvider
             ]);
 
             return $this->loaderFactory->create(
-                rootPath: $resolvedPath,
+                dirs: $this->dirs->withConfigPath($resolvedPath),
                 parserPlugins: $this->parserPlugins,
             );
         }
@@ -56,10 +57,9 @@ final readonly class ConfigurationProvider
         ]);
 
         return $this->loaderFactory->createForFile(
-            filePath: $resolvedPath,
+            dirs: $this->dirs->withConfigPath($resolvedPath),
             parserPlugins: $this->parserPlugins,
         );
-
     }
 
     /**
@@ -68,11 +68,11 @@ final readonly class ConfigurationProvider
     public function fromDefaultLocation(): ConfigLoaderInterface
     {
         $this->logger?->info('Loading configuration from default location', [
-            'rootPath' => $this->rootPath,
+            'rootPath' => $this->dirs->rootPath,
         ]);
 
         return $this->loaderFactory->create(
-            rootPath: $this->rootPath,
+            dirs: $this->dirs,
             parserPlugins: $this->parserPlugins,
         );
     }
@@ -87,7 +87,7 @@ final readonly class ConfigurationProvider
             $resolvedPath = $path;
         } else {
             // Otherwise, resolve it relative to the root path
-            $resolvedPath = \rtrim($this->rootPath, '/') . '/' . $path;
+            $resolvedPath = \rtrim($this->dirs->rootPath, '/') . '/' . $path;
         }
 
         // Check if the path exists

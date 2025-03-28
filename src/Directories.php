@@ -66,6 +66,13 @@ final readonly class Directories
         return \sprintf('%s/%s', $this->rootPath, $filename);
     }
 
+    public function getConfigPath(string $filename): string
+    {
+        $filename = \ltrim($filename, '/');
+
+        return \sprintf('%s/%s', $this->configPath, $filename);
+    }
+
     /**
      * Determine the effective root path based on config file path
      */
@@ -75,17 +82,15 @@ final readonly class Directories
             return $this;
         }
 
-        // If config path is absolute, use its directory as root
-        if (\str_starts_with($configPath, '/')) {
-            $configDir = \rtrim(\is_dir($configPath) ? $configPath : \dirname($configPath));
-        } else {
-            // If relative, resolve against the original root path
-            $fullConfigPath = \rtrim($this->rootPath, '/') . '/' . $configPath;
-
-            $configDir = \rtrim(\is_dir($fullConfigPath) ? $fullConfigPath : \dirname($fullConfigPath));
+        // If relative, resolve against the original root path
+        if (!\str_starts_with($configPath, '/')) {
+            $configPath = \rtrim($this->rootPath, '/') . '/' . $configPath;
         }
 
-        if (\file_exists($configDir) && \is_dir($configDir)) {
+        // If config path is absolute, use its directory as root
+        $configDir = \rtrim(\is_dir($configPath) ? $configPath : \dirname($configPath));
+
+        if (\is_dir($configDir)) {
             return $this->withRootPath($configDir)->withConfigPath($configPath);
         }
 

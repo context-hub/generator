@@ -14,6 +14,7 @@ use Butschster\ContextGenerator\ConfigLoader\Reader\JsonReader;
 use Butschster\ContextGenerator\ConfigLoader\Reader\PhpReader;
 use Butschster\ContextGenerator\ConfigLoader\Reader\StringJsonReader;
 use Butschster\ContextGenerator\ConfigLoader\Reader\YamlReader;
+use Butschster\ContextGenerator\Directories;
 use Butschster\ContextGenerator\FilesInterface;
 use Butschster\ContextGenerator\Lib\Logger\HasPrefixLoggerInterface;
 use Psr\Log\LoggerInterface;
@@ -25,18 +26,17 @@ final readonly class ConfigLoaderFactory
 {
     public function __construct(
         private FilesInterface $files,
-        private string $rootPath,
+        private Directories $dirs,
         private ?LoggerInterface $logger = null,
     ) {}
 
     /**
      * Create a loader for a specific config file
      *
-     * @param string $rootPath Full path to the config file
      * @param array<ConfigParserPluginInterface> $parserPlugins Plugins for the config parser
      * @return ConfigLoaderInterface The config loader
      */
-    public function create(string $rootPath, array $parserPlugins = []): ConfigLoaderInterface
+    public function create(Directories $dirs, array $parserPlugins = []): ConfigLoaderInterface
     {
         \assert($this->logger instanceof HasPrefixLoggerInterface);
 
@@ -57,7 +57,7 @@ final readonly class ConfigLoaderFactory
         $parserPlugins = [$importParserPlugin, ...$parserPlugins];
 
         // Create parser
-        $parser = new ConfigParser($this->rootPath, $this->logger, ...$parserPlugins);
+        $parser = new ConfigParser($dirs->configPath, $this->logger, ...$parserPlugins);
 
         // Create composite parser
         $compositeParser = new CompositeConfigParser($parser);
@@ -80,28 +80,28 @@ final readonly class ConfigLoaderFactory
 
         // Try different file extensions
         $jsonLoader = new ConfigLoader(
-            configPath: $rootPath . '/context.json',
+            configPath: $dirs->getConfigPath('context.json'),
             reader: $jsonReader,
             parser: $compositeParser,
             logger: $this->logger,
         );
 
         $yamlLoader = new ConfigLoader(
-            configPath: $rootPath . '/context.yaml',
+            configPath: $dirs->getConfigPath('context.yaml'),
             reader: $yamlReader,
             parser: $compositeParser,
             logger: $this->logger,
         );
 
         $ymlLoader = new ConfigLoader(
-            configPath: $rootPath . '/context.yml',
+            configPath: $dirs->getConfigPath('context.yml'),
             reader: $yamlReader,
             parser: $compositeParser,
             logger: $this->logger,
         );
 
         $phpLoader = new ConfigLoader(
-            configPath: $rootPath . '/context.php',
+            configPath: $dirs->getConfigPath('context.php'),
             reader: $phpReader,
             parser: $compositeParser,
             logger: $this->logger,
@@ -115,7 +115,7 @@ final readonly class ConfigLoaderFactory
     }
 
     // Add a new method to ConfigLoaderFactory to create a loader for a specific file path
-    public function createForFile(string $filePath, array $parserPlugins = []): ConfigLoaderInterface
+    public function createForFile(Directories $dirs, array $parserPlugins = []): ConfigLoaderInterface
     {
         \assert($this->logger instanceof HasPrefixLoggerInterface);
 
@@ -136,13 +136,13 @@ final readonly class ConfigLoaderFactory
         $parserPlugins = [$importParserPlugin, ...$parserPlugins];
 
         // Create parser
-        $parser = new ConfigParser($this->rootPath, $this->logger, ...$parserPlugins);
+        $parser = new ConfigParser($this->dirs->rootPath, $this->logger, ...$parserPlugins);
 
         // Create composite parser
         $compositeParser = new CompositeConfigParser($parser);
 
         // Determine the file extension
-        $extension = \pathinfo($filePath, PATHINFO_EXTENSION);
+        $extension = \pathinfo($dirs->configPath, PATHINFO_EXTENSION);
 
         // Create the appropriate reader based on file extension
         $reader = match ($extension) {
@@ -163,7 +163,7 @@ final readonly class ConfigLoaderFactory
 
         // Create loader for the specific file
         return new ConfigLoader(
-            configPath: $filePath,
+            configPath: $dirs->configPath,
             reader: $reader,
             parser: $compositeParser,
             logger: $this->logger,
@@ -182,7 +182,7 @@ final readonly class ConfigLoaderFactory
         \assert($this->logger instanceof HasPrefixLoggerInterface);
 
         // Create parser
-        $parser = new ConfigParser($this->rootPath, $this->logger, ...$parserPlugins);
+        $parser = new ConfigParser($this->dirs->rootPath, $this->logger, ...$parserPlugins);
 
         // Create composite parser
         $compositeParser = new CompositeConfigParser($parser);

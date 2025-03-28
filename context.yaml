@@ -273,4 +273,3 @@ documents:
     sources:
       - type: git_diff
         commit: unstaged
-

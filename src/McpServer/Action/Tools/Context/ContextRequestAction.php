@@ -8,12 +8,24 @@ use Butschster\ContextGenerator\ConfigurationProviderFactory;
 use Butschster\ContextGenerator\Directories;
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
 use Butschster\ContextGenerator\Document\Compiler\Error\ErrorCollection;
+use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
+use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
-use Laminas\Diactoros\Response\JsonResponse;
-use Psr\Http\Message\ResponseInterface;
+use Mcp\Types\CallToolResult;
+use Mcp\Types\TextContent;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
+#[Tool(
+    name: 'context-request',
+    description: 'Request a context document using JSON schema, filters and modifiers',
+)]
+#[InputSchema(
+    name: 'json',
+    type: 'string',
+    description: 'Context configuration in JSON format. It should contain the context documents with sources (file, tree, text) and any filters or modifiers to be applied.',
+    required: true,
+)]
 final readonly class ContextRequestAction
 {
     public function __construct(
@@ -24,7 +36,7 @@ final readonly class ContextRequestAction
     ) {}
 
     #[Post(path: '/tools/call/context-request', name: 'tools.context.request')]
-    public function __invoke(ServerRequestInterface $request): ResponseInterface
+    public function __invoke(ServerRequestInterface $request): CallToolResult
     {
         $this->logger->info('Handling context-request action');
 
@@ -33,9 +45,11 @@ final readonly class ContextRequestAction
         $json = $parsedBody['json'] ?? '';
 
         if (empty($json)) {
-            return new JsonResponse([
-                'error' => 'Missing JSON parameter',
-            ], 400);
+            return new CallToolResult([
+                new TextContent(
+                    text: 'Missing JSON parameter',
+                ),
+            ], isError: true);
         }
 
         try {
@@ -46,26 +60,23 @@ final readonly class ContextRequestAction
             $compiledDocuments = [];
 
             foreach ($documents as $document) {
-                $compiledDocuments[$document->outputPath] = [
-                    'content' => (string) $this->documentCompiler->buildContent(
-                        new ErrorCollection(),
-                        $document,
-                    )->content,
-                ];
+                $compiledDocuments[] = new TextContent(
+                    text: (string) $this->documentCompiler->buildContent(new ErrorCollection(), $document)->content,
+                );
             }
 
-            return new JsonResponse([
-                'documents' => $compiledDocuments,
-            ]);
+            return new CallToolResult($compiledDocuments);
         } catch (\Throwable $e) {
             $this->logger->error('Error processing context request', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return new JsonResponse([
-                'error' => $e->getMessage(),
-            ], 500);
+            return new CallToolResult([
+                new TextContent(
+                    text: \sprintf('Error: %s', $e->getMessage()),
+                ),
+            ], isError: true);
         }
     }
 }
