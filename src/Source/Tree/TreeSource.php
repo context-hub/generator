@@ -14,7 +14,7 @@ use Butschster\ContextGenerator\Source\BaseSource;
 final class TreeSource extends BaseSource implements FilterableSourceInterface
 {
     /**
-     * @param string|array<string> $sourcePath Path(s) to generate tree from
+     * @param string|array<string> $sourcePaths Path(s) to generate tree from
      * @param string $description Human-readable description
      * @param string|array<string> $filePattern Pattern(s) to match files
      * @param array<string> $notPath Patterns to exclude paths
@@ -26,7 +26,7 @@ final class TreeSource extends BaseSource implements FilterableSourceInterface
      * @param array<non-empty-string> $tags
      */
     public function __construct(
-        public readonly string|array $sourcePath,
+        public readonly string|array $sourcePaths,
         string $description = '',
         public readonly string|array $filePattern = '*',
         public readonly array $notPath = [],
@@ -46,12 +46,12 @@ final class TreeSource extends BaseSource implements FilterableSourceInterface
     public static function fromArray(array $data, string $rootPath = ''): self
     {
         if (!isset($data['sourcePaths'])) {
-            throw new \RuntimeException('Tree source must have a "sourcePath" property');
+            throw new \RuntimeException('Tree source must have a "sourcePaths" property');
         }
 
         $sourcePath = $data['sourcePaths'];
         if (!\is_string($sourcePath) && !\is_array($sourcePath)) {
-            throw new \RuntimeException('"sourcePath" must be a string or array in source');
+            throw new \RuntimeException('"sourcePaths" must be a string or array in source');
         }
 
         $sourcePath = \is_string($sourcePath) ? [$sourcePath] : $sourcePath;
@@ -106,7 +106,7 @@ final class TreeSource extends BaseSource implements FilterableSourceInterface
         }
 
         return new self(
-            sourcePath: $sourcePath,
+            sourcePaths: $sourcePath,
             description: $data['description'] ?? '',
             filePattern: $filePattern,
             notPath: $notPath,
@@ -167,7 +167,7 @@ final class TreeSource extends BaseSource implements FilterableSourceInterface
     {
         $directories = [];
 
-        foreach ((array) $this->sourcePath as $path) {
+        foreach ((array) $this->sourcePaths as $path) {
             if (\is_dir($path)) {
                 $directories[] = $path;
             }
@@ -180,7 +180,7 @@ final class TreeSource extends BaseSource implements FilterableSourceInterface
     {
         $files = [];
 
-        foreach ((array) $this->sourcePath as $path) {
+        foreach ((array) $this->sourcePaths as $path) {
             if (\is_file($path)) {
                 $files[] = $path;
             }
@@ -199,7 +199,7 @@ final class TreeSource extends BaseSource implements FilterableSourceInterface
         $result = [
             'type' => 'tree',
             ...parent::jsonSerialize(),
-            'sourcePaths' => $this->sourcePath,
+            'sourcePaths' => $this->sourcePaths,
             'filePattern' => $this->filePattern,
             'notPath' => $this->notPath,
             'renderFormat' => $this->renderFormat,
