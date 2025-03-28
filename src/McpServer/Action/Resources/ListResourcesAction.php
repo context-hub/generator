@@ -34,6 +34,7 @@ final readonly class ListResourcesAction
 
         // Add document resources from config loader
         $documents = $this->configLoader->load();
+
         foreach ($documents->getItems() as $document) {
             $resources[] = new Resource(
                 name: $document->outputPath,

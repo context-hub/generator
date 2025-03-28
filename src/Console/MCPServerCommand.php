@@ -81,7 +81,7 @@ final class MCPServerCommand extends BaseCommand
                         'path' => $dirs->rootPath,
                     ],
                 );
-                $loader = $configProvider->fromPath($configPath);
+                $loader = $configProvider->fromPath($dirs->configPath);
             } else {
                 $this->logger->info('Using default configuration location...');
                 $loader = $configProvider->fromDefaultLocation();

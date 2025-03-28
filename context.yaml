@@ -1,3 +1,7 @@
+import:
+  - path: src/Console/context.yaml
+  - path: src/ConfigLoader/context.yaml
+
 documents:
   - description: "Context Generator Project Structure"
     outputPath: "project-structure.md"
@@ -49,14 +53,6 @@ documents:
           - 'SourceInterface.php'
           - 'SourceModifierInterface.php'
           - 'FilesInterface.php'
-        showTreeView: true
-
-  - description: Configuration System
-    outputPath: core/config-loader.md
-    sources:
-      - type: file
-        sourcePaths: src/ConfigLoader
-        filePattern: '*.php'
         showTreeView: true
 
   - description: Document Compilation System
@@ -154,22 +150,6 @@ documents:
         sourcePaths:
           - src/Modifier/ContextSanitizerModifier.php
           - src/Lib/Sanitizer
-        filePattern: '*.php'
-        showTreeView: true
-
-  - description: Console Commands
-    outputPath: console/commands.md
-    sources:
-      - type: file
-        sourcePaths: src/Console
-        filePattern: '*Command.php'
-        showTreeView: true
-
-  - description: Console Renderers
-    outputPath: console/renderers.md
-    sources:
-      - type: file
-        sourcePaths: src/Console/Renderer
         filePattern: '*.php'
         showTreeView: true
 
@@ -273,4 +253,3 @@ documents:
     sources:
       - type: git_diff
         commit: unstaged
-

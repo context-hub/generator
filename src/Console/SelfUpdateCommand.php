@@ -10,9 +10,7 @@ use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 use Spiral\Core\Container;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
 
 #[AsCommand(
     name: 'self-update',
@@ -43,7 +41,7 @@ final class SelfUpdateCommand extends BaseCommand
         parent::__construct($container);
     }
 
-    public function __invoke(InputInterface $input, OutputInterface $output): int
+    public function __invoke(): int
     {
         $this->output->title('Context Generator Self Update');
 

@@ -22,11 +22,11 @@ final readonly class ConfigurationProviderFactory
         return new ConfigurationProvider(
             loaderFactory: new ConfigLoaderFactory(
                 files: $this->files,
-                rootPath: $dirs->rootPath,
+                dirs: $dirs,
                 logger: $this->logger->withPrefix('config-loader'),
             ),
             files: $this->files,
-            rootPath: $dirs->rootPath,
+            dirs: $dirs,
             logger: $this->logger->withPrefix('config-provider'),
             parserPlugins: $this->parserPluginRegistry->getPlugins(),
         );

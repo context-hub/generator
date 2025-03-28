@@ -6,6 +6,7 @@ namespace Butschster\ContextGenerator\ConfigLoader\Import;
 
 use Butschster\ContextGenerator\ConfigLoader\ConfigLoaderFactory;
 use Butschster\ContextGenerator\ConfigLoader\Exception\ConfigLoaderException;
+use Butschster\ContextGenerator\Directories;
 use Butschster\ContextGenerator\FilesInterface;
 use Psr\Log\LoggerInterface;
 
@@ -15,6 +16,7 @@ use Psr\Log\LoggerInterface;
 final readonly class ImportResolver
 {
     public function __construct(
+        private Directories $dirs,
         private FilesInterface $files,
         private ConfigLoaderFactory $loaderFactory,
         private ?LoggerInterface $logger = null,
@@ -22,12 +24,6 @@ final readonly class ImportResolver
 
     /**
      * Process imports in a configuration
-     *
-     * @param array<mixed> $config The configuration containing imports
-     * @param string $basePath The base path for resolving relative paths
-     * @param array<string> $parsedImports Already processed import paths to avoid duplicates
-     * @param CircularImportDetector $detector Circular import detector
-     * @return array<mixed> The merged configuration with imports processed
      */
     public function resolveImports(
         array $config,
@@ -116,7 +112,9 @@ final readonly class ImportResolver
         }
 
         try {
-            $loader = $this->loaderFactory->createForFile($importConfig->absolutePath);
+            $loader = $this->loaderFactory->createForFile(
+                $this->dirs->withConfigPath($importConfig->absolutePath),
+            );
 
             if (!$loader->isSupported()) {
                 throw new ConfigLoaderException(

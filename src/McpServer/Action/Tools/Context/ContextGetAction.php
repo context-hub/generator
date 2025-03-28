@@ -7,12 +7,24 @@ namespace Butschster\ContextGenerator\McpServer\Action\Tools\Context;
 use Butschster\ContextGenerator\ConfigLoader\ConfigLoaderInterface;
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
 use Butschster\ContextGenerator\Document\Compiler\Error\ErrorCollection;
+use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
+use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
 use Mcp\Types\TextContent;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
+#[Tool(
+    name: 'context-get',
+    description: 'Get a specific context document from the project context config',
+)]
+#[InputSchema(
+    name: 'path',
+    type: 'string',
+    description: 'Output path to the context document provided in the config.',
+    required: true,
+)]
 final readonly class ContextGetAction
 {
     public function __construct(
