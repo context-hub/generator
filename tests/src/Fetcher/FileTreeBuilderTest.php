@@ -72,6 +72,75 @@ class FileTreeBuilderTest extends TestCase
         $this->assertStringContainsString('file3.php', $result);
     }
 
+    #[Test]
+    public function it_should_handle_nested_directories(): void
+    {
+        $files = [
+            '/root/project/src/file1.php',
+            '/root/project/src/dir1/file2.php',
+            '/root/project/src/dir1/dir2/file3.php',
+        ];
+        $basePath = '/root/project';
+        $result = $this->treeBuilder->buildTree($files, $basePath);
+
+        $this->assertStringContainsString('src', $result);
+        $this->assertStringContainsString('dir1', $result);
+        $this->assertStringContainsString('dir2', $result);
+        $this->assertStringContainsString('file1.php', $result);
+        $this->assertStringContainsString('file2.php', $result);
+        $this->assertStringContainsString('file3.php', $result);
+    }
+
+    #[Test]
+    public function it_should_handle_files_with_special_characters(): void
+    {
+        $files = [
+            '/root/project/src/file with spaces.php',
+            '/root/project/src/file_with_underscores.php',
+            '/root/project/src/file-with-dashes.php',
+            '/root/project/src/file.with.dots.php',
+        ];
+        $basePath = '/root/project';
+        $result = $this->treeBuilder->buildTree($files, $basePath);
+
+        $this->assertStringContainsString('file with spaces.php', $result);
+        $this->assertStringContainsString('file_with_underscores.php', $result);
+        $this->assertStringContainsString('file-with-dashes.php', $result);
+        $this->assertStringContainsString('file.with.dots.php', $result);
+    }
+
+    #[Test]
+    public function it_should_handle_files_with_unicode_characters(): void
+    {
+        $files = [
+            '/root/project/src/文件.php',
+            '/root/project/src/ファイル.php',
+            '/root/project/src/파일.php',
+        ];
+        $basePath = '/root/project';
+        $result = $this->treeBuilder->buildTree($files, $basePath);
+
+        $this->assertStringContainsString('文件.php', $result);
+        $this->assertStringContainsString('ファイル.php', $result);
+        $this->assertStringContainsString('파일.php', $result);
+    }
+
+    #[Test]
+    public function it_should_handle_files_with_emoji(): void
+    {
+        $files = [
+            '/root/project/src/file😀.php',
+            '/root/project/src/file🚀.php',
+            '/root/project/src/file🔥.php',
+        ];
+        $basePath = '/root/project';
+        $result = $this->treeBuilder->buildTree($files, $basePath);
+
+        $this->assertStringContainsString('file😀.php', $result);
+        $this->assertStringContainsString('file🚀.php', $result);
+        $this->assertStringContainsString('file🔥.php', $result);
+    }
+
     protected function setUp(): void
     {
         $this->treeBuilder = new FileTreeBuilder();

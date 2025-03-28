@@ -193,6 +193,161 @@ final class DocumentTest extends TestCase
         $this->assertTrue($sources[0]->hasDescription());
     }
 
+    #[Test]
+    public function it_should_handle_empty_document(): void
+    {
+        $document = Document::create(
+            description: 'Empty Document',
+            outputPath: 'empty.txt',
+            overwrite: true,
+        );
+
+        $this->assertEquals('Empty Document', $document->description);
+        $this->assertEquals('empty.txt', $document->outputPath);
+        $this->assertTrue($document->overwrite);
+        $this->assertEmpty($document->getModifiers());
+        $this->assertEmpty($document->getTags());
+        $this->assertEmpty($document->getSources());
+    }
+
+    #[Test]
+    public function it_should_handle_invalid_output_path(): void
+    {
+        $document = Document::create(
+            description: 'Test Document',
+            outputPath: '/invalid/path/output.txt',
+            overwrite: true,
+        );
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Cannot create directory');
+
+        $document->jsonSerialize();
+    }
+
+    #[Test]
+    public function it_should_handle_multiple_source_errors(): void
+    {
+        $document = Document::create(
+            description: 'Test Document',
+            outputPath: 'output.txt',
+            overwrite: true,
+        );
+
+        $source1 = $this->createMock(SourceInterface::class);
+        $source1
+            ->method('parseContent')
+            ->willThrowException(new \RuntimeException('Error 1'));
+
+        $source2 = $this->createMock(SourceInterface::class);
+        $source2
+            ->method('parseContent')
+            ->willThrowException(new \RuntimeException('Error 2'));
+
+        $document = $document->addSource($source1)->addSource($source2);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Error 1');
+
+        $document->jsonSerialize();
+    }
+
+    #[Test]
+    public function it_should_process_multiple_sources(): void
+    {
+        $document = Document::create(
+            description: 'Test Document',
+            outputPath: 'output.txt',
+            overwrite: true,
+        );
+
+        $source1 = $this->createMock(SourceInterface::class);
+        $source1
+            ->method('parseContent')
+            ->willReturn('Content from source 1');
+
+        $source2 = $this->createMock(SourceInterface::class);
+        $source2
+            ->method('parseContent')
+            ->willReturn('Content from source 2');
+
+        $document = $document->addSource($source1)->addSource($source2);
+
+        $this->assertCount(2, $document->getSources());
+        $this->assertSame($source1, $document->getSources()[0]);
+        $this->assertSame($source2, $document->getSources()[1]);
+    }
+
+    #[Test]
+    public function it_should_include_document_tags(): void
+    {
+        $document = Document::create(
+            description: 'Test Document',
+            outputPath: 'output.txt',
+            overwrite: true,
+        )->addTag(...['tag1', 'tag2']);
+
+        $this->assertCount(2, $document->getTags());
+        $this->assertContains('tag1', $document->getTags());
+        $this->assertContains('tag2', $document->getTags());
+    }
+
+    #[Test]
+    public function it_should_handle_source_errors(): void
+    {
+        $document = Document::create(
+            description: 'Test Document',
+            outputPath: 'output.txt',
+            overwrite: true,
+        );
+
+        $source = $this->createMock(SourceInterface::class);
+        $source
+            ->method('parseContent')
+            ->willThrowException(new \RuntimeException('Source error'));
+
+        $document = $document->addSource($source);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Source error');
+
+        $document->jsonSerialize();
+    }
+
+    #[Test]
+    public function it_should_skip_compilation_if_file_exists_and_overwrite_is_false(): void
+    {
+        $document = Document::create(
+            description: 'Test Document',
+            outputPath: 'output.txt',
+            overwrite: false,
+        );
+
+        $this->assertEquals('Test Document', $document->description);
+        $this->assertEquals('output.txt', $document->outputPath);
+        $this->assertFalse($document->overwrite);
+        $this->assertEmpty($document->getModifiers());
+        $this->assertEmpty($document->getTags());
+        $this->assertEmpty($document->getSources());
+    }
+
+    #[Test]
+    public function it_should_compile_document_with_basic_content(): void
+    {
+        $document = Document::create(
+            description: 'Test Document',
+            outputPath: 'output.txt',
+            overwrite: true,
+        );
+
+        $this->assertEquals('Test Document', $document->description);
+        $this->assertEquals('output.txt', $document->outputPath);
+        $this->assertTrue($document->overwrite);
+        $this->assertEmpty($document->getModifiers());
+        $this->assertEmpty($document->getTags());
+        $this->assertEmpty($document->getSources());
+    }
+
     protected function setUp(): void
     {
         $this->fixturesDir = \dirname(__DIR__, 3) . '/fixtures/Document';

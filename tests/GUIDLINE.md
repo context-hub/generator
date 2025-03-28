@@ -170,3 +170,21 @@ $result = $this->treeBuilder->buildTree($files, $basePath);
 $this->assertStringContainsString('└── src', $result);
 $this->assertStringContainsString('file1.php', $result);
 ```
+
+## Running Tests
+
+To run the tests, use the following command:
+
+```sh
+composer test
+```
+
+To run the tests with code coverage, use the following command:
+
+```sh
+composer test:cc
+```
+
+## Check Tests and Make Fixes
+
+After running the tests, check the results and make any necessary fixes. Ensure that all tests pass and that the code coverage is satisfactory. Address any issues or failures that arise during testing.

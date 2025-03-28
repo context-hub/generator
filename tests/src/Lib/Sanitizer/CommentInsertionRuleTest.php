@@ -110,4 +110,25 @@ class CommentInsertionRuleTest extends TestCase
         $this->assertStringContainsString('// Class comment', $result);
         $this->assertStringContainsString('// Method comment', $result);
     }
+
+    #[Test]
+    public function it_should_apply_comments_with_indentation(): void
+    {
+        $rule = new CommentInsertionRule(
+            name: 'indented-comments',
+            fileHeaderComment: 'Indented header',
+            classComment: 'Indented class comment',
+            methodComment: 'Indented method comment',
+            frequency: 2,
+            randomComments: ['Indented random comment'],
+        );
+
+        $content = "<?php\n\n    class IndentedClass {\n        public function indentedMethod() {\n            echo 'Indented';\n        }\n    }";
+        $result = $rule->apply($content);
+
+        $this->assertStringContainsString('// Indented header', $result);
+        $this->assertStringContainsString('// Indented class comment', $result);
+        $this->assertStringContainsString('// Indented method comment', $result);
+        $this->assertStringContainsString('// Indented random comment', $result);
+    }
 }

@@ -7,6 +7,7 @@ namespace Tests\Fetcher;
 use Butschster\ContextGenerator\Fetcher\SourceFetcherInterface;
 use Butschster\ContextGenerator\Fetcher\SourceFetcherRegistry;
 use Butschster\ContextGenerator\SourceInterface;
+use Butschster\ContextGenerator\Modifier\ModifiersApplierInterface;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -78,5 +79,30 @@ class SourceFetcherRegistryTest extends TestCase
         $this->expectException(\RuntimeException::class);
 
         $registry->findFetcher($source);
+    }
+
+    #[Test]
+    public function it_should_parse_source_content(): void
+    {
+        $source = $this->createMock(SourceInterface::class);
+        $modifiersApplier = $this->createMock(ModifiersApplierInterface::class);
+
+        $fetcher = $this->createMock(SourceFetcherInterface::class);
+        $fetcher
+            ->expects($this->once())
+            ->method('supports')
+            ->with($source)
+            ->willReturn(true);
+        $fetcher
+            ->expects($this->once())
+            ->method('fetch')
+            ->with($source, $modifiersApplier)
+            ->willReturn('parsed content');
+
+        $registry = new SourceFetcherRegistry(fetchers: [$fetcher]);
+
+        $result = $registry->parse($source, $modifiersApplier);
+
+        $this->assertEquals('parsed content', $result);
     }
 }

@@ -209,6 +209,29 @@ class RuleFactoryTest extends TestCase
         $this->assertStringContainsString('// Method comment', $result);
     }
 
+    #[Test]
+    public function it_should_create_comment_rule_with_random_comments(): void
+    {
+        $rule = $this->factory->createFromConfig([
+            'type' => 'comment',
+            'name' => 'random-comment-rule',
+            'frequency' => 2,
+            'randomComments' => ['Random comment 1', 'Random comment 2'],
+        ]);
+
+        $this->assertInstanceOf(CommentInsertionRule::class, $rule);
+        $this->assertEquals('random-comment-rule', $rule->getName());
+
+        // Test the rule applies random comments correctly
+        $content = "Line 1\nLine 2\nLine 3\nLine 4";
+        $result = $rule->apply($content);
+
+        // Since the random comment selection is non-deterministic, we can only check
+        // that the number of lines has increased as expected
+        $this->assertGreaterThan(\strlen($content), \strlen($result));
+        $this->assertStringContainsString('// Random comment', $result);
+    }
+
     protected function setUp(): void
     {
         $this->factory = new RuleFactory();

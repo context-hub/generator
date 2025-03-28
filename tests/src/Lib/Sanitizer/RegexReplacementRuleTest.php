@@ -101,7 +101,7 @@ class RegexReplacementRuleTest extends TestCase
         );
 
         $content = "Card: 1234 5678 9012 3456, Phone: (123) 456-7890";
-        $expected = "Card: [CREDIT_CARD_REMOVED], Phone: ([PHONE_NUMBER_REMOVED]";
+        $expected = "Card: [CREDIT_CARD_REMOVED], Phone: [PHONE_NUMBER_REMOVED]";
 
         $this->assertEquals($expected, $rule->apply($content));
     }

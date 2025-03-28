@@ -1,0 +1,7 @@
+{
+  "tasks": {
+    "test": "composer install --ignore-platform-req=ext-sockets && vendor/bin/phpunit",
+    "build": "composer install && box compile",
+    "launch": "./ctx"
+  }
+}
