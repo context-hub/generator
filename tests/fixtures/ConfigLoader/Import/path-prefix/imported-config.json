@@ -1,0 +1,25 @@
+{
+  "name": "Imported Config for Path Prefix",
+  "documents": [
+    {
+      "name": "Imported Document",
+      "outputPath": "path.php",
+      "sources": [
+        {
+          "type": "file",
+          "sourcePaths": [
+            "relative/path.php"
+          ]
+        },
+        {
+          "type": "git_diff",
+          "repository": "relative-repo"
+        },
+        {
+          "type": "composer",
+          "composerPath": "relative/composer.json"
+        }
+      ]
+    }
+  ]
+}

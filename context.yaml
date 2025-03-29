@@ -1,6 +1,5 @@
 import:
-  - path: src/Console/context.yaml
-  - path: src/ConfigLoader/context.yaml
+  - path: src/*/context.yaml
 
 documents:
   - description: "Context Generator Project Structure"
@@ -55,117 +54,11 @@ documents:
           - 'FilesInterface.php'
         showTreeView: true
 
-  - description: Document Compilation System
-    outputPath: core/document.md
+  - description: Config parser
+    outputPath: core/config-parser.md
     sources:
       - type: file
-        sourcePaths: src/Document
-        filePattern: '*.php'
-        showTreeView: true
-
-  - description: Source Implementations - File
-    outputPath: sources/file-source.md
-    sources:
-      - type: file
-        sourcePaths: src/Source/File
-        filePattern: '*.php'
-        showTreeView: true
-
-  - description: Source Implementations - GitHub
-    outputPath: sources/github-source.md
-    sources:
-      - type: file
-        sourcePaths: src/Source/Github
-        filePattern: '*.php'
-        showTreeView: true
-
-  - description: Source Implementations - URL
-    outputPath: sources/url-source.md
-    sources:
-      - type: file
-        sourcePaths: src/Source/Url
-        filePattern: '*.php'
-        showTreeView: true
-
-  - description: Source Implementations - Text
-    outputPath: sources/text-source.md
-    sources:
-      - type: file
-        sourcePaths: src/Source/Text
-        filePattern: '*.php'
-        showTreeView: true
-
-  - description: Source Implementations - Git Diff
-    outputPath: sources/git-diff-source.md
-    sources:
-      - type: file
-        sourcePaths: src/Source/GitDiff
-        filePattern: '*.php'
-        showTreeView: true
-
-  - description: Source Implementations - Composer
-    outputPath: sources/composer-source.md
-    sources:
-      - type: file
-        sourcePaths: src/Source/Composer
-        filePattern: '*.php'
-        showTreeView: true
-
-  - description: Source Implementations - Tree
-    outputPath: sources/tree-source.md
-    sources:
-      - type: file
-        sourcePaths: src/Source/Tree
-        filePattern: '*.php'
-        showTreeView: true
-
-  - description: Modifiers System
-    outputPath: modifiers/modifiers-core.md
-    sources:
-      - type: file
-        sourcePaths: src/Modifier
-        filePattern:
-          - '*.php'
-          - 'Alias/*.php'
-        notPath:
-          - 'PhpContentFilter.php'
-          - 'PhpSignature.php'
-          - 'ContextSanitizerModifier.php'
-        showTreeView: true
-
-  - description: PHP Content Modifiers
-    outputPath: modifiers/php-modifiers.md
-    sources:
-      - type: file
-        sourcePaths: src/Modifier
-        filePattern:
-          - 'PhpContentFilter.php'
-          - 'PhpSignature.php'
-        showTreeView: true
-
-  - description: Sanitizer Modifier
-    outputPath: modifiers/sanitizer.md
-    sources:
-      - type: file
-        sourcePaths:
-          - src/Modifier/ContextSanitizerModifier.php
-          - src/Lib/Sanitizer
-        filePattern: '*.php'
-        showTreeView: true
-
-  - description: Content Building System
-    outputPath: utilities/content-builder.md
-    sources:
-      - type: file
-        sourcePaths: src/Lib/Content
-        filePattern: '*.php'
-        showTreeView: true
-
-  - description: Content Block Types
-    outputPath: utilities/content-blocks.md
-    sources:
-      - type: file
-        sourcePaths: src/Lib/Content/Block
+        sourcePaths: src/ConfigLoader
         filePattern: '*.php'
         showTreeView: true
 
@@ -197,7 +90,9 @@ documents:
     outputPath: utilities/github-client.md
     sources:
       - type: file
-        sourcePaths: src/Lib/GithubClient
+        sourcePaths:
+          - src/Lib/GithubClient
+          - src/GithubClientFactory.php
         filePattern: '*.php'
         showTreeView: true
 
@@ -231,22 +126,6 @@ documents:
       - type: file
         sourcePaths:
           - tests
-
-  - description: "MCP Server Actions"
-    outputPath: "mcp/actions.md"
-    sources:
-      - type: file
-        sourcePaths:
-          - src/McpServer/Action
-
-  - description: "MCP Server routing"
-    outputPath: "mcp/routing.md"
-    sources:
-      - type: file
-        sourcePaths:
-          - src/McpServer/Routing
-          - src/McpServer/Server.php
-          - src/McpServer/ServerFactory.php
 
   - description: "Changes in the Project"
     outputPath: "changes.md"

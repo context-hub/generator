@@ -194,6 +194,7 @@ final class TreeSource extends BaseSource implements FilterableSourceInterface
         return true;
     }
 
+    #[\Override]
     public function jsonSerialize(): array
     {
         $result = [

@@ -9,7 +9,7 @@ use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 final class GithubClient implements GithubClientInterface
 {
     /** GitHub API base URL */
-    private const API_BASE_URL = 'https://api.github.com';
+    private const string API_BASE_URL = 'https://api.github.com';
 
     /**
      * @param HttpClientInterface $httpClient HTTP client for API requests

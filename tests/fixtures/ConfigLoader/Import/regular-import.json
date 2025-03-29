@@ -1,0 +1,14 @@
+{
+  "name": "Regular Import",
+  "documents": [
+    {
+      "name": "Regular Document",
+      "sources": [
+        {
+          "type": "file",
+          "sourcePaths": ["src/regular.php"]
+        }
+      ]
+    }
+  ]
+}

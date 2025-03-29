@@ -39,6 +39,7 @@ final class TextSource extends BaseSource
         );
     }
 
+    #[\Override]
     public function jsonSerialize(): array
     {
         return \array_filter([

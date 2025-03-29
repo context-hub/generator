@@ -56,6 +56,120 @@ protected function setUp(): void
 
 2. **Initialize test objects in the constructor** for PHP 8+ when using constructor property promotion.
 
+### Handling Final Classes
+
+**Important:** In this project, all concrete classes (those without an `Interface` suffix) are declared as `final` and cannot be mocked or doubled using PHPUnit's mocking system. This is a deliberate architectural decision to enforce proper dependency management and encapsulation.
+
+#### Strategies for Testing with Final Classes:
+
+1. **Use real instances** instead of mocks:
+
+```php
+// Instead of:
+$this->dirs = $this->createMock(Directories::class);
+
+// Use a real instance:
+$this->dirs = new Directories(
+    rootPath: '/test/root',
+    outputPath: '/test/output',
+    configPath: '/test/config',
+    jsonSchemaPath: '/test/schema',
+    envFilePath: null
+);
+```
+
+2. **Consider using test-specific factory methods** for complex final classes:
+
+```php
+private function createTestDirectories(): Directories
+{
+    return new Directories(
+        rootPath: '/test/root',
+        outputPath: '/test/output',
+        configPath: '/test/config',
+        jsonSchemaPath: '/test/schema'
+    );
+}
+```
+
+3. **For immutable final classes** with methods that return new instances, use the actual methods rather than mocking them:
+
+```php
+// The real method will be called and return a new instance
+$newDirs = $this->dirs->withConfigPath('/new/config/path');
+```
+
+4. **Create test-specific implementations of interfaces** when you need to control behavior:
+
+```php
+// Instead of mocking concrete classes, depend on interfaces and create test implementations
+class TestFileSystem implements FilesInterface 
+{
+    // Implement methods with test-specific behavior
+    public function exists(string $path): bool
+    {
+        return in_array($path, $this->existingPaths);
+    }
+    
+    // Add methods to configure test behavior
+    public function addExistingPath(string $path): void
+    {
+        $this->existingPaths[] = $path;
+    }
+}
+```
+
+5. **Use composition in tests** to build complex test scenarios with real objects:
+
+```php
+// Create a chain of real objects with controlled test data
+$files = new TestFileSystem();
+$dirs = new Directories('/test/root', '/test/output', '/test/config', '/test/schema');
+$factory = new ConfigLoaderFactory($files, $dirs);
+```
+
+#### Creating Test-Specific Subclasses
+
+For complex final classes that you need to control in tests, create test-specific subclasses that extend the final class and override specific methods:
+
+```php
+/**
+ * Test-specific implementation of ConfigLoaderFactory that returns a predefined loader
+ */
+class TestConfigLoaderFactory extends ConfigLoaderFactory
+{
+    private ConfigLoaderInterface $testLoader;
+    
+    public function __construct(
+        FilesInterface $files,
+        Directories $dirs,
+        ?LoggerInterface $logger = null,
+        ConfigLoaderInterface $testLoader
+    ) {
+        parent::__construct($files, $dirs, $logger);
+        $this->testLoader = $testLoader;
+    }
+    
+    public function createForFile(Directories $dirs): ConfigLoaderInterface
+    {
+        return $this->testLoader;
+    }
+}
+```
+
+Then use this test-specific subclass in your tests:
+
+```php
+// Create a mock ConfigLoaderInterface
+$loader = $this->createMock(ConfigLoaderInterface::class);
+$loader->method('isSupported')->willReturn(true);
+$loader->method('loadRawConfig')->willReturn(['key' => 'value']);
+
+// Use the test subclass instead of trying to mock the final class
+$testLoaderFactory = new TestConfigLoaderFactory($files, $dirs, $logger, $loader);
+$resolver = new ImportResolver($dirs, $files, $testLoaderFactory, $logger);
+```
+
 ### Test Assertions
 
 1. **Be specific with assertions**:

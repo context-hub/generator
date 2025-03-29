@@ -34,6 +34,7 @@ final class GithubFileInfo extends SplFileInfo
     /**
      * Get the file content
      */
+    #[\Override]
     public function getContents(): string
     {
         if ($this->fetchedContent) {

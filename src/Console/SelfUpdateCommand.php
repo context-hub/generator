@@ -22,14 +22,14 @@ final class SelfUpdateCommand extends BaseCommand
     /**
      * GitHub API URL for latest release
      */
-    private const GITHUB_API_LATEST_RELEASE = 'https://api.github.com/repos/context-hub/generator/releases/latest';
+    private const string GITHUB_API_LATEST_RELEASE = 'https://api.github.com/repos/context-hub/generator/releases/latest';
 
     /**
      * GitHub download URL format for the PHAR file
      */
-    private const GITHUB_DOWNLOAD_URL = 'https://github.com/context-hub/generator/releases/download/%s/%s';
+    private const string GITHUB_DOWNLOAD_URL = 'https://github.com/context-hub/generator/releases/download/%s/%s';
 
-    private const PHAR_PATH = '/usr/local/bin/ctx';
+    private const string PHAR_PATH = '/usr/local/bin/ctx';
 
     public function __construct(
         Container $container,

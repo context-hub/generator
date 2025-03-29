@@ -1,0 +1,19 @@
+{
+  "name": "Nested Import",
+  "import": [
+    {
+      "path": "deeply-nested.json"
+    }
+  ],
+  "documents": [
+    {
+      "name": "Nested Document",
+      "sources": [
+        {
+          "type": "file",
+          "sourcePaths": ["src/nested.php"]
+        }
+      ]
+    }
+  ]
+}

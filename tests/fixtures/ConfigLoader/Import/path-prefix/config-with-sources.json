@@ -1,0 +1,31 @@
+{
+  "name": "Config With Sources",
+  "import": [
+    {
+      "path": "imported-config.json",
+      "pathPrefix": "nested"
+    }
+  ],
+  "documents": [
+    {
+      "name": "Path Prefix Document",
+      "outputPath": "path.php",
+      "sources": [
+        {
+          "type": "file",
+          "sourcePaths": [
+            "src/file.php"
+          ]
+        },
+        {
+          "type": "git_diff",
+          "repository": "local-repo"
+        },
+        {
+          "type": "composer",
+          "composerPath": "composer.json"
+        }
+      ]
+    }
+  ]
+}

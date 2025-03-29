@@ -20,7 +20,7 @@ final class VersionCommand extends BaseCommand
     /**
      * GitHub API URL for latest release
      */
-    private const GITHUB_API_LATEST_RELEASE = 'https://api.github.com/repos/context-hub/generator/releases/latest';
+    private const string GITHUB_API_LATEST_RELEASE = 'https://api.github.com/repos/context-hub/generator/releases/latest';
 
     public function __construct(
         Container $container,

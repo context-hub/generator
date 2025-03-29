@@ -22,9 +22,9 @@ use Symfony\Component\Yaml\Yaml;
 )]
 final class InitCommand extends BaseCommand
 {
-    private const DEFAULT_CONFIG_NAME = 'context.yaml';
-    private const DEFAULT_CONFIG_TYPE = 'yaml';
-    private const SUPPORTED_TYPES = ['json', 'yaml'];
+    private const string DEFAULT_CONFIG_NAME = 'context.yaml';
+    private const string DEFAULT_CONFIG_TYPE = 'yaml';
+    private const array SUPPORTED_TYPES = ['json', 'yaml'];
 
     public function __construct(
         Container $container,

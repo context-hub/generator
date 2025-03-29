@@ -12,6 +12,7 @@ use Butschster\ContextGenerator\ConfigLoader\Registry\RegistryInterface;
  */
 final readonly class PhpReader extends AbstractReader
 {
+    #[\Override]
     public function read(string $path): array
     {
         $this->logger?->debug('Reading PHP config file', [

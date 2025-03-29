@@ -7,7 +7,7 @@ namespace Butschster\ContextGenerator\ConfigLoader\Import;
 /**
  * Detects circular dependencies in imports
  */
-final class CircularImportDetector
+final class CircularImportDetector implements CircularImportDetectorInterface
 {
     /**
      * @var array<string> Stack of import paths being processed

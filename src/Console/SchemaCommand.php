@@ -16,7 +16,7 @@ final class SchemaCommand extends BaseCommand
     /**
      * The URL where the JSON schema is hosted
      */
-    private const SCHEMA_URL = 'https://raw.githubusercontent.com/context-hub/generator/refs/heads/main/json-schema.json';
+    private const string SCHEMA_URL = 'https://raw.githubusercontent.com/context-hub/generator/refs/heads/main/json-schema.json';
 
     /**
      * Execute the command

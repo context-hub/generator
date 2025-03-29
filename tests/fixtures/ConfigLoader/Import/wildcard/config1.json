@@ -1,0 +1,16 @@
+{
+  "name": "Wildcard Config 1",
+  "documents": [
+    {
+      "name": "Wildcard Document 1",
+      "sources": [
+        {
+          "type": "file",
+          "sourcePaths": [
+            "src/wildcard1.php"
+          ]
+        }
+      ]
+    }
+  ]
+}

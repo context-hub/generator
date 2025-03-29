@@ -13,11 +13,11 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(UrlSource::class)]
 class UrlSourceTest extends TestCase
 {
-    private const SAMPLE_URLS = ['https://example.com', 'https://example.org'];
-    private const SAMPLE_DESCRIPTION = 'Sample URL source';
-    private const SAMPLE_SELECTOR = '.content';
-    private const SAMPLE_HEADERS = ['Authorization' => 'Bearer token123'];
-    private const SAMPLE_TAGS = ['api', 'documentation'];
+    private const array SAMPLE_URLS = ['https://example.com', 'https://example.org'];
+    private const string SAMPLE_DESCRIPTION = 'Sample URL source';
+    private const string SAMPLE_SELECTOR = '.content';
+    private const array SAMPLE_HEADERS = ['Authorization' => 'Bearer token123'];
+    private const array SAMPLE_TAGS = ['api', 'documentation'];
 
     /**
      * @return array<string, array{selector: ?string, expectedHasSelector: bool}>

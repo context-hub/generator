@@ -23,12 +23,12 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
+          php-version: '8.3'
           coverage: none
 
       - name: Download context-generator
         run: |
-          wget https://github.com/context-hub/generator/releases/download/1.15.0/ctx
+          wget https://github.com/context-hub/generator/releases/download/1.19.0/ctx
           chmod +x ctx
           ./ctx version
 

@@ -240,6 +240,7 @@ final class FileSource extends SourceWithModifiers implements FilterableSourceIn
         return $this->ignoreUnreadableDirs;
     }
 
+    #[\Override]
     public function jsonSerialize(): array
     {
         $result = [

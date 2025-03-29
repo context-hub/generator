@@ -197,6 +197,7 @@ final class GithubSource extends SourceWithModifiers implements FilterableSource
      *
      * @return array<string, mixed> JSON serializable array
      */
+    #[\Override]
     public function jsonSerialize(): array
     {
         return \array_filter([

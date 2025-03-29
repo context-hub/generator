@@ -15,7 +15,7 @@ use Psr\Log\LoggerInterface;
 final readonly class ConfigurationProvider
 {
     public function __construct(
-        private ConfigLoaderFactory $loaderFactory,
+        private ConfigLoaderFactoryInterface $loaderFactory,
         private FilesInterface $files,
         private Directories $dirs,
         private ?LoggerInterface $logger = null,
