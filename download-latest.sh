@@ -30,11 +30,14 @@ GITHUB_API="https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/releases"
 # GitHub Release address
 GITHUB_REL="https://github.com/$REPO_OWNER/$REPO_NAME/releases/download"
 
-# Default install directory
+# Default install directory (will be adjusted for Windows)
 DEFAULT_BIN_DIR="/usr/local/bin"
 
 # Default to empty (meaning get latest version)
 VERSION=""
+
+# Is this Windows?
+IS_WINDOWS=0
 
 # FUNCTIONS
 
@@ -120,6 +123,17 @@ get_os() {
     ;;
 
     # ---
+  'MINGW'* | 'MSYS'* | 'CYGWIN'*)
+    os='windows'
+    IS_WINDOWS=1
+    ;;
+
+    # ---
+  'Darwin')
+    os='darwin'
+    ;;
+
+    # ---
   *)
     return 1
     ;;
@@ -165,7 +179,26 @@ fetch_release_failure_usage() {
   printf "\nIn the meantime, you can manually download the appropriate binary from the GitHub release assets here: https://github.com/$REPO_OWNER/$REPO_NAME/releases/latest\n"
 }
 
+# Detect appropriate Windows installation directory
+detect_windows_dir() {
+  # Try to use more standard Windows paths
+  if [ -d "$HOME/AppData/Local/bin" ]; then
+    bin_dir="$HOME/AppData/Local/bin"
+  elif [ -d "$HOME/bin" ]; then
+    bin_dir="$HOME/bin"
+  else
+    # Create in user's home directory if nothing else suitable
+    bin_dir="$HOME/bin"
+  fi
+}
+
 ensure_bin_dir() {
+  # Handle Windows-specific directories
+  if [ "$IS_WINDOWS" -eq 1 ] && [ "$bin_dir" = "$DEFAULT_BIN_DIR" ]; then
+    detect_windows_dir
+    print_status "Windows detected. Setting installation directory to: $bin_dir"
+  fi
+
   # Create bin directory if it doesn't exist
   if [ ! -d "$bin_dir" ]; then
     print_status "Creating directory $bin_dir..."
@@ -179,8 +212,21 @@ ensure_bin_dir() {
   # Check if bin_dir is in PATH
   if ! echo "$PATH" | tr ':' '\n' | grep -q "^$bin_dir$"; then
     print_warning "$bin_dir is not in your PATH."
-    printf "You might want to add the following line to your shell profile (.bashrc, .zshrc, etc.):\n"
-    printf "    ${GREEN}export PATH=\"\$PATH:$bin_dir\"${DEFAULT}\n\n"
+
+    if [ "$IS_WINDOWS" -eq 1 ]; then
+      printf "You might want to add it to your Windows PATH:\n"
+      printf "    ${GREEN}1. Right-click on 'This PC' or 'My Computer' and select 'Properties'${DEFAULT}\n"
+      printf "    ${GREEN}2. Click on 'Advanced system settings'${DEFAULT}\n"
+      printf "    ${GREEN}3. Click on 'Environment Variables'${DEFAULT}\n"
+      printf "    ${GREEN}4. Under 'User variables', select 'Path' and click 'Edit'${DEFAULT}\n"
+      printf "    ${GREEN}5. Click 'New' and add: $bin_dir${DEFAULT}\n"
+      printf "    ${GREEN}6. Click 'OK' on all dialogs${DEFAULT}\n\n"
+      printf "    Or in PowerShell, run:${DEFAULT}\n"
+      printf "    ${GREEN}\$env:Path += \";$bin_dir\"${DEFAULT}\n\n"
+    else
+      printf "You might want to add the following line to your shell profile (.bashrc, .zshrc, etc.):\n"
+      printf "    ${GREEN}export PATH=\"\$PATH:$bin_dir\"${DEFAULT}\n\n"
+    fi
   fi
 }
 
@@ -209,14 +255,28 @@ download_and_install() {
     exit 1
   fi
 
-  release_file="$PNAME-$latest-$os-$arch"
+  # Add .exe extension for Windows
+  binary_name="$PNAME"
+  if [ "$IS_WINDOWS" -eq 1 ]; then
+    binary_name="${PNAME}.exe"
+    release_file="$PNAME-$latest-$os-$arch.exe"
+  else
+    release_file="$PNAME-$latest-$os-$arch"
+  fi
 
   # Download the binary file
   print_header "Downloading the latest version"
   print_status "Preparing download from: $GITHUB_REL/$latestV/$release_file"
 
-  temp_file=$(mktemp -q /tmp/$release_file-XXXXXXXXX)
-  if ! temp_file=$(mktemp -q /tmp/$release_file-XXXXXXXXX); then
+  # Create appropriate temp file
+  if [ "$IS_WINDOWS" -eq 1 ] && [ -d "$TEMP" ]; then
+    temp_dir="$TEMP"
+  else
+    temp_dir="/tmp"
+  fi
+
+  temp_file="$temp_dir/$release_file-XXXXXXXXX"
+  if ! temp_file=$(mktemp -q "$temp_file"); then
     print_error "Can't create temp file for download."
     exit 1
   fi
@@ -239,25 +299,29 @@ download_and_install() {
 
   # Install the binary
   print_header "Installing the update"
-  print_status "Replacing current binary at: $bin_dir/$PNAME"
+  print_status "Replacing current binary at: $bin_dir/$binary_name"
 
-  if ! mv "$temp_file" "$bin_dir/$PNAME"; then
-    print_error "Failed to move binary to $bin_dir/$PNAME"
+  if ! mv "$temp_file" "$bin_dir/$binary_name"; then
+    print_error "Failed to move binary to $bin_dir/$binary_name"
     rm -f "$temp_file"
     exit 1
   fi
 
-  # Make executable
-  if ! chmod +x "$bin_dir/$PNAME"; then
-    print_error "Failed to make $bin_dir/$PNAME executable"
+  # Make executable (not necessary on Windows but doesn't hurt)
+  if ! chmod +x "$bin_dir/$binary_name"; then
+    print_error "Failed to make $bin_dir/$binary_name executable"
     exit 1
   fi
 
   print_success "Successfully replaced the binary file"
-  print_success "Successfully installed $latestV to $bin_dir/$PNAME\n"
+  print_success "Successfully installed $latestV to $bin_dir/$binary_name\n"
 
   printf "     You can now run it using:\n"
-  printf "         ${BOLD}$PNAME${DEFAULT}\n\n"
+  if [ "$IS_WINDOWS" -eq 1 ]; then
+    printf "         ${BOLD}$binary_name${DEFAULT}\n\n"
+  else
+    printf "         ${BOLD}$PNAME${DEFAULT}\n\n"
+  fi
   printf "     📚 Documentation: https://docs.ctxgithub.com\n"
   printf "     🚀 Happy AI coding!\n\n"
 }
@@ -289,6 +353,13 @@ while [ $# -gt 0 ]; do
       ;;
   esac
 done
+
+# Check if running on PowerShell and provide guidance if needed
+if [ "$IS_WINDOWS" -eq 1 ] && echo "$SHELL" | grep -q "powershell"; then
+  print_warning "Detected PowerShell environment."
+  print_status "For a better PowerShell experience, consider using the PowerShell installation script instead."
+  print_status "Continuing with this script, but some features might not work as expected."
+fi
 
 print_status "Installation directory: $bin_dir"
 if [ -n "$VERSION" ]; then

@@ -120,12 +120,17 @@ jobs:
       - name: Download required PHP extensions
         run: .build/bin/spc.exe download micro --for-extensions=ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl --with-php=8.3 --prefer-pre-built
 
+      #   todo: fix this
+      #      - name: Install UPX for compression
+      #        run: |
+      #          .build/bin/spc.exe install-pkg upx
+
       - name: Verify environment is ready
         run: |
           .build/bin/spc.exe doctor --auto-fix
 
       - name: Build the self-executable binary
-        run: .build/bin/spc.exe build "ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl" --build-micro
+        run: .build/bin/spc.exe build "ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl" --build-micro --with-upx-pack
 
       - name: Build PHAR file
         run: |
