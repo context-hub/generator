@@ -11,7 +11,7 @@ use Butschster\ContextGenerator\Modifier\Alias\ModifierResolver;
 use Butschster\ContextGenerator\Modifier\Modifier;
 use Butschster\ContextGenerator\Source\Composer\ComposerSource;
 use Butschster\ContextGenerator\Source\File\FileSource;
-use Butschster\ContextGenerator\Source\GitDiff\CommitDiffSource;
+use Butschster\ContextGenerator\Source\GitDiff\GitDiffSource;
 use Butschster\ContextGenerator\Source\Github\GithubSource;
 use Butschster\ContextGenerator\Source\Text\TextSource;
 use Butschster\ContextGenerator\Source\Tree\TreeSource;
@@ -196,9 +196,9 @@ final readonly class DocumentsParserPlugin implements ConfigParserPluginInterfac
     /**
      * Create a GitCommitDiffSource from its configuration.
      */
-    private function createCommitDiffSource(array $data, string $rootPath): CommitDiffSource
+    private function createCommitDiffSource(array $data, string $rootPath): GitDiffSource
     {
-        return CommitDiffSource::fromArray($data, $rootPath);
+        return GitDiffSource::fromArray($data, $rootPath);
     }
 
     private function createComposerSource(array $data, string $rootPath): ComposerSource

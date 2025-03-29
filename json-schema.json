@@ -193,7 +193,7 @@
             }
           },
           "then": {
-            "$ref": "#/definitions/gitCommitDiffSource"
+            "$ref": "#/definitions/gitDiffSource"
           }
         },
         {
@@ -475,11 +475,15 @@
         }
       }
     },
-    "gitCommitDiffSource": {
+    "gitDiffSource": {
       "properties": {
         "repository": {
           "type": "string",
           "description": "Path to the git repository"
+        },
+        "render": {
+          "$ref": "#/definitions/gitDiffRender",
+          "description": "Configuration for rendering diffs"
         },
         "commit": {
           "type": "string",
@@ -599,6 +603,49 @@
           "$ref": "#/definitions/modifiers"
         }
       }
+    },
+    "gitDiffRender": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "strategy": {
+              "type": "string",
+              "enum": [
+                "raw",
+                "llm"
+              ],
+              "description": "The strategy to use for rendering diffs",
+              "default": "raw"
+            },
+            "showStats": {
+              "type": "boolean",
+              "description": "Whether to show file stats in the output",
+              "default": true
+            },
+            "showLineNumbers": {
+              "type": "boolean",
+              "description": "Whether to show line numbers in diff output",
+              "default": false
+            },
+            "contextLines": {
+              "type": "integer",
+              "description": "Number of context lines to show around changes",
+              "minimum": 0,
+              "default": 3
+            }
+          }
+        },
+        {
+          "type": "string",
+          "enum": [
+            "raw",
+            "llm"
+          ],
+          "description": "The strategy to use for rendering diffs (shorthand)"
+        }
+      ],
+      "description": "Configuration for rendering diffs"
     },
     "treeSource": {
       "description": "Generates a hierarchical visualization of directory structures",

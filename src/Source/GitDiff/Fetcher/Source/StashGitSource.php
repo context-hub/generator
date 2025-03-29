@@ -66,8 +66,9 @@ final class StashGitSource extends AbstractGitSource
             // Get files from each stash in the range
             $allFiles = [];
             for ($i = $startIndex; $i <= $endIndex; $i++) {
-                $stashRef = "stash@{$i}";
+                $stashRef = 'stash@{' . $i . '}';
                 $stashCommand = 'git stash show --name-only ' . $stashRef;
+
                 $stashOutput = $this->executeGitCommand($repository, $stashCommand);
                 if (!empty($stashOutput)) {
                     $allFiles = \array_merge($allFiles, $stashOutput);

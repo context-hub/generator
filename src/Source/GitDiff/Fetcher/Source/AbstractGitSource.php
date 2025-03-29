@@ -5,7 +5,12 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Source\GitDiff\Fetcher\Source;
 
 use Butschster\ContextGenerator\Source\GitDiff\Fetcher\GitSourceInterface;
+use Butschster\ContextGenerator\Source\GitDiff\Git\GitClientInterface;
+use Butschster\ContextGenerator\Source\GitDiff\Git\GitClient;
+use Butschster\ContextGenerator\Source\GitDiff\Git\GitCommandException;
 use Symfony\Component\Finder\SplFileInfo;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 /**
  * Abstract base class for Git sources
@@ -14,6 +19,15 @@ use Symfony\Component\Finder\SplFileInfo;
  */
 abstract class AbstractGitSource implements GitSourceInterface
 {
+    /**
+     * @param GitClientInterface $gitClient Git client for executing commands
+     * @param LoggerInterface $logger PSR Logger instance
+     */
+    public function __construct(
+        protected readonly GitClientInterface $gitClient = new GitClient(),
+        protected readonly LoggerInterface $logger = new NullLogger(),
+    ) {}
+
     /**
      * Create file info objects for the diffs
      *
@@ -98,25 +112,16 @@ abstract class AbstractGitSource implements GitSourceInterface
      */
     protected function executeGitCommand(string $repository, string $command): array
     {
-        $currentDir = \getcwd();
-        $output = [];
-
         try {
-            // Change to the repository directory
-            \chdir($repository);
-
-            // Execute the command
-            \exec($command, $output, $returnCode);
-
-            if ($returnCode !== 0) {
-                return [];
-            }
-        } finally {
-            // Restore the original directory
-            \chdir($currentDir);
+            return $this->gitClient->execute($repository, $command);
+        } catch (GitCommandException $e) {
+            $this->logger->warning('Git command failed, returning empty result', [
+                'command' => $e->getCommand(),
+                'exitCode' => $e->getExitCode(),
+                'error' => $e->getMessage(),
+            ]);
+            return [];
         }
-
-        return $output;
     }
 
     /**
@@ -128,8 +133,15 @@ abstract class AbstractGitSource implements GitSourceInterface
      */
     protected function executeGitCommandString(string $repository, string $command): string
     {
-        $output = $this->executeGitCommand($repository, $command);
-
-        return \implode("\n", $output);
+        try {
+            return $this->gitClient->executeString($repository, $command);
+        } catch (GitCommandException $e) {
+            $this->logger->warning('Git command failed, returning empty result', [
+                'command' => $e->getCommand(),
+                'exitCode' => $e->getExitCode(),
+                'error' => $e->getMessage(),
+            ]);
+            return '';
+        }
     }
 }

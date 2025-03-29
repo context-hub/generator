@@ -145,6 +145,18 @@ final class ContentBuilder implements \Stringable
     }
 
     /**
+     * Merge another ContentBuilder into this one
+     */
+    public function merge(self $builder): self
+    {
+        foreach ($builder->content->getBlocks() as $block) {
+            $this->addBlock($block);
+        }
+
+        return $this;
+    }
+
+    /**
      * Build and return the final content
      *
      * @return string The rendered content
