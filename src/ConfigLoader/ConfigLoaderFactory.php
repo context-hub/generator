@@ -8,7 +8,6 @@ use Butschster\ContextGenerator\ConfigLoader\Exception\ConfigLoaderException;
 use Butschster\ContextGenerator\ConfigLoader\Import\ImportResolver;
 use Butschster\ContextGenerator\ConfigLoader\Parser\CompositeConfigParser;
 use Butschster\ContextGenerator\ConfigLoader\Parser\ConfigParser;
-use Butschster\ContextGenerator\ConfigLoader\Parser\ConfigParserPluginInterface;
 use Butschster\ContextGenerator\ConfigLoader\Parser\ImportParserPlugin;
 use Butschster\ContextGenerator\ConfigLoader\Reader\JsonReader;
 use Butschster\ContextGenerator\ConfigLoader\Reader\PhpReader;
@@ -22,7 +21,7 @@ use Psr\Log\LoggerInterface;
 /**
  * Factory for creating config loaders
  */
-final readonly class ConfigLoaderFactory
+final readonly class ConfigLoaderFactory implements ConfigLoaderFactoryInterface
 {
     public function __construct(
         private FilesInterface $files,
@@ -30,12 +29,6 @@ final readonly class ConfigLoaderFactory
         private ?LoggerInterface $logger = null,
     ) {}
 
-    /**
-     * Create a loader for a specific config file
-     *
-     * @param array<ConfigParserPluginInterface> $parserPlugins Plugins for the config parser
-     * @return ConfigLoaderInterface The config loader
-     */
     public function create(Directories $dirs, array $parserPlugins = []): ConfigLoaderInterface
     {
         \assert($this->logger instanceof HasPrefixLoggerInterface);
@@ -115,7 +108,6 @@ final readonly class ConfigLoaderFactory
         );
     }
 
-    // Add a new method to ConfigLoaderFactory to create a loader for a specific file path
     public function createForFile(Directories $dirs, array $parserPlugins = []): ConfigLoaderInterface
     {
         \assert($this->logger instanceof HasPrefixLoggerInterface);
@@ -172,13 +164,6 @@ final readonly class ConfigLoaderFactory
         );
     }
 
-    /**
-     * Create a loader for an inline JSON configuration string
-     *
-     * @param string $jsonConfig The JSON configuration string
-     * @param array<ConfigParserPluginInterface> $parserPlugins Plugins for the config parser
-     * @return ConfigLoaderInterface The config loader
-     */
     public function createFromString(string $jsonConfig, array $parserPlugins = []): ConfigLoaderInterface
     {
         \assert($this->logger instanceof HasPrefixLoggerInterface);

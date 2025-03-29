@@ -1,4 +1,19 @@
 documents:
+  - description: Source core
+    outputPath: sources/loader.md
+    sources:
+      - type: file
+        sourcePaths:
+          - BaseSource.php
+          - SourceWithModifiers.php
+          - ../SourceInterface.php
+          - ../SourceParserInterface.php
+          - ../SourceFetcherRegistryFactory.php
+          - ../Document
+          - ../Fetcher
+          - ../DocumentCompilerFactory.php
+          - ../DocumentCompilerFactory.php
+
   - description: Source Implementations - File
     outputPath: sources/file-source.md
     sources:
@@ -11,7 +26,10 @@ documents:
     outputPath: sources/github-source.md
     sources:
       - type: file
-        sourcePaths: ./Github
+        sourcePaths:
+          - ./Github
+          - ../Lib/GithubClient/GithubClientInterface.php
+          - ../Lib/PathFilter
         filePattern: '*.php'
         showTreeView: true
 
@@ -19,7 +37,10 @@ documents:
     outputPath: sources/url-source.md
     sources:
       - type: file
-        sourcePaths: ./Url
+        sourcePaths:
+          - ./Url
+          - ./Lib/Html
+          - ../Lib/HttpClient/HttpClientInterface.php
         filePattern: '*.php'
         showTreeView: true
 
@@ -52,5 +73,29 @@ documents:
     sources:
       - type: file
         sourcePaths: ./Tree
+        filePattern: '*.php'
+        showTreeView: true
+
+  - description: Source Tree builder
+    outputPath: sources/tree-builder.md
+    sources:
+      - type: file
+        sourcePaths: ../Lib/TreeBuilder
+        filePattern: '*.php'
+        showTreeView: true
+
+  - description: Source Token counter
+    outputPath: sources/token-counter.md
+    sources:
+      - type: file
+        sourcePaths: ../Lib/TokenCounter
+        filePattern: '*.php'
+        showTreeView: true
+
+  - description: Document source renderer
+    outputPath: sources/source-renderer.md
+    sources:
+      - type: file
+        sourcePaths: ../Lib/Content
         filePattern: '*.php'
         showTreeView: true

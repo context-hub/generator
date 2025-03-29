@@ -1,0 +1,14 @@
+{
+  "name": "Wildcard Subdir Config",
+  "documents": [
+    {
+      "name": "Wildcard Subdir Document",
+      "sources": [
+        {
+          "type": "file",
+          "sourcePaths": ["src/wildcard-subdir.php"]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+documents:
+  - description: "MCP Cli command"
+    outputPath: "mcp/command.md"
+    sources:
+      - type: file
+        sourcePaths:
+          - ../Console/MCPServerCommand.php
+
+  - description: "MCP Server Actions"
+    outputPath: "mcp/actions.md"
+    sources:
+      - type: file
+        sourcePaths:
+          - ./Action
+          - ./Attribute
+          - ./Registry
+
+  - description: "MCP Server routing"
+    outputPath: "mcp/routing.md"
+    sources:
+      - type: file
+        sourcePaths:
+          - ./Routing
+          - ./Server.php
+          - ./ServerFactory.php

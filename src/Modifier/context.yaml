@@ -1,0 +1,37 @@
+documents:
+  - description: Modifiers System
+    outputPath: modifiers/modifiers-core.md
+    sources:
+      - type: file
+        sourcePaths: .
+        filePattern:
+          - '*.php'
+          - 'Alias/*.php'
+        notPath:
+          - 'PhpContentFilter.php'
+          - 'PhpSignature.php'
+          - 'ContextSanitizerModifier.php'
+        showTreeView: true
+      - type: file
+        sourcePaths:
+          - ../ModifierRegistryFactory.php
+
+  - description: PHP Content Modifiers
+    outputPath: modifiers/php-modifiers.md
+    sources:
+      - type: file
+        sourcePaths: .
+        filePattern:
+          - 'PhpContentFilter.php'
+          - 'PhpSignature.php'
+        showTreeView: true
+
+  - description: Sanitizer Modifier
+    outputPath: modifiers/sanitizer.md
+    sources:
+      - type: file
+        sourcePaths:
+          - ./ContextSanitizerModifier.php
+          - ../Lib/Sanitizer
+        filePattern: '*.php'
+        showTreeView: true

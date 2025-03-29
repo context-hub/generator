@@ -1,0 +1,19 @@
+{
+  "name": "Circular Import",
+  "import": [
+    {
+      "path": "base-config.json"
+    }
+  ],
+  "documents": [
+    {
+      "name": "Circular Document",
+      "sources": [
+        {
+          "type": "file",
+          "sourcePaths": ["src/circular.php"]
+        }
+      ]
+    }
+  ]
+}

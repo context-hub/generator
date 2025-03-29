@@ -1,0 +1,21 @@
+{
+  "name": "Base Config",
+  "import": [
+    {
+      "path": "regular-import.json"
+    }
+  ],
+  "documents": [
+    {
+      "name": "Base Document",
+      "sources": [
+        {
+          "type": "file",
+          "sourcePaths": [
+            "src/base.php"
+          ]
+        }
+      ]
+    }
+  ]
+}

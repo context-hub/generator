@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\ConfigLoader\Import;
 
-use Butschster\ContextGenerator\ConfigLoader\ConfigLoaderFactory;
+use Butschster\ContextGenerator\ConfigLoader\ConfigLoaderFactoryInterface;
 use Butschster\ContextGenerator\ConfigLoader\Exception\ConfigLoaderException;
 use Butschster\ContextGenerator\Directories;
 use Butschster\ContextGenerator\FilesInterface;
@@ -20,7 +20,7 @@ final readonly class ImportResolver
     public function __construct(
         private Directories $dirs,
         private FilesInterface $files,
-        private ConfigLoaderFactory $loaderFactory,
+        private ConfigLoaderFactoryInterface $loaderFactory,
         private ?LoggerInterface $logger = null,
     ) {
         $this->pathFinder = new WildcardPathFinder($files, $logger);
@@ -28,18 +28,16 @@ final readonly class ImportResolver
 
     /**
      * Process imports in a configuration
+     * @throws \Throwable
      */
     public function resolveImports(
         array $config,
         string $basePath,
         array &$parsedImports = [],
-        ?CircularImportDetector $detector = null,
+        CircularImportDetectorInterface $detector = new CircularImportDetector(),
     ): array {
-        // Initialize circular import detector if not provided
-        $detector ??= new CircularImportDetector();
-
         // If no imports, return the original config
-        if (!isset($config['import']) || empty($config['import'])) {
+        if (empty($config['import'])) {
             return $config;
         }
 
@@ -133,7 +131,7 @@ final readonly class ImportResolver
 
             // Create a single import config for this match
             $singleImportCfg = new ImportConfig(
-                path: $matchingPath, // Use the actual file path
+                path: \ltrim(str_replace($this->dirs->rootPath, '', $matchingPath), '/'), // Use the actual file path
                 absolutePath: $matchingPath, // The path finder returns absolute paths
                 pathPrefix: $importCfg->pathPrefix,
                 hasWildcard: false,
@@ -158,7 +156,7 @@ final readonly class ImportResolver
         ImportConfig $importCfg,
         string $basePath,
         array &$parsedImports,
-        CircularImportDetector $detector,
+        CircularImportDetectorInterface $detector,
         array &$importedConfigs,
         array $importConfig,
     ): void {
@@ -178,8 +176,13 @@ final readonly class ImportResolver
                 $detector,
             );
 
+            // Apply path prefix for output document paths if specified
+            if ($importCfg->pathPrefix !== null) {
+                $importedConfig = $this->applyPathPrefix($importedConfig, $importCfg->pathPrefix);
+            }
+
             // Apply path prefix if specified
-            $importedConfig = $this->applyPathPrefix($importedConfig, \dirname((string) $importConfig['path']));
+            $importedConfig = $this->applySourcePathPrefix($importedConfig, $importCfg->configDirectory());
 
             // Store for later merging
             $importedConfigs[] = $importedConfig;
@@ -237,9 +240,38 @@ final readonly class ImportResolver
     }
 
     /**
-     * Apply path prefix to relevant source paths
+     * Apply path prefix to the output path of all documents
+     *
+     * The pathPrefix specifies a subdirectory to prepend to all document outputPath values
+     * in the imported configuration.
+     *
+     * Example:
+     * - Document has outputPath: 'docs/api.md'
+     * - Import has pathPrefix: 'api/v1'
+     * - Resulting outputPath: 'api/v1/docs/api.md'
+     *
+     * @param array $config The imported configuration
+     * @param string $pathPrefix The path prefix to apply
+     * @return array The modified configuration with path prefix applied to document outputPaths
      */
     private function applyPathPrefix(array $config, string $pathPrefix): array
+    {
+        // Apply to document outputPath values
+        if (isset($config['documents']) && \is_array($config['documents'])) {
+            foreach ($config['documents'] as &$document) {
+                if (isset($document['outputPath'])) {
+                    $document['outputPath'] = $this->combinePaths($pathPrefix, $document['outputPath']);
+                }
+            }
+        }
+
+        return $config;
+    }
+
+    /**
+     * Apply path prefix to relevant source paths
+     */
+    private function applySourcePathPrefix(array $config, string $pathPrefix): array
     {
         // Apply to documents array
         if (isset($config['documents']) && \is_array($config['documents'])) {
@@ -250,13 +282,6 @@ final readonly class ImportResolver
                     }
                 }
             }
-        }
-
-        // Also consider global pathPrefix
-        if (isset($config['pathPrefix'])) {
-            $config['pathPrefix'] = $this->combinePaths($pathPrefix, $config['pathPrefix']);
-        } else {
-            $config['pathPrefix'] = $pathPrefix;
         }
 
         return $config;
@@ -270,14 +295,6 @@ final readonly class ImportResolver
         // Handle sourcePaths property
         if (isset($source['sourcePaths'])) {
             $source['sourcePaths'] = $this->applyPrefixToPaths($source['sourcePaths'], $prefix);
-        }
-
-        // Handle repository property (for git_diff source)
-        if (isset($source['repository']) && $source['type'] === 'git_diff') {
-            // Only prefix if it's a relative path
-            if (!\str_starts_with($source['repository'], '/')) {
-                $source['repository'] = $this->combinePaths($prefix, $source['repository']);
-            }
         }
 
         // Handle composerPath property (for composer source)
@@ -314,6 +331,7 @@ final readonly class ImportResolver
         // If it's not a string or array, return as is
         return $paths;
     }
+
 
     /**
      * Combine two paths with a separator

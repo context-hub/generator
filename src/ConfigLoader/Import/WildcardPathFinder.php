@@ -5,23 +5,18 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\ConfigLoader\Import;
 
 use Butschster\ContextGenerator\FilesInterface;
-use RecursiveIteratorIterator;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Finder\Finder;
 
 /**
- * Find files matching a glob pattern in the filesystem
+ * Find files matching a glob pattern in the filesystem using Symfony Finder
  */
 final readonly class WildcardPathFinder
 {
     /**
      * File extensions recognized as configuration files
      */
-    private const CONFIG_EXTENSIONS = [
-        'yaml' => true,
-        'yml' => true,
-        'json' => true,
-        'php' => true,
-    ];
+    private const CONFIG_EXTENSIONS = ['yaml', 'yml', 'json', 'php'];
 
     public function __construct(
         private FilesInterface $files,
@@ -48,9 +43,6 @@ final readonly class WildcardPathFinder
             return $this->files->exists($path) ? [$path] : [];
         }
 
-        // Create pattern matcher
-        $matcher = new PathMatcher($pattern);
-
         // Determine the base directory to start scanning from
         $baseDir = $this->getBaseDirectoryFromPattern($pattern, $basePath);
 
@@ -60,42 +52,75 @@ final readonly class WildcardPathFinder
             return [];
         }
 
-        $matches = [];
-        $this->scanDirectory($baseDir, $matcher, $matches);
+        // Extract the pattern part after the base directory
+        $patternSuffix = $this->getPatternSuffix($pattern, $baseDir, $basePath);
 
-        $this->logger?->debug('Found matching paths', ['count' => \count($matches), 'paths' => $matches]);
+        try {
+            // Create and configure Symfony Finder
+            $finder = new Finder();
+            $finder
+                ->files()
+                ->in($baseDir)
+                ->name('/\.(' . \implode('|', self::CONFIG_EXTENSIONS) . ')$/')
+                ->followLinks();
 
-        return $matches;
+            // Apply the pattern as a path filter, but only if it's not just '*'
+            if ($patternSuffix !== '*') {
+                // Convert our glob pattern to a regex pattern compatible with Symfony's path() method
+                $regexPattern = $this->convertGlobToFinderPathRegex($patternSuffix);
+                $finder->path($regexPattern);
+            }
+
+            $matches = [];
+            foreach ($finder as $file) {
+                $matches[] = $file->getRealPath();
+            }
+
+            $this->logger?->debug('Found matching paths', ['count' => \count($matches), 'paths' => $matches]);
+            return $matches;
+        } catch (\InvalidArgumentException $e) {
+            // Finder throws this if the directory doesn't exist
+            $this->logger?->debug('Directory search failed', ['error' => $e->getMessage()]);
+            return [];
+        }
     }
 
     /**
-     * Recursively scan directory and find files matching the pattern
+     * Convert a glob pattern to a regex pattern compatible with Symfony Finder's path() method
+     *
+     * This method creates a regex pattern that will be compatible with Symfony Finder's
+     * expectations for the path() method. It adds delimiters and ensures the pattern is
+     * recognized as a regex pattern by Finder.
      */
-    private function scanDirectory(string $directory, PathMatcher $matcher, array &$matches): void
+    private function convertGlobToFinderPathRegex(string $pattern): string
     {
-        // Use RecursiveIteratorIterator to recursively scan the directory
-        $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator(
-                $directory,
-                \RecursiveDirectoryIterator::SKIP_DOTS | \RecursiveDirectoryIterator::FOLLOW_SYMLINKS,
-            ),
-            \RecursiveIteratorIterator::SELF_FIRST,
-        );
+        // First, convert the glob pattern to a regex pattern using our PathMatcher
+        $matcher = new PathMatcher($pattern);
+        $regex = $matcher->getRegex();
 
-        foreach ($iterator as $path => $file) {
-            if ($file->isFile() && $this->isConfigFile($file->getFilename())) {
-                $relativePath = $this->getRelativePath($path, $directory);
-                $fullPattern = $this->resolvePath($matcher->getPattern(), $directory);
+        // Extract the pattern part between the delimiters (remove the ~^ at the start and $ at the end)
+        $patternBody = \substr($regex, 2, -2);
 
-                // For pattern matching, normalize directory separators
-                $normalizedPath = \str_replace('\\', '/', $relativePath);
-                $normalizedPattern = \str_replace('\\', '/', $fullPattern);
+        // Create a new regex pattern that will be recognized by Symfony Finder's path() method
+        // We need to make sure it starts with a delimiter so it's recognized as a regex
+        return '#' . $patternBody . '#';
+    }
 
-                if ($matcher->isMatch($normalizedPath)) {
-                    $matches[] = $path;
-                }
-            }
+    /**
+     * Get the pattern suffix (after the base directory)
+     */
+    private function getPatternSuffix(string $pattern, string $baseDir, string $basePath): string
+    {
+        $resolvedPattern = $this->resolvePath($pattern, $basePath);
+
+        // If baseDir is part of the resolved pattern, extract the suffix
+        $baseLength = \strlen($baseDir);
+        if (\strncmp($resolvedPattern, $baseDir, $baseLength) === 0) {
+            $suffix = \substr($resolvedPattern, $baseLength + 1);
+            return $suffix ?: '*';
         }
+
+        return $pattern;
     }
 
     /**
@@ -122,27 +147,6 @@ final readonly class WildcardPathFinder
 
         // Resolve the base directory against the base path
         return $this->resolvePath($baseDir, $basePath);
-    }
-
-    /**
-     * Get the path relative to a base directory
-     */
-    private function getRelativePath(string $path, string $baseDir): string
-    {
-        $baseDirLength = \strlen($baseDir);
-        if (\strncmp($path, $baseDir, $baseDirLength) === 0) {
-            return \substr($path, $baseDirLength + 1);
-        }
-        return $path;
-    }
-
-    /**
-     * Check if a file is a recognized configuration file
-     */
-    private function isConfigFile(string $filename): bool
-    {
-        $extension = \strtolower(\pathinfo($filename, PATHINFO_EXTENSION));
-        return isset(self::CONFIG_EXTENSIONS[$extension]);
     }
 
     /**

@@ -1,0 +1,14 @@
+{
+  "name": "Deeply Nested Import",
+  "documents": [
+    {
+      "name": "Deeply Nested Document",
+      "sources": [
+        {
+          "type": "file",
+          "sourcePaths": ["src/deeply-nested.php"]
+        }
+      ]
+    }
+  ]
+}
