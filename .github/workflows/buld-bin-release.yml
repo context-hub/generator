@@ -52,7 +52,7 @@ jobs:
           push: false
           load: true
           tags: ctx-builder-${{ matrix.platform.os }}-${{ matrix.platform.arch }}:latest
-          platforms: linux/${{ matrix.platform.docker_arch }}
+          platforms: linux/${{ matrix.platform.arch }}
           build-args: |
             TARGET_OS=${{ matrix.platform.os }}
             TARGET_ARCH=${{ matrix.platform.arch }}
