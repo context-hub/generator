@@ -204,7 +204,7 @@ function Download-And-Install {
         Write-Host "`n     You can now run it using:" -ForegroundColor White
         Write-Host "         $binaryName" -ForegroundColor Cyan
         Write-Host "`n     📚 Documentation: https://docs.ctxgithub.com"
-        Write-Host "     🚀 Happy AI coding!`n"
+        Write-Host "     🚀 Happy AI coding!"
     }
     catch {
         Write-Error "Failed to install binary to $BinDir\$binaryName"
