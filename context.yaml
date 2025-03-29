@@ -135,7 +135,6 @@ documents:
 
   - description: Import documents docs
     outputPath: docs/import-docs.md
-    overwrite: false
     sources:
       - type: file
         sourcePaths:
