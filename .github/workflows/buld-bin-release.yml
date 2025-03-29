@@ -86,7 +86,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
-          extensions: mbstring, xml, curl sockets
+          extensions: mbstring, xml, curl, sockets
           coverage: none
 
       - name: Extract version from tag or set dev version
@@ -118,11 +118,7 @@ jobs:
           Invoke-WebRequest -Uri "https://dl.static-php.dev/static-php-cli/spc-bin/nightly/spc-windows-x64.exe" -OutFile ".build/bin/spc.exe"
 
       - name: Download required PHP extensions
-        run: |
-          .build/bin/spc.exe download micro
-          --for-extensions=ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl
-          --with-php=8.3
-          --prefer-pre-built
+        run: .build/bin/spc.exe download micro --for-extensions=ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl --with-php=8.3 --prefer-pre-built
 
       - name: Install UPX for compression
         run: |
@@ -133,10 +129,7 @@ jobs:
           .build/bin/spc.exe doctor --auto-fix
 
       - name: Build the self-executable binary
-        run: |
-          .build/bin/spc.exe build "ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl"
-          --build-micro
-          --with-upx-pack
+        run: .build/bin/spc.exe build "ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl" --build-micro --with-upx-pack
 
       - name: Build PHAR file
         run: |
