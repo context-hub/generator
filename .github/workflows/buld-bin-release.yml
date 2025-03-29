@@ -6,9 +6,6 @@ on: # yamllint disable-line rule:truthy
   release:
     types:
       - published
-  pull_request:
-    branches:
-      - main
 
 jobs:
   build-unix:
