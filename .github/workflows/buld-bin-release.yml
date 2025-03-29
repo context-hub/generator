@@ -19,17 +19,9 @@ jobs:
       matrix:
         platform:
           - os: linux
-            arch: x86_64
-            docker_arch: amd64
+            arch: amd64
           - os: linux
-            arch: aarch64
-            docker_arch: arm64
-          - os: macos
-            arch: x86_64
-            docker_arch: amd64
-          - os: macos
-            arch: aarch64
-            docker_arch: arm64
+            arch: arm64
 
     steps:
       - name: Checkout code

@@ -95,6 +95,56 @@ get_latest() {
   return 0
 }
 
+# Gets the OS by setting the $os variable.
+# Returns 0 in case of success, 1 otherwise.
+get_os() {
+  os_name=$(uname -s)
+  case "$os_name" in
+    # ---
+  'Linux')
+    os='linux'
+    ;;
+
+    # ---
+  *)
+    return 1
+    ;;
+  esac
+  return 0
+}
+
+# Gets the architecture by setting the $arch variable.
+# Returns 0 in case of success, 1 otherwise.
+get_arch() {
+  architecture=$(uname -m)
+
+  # case 1
+  case "$architecture" in
+  'x86_64' | 'amd64')
+    arch='amd64'
+    ;;
+
+    # case 2
+  'arm64' | 'aarch64')
+    arch='arm64'
+    ;;
+
+  # all other
+  *)
+    return 1
+    ;;
+  esac
+
+  return 0
+}
+
+not_available_failure_usage() {
+  print_error 'ctx binary is not available for your OS distribution or your architecture yet.'
+  echo ''
+  echo 'However, you can easily compile the binary from the source files.'
+  echo 'Follow the steps at the page ("Source" tab): TODO'
+}
+
 fetch_release_failure_usage() {
   print_error "Impossible to get the latest stable version of $PNAME."
   printf "Please let us know about this issue: https://github.com/$REPO_OWNER/$REPO_NAME/issues/new\n"
@@ -134,12 +184,25 @@ download_and_install() {
     exit 1
   fi
 
+  # Fill $os variable.
+  if ! get_os; then
+    not_available_failure_usage
+    exit 1
+  fi
+  # Fill $arch variable.
+  if ! get_arch; then
+    not_available_failure_usage
+    exit 1
+  fi
+
+  release_file="$PNAME-$latest-$os-$arch"
+
   # Download the binary file
   print_header "Downloading the latest version"
-  print_status "Preparing download from: $GITHUB_REL/$latestV/$PNAME"
+  print_status "Preparing download from: $GITHUB_REL/$latestV/$release_file"
 
-  temp_file=$(mktemp -q /tmp/$PNAME-XXXXXXXXX)
-  if ! temp_file=$(mktemp -q /tmp/$PNAME-XXXXXXXXX); then
+  temp_file=$(mktemp -q /tmp/$release_file-XXXXXXXXX)
+  if ! temp_file=$(mktemp -q /tmp/$release_file-XXXXXXXXX); then
     print_error "Can't create temp file for download."
     exit 1
   fi
@@ -147,10 +210,10 @@ download_and_install() {
   echo "\n"
 
   # Use curl with progress bar but suppress most headers
-  if ! curl --fail -L "$GITHUB_REL/$latestV/$PNAME" -o "$temp_file" \
+  if ! curl --fail -L "$GITHUB_REL/$latestV/$release_file" -o "$temp_file" \
        --progress-bar --write-out "%{http_code}" | grep -q "^2"; then
     printf "] ${RED}Failed!${DEFAULT}\n"
-    print_error "Failed to download $GITHUB_REL/$latestV/$PNAME"
+    print_error "Failed to download $GITHUB_REL/$latestV/$release_file"
     rm -f "$temp_file"
     exit 1
   fi
@@ -162,25 +225,25 @@ download_and_install() {
 
   # Install the binary
   print_header "Installing the update"
-  print_status "Replacing current binary at: $bin_dir/$PNAME"
+  print_status "Replacing current binary at: $bin_dir/$release_file"
 
-  if ! mv "$temp_file" "$bin_dir/$PNAME"; then
-    print_error "Failed to move binary to $bin_dir/$PNAME"
+  if ! mv "$temp_file" "$bin_dir/$release_file"; then
+    print_error "Failed to move binary to $bin_dir/$release_file"
     rm -f "$temp_file"
     exit 1
   fi
 
   # Make executable
-  if ! chmod +x "$bin_dir/$PNAME"; then
-    print_error "Failed to make $bin_dir/$PNAME executable"
+  if ! chmod +x "$bin_dir/$release_file"; then
+    print_error "Failed to make $bin_dir/$release_file executable"
     exit 1
   fi
 
   print_success "Successfully replaced the binary file"
-  print_success "Successfully installed $PNAME $latestV to $bin_dir/$PNAME\n"
+  print_success "Successfully installed $release_file $latestV to $bin_dir/$release_file\n"
 
   printf "     You can now run it using:\n"
-  printf "         ${BOLD}$PNAME${DEFAULT}\n\n"
+  printf "         ${BOLD}$release_file${DEFAULT}\n\n"
   printf "     📚 Documentation: https://docs.ctxgithub.com\n"
   printf "     🚀 Happy AI coding!\n\n"
 }
