@@ -74,20 +74,20 @@ jobs:
           token: "${{ secrets.RELEASE_TOKEN }}"
           files: |
             ./dist/ctx-${{ env.VERSION }}-${{ matrix.platform.os }}-${{ matrix.platform.arch }}
-  
+
   build-windows:
     runs-on: windows-latest
-    name: 📦 Build Windows Executable
-
+    name: 📦 Build Windows (x64)
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Setup Docker buildx correctly for Windows
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
         with:
-          install: true
+          php-version: '8.3'
+          extensions: mbstring, xml, curl
+          coverage: none
 
       - name: Extract version from tag or set dev version
         id: get_version
@@ -103,29 +103,54 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "{\"version\": \"$VERSION\", \"type\":\"bin\"}" > version.json
 
-      - name: Build Docker image for Windows
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: ./Dockerfile.windows
-          push: false
-          load: true
-          tags: ctx-builder-windows:latest
-          build-args: |
-            VERSION=${{ env.VERSION }}
+      - name: Install Composer dependencies
+        run: composer install --no-dev --prefer-dist
 
-      - name: Extract Windows executable
-        shell: powershell
+      - name: Create build directories
+        run: mkdir -p .build/phar .build/bin
+
+      - name: Download box tool
         run: |
-          mkdir -Force dist
-          $containerId = docker create ctx-builder-windows:latest
-          docker cp "$($containerId):C:/output/ctx.exe" ./dist/ctx-${{ env.VERSION }}-windowns-amd64.exe
-          docker rm $containerId
+          Invoke-WebRequest -Uri "https://github.com/box-project/box/releases/download/4.6.6/box.phar" -OutFile ".build/bin/box.phar"
 
-      - name: 📤 Upload release assets
-        uses: softprops/action-gh-release@v2.2.1
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Download SPC for Windows
+        run: |
+          Invoke-WebRequest -Uri "https://dl.static-php.dev/static-php-cli/spc-bin/nightly/spc-windows-x64.exe" -OutFile ".build/bin/spc.exe"
+
+      - name: Download required PHP extensions
+        run: |
+          .build/bin/spc.exe download micro
+          --for-extensions=ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl
+          --with-php=8.3
+          --prefer-pre-built
+
+      - name: Install UPX for compression
+        run: |
+          .build/bin/spc.exe install-pkg upx
+
+      - name: Verify environment is ready
+        run: |
+          .build/bin/spc.exe doctor --auto-fix
+
+      - name: Build the self-executable binary
+        run: |
+          .build/bin/spc.exe build "ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl"
+          --build-micro
+          --with-upx-pack
+
+      - name: Build PHAR file
+        run: |
+          php .build/bin/box.phar compile -v
+
+      - name: Combine micro.sfx with the PHAR
+        run: |
+          mkdir -p dist
+          .build/bin/spc.exe micro:combine .build/phar/ctx.phar --output=dist/ctx-${{ env.VERSION }}-windows-amd64.exe
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v3
         with:
-          token: "${{ secrets.RELEASE_TOKEN }}"
-          files: |
-            ./dist/ctx-${{ env.VERSION }}-windowns-amd64.exe
+          name: windows-x64-binary
+          path: |
+            dist/ctx-${{ env.VERSION }}-windows-amd64.exe
+          retention-days: 1
