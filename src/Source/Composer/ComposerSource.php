@@ -156,6 +156,7 @@ final class ComposerSource extends SourceWithModifiers implements FilterableSour
     /**
      * Specify data which should be serialized to JSON
      */
+    #[\Override]
     public function jsonSerialize(): array
     {
         return \array_filter([

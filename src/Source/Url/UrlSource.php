@@ -69,6 +69,7 @@ final class UrlSource extends BaseSource
      *
      * @psalm-return array{type: 'url', urls?: array<string>, description?: string, selector?: string}
      */
+    #[\Override]
     public function jsonSerialize(): array
     {
         return \array_filter([

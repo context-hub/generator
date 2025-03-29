@@ -206,6 +206,7 @@ class CommitDiffSource extends SourceWithModifiers implements FilterableSourceIn
      *
      * @return array<string, mixed>
      */
+    #[\Override]
     public function jsonSerialize(): array
     {
         return \array_filter([

@@ -15,7 +15,7 @@ use Psr\Log\LoggerInterface;
 
 class ImportResolverTest extends TestCase
 {
-    private const FIXTURES_DIR = __DIR__ . '/../../../fixtures/ConfigLoader/Import';
+    private const string FIXTURES_DIR = __DIR__ . '/../../../fixtures/ConfigLoader/Import';
 
     private FilesInterface $files;
     private ConfigLoaderFactoryInterface $loaderFactory;
@@ -116,10 +116,10 @@ class ImportResolverTest extends TestCase
             $loader = $this->createMock(ConfigLoaderInterface::class);
             $loader->method('isSupported')->willReturn(true);
 
-            if (\strpos($path, 'config1.json') !== false) {
+            if (\str_contains($path, 'config1.json')) {
                 $loader->method('loadRawConfig')->willReturn($wildcardConfig1);
             } else {
-                if (\strpos($path, 'config2.json') !== false) {
+                if (\str_contains($path, 'config2.json')) {
                     $loader->method('loadRawConfig')->willReturn($wildcardConfig2);
                 } else {
                     $loader->method('loadRawConfig')->willReturn([]);
@@ -172,10 +172,10 @@ class ImportResolverTest extends TestCase
                 $loader = $this->createMock(ConfigLoaderInterface::class);
                 $loader->method('isSupported')->willReturn(true);
 
-                if (\strpos($path, 'base-config.json') !== false) {
+                if (\str_contains($path, 'base-config.json')) {
                     $loader->method('loadRawConfig')->willReturn($baseConfig);
                 } else {
-                    if (\strpos($path, 'circular-import.json') !== false) {
+                    if (\str_contains($path, 'circular-import.json')) {
                         $loader->method('loadRawConfig')->willReturn($circularConfig);
                     } else {
                         $loader->method('loadRawConfig')->willReturn([]);

@@ -11,7 +11,7 @@ use Psr\Http\Message\RequestFactoryInterface;
 
 final readonly class Psr18Client implements HttpClientInterface
 {
-    private const MAX_REDIRECTS = 5;
+    private const int MAX_REDIRECTS = 5;
 
     public function __construct(
         private ClientInterface $httpClient,

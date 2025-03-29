@@ -14,8 +14,8 @@ return static function (RectorConfig $rectorConfig): void {
 
     // Register rules for PHP 8.4 migration
     $rectorConfig->sets([
-        SetList::PHP_82,
-        LevelSetList::UP_TO_PHP_82,
+        SetList::PHP_83,
+        LevelSetList::UP_TO_PHP_83,
     ]);
 
     // Skip vendor directories

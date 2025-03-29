@@ -16,7 +16,7 @@ final readonly class WildcardPathFinder
     /**
      * File extensions recognized as configuration files
      */
-    private const CONFIG_EXTENSIONS = ['yaml', 'yml', 'json', 'php'];
+    private const array CONFIG_EXTENSIONS = ['yaml', 'yml', 'json', 'php'];
 
     public function __construct(
         private FilesInterface $files,

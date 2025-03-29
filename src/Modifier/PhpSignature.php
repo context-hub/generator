@@ -17,7 +17,7 @@ use Nette\PhpGenerator\TraitType;
  */
 final class PhpSignature implements SourceModifierInterface
 {
-    private const MAGIC_METHODS = [
+    private const array MAGIC_METHODS = [
         '__construct',
     ];
 

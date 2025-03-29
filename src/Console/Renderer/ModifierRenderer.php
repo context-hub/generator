@@ -11,7 +11,7 @@ use Butschster\ContextGenerator\Modifier\Modifier;
  */
 final class ModifierRenderer
 {
-    private const MODIFIER_TYPES = [
+    private const array MODIFIER_TYPES = [
         'php-signature' => 'PHP Signature Modifier',
         'php-content-filter' => 'PHP Content Filter Modifier',
         'sanitizer' => 'Content Sanitizer Modifier',

@@ -12,7 +12,7 @@ final readonly class CommitRangeParser
     /**
      * Predefined commit range aliases for easier configuration
      */
-    private const COMMIT_RANGE_PRESETS = [
+    private const array COMMIT_RANGE_PRESETS = [
         // Basic ranges
         'last' => 'HEAD~1..HEAD',
         'last-2' => 'HEAD~2..HEAD',

@@ -17,6 +17,7 @@ final class McpResponseStrategy extends ApplicationStrategy
         private readonly LoggerInterface $logger,
     ) {}
 
+    #[\Override]
     public function invokeRouteCallable(Route $route, ServerRequestInterface $request): ResponseInterface
     {
         try {

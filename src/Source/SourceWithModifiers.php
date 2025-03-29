@@ -22,6 +22,7 @@ abstract class SourceWithModifiers extends BaseSource
         parent::__construct(description: $description, tags: $tags);
     }
 
+    #[\Override]
     public function parseContent(
         SourceParserInterface $parser,
         ModifiersApplierInterface $modifiersApplier,
@@ -33,6 +34,7 @@ abstract class SourceWithModifiers extends BaseSource
         return $parser->parse($this, $modifiersApplier);
     }
 
+    #[\Override]
     public function jsonSerialize(): array
     {
         return [
