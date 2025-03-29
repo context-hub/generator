@@ -73,7 +73,7 @@ get_latest() {
   if [ -n "$VERSION" ]; then
     # Remove 'v' prefix if present
     latest=$(echo "$VERSION" | sed 's/^v//')
-    latestV="v$latest"
+    latestV="$latest"
     print_success "Using specified version: $latestV"
     return 0
   fi
@@ -239,25 +239,25 @@ download_and_install() {
 
   # Install the binary
   print_header "Installing the update"
-  print_status "Replacing current binary at: $bin_dir/$release_file"
+  print_status "Replacing current binary at: $bin_dir/$PNAME"
 
-  if ! mv "$temp_file" "$bin_dir/$release_file"; then
-    print_error "Failed to move binary to $bin_dir/$release_file"
+  if ! mv "$temp_file" "$bin_dir/$PNAME"; then
+    print_error "Failed to move binary to $bin_dir/$PNAME"
     rm -f "$temp_file"
     exit 1
   fi
 
   # Make executable
-  if ! chmod +x "$bin_dir/$release_file"; then
-    print_error "Failed to make $bin_dir/$release_file executable"
+  if ! chmod +x "$bin_dir/$PNAME"; then
+    print_error "Failed to make $bin_dir/$PNAME executable"
     exit 1
   fi
 
   print_success "Successfully replaced the binary file"
-  print_success "Successfully installed $release_file $latestV to $bin_dir/$release_file\n"
+  print_success "Successfully installed $latestV to $bin_dir/$PNAME\n"
 
   printf "     You can now run it using:\n"
-  printf "         ${BOLD}$release_file${DEFAULT}\n\n"
+  printf "         ${BOLD}$PNAME${DEFAULT}\n\n"
   printf "     📚 Documentation: https://docs.ctxgithub.com\n"
   printf "     🚀 Happy AI coding!\n\n"
 }
@@ -268,18 +268,24 @@ printf "===========================\n\n"
 
 # Parse arguments
 bin_dir="$DEFAULT_BIN_DIR"
-for arg in "$@"; do
-  case "$arg" in
+while [ $# -gt 0 ]; do
+  case "$1" in
     -v=*|--version=*)
-      VERSION="${arg#*=}"
+      VERSION="${1#*=}"
+      shift
       ;;
     -v|--version)
-      shift
-      VERSION="$1"
-      shift
+      if [ $# -gt 1 ]; then
+        VERSION="$2"
+        shift 2
+      else
+        print_error "Version argument is missing"
+        exit 1
+      fi
       ;;
     *)
-      bin_dir="$arg"
+      bin_dir="$1"
+      shift
       ;;
   esac
 done
