@@ -122,8 +122,7 @@ function Get-LatestVersion {
         else {
             throw "No version found"
         }
-    }
-    catch {
+    } catch {
         Write-Error "Impossible to get the latest stable version of $ProjectName."
         Write-Host "Please let us know about this issue: https://github.com/$RepoOwner/$RepoName/issues/new"
         Write-Host "`nIn the meantime, you can manually download the appropriate binary from the GitHub release assets here: https://github.com/$RepoOwner/$RepoName/releases/latest"
@@ -169,8 +168,7 @@ function Download-And-Install {
 
         Write-Success "Successfully downloaded version $latestV"
         Write-Status "Saved to temporary file: $tempFile"
-    }
-    catch {
+    } catch {
         Write-Error "Failed to download $GithubReleases/$latestV/$releaseFile"
         Write-Host "Error: $_"
         if (Test-Path $tempFile) {
@@ -205,8 +203,7 @@ function Download-And-Install {
         Write-Host "         $binaryName" -ForegroundColor Cyan
         Write-Host "`n     📚 Documentation: https://docs.ctxgithub.com"
         Write-Host "     🚀 Happy AI coding!"
-    }
-    catch {
+    } catch {
         Write-Error "Failed to install binary to $BinDir\$binaryName"
         Write-Host "Error: $_"
         if (Test-Path $tempFile) {
