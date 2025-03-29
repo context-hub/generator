@@ -131,7 +131,7 @@ final readonly class ImportResolver
 
             // Create a single import config for this match
             $singleImportCfg = new ImportConfig(
-                path: \ltrim(str_replace($this->dirs->rootPath, '', $matchingPath), '/'), // Use the actual file path
+                path: \ltrim(\str_replace($this->dirs->rootPath, '', $matchingPath), '/'), // Use the actual file path
                 absolutePath: $matchingPath, // The path finder returns absolute paths
                 pathPrefix: $importCfg->pathPrefix,
                 hasWildcard: false,
@@ -331,7 +331,6 @@ final readonly class ImportResolver
         // If it's not a string or array, return as is
         return $paths;
     }
-
 
     /**
      * Combine two paths with a separator

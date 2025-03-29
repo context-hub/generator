@@ -24,11 +24,6 @@ final readonly class ImportConfig
         public bool $hasWildcard = false,
     ) {}
 
-    public function configDirectory(bool $absolute = false): string
-    {
-        return \dirname($absolute ? $this->absolutePath : $this->path);
-    }
-
     /**
      * Create from an array configuration
      *
@@ -76,6 +71,11 @@ final readonly class ImportConfig
             pathPrefix: $pathPrefix,
             hasWildcard: $hasWildcard,
         );
+    }
+
+    public function configDirectory(bool $absolute = false): string
+    {
+        return \dirname($absolute ? $this->absolutePath : $this->path);
     }
 
     /**
