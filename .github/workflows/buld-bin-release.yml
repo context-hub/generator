@@ -43,8 +43,13 @@ jobs:
       - name: Extract version from tag
         id: get_version
         run: |
-          # Remove 'v' prefix from tag if present
-          VERSION=${GITHUB_REF_NAME#v}
+          if [[ "$GITHUB_REF_NAME" == refs/pull/* ]]; then
+            # For pull requests, use "dev" as version
+            VERSION="dev"
+          else
+            # For releases, extract version from tag (remove 'v' prefix if present)
+            VERSION=${GITHUB_REF_NAME#v}
+          fi
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "{\"version\": \"$VERSION\", \"type\":\"bin\"}" > version.json
 
@@ -91,8 +96,13 @@ jobs:
         id: get_version
         shell: bash
         run: |
-          # Remove 'v' prefix from tag if present
-          VERSION=${GITHUB_REF_NAME#v}
+          if [[ "$GITHUB_REF_NAME" == refs/pull/* ]]; then
+            # For pull requests, use "dev" as version
+            VERSION="dev"
+          else
+            # For releases, extract version from tag (remove 'v' prefix if present)
+            VERSION=${GITHUB_REF_NAME#v}
+          fi
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "{\"version\": \"$VERSION\", \"type\":\"bin\"}" > version.json
 
