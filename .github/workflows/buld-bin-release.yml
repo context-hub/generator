@@ -67,7 +67,7 @@ jobs:
         run: |
           mkdir -p dist
           container_id=$(docker create ctx-builder-${{ matrix.platform.os }}-${{ matrix.platform.arch }}:latest)
-          docker cp $container_id:/.output/ctx ./dist/ctx-${{ matrix.platform.os }}-${{ matrix.platform.arch }}-${{ env.VERSION }}
+          docker cp $container_id:/.output/ctx ./dist/ctx-${{ env.VERSION }}-${{ matrix.platform.os }}-${{ matrix.platform.arch }}
           docker rm $container_id
 
       - name: 📤 Upload release assets
@@ -76,4 +76,4 @@ jobs:
         with:
           token: "${{ secrets.RELEASE_TOKEN }}"
           files: |
-            ./dist/ctx-${{ matrix.platform.os }}-${{ matrix.platform.arch }}-${{ env.VERSION }}
+            ./dist/ctx-${{ env.VERSION }}-${{ matrix.platform.os }}-${{ matrix.platform.arch }}

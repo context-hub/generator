@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# This script downloads the latest version of context-generator from GitHub
+# This script downloads the specified version (or latest by default) of context-generator from GitHub
 # and installs it to a user bin directory.
 # To use a GitHub token, pass it through the GITHUB_PAT environment variable.
 
@@ -33,6 +33,9 @@ GITHUB_REL="https://github.com/$REPO_OWNER/$REPO_NAME/releases/download"
 # Default install directory
 DEFAULT_BIN_DIR="/usr/local/bin"
 
+# Default to empty (meaning get latest version)
+VERSION=""
+
 # FUNCTIONS
 
 # Print a section header
@@ -62,9 +65,20 @@ print_warning() {
   printf " ${YELLOW}[WARNING]${DEFAULT} $1\n"
 }
 
-# Gets the version of the latest stable version by setting the $latest variable.
+# Gets the version either from user input or latest from GitHub
+# Sets the $latest and $latestV variables.
 # Returns 0 in case of success, 1 otherwise.
 get_latest() {
+  # If version was specified, use it directly
+  if [ -n "$VERSION" ]; then
+    # Remove 'v' prefix if present
+    latest=$(echo "$VERSION" | sed 's/^v//')
+    latestV="v$latest"
+    print_success "Using specified version: $latestV"
+    return 0
+  fi
+
+  # Otherwise, get latest from GitHub
   # temp_file is needed because the grep would start before the download is over
   temp_file=$(mktemp -q /tmp/$PNAME.XXXXXXXXX)
   latest_release="$GITHUB_API/latest"
@@ -252,15 +266,33 @@ download_and_install() {
 printf "${BOLD}Context Generator Installer${DEFAULT}\n"
 printf "===========================\n\n"
 
-# Determine bin directory
-if [ -n "$1" ]; then
-  bin_dir="$1"
-  print_status "Installation directory: $bin_dir"
+# Parse arguments
+bin_dir="$DEFAULT_BIN_DIR"
+for arg in "$@"; do
+  case "$arg" in
+    -v=*|--version=*)
+      VERSION="${arg#*=}"
+      ;;
+    -v|--version)
+      shift
+      VERSION="$1"
+      shift
+      ;;
+    *)
+      bin_dir="$arg"
+      ;;
+  esac
+done
+
+print_status "Installation directory: $bin_dir"
+if [ -n "$VERSION" ]; then
+  print_status "Installing version: $VERSION"
 else
-  bin_dir="$DEFAULT_BIN_DIR"
-  print_status "No installation directory specified. Using default: $bin_dir\n"
+  print_status "No version specified. Will install the latest version.\n"
   printf "      ${MUTED}You can specify a different directory by running:${DEFAULT}\n"
-  printf "      ${MUTED}curl -sSL https://raw.githubusercontent.com/context-hub/generator/main/download-latest.sh | sh -s /path/to/bin${DEFAULT}\n\n"
+  printf "      ${MUTED}curl -sSL https://raw.githubusercontent.com/context-hub/generator/main/download-latest.sh | sh -s /path/to/bin${DEFAULT}\n"
+  printf "      ${MUTED}Specify a specific version with:${DEFAULT}\n"
+  printf "      ${MUTED}curl -sSL https://raw.githubusercontent.com/context-hub/generator/main/download-latest.sh | sh -s -- --version=v1.2.3 /path/to/bin${DEFAULT}\n\n"
 fi
 
 # Ensure bin directory exists and is in PATH
