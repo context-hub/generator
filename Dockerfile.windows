@@ -1,0 +1,61 @@
+# Use Windows Server Core as the base image
+FROM mcr.microsoft.com/windows/servercore:ltsc2022 AS builder
+
+# Define build arguments
+ARG VERSION="latest"
+
+# Set PowerShell as the default shell
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
+
+# Set working directory
+WORKDIR C:/build
+
+# Install Chocolatey package manager
+RUN Set-ExecutionPolicy Bypass -Scope Process -Force; \
+    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; \
+    iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+
+# Install required tools
+RUN choco install -y git php composer visualstudio2022buildtools visualstudio2022-workload-vctools
+
+# Copy source files
+COPY . .
+
+# Install Composer dependencies
+RUN composer install --no-dev --prefer-dist --ignore-platform-reqs
+
+# Create build directories
+RUN mkdir -p .build/phar .build/bin
+
+# Download box tool for PHAR creation
+RUN Invoke-WebRequest -Uri "https://github.com/box-project/box/releases/download/4.6.6/box.phar" -OutFile ".build/bin/box.phar"
+
+# Download static-php-cli for Windows
+RUN Invoke-WebRequest -Uri "https://dl.static-php.dev/static-php-cli/spc-bin/nightly/spc-windows-x64.exe" -OutFile ".build/bin/spc.exe"
+
+# Download required PHP extensions
+RUN .build/bin/spc.exe download micro `
+    --for-extensions=ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl `
+    --with-php=8.3 `
+    --prefer-pre-built
+
+# Install UPX for compression
+RUN .build/bin/spc.exe install-pkg upx
+
+# Verify environment is ready
+RUN .build/bin/spc.exe doctor --auto-fix
+
+# Build the self-executable binary with required extensions
+RUN .build/bin/spc.exe build "ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl" `
+    --build-micro `
+    --with-upx-pack
+
+# Build PHAR file
+RUN php .build/bin/box.phar compile -v
+
+# Combine micro.sfx with the PHAR to create the final binary
+RUN .build/bin/spc.exe micro:combine .build/phar/ctx.phar --output=.build/bin/ctx-windows-x64-${VERSION}.exe
+
+# Copy output file to root
+RUN mkdir -Force C:/output
+RUN Copy-Item .build/bin/ctx-windows-x64-${VERSION}.exe -Destination C:/output/
