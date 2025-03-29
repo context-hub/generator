@@ -107,7 +107,7 @@ jobs:
         run: composer install --no-dev --prefer-dist --ignore-platform-reqs
 
       - name: Create build directories
-        run: mkdir -p .build/phar .build/bin
+        run: New-Item -Path ".build\phar", ".build\bin" -ItemType Directory -Force
 
       - name: Download box tool
         run: |
@@ -144,8 +144,8 @@ jobs:
 
       - name: Combine micro.sfx with the PHAR
         run: |
-          mkdir -p dist
-          .build/bin/spc.exe micro:combine .build/phar/ctx.phar --output=dist/ctx-${{ env.VERSION }}-windows-amd64.exe
+          New-Item -Path "dist" -ItemType Directory -Force
+          .build\bin\spc.exe micro:combine .build\phar\ctx.phar --output=dist\ctx-${{ env.VERSION }}-windows-amd64.exe
 
       - name: 📤 Upload release assets
         uses: softprops/action-gh-release@v2.2.1
