@@ -11,41 +11,32 @@ $GithubReleases = "https://github.com/$RepoOwner/$RepoName/releases/download"
 # Default installation directory (User's bin folder)
 $DefaultBinDir = "$env:USERPROFILE\bin"
 
-function Write-Header {
-    param([string]$Message)
-
-    Write-Host "`n$Message" -ForegroundColor Blue -BackgroundColor Black
+# Functions for output formatting
+function Write-Header($Message) {
+    Write-Host ""
+    Write-Host $Message -ForegroundColor Blue -BackgroundColor Black
     Write-Host ("-" * $Message.Length) -ForegroundColor Blue -BackgroundColor Black
-    Write-Host
+    Write-Host ""
 }
 
-function Write-Status {
-    param([string]$Message)
-
+function Write-Status($Message) {
     Write-Host " >> $Message" -ForegroundColor DarkGray
 }
 
-function Write-Success {
-    param([string]$Message)
-
+function Write-Success($Message) {
     Write-Host " [OK] $Message" -ForegroundColor Green
 }
 
-function Write-Warning {
-    param([string]$Message)
-
+function Write-Warning($Message) {
     Write-Host " [WARNING] $Message" -ForegroundColor Yellow
 }
 
-function Write-Error {
-    param([string]$Message)
-
+function Write-Error($Message) {
     Write-Host " [ERROR] $Message" -ForegroundColor Red
 }
 
-function Ensure-BinDirectory {
-    param([string]$BinDir)
-
+# Ensure the binary directory exists and is in PATH
+function Ensure-BinDirectory($BinDir) {
     # Create bin directory if it doesn't exist
     if (-not (Test-Path -Path $BinDir)) {
         Write-Status "Creating directory $BinDir..."
@@ -71,9 +62,10 @@ function Ensure-BinDirectory {
         Write-Host "    4. Under 'User variables', select 'Path' and click 'Edit'" -ForegroundColor Green
         Write-Host "    5. Click 'New' and add: $BinDir" -ForegroundColor Green
         Write-Host "    6. Click 'OK' on all dialogs" -ForegroundColor Green
-        Write-Host "`nOr run this command to add it temporarily for this session:" -ForegroundColor White
+        Write-Host ""
+        Write-Host "Or run this command to add it temporarily for this session:" -ForegroundColor White
         Write-Host "    `$env:Path += `";$BinDir`"" -ForegroundColor Green
-        Write-Host
+        Write-Host ""
 
         $addToPath = Read-Host "Would you like to add this directory to your PATH now? (y/N)"
         if ($addToPath -eq "y" -or $addToPath -eq "Y") {
@@ -90,16 +82,15 @@ function Ensure-BinDirectory {
     }
 }
 
-function Get-LatestVersion {
-    param([string]$Version)
-
+# Gets the latest version from GitHub or uses specified version
+function Get-LatestVersion($Version) {
     # If version was specified, use it directly
     if ($Version) {
         # Remove 'v' prefix if present
         $latest = $Version -replace '^v', ''
         $latestV = $latest
         Write-Success "Using specified version: $latestV"
-        return $latestV, $latest
+        return @($latestV, $latest)
     }
 
     # Otherwise, get latest from GitHub
@@ -117,25 +108,23 @@ function Get-LatestVersion {
 
         if ($latest) {
             Write-Success "Latest version found: $latestV"
-            return $latestV, $latest
+            return @($latestV, $latest)
         }
         else {
             throw "No version found"
         }
-    } catch {
+    }
+    catch {
         Write-Error "Impossible to get the latest stable version of $ProjectName."
         Write-Host "Please let us know about this issue: https://github.com/$RepoOwner/$RepoName/issues/new"
-        Write-Host "`nIn the meantime, you can manually download the appropriate binary from the GitHub release assets here: https://github.com/$RepoOwner/$RepoName/releases/latest"
+        Write-Host ""
+        Write-Host "In the meantime, you can manually download the appropriate binary from the GitHub release assets here: https://github.com/$RepoOwner/$RepoName/releases/latest"
         exit 1
     }
 }
 
-function Download-And-Install {
-    param(
-        [string]$BinDir,
-        [string]$Version
-    )
-
+# Downloads and installs the binary
+function Download-And-Install($BinDir, $Version) {
     # Get the latest version
     Write-Header "Checking for updates"
 
@@ -163,12 +152,13 @@ function Download-And-Install {
 
     try {
         # Download with progress bar
-        $webClient = New-Object System.Net.WebClient
-        $webClient.DownloadFile("$GithubReleases/$latestV/$releaseFile", $tempFile)
+        $progressPreference = 'Continue'
+        Invoke-WebRequest -Uri "$GithubReleases/$latestV/$releaseFile" -OutFile $tempFile
 
         Write-Success "Successfully downloaded version $latestV"
         Write-Status "Saved to temporary file: $tempFile"
-    } catch {
+    }
+    catch {
         Write-Error "Failed to download $GithubReleases/$latestV/$releaseFile"
         Write-Host "Error: $_"
         if (Test-Path $tempFile) {
@@ -199,11 +189,15 @@ function Download-And-Install {
         Move-Item -Path $tempFile -Destination "$BinDir\$binaryName" -Force
 
         Write-Success "Successfully installed $latestV to $BinDir\$binaryName"
-        Write-Host "`n     You can now run it using:" -ForegroundColor White
+        Write-Host ""
+        Write-Host "     You can now run it using:" -ForegroundColor White
         Write-Host "         $binaryName" -ForegroundColor Cyan
-        Write-Host "`n     📚 Documentation: https://docs.ctxgithub.com"
+        Write-Host ""
+        Write-Host "     📚 Documentation: https://docs.ctxgithub.com"
         Write-Host "     🚀 Happy AI coding!"
-    } catch {
+        Write-Host ""
+    }
+    catch {
         Write-Error "Failed to install binary to $BinDir\$binaryName"
         Write-Host "Error: $_"
         if (Test-Path $tempFile) {
@@ -213,10 +207,12 @@ function Download-And-Install {
     }
 }
 
-# Main execution
+# ----- MAIN SCRIPT EXECUTION -----
+
+# Display title
 Write-Host "Context Generator Installer" -ForegroundColor Cyan -BackgroundColor Black
 Write-Host "===========================" -ForegroundColor Cyan -BackgroundColor Black
-Write-Host
+Write-Host ""
 
 # Parse arguments
 $BinDir = $DefaultBinDir
@@ -250,11 +246,12 @@ if ($Version) {
 }
 else {
     Write-Status "No version specified. Will install the latest version."
-    Write-Host "`n      You can specify a different directory by running:" -ForegroundColor DarkGray
-    Write-Host '      .\install-ctx.ps1 C:\path\to\bin' -ForegroundColor DarkGray
+    Write-Host ""
+    Write-Host "      You can specify a different directory by running:" -ForegroundColor DarkGray
+    Write-Host "      .\install-ctx.ps1 C:\path\to\bin" -ForegroundColor DarkGray
     Write-Host "      Specify a specific version with:" -ForegroundColor DarkGray
-    Write-Host '      .\install-ctx.ps1 -v v1.2.3 C:\path\to\bin' -ForegroundColor DarkGray
-    Write-Host
+    Write-Host "      .\install-ctx.ps1 -v v1.2.3 C:\path\to\bin" -ForegroundColor DarkGray
+    Write-Host ""
 }
 
 # Ensure bin directory exists and is in PATH
