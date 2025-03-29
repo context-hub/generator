@@ -130,7 +130,7 @@ jobs:
           .build/bin/spc.exe doctor --auto-fix
 
       - name: Build the self-executable binary
-        run: .build/bin/spc.exe build "ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl" --build-micro --with-upx-pack
+        run: .build/bin/spc.exe build "ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl" --build-micro # --with-upx-pack
 
       - name: Build PHAR file
         run: |
