@@ -336,9 +336,9 @@ final class SourcePathPrefixingTest extends TestCase
                 $loader = $this->createMock(ConfigLoaderInterface::class);
                 $loader->method('isSupported')->willReturn(true);
 
-                if (str_contains($path, 'level1-config.json')) {
+                if (\str_contains($path, 'level1-config.json')) {
                     $loader->method('loadRawConfig')->willReturn($level1Config);
-                } elseif (str_contains($path, 'level2-config.json')) {
+                } elseif (\str_contains($path, 'level2-config.json')) {
                     $loader->method('loadRawConfig')->willReturn($level2Config);
                 } else {
                     $loader->method('loadRawConfig')->willReturn($level3Config);
