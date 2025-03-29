@@ -1,0 +1,58 @@
+documents:
+  - description: Path Filtering Utilities
+    outputPath: utilities/path-filters.md
+    sources:
+      - type: file
+        sourcePaths: ./PathFilter
+        filePattern: '*.php'
+        showTreeView: true
+
+  - description: Tree Building Utilities
+    outputPath: utilities/tree-builder.md
+    sources:
+      - type: file
+        sourcePaths: ./TreeBuilder
+        filePattern: '*.php'
+        showTreeView: true
+
+  - description: HTTP Client
+    outputPath: utilities/http-client.md
+    sources:
+      - type: file
+        sourcePaths: ./HttpClient
+        filePattern: '*.php'
+        showTreeView: true
+
+  - description: GitHub Client
+    outputPath: utilities/github-client.md
+    sources:
+      - type: file
+        sourcePaths:
+          - ./GithubClient
+          - ../GithubClientFactory.php
+        filePattern: '*.php'
+        showTreeView: true
+
+  - description: Variable System
+    outputPath: utilities/variable-system.md
+    sources:
+      - type: file
+        sourcePaths: ./Variable
+        filePattern: '*.php'
+        showTreeView: true
+
+  - description: Logging System
+    outputPath: utilities/logger.md
+    sources:
+      - type: file
+        sourcePaths: ./Logger
+        filePattern: '*.php'
+        showTreeView: true
+
+  - description: HTML Utilities
+    outputPath: utilities/html.md
+    sources:
+      - type: file
+        sourcePaths: ./Html
+        filePattern: '*.php'
+        showTreeView: true
