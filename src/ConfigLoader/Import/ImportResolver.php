@@ -6,6 +6,8 @@ namespace Butschster\ContextGenerator\ConfigLoader\Import;
 
 use Butschster\ContextGenerator\ConfigLoader\ConfigLoaderFactoryInterface;
 use Butschster\ContextGenerator\ConfigLoader\Exception\ConfigLoaderException;
+use Butschster\ContextGenerator\ConfigLoader\Import\PathPrefixer\DocumentOutputPathPrefixer;
+use Butschster\ContextGenerator\ConfigLoader\Import\PathPrefixer\SourcePathPrefixer;
 use Butschster\ContextGenerator\Directories;
 use Butschster\ContextGenerator\FilesInterface;
 use Psr\Log\LoggerInterface;
@@ -16,6 +18,8 @@ use Psr\Log\LoggerInterface;
 final readonly class ImportResolver
 {
     private WildcardPathFinder $pathFinder;
+    private DocumentOutputPathPrefixer $documentPrefixer;
+    private SourcePathPrefixer $sourcePrefixer;
 
     public function __construct(
         private Directories $dirs,
@@ -24,6 +28,8 @@ final readonly class ImportResolver
         private ?LoggerInterface $logger = null,
     ) {
         $this->pathFinder = new WildcardPathFinder($files, $logger);
+        $this->documentPrefixer = new DocumentOutputPathPrefixer();
+        $this->sourcePrefixer = new SourcePathPrefixer();
     }
 
     /**
@@ -98,7 +104,7 @@ final readonly class ImportResolver
         ImportConfig $importCfg,
         string $basePath,
         array &$parsedImports,
-        CircularImportDetector $detector,
+        CircularImportDetectorInterface $detector,
         array &$importedConfigs,
         array $importConfig,
     ): void {
@@ -131,7 +137,7 @@ final readonly class ImportResolver
 
             // Create a single import config for this match
             $singleImportCfg = new ImportConfig(
-                path: \ltrim(str_replace($this->dirs->rootPath, '', $matchingPath), '/'), // Use the actual file path
+                path: \ltrim(\str_replace($this->dirs->rootPath, '', $matchingPath), '/'), // Use the actual file path
                 absolutePath: $matchingPath, // The path finder returns absolute paths
                 pathPrefix: $importCfg->pathPrefix,
                 hasWildcard: false,
@@ -178,11 +184,11 @@ final readonly class ImportResolver
 
             // Apply path prefix for output document paths if specified
             if ($importCfg->pathPrefix !== null) {
-                $importedConfig = $this->applyPathPrefix($importedConfig, $importCfg->pathPrefix);
+                $importedConfig = $this->documentPrefixer->applyPrefix($importedConfig, $importCfg->pathPrefix);
             }
 
-            // Apply path prefix if specified
-            $importedConfig = $this->applySourcePathPrefix($importedConfig, $importCfg->configDirectory());
+            // Apply source path prefix
+            $importedConfig = $this->sourcePrefixer->applyPrefix($importedConfig, $importCfg->configDirectory());
 
             // Store for later merging
             $importedConfigs[] = $importedConfig;
@@ -237,108 +243,6 @@ final readonly class ImportResolver
                 previous: $e,
             );
         }
-    }
-
-    /**
-     * Apply path prefix to the output path of all documents
-     *
-     * The pathPrefix specifies a subdirectory to prepend to all document outputPath values
-     * in the imported configuration.
-     *
-     * Example:
-     * - Document has outputPath: 'docs/api.md'
-     * - Import has pathPrefix: 'api/v1'
-     * - Resulting outputPath: 'api/v1/docs/api.md'
-     *
-     * @param array $config The imported configuration
-     * @param string $pathPrefix The path prefix to apply
-     * @return array The modified configuration with path prefix applied to document outputPaths
-     */
-    private function applyPathPrefix(array $config, string $pathPrefix): array
-    {
-        // Apply to document outputPath values
-        if (isset($config['documents']) && \is_array($config['documents'])) {
-            foreach ($config['documents'] as &$document) {
-                if (isset($document['outputPath'])) {
-                    $document['outputPath'] = $this->combinePaths($pathPrefix, $document['outputPath']);
-                }
-            }
-        }
-
-        return $config;
-    }
-
-    /**
-     * Apply path prefix to relevant source paths
-     */
-    private function applySourcePathPrefix(array $config, string $pathPrefix): array
-    {
-        // Apply to documents array
-        if (isset($config['documents']) && \is_array($config['documents'])) {
-            foreach ($config['documents'] as &$document) {
-                if (isset($document['sources']) && \is_array($document['sources'])) {
-                    foreach ($document['sources'] as &$source) {
-                        $source = $this->applyPathPrefixToSource($source, $pathPrefix);
-                    }
-                }
-            }
-        }
-
-        return $config;
-    }
-
-    /**
-     * Apply path prefix to a source configuration
-     */
-    private function applyPathPrefixToSource(array $source, string $prefix): array
-    {
-        // Handle sourcePaths property
-        if (isset($source['sourcePaths'])) {
-            $source['sourcePaths'] = $this->applyPrefixToPaths($source['sourcePaths'], $prefix);
-        }
-
-        // Handle composerPath property (for composer source)
-        if (isset($source['composerPath']) && $source['type'] === 'composer') {
-            if (!\str_starts_with($source['composerPath'], '/')) {
-                $source['composerPath'] = $this->combinePaths($prefix, $source['composerPath']);
-            }
-        }
-
-        return $source;
-    }
-
-    /**
-     * Apply prefix to path(s)
-     */
-    private function applyPrefixToPaths(mixed $paths, string $prefix): mixed
-    {
-        if (\is_string($paths)) {
-            // Skip absolute paths
-            if (\str_starts_with($paths, '/')) {
-                return $paths;
-            }
-            return $this->combinePaths($prefix, $paths);
-        }
-
-        if (\is_array($paths)) {
-            $result = [];
-            foreach ($paths as $path) {
-                $result[] = $this->applyPrefixToPaths($path, $prefix);
-            }
-            return $result;
-        }
-
-        // If it's not a string or array, return as is
-        return $paths;
-    }
-
-
-    /**
-     * Combine two paths with a separator
-     */
-    private function combinePaths(string $prefix, string $path): string
-    {
-        return \rtrim($prefix, '/') . '/' . \ltrim($path, '/');
     }
 
     /**

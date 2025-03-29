@@ -6,7 +6,6 @@ namespace Tests\ConfigLoader\Import;
 
 use Butschster\ContextGenerator\ConfigLoader\ConfigLoaderFactoryInterface;
 use Butschster\ContextGenerator\ConfigLoader\ConfigLoaderInterface;
-use Butschster\ContextGenerator\ConfigLoader\Import\CircularImportDetector;
 use Butschster\ContextGenerator\ConfigLoader\Import\ImportResolver;
 use Butschster\ContextGenerator\Directories;
 use Butschster\ContextGenerator\FilesInterface;
@@ -299,7 +298,7 @@ class ImportResolverTest extends TestCase
      */
     private function loadFixture(string $filename): array
     {
-        $path = realpath(self::FIXTURES_DIR . '/' . $filename);
+        $path = \realpath(self::FIXTURES_DIR . '/' . $filename);
 
         if (!\file_exists($path)) {
             throw new \RuntimeException("Fixture file not found: {$path}");
