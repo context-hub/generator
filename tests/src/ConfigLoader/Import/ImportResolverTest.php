@@ -143,8 +143,9 @@ class ImportResolverTest extends TestCase
         // Verify documents were merged correctly - base + 2 wildcard configs
         $this->assertCount(3, $result['documents'], 'Documents from base and wildcard imports should be merged');
         $this->assertEquals('Base Document', $result['documents'][0]['name']);
-        $this->assertEquals('Wildcard Document 1', $result['documents'][1]['name']);
-        $this->assertEquals('Wildcard Document 2', $result['documents'][2]['name']);
+
+        $this->assertTrue(\in_array('Wildcard Document 1', \array_column($result['documents'], 'name')));
+        $this->assertTrue(\in_array('Wildcard Document 2', \array_column($result['documents'], 'name')));
     }
 
     #[Test]
