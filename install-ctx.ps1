@@ -254,9 +254,9 @@ if ($Version) {
 else {
     Write-Status "No version specified. Will install the latest version."
     Write-Host "`n      You can specify a different directory by running:" -ForegroundColor DarkGray
-    Write-Host "      .\install-ctx.ps1 C:\path\to\bin" -ForegroundColor DarkGray
+    Write-Host '      .\install-ctx.ps1 C:\path\to\bin' -ForegroundColor DarkGray
     Write-Host "      Specify a specific version with:" -ForegroundColor DarkGray
-    Write-Host "      .\install-ctx.ps1 -v v1.2.3 C:\path\to\bin" -ForegroundColor DarkGray
+    Write-Host '      .\install-ctx.ps1 -v v1.2.3 C:\path\to\bin' -ForegroundColor DarkGray
     Write-Host
 }
 
