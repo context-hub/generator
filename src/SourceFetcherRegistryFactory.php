@@ -13,7 +13,7 @@ use Butschster\ContextGenerator\Source\Composer\ComposerSourceFetcher;
 use Butschster\ContextGenerator\Source\Composer\Provider\CompositeComposerProvider;
 use Butschster\ContextGenerator\Source\Composer\Provider\LocalComposerProvider;
 use Butschster\ContextGenerator\Source\File\FileSourceFetcher;
-use Butschster\ContextGenerator\Source\GitDiff\CommitDiffSourceFetcher;
+use Butschster\ContextGenerator\Source\GitDiff\GitDiffSourceFetcher;
 use Butschster\ContextGenerator\Source\Github\GithubFinder;
 use Butschster\ContextGenerator\Source\Github\GithubSourceFetcher;
 use Butschster\ContextGenerator\Source\Text\TextSourceFetcher;
@@ -77,7 +77,7 @@ final readonly class SourceFetcherRegistryFactory
                     builderFactory: $this->contentBuilderFactory,
                     logger: $this->logger->withPrefix('github-source'),
                 ),
-                new CommitDiffSourceFetcher(
+                new GitDiffSourceFetcher(
                     builderFactory: $this->contentBuilderFactory,
                     logger: $this->logger->withPrefix('commit-diff-source'),
                 ),

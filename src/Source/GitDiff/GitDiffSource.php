@@ -6,12 +6,13 @@ namespace Butschster\ContextGenerator\Source\GitDiff;
 
 use Butschster\ContextGenerator\Fetcher\FilterableSourceInterface;
 use Butschster\ContextGenerator\Modifier\Modifier;
+use Butschster\ContextGenerator\Source\GitDiff\RenderStrategy\Config\RenderConfig;
 use Butschster\ContextGenerator\Source\SourceWithModifiers;
 
 /**
  * Source for git commit diffs with simplified commit range support
  */
-class CommitDiffSource extends SourceWithModifiers implements FilterableSourceInterface, \JsonSerializable
+class GitDiffSource extends SourceWithModifiers implements FilterableSourceInterface, \JsonSerializable
 {
     /**
      * @param string $repository Path to the git repository
@@ -22,7 +23,7 @@ class CommitDiffSource extends SourceWithModifiers implements FilterableSourceIn
      * @param string|array<string> $path Patterns to include only specific paths
      * @param string|array<string> $contains Patterns to include files containing specific content
      * @param string|array<string> $notContains Patterns to exclude files containing specific content
-     * @param bool $showStats Whether to show commit stats in output
+     * @param RenderConfig|null $renderConfig Configuration for rendering diffs
      * @param array<Modifier> $modifiers Identifiers for content modifiers to apply
      * @param array<non-empty-string> $tags
      */
@@ -35,7 +36,7 @@ class CommitDiffSource extends SourceWithModifiers implements FilterableSourceIn
         public readonly string|array $path = [],
         public readonly string|array $contains = [],
         public readonly string|array $notContains = [],
-        public readonly bool $showStats = true,
+        public readonly ?RenderConfig $renderConfig = null,
         array $modifiers = [],
         array $tags = [],
     ) {
@@ -78,6 +79,18 @@ class CommitDiffSource extends SourceWithModifiers implements FilterableSourceIn
             throw new \RuntimeException('commit must be a string');
         }
 
+        // Process render configuration - support both legacy and new options
+        $renderConfig = new RenderConfig();
+
+        // Check if we have a render property with sub-properties
+        if (isset($data['render'])) {
+            if (\is_array($data['render'])) {
+                $renderConfig = RenderConfig::fromArray($data['render']);
+            } elseif (\is_string($data['render'])) {
+                $renderConfig = RenderConfig::fromString($data['render']);
+            }
+        }
+
         return new self(
             repository: $repository,
             description: $data['description'] ?? '',
@@ -87,7 +100,7 @@ class CommitDiffSource extends SourceWithModifiers implements FilterableSourceIn
             path: $data['path'] ?? [],
             contains: $data['contains'] ?? [],
             notContains: $data['notContains'] ?? [],
-            showStats: $data['showStats'] ?? true,
+            renderConfig: $renderConfig,
             modifiers: $data['modifiers'] ?? [],
             tags: $data['tags'] ?? [],
         );
@@ -219,7 +232,7 @@ class CommitDiffSource extends SourceWithModifiers implements FilterableSourceIn
             'path' => $this->path,
             'contains' => $this->contains,
             'notContains' => $this->notContains,
-            'showStats' => $this->showStats,
+            'render' => $this->renderConfig,
         ], static fn($value) => $value !== null && $value !== '' && $value !== []);
     }
 }

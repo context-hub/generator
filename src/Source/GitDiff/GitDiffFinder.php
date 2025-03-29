@@ -17,30 +17,36 @@ use Butschster\ContextGenerator\Source\GitDiff\Fetcher\Source\StagedGitSource;
 use Butschster\ContextGenerator\Source\GitDiff\Fetcher\Source\StashGitSource;
 use Butschster\ContextGenerator\Source\GitDiff\Fetcher\Source\TimeRangeGitSource;
 use Butschster\ContextGenerator\Source\GitDiff\Fetcher\Source\UnstagedGitSource;
+use Butschster\ContextGenerator\Source\GitDiff\Git\GitClientInterface;
+use Butschster\ContextGenerator\Source\GitDiff\Git\GitClient;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 /**
  * Finder for git commit diffs
  *
  * This finder extracts diffs from git commits, stashes, and other sources and applies filters to them
  */
-final readonly class CommitDiffFinder implements FinderInterface
+final readonly class GitDiffFinder implements FinderInterface
 {
     private GitSourceFactory $sourceFactory;
 
     public function __construct(
+        private GitClientInterface $gitClient = new GitClient(),
+        private LoggerInterface $logger = new NullLogger(),
         private FileTreeBuilder $fileTreeBuilder = new FileTreeBuilder(),
         private CommitRangeParser $rangeParser = new CommitRangeParser(),
     ) {
         // Initialize the source factory with all available sources
         $this->sourceFactory = new GitSourceFactory([
-            new StashGitSource(),
-            new CommitGitSource(),
-            new StagedGitSource(),
-            new UnstagedGitSource(),
-            new TimeRangeGitSource(),
-            new FileAtCommitGitSource(),
+            new StashGitSource($gitClient, $logger),
+            new CommitGitSource($gitClient, $logger),
+            new StagedGitSource($gitClient, $logger),
+            new UnstagedGitSource($gitClient, $logger),
+            new TimeRangeGitSource($gitClient, $logger),
+            new FileAtCommitGitSource($gitClient, $logger),
         ]);
     }
 
@@ -53,21 +59,29 @@ final readonly class CommitDiffFinder implements FinderInterface
      */
     public function find(FilterableSourceInterface $source, string $basePath = '', array $options = []): FinderResult
     {
-        if (!$source instanceof CommitDiffSource) {
+        if (!$source instanceof GitDiffSource) {
             throw new \InvalidArgumentException('Source must be an instance of CommitDiffSource');
         }
 
-        // Ensure the repository exists
-        if (!\is_dir($source->repository)) {
-            throw new \RuntimeException(\sprintf('Git repository "%s" does not exist', $source->repository));
+        // Validate repository
+        if (!$this->gitClient->isValidRepository($source->repository)) {
+            throw new \RuntimeException(\sprintf('"%s" is not a valid Git repository', $source->repository));
         }
 
         // Get the commit range from the source
         $commitRange = $this->rangeParser->resolve($source->commit);
 
-        // Resolve the commit reference using the range parser
+        $this->logger->debug('Resolved commit range', [
+            'original' => $source->commit,
+            'resolved' => $commitRange,
+        ]);
+
         // Get the appropriate Git source for this commit range
         $gitSource = $this->sourceFactory->create($commitRange);
+
+        $this->logger->debug('Selected Git source', [
+            'source' => $gitSource::class,
+        ]);
 
         // Create a temporary directory for the diffs
         $tempDir = \sys_get_temp_dir() . '/git-diff-' . \uniqid();
@@ -75,14 +89,26 @@ final readonly class CommitDiffFinder implements FinderInterface
 
         try {
             // Get file infos from the Git source
+            $this->logger->debug('Getting file infos from Git source');
             $fileInfos = $gitSource->createFileInfos($source->repository, $commitRange, $tempDir);
 
             if (empty($fileInfos)) {
+                $this->logger->info('No changes found for the commit range', [
+                    'commitRange' => $commitRange,
+                ]);
                 return new FinderResult([], 'No changes found');
             }
 
+            $this->logger->debug('Found files', [
+                'count' => \count($fileInfos),
+            ]);
+
             // Apply filters if needed
             $fileInfos = $this->applyFilters($fileInfos, $source, $tempDir);
+
+            $this->logger->debug('After applying filters', [
+                'count' => \count($fileInfos),
+            ]);
 
             // Get file paths for tree view
             $filePaths = \array_map(
@@ -96,6 +122,12 @@ final readonly class CommitDiffFinder implements FinderInterface
             $treeView = $this->generateTreeView($filePaths, $gitSource, $commitRange, $options);
 
             return new FinderResult(\array_values($fileInfos), $treeView);
+        } catch (\Throwable $e) {
+            $this->logger->error('Error finding git diffs', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
         } finally {
             // Clean up the temporary directory
             $this->removeDirectory($tempDir);
@@ -113,6 +145,15 @@ final readonly class CommitDiffFinder implements FinderInterface
         if (empty($fileInfos)) {
             return [];
         }
+
+        $this->logger->debug('Applying filters to file infos', [
+            'fileCount' => \count($fileInfos),
+            'name' => $source->name(),
+            'path' => $source->path(),
+            'notPath' => $source->notPath(),
+            'contains' => $source->contains(),
+            'notContains' => $source->notContains(),
+        ]);
 
         $finder = new Finder();
         $finder->in($tempDir);
@@ -150,10 +191,17 @@ final readonly class CommitDiffFinder implements FinderInterface
         }
 
         // Filter the file infos
-        return \array_filter($fileInfos, static function (SplFileInfo $fileInfo) use ($filteredPaths, $tempDir) {
+        $filtered = \array_filter($fileInfos, static function (SplFileInfo $fileInfo) use ($filteredPaths, $tempDir) {
             $relativePath = \str_replace($tempDir . '/', '', $fileInfo->getPathname());
             return isset($filteredPaths[$relativePath]);
         });
+
+        $this->logger->debug('Filter results', [
+            'originalCount' => \count($fileInfos),
+            'filteredCount' => \count($filtered),
+        ]);
+
+        return $filtered;
     }
 
     /**

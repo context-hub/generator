@@ -37,7 +37,11 @@ final readonly class ListResourcesAction
 
         foreach ($documents->getItems() as $document) {
             $resources[] = new Resource(
-                name: $document->outputPath,
+                name: \sprintf(
+                    '[%s] %s',
+                    $document->outputPath,
+                    $document->description,
+                ),
                 uri: 'ctx://document/' . $document->outputPath,
                 description: \sprintf(
                     '%s. Tags: %s',

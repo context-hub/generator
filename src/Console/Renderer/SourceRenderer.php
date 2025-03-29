@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Console\Renderer;
 
 use Butschster\ContextGenerator\Source\File\FileSource;
-use Butschster\ContextGenerator\Source\GitDiff\CommitDiffSource;
+use Butschster\ContextGenerator\Source\GitDiff\GitDiffSource;
 use Butschster\ContextGenerator\Source\Github\GithubSource;
 use Butschster\ContextGenerator\Source\Text\TextSource;
 use Butschster\ContextGenerator\Source\Url\UrlSource;
@@ -26,7 +26,7 @@ final class SourceRenderer
             return $this->renderGithubSource($source);
         }
 
-        if ($source instanceof CommitDiffSource) {
+        if ($source instanceof GitDiffSource) {
             return $this->renderGitDiffSource($source);
         }
 
@@ -148,7 +148,7 @@ final class SourceRenderer
         return $output;
     }
 
-    private function renderGitDiffSource(CommitDiffSource $source): string
+    private function renderGitDiffSource(GitDiffSource $source): string
     {
         $output = Style::title("Git Diff Source") . "\n";
         $output .= Style::separator('=', 14) . "\n";
@@ -177,7 +177,7 @@ final class SourceRenderer
             $output .= Style::keyValue("Content Not Contains", $source->notContains) . "\n";
         }
 
-        $output .= Style::keyValue("Show Stats", $source->showStats) . "\n";
+        $output .= Style::keyValue("Show Stats", $source->renderConfig->showStats) . "\n";
 
         if (!empty($source->modifiers)) {
             $output .= "\n" . Style::property("Modifiers") . ": " . Style::count(\count($source->modifiers)) . "\n";

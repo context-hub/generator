@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\McpServer;
 
 use Butschster\ContextGenerator\McpServer\Action\Prompts\AvailableContextPromptAction;
+use Butschster\ContextGenerator\McpServer\Action\Prompts\FilesystemOperationsAction;
 use Butschster\ContextGenerator\McpServer\Action\Prompts\ListPromptsAction;
 use Butschster\ContextGenerator\McpServer\Action\Prompts\ProjectStructurePromptAction;
 use Butschster\ContextGenerator\McpServer\Action\Resources\GetDocumentContentResourceAction;
@@ -41,6 +42,7 @@ final readonly class ServerFactory
             // Prompts controllers
             AvailableContextPromptAction::class,
             ProjectStructurePromptAction::class,
+            FilesystemOperationsAction::class,
             ListPromptsAction::class,
 
             // Resources controllers
