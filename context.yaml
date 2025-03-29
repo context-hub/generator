@@ -132,27 +132,3 @@ documents:
     sources:
       - type: git_diff
         commit: unstaged
-
-  - description: Import documents docs
-    outputPath: docs/import-docs.md
-    sources:
-      - type: file
-        sourcePaths:
-          - src/ConfigLoader/Import
-          - tests/src/ConfigLoader/Import
-          - tests/fixtures/ConfigLoader
-        showTreeView: true
-
-  - description: Directories using
-    outputPath: docs/dirs.md
-    modifiers:
-      - name: php-content-filter
-        options:
-          keep_doc_comments: false
-    sources:
-      - type: file
-        sourcePaths:
-          - src
-        showTreeView: true
-        contains:
-          - Directories
