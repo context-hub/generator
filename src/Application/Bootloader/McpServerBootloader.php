@@ -34,7 +34,6 @@ use Spiral\Boot\Bootloader\Bootloader;
 use Spiral\Boot\EnvironmentInterface;
 use Spiral\Config\ConfiguratorInterface;
 use Spiral\Core\BinderInterface;
-use Spiral\Core\ScopeInterface;
 
 final class McpServerBootloader extends Bootloader
 {

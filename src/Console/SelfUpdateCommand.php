@@ -13,7 +13,6 @@ use Spiral\Files\Exception\FilesException;
 use Spiral\Files\FilesInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputOption;
 
 #[AsCommand(
     name: 'self-update',
