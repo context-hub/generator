@@ -31,6 +31,7 @@ abstract class BaseCommand extends Command implements LoggerAwareInterface
             ->bindSingleton(LoggerInterface::class, $logger);
     }
 
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         \assert($output instanceof SymfonyStyle);

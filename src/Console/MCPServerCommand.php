@@ -103,7 +103,7 @@ final class MCPServerCommand extends BaseCommand
                             LoggerInterface::class => $this->logger,
                         ],
                     ),
-                    scope: static function (Container $container) use ($app) {
+                    scope: static function (Container $container) use ($app): void {
                         $server = $container->get(ServerFactory::class)->create();
 
                         // Create and run the MCP server

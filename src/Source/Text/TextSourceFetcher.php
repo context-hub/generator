@@ -11,7 +11,6 @@ use Butschster\ContextGenerator\Modifier\ModifiersApplierInterface;
 use Butschster\ContextGenerator\Source\Fetcher\SourceFetcherInterface;
 use Butschster\ContextGenerator\Source\SourceInterface;
 use Psr\Log\LoggerInterface;
-use Spiral\Core\Attribute\Scope;
 
 /**
  * Fetcher for text sources

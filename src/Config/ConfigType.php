@@ -32,4 +32,3 @@ enum ConfigType: string
         };
     }
 }
-
