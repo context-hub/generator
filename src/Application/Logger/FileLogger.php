@@ -17,7 +17,6 @@ final class FileLogger extends Logger implements HasPrefixLoggerInterface
     /**
      * @param non-empty-string $name
      * @param non-empty-string $filePath
-     * @param Level $level
      */
     public function __construct(string $name, string $filePath, Level $level)
     {
