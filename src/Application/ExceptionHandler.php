@@ -13,7 +13,6 @@ use Spiral\Exceptions\ExceptionHandlerInterface;
 use Spiral\Exceptions\ExceptionRendererInterface;
 use Spiral\Exceptions\ExceptionReporterInterface;
 use Spiral\Exceptions\Renderer\ConsoleRenderer;
-use Spiral\Exceptions\Renderer\PlainRenderer;
 use Spiral\Exceptions\Verbosity;
 
 final class ExceptionHandler implements ExceptionHandlerInterface, LoggerAwareInterface
