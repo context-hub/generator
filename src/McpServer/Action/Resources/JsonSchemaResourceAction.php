@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\McpServer\Action\Resources;
 
 use Butschster\ContextGenerator\Directories;
-use Butschster\ContextGenerator\FilesInterface;
 use Butschster\ContextGenerator\McpServer\Attribute\Resource;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Get;
 use Mcp\Types\ReadResourceResult;
 use Mcp\Types\TextResourceContents;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
+use Spiral\Files\FilesInterface;
 
 #[Resource(
     name: 'Json Schema of context generator',

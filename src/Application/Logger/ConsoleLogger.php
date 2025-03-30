@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Lib\Logger;
+namespace Butschster\ContextGenerator\Application\Logger;
 
 use Psr\Log\AbstractLogger;
 use Psr\Log\LogLevel as PsrLogLevel;

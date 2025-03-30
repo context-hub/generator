@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\ConfigLoader\Reader;
 
 use Butschster\ContextGenerator\ConfigLoader\Exception\ReaderException;
-use Butschster\ContextGenerator\FilesInterface;
 use Psr\Log\LoggerInterface;
+use Spiral\Files\FilesInterface;
 
 /**
  * Base class for configuration readers

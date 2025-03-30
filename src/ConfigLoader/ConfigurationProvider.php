@@ -6,8 +6,8 @@ namespace Butschster\ContextGenerator\ConfigLoader;
 
 use Butschster\ContextGenerator\ConfigLoader\Exception\ConfigLoaderException;
 use Butschster\ContextGenerator\Directories;
-use Butschster\ContextGenerator\FilesInterface;
 use Psr\Log\LoggerInterface;
+use Spiral\Files\FilesInterface;
 
 /**
  * Service for providing configuration loaders based on different sources

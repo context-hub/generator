@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Console;
 
+use Butschster\ContextGenerator\Application\Application;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 use Butschster\ContextGenerator\Lib\HttpClient\Exception\HttpException;
 use Spiral\Core\Container;
@@ -24,7 +25,7 @@ final class VersionCommand extends BaseCommand
 
     public function __construct(
         Container $container,
-        private readonly string $version,
+        private readonly Application $app,
         private readonly HttpClientInterface $httpClient,
     ) {
         parent::__construct($container);
@@ -32,8 +33,8 @@ final class VersionCommand extends BaseCommand
 
     public function __invoke(): int
     {
-        $this->output->title('Context Generator');
-        $this->output->text('Current version: ' . $this->version);
+        $this->output->title($this->app->name);
+        $this->output->text('Current version: ' . $this->app->version);
 
         $checkUpdates = $this->input->getOption('check-updates');
 
@@ -43,7 +44,7 @@ final class VersionCommand extends BaseCommand
 
             try {
                 $latestVersion = $this->fetchLatestVersion();
-                $isUpdateAvailable = $this->isUpdateAvailable($this->version, $latestVersion);
+                $isUpdateAvailable = $this->isUpdateAvailable($this->app->version, $latestVersion);
 
                 if ($isUpdateAvailable) {
                     $this->output->success("A new version is available: {$latestVersion}");
@@ -56,7 +57,7 @@ final class VersionCommand extends BaseCommand
                         '- Download from: https://github.com/context-hub/generator/releases/download/' . $latestVersion . '/context-generator.phar',
                     ]);
                 } else {
-                    $this->output->success("You're using the latest version ({$this->version})");
+                    $this->output->success("You're using the latest version ({$this->app->version})");
                 }
             } catch (HttpException $e) {
                 $this->output->error("Failed to check for updates: {$e->getMessage()}");

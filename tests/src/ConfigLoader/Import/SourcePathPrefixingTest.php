@@ -9,11 +9,11 @@ use Butschster\ContextGenerator\ConfigLoader\ConfigLoaderInterface;
 use Butschster\ContextGenerator\ConfigLoader\Import\ImportResolver;
 use Butschster\ContextGenerator\ConfigLoader\Import\PathPrefixer\SourcePathPrefixer;
 use Butschster\ContextGenerator\Directories;
-use Butschster\ContextGenerator\FilesInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use Spiral\Files\FilesInterface;
 
 /**
  * Tests specific functionality of source path prefixing in the ImportResolver

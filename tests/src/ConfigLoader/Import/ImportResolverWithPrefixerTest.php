@@ -8,11 +8,11 @@ use Butschster\ContextGenerator\ConfigLoader\ConfigLoaderFactoryInterface;
 use Butschster\ContextGenerator\ConfigLoader\ConfigLoaderInterface;
 use Butschster\ContextGenerator\ConfigLoader\Import\ImportResolver;
 use Butschster\ContextGenerator\Directories;
-use Butschster\ContextGenerator\FilesInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use Spiral\Files\FilesInterface;
 
 /**
  * Test specific functionality of the updated ImportResolver that uses path prefixers

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator;
 
-use Butschster\ContextGenerator\Lib\Logger\HasPrefixLoggerInterface;
+use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
 use Butschster\ContextGenerator\Lib\Variable\Provider\CompositeVariableProvider;
 use Butschster\ContextGenerator\Lib\Variable\Provider\DotEnvVariableProvider;
 use Butschster\ContextGenerator\Lib\Variable\Provider\PredefinedVariableProvider;

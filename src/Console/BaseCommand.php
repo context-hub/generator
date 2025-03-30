@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Console;
 
-use Butschster\ContextGenerator\Lib\Logger\HasPrefixLoggerInterface;
-use Butschster\ContextGenerator\Lib\Logger\LoggerFactory;
+use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
+use Butschster\ContextGenerator\Application\Logger\LoggerFactory;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;

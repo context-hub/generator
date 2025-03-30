@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\ConfigLoader\Import;
 
-use Butschster\ContextGenerator\FilesInterface;
 use Psr\Log\LoggerInterface;
+use Spiral\Files\FilesInterface;
 use Symfony\Component\Finder\Finder;
 
 /**

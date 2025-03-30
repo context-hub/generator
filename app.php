@@ -4,44 +4,16 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator;
 
-use Butschster\ContextGenerator\ConfigLoader\Parser\ParserPluginRegistry;
-use Butschster\ContextGenerator\Console\DisplayCommand;
-use Butschster\ContextGenerator\Console\GenerateCommand;
-use Butschster\ContextGenerator\Console\InitCommand;
-use Butschster\ContextGenerator\Console\MCPServerCommand;
-use Butschster\ContextGenerator\Console\SchemaCommand;
-use Butschster\ContextGenerator\Console\SelfUpdateCommand;
-use Butschster\ContextGenerator\Console\VersionCommand;
-use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
-use Butschster\ContextGenerator\Lib\Content\Renderer\MarkdownRenderer;
-use Butschster\ContextGenerator\Lib\Content\Renderer\RendererInterface;
-use Butschster\ContextGenerator\Lib\Files;
-use Butschster\ContextGenerator\Lib\GithubClient\GithubClientInterface;
-use Butschster\ContextGenerator\Lib\HttpClient\HttpClientFactory;
-use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
-use Butschster\ContextGenerator\Lib\Logger\ConsoleLogger;
-use Butschster\ContextGenerator\Lib\Logger\LoggerFactory;
-use Butschster\ContextGenerator\McpServer\Registry\McpItemsRegistry;
-use Butschster\ContextGenerator\McpServer\Routing\McpResponseStrategy;
-use Butschster\ContextGenerator\McpServer\Routing\RouteRegistrar;
-use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
-use GuzzleHttp\Client;
-use GuzzleHttp\Psr7\HttpFactory;
-use League\Route\Router;
-use League\Route\Strategy\StrategyInterface;
-use Monolog\ErrorHandler;
-use Psr\Container\ContainerInterface;
+use Butschster\ContextGenerator\Application\Application;
+use Butschster\ContextGenerator\Application\ExceptionHandler;
+use Butschster\ContextGenerator\Application\Kernel;
 use Spiral\Core\Container;
-use Symfony\Component\Console\Application;
-use Symfony\Component\Console\Input\ArgvInput;
-use Symfony\Component\Console\Output\ConsoleOutput;
-use Symfony\Component\Console\Style\SymfonyStyle;
 
 // -----------------------------------------------------------------------------
 //  Prepare Global Environment
 // -----------------------------------------------------------------------------
-
-\error_reporting(E_ERROR);
+\mb_internal_encoding('UTF-8');
+\error_reporting((E_ALL | E_STRICT) ^ E_DEPRECATED);
 
 
 // -----------------------------------------------------------------------------
@@ -53,9 +25,6 @@ if (!\in_array(PHP_SAPI, ['cli', 'phpdbg', 'embed', 'micro'], true)) {
 
     exit(1);
 }
-
-
-$insidePhar = \str_starts_with(__FILE__, 'phar://');
 
 
 // -----------------------------------------------------------------------------
@@ -88,24 +57,16 @@ $vendorPath = (static function (): string {
 
 
 // -----------------------------------------------------------------------------
-//  Execute An Application
+//  Initialize Shared Container
 // -----------------------------------------------------------------------------
 
-$application = new Application();
-$application->setDefaultCommand('generate');
-
-$input = new ArgvInput();
-$output = new SymfonyStyle($input, new ConsoleOutput());
-
-$errorHandler = new ErrorHandler(new ConsoleLogger($output));
-$errorHandler->registerExceptionHandler();
-$errorHandler->registerErrorHandler();
-$errorHandler->registerFatalHandler();
-
+$insidePhar = \str_starts_with(__FILE__, 'phar://');
 $vendorPath = \dirname($vendorPath) . '/../';
 $versionFile = $vendorPath . '/version.json';
 $appPath = \realpath($vendorPath);
-
+if ($insidePhar) {
+    $appPath = \getcwd();
+}
 $version = \file_exists($versionFile)
     ? \json_decode(\file_get_contents($versionFile), true)
     : [
@@ -115,91 +76,34 @@ $version = \file_exists($versionFile)
 
 $type = $version['type'] ?? 'phar';
 
-if ($insidePhar) {
-    $appPath = \getcwd();
-}
-
 $container = new Container();
 $container->bindSingleton(
-    Directories::class,
-    new Directories(
-        rootPath: $appPath,
-        outputPath: $appPath . '/.context',
-        configPath: $appPath,
-        jsonSchemaPath: __DIR__ . '/json-schema.json',
+    Application::class,
+    new Application(
+        version: $version['version'] ?? 'dev',
+        name: 'Context Generator',
+        isBinary: $type !== 'phar',
     ),
 );
 
-$container->bindSingleton(ParserPluginRegistry::class, static fn() => ParserPluginRegistry::createDefault());
-$container->bindSingleton(ConfigurationProviderFactory::class, ConfigurationProviderFactory::class);
-$container->bindSingleton(FilesInterface::class, Files::class);
-$container->bindSingleton(StrategyInterface::class, McpResponseStrategy::class);
-$container->bindSingleton(
-    SourceModifierRegistry::class,
-    static fn(ModifierRegistryFactory $factory) => $factory->create(),
-);
-$container->bindSingleton(
-    HttpClientInterface::class,
-    static function (Client $httpClient, HttpFactory $httpMessageFactory) {
-        return HttpClientFactory::create(
-            $httpClient,
-            $httpMessageFactory,
-        );
-    },
-);
-$container->bindSingleton(RendererInterface::class, MarkdownRenderer::class);
-$container->bindSingleton(ContentBuilderFactory::class, ContentBuilderFactory::class);
-$container->bindSingleton(
-    GithubClientInterface::class,
-    static fn(HttpClientInterface $httpClient) => new GithubClientFactory(
-        httpClient: $httpClient,
-        defaultToken: \getenv('GITHUB_TOKEN') ?: null,
-    ),
-);
+// -----------------------------------------------------------------------------
+//  Execute Application
+// -----------------------------------------------------------------------------
 
-$container->bindSingleton(LoggerFactory::class, LoggerFactory::class);
-$container->bindSingleton(Router::class, static function (StrategyInterface $strategy, ContainerInterface $container) {
-    $router = new Router();
-    $strategy->setContainer($container);
-    $router->setStrategy($strategy);
+$app = Kernel::create(
+    directories: [
+        'root' => $appPath,
+        'output' => $appPath . '/.context',
+        'config' => $appPath,
+        'json-schema' => __DIR__ . '/json-schema.json',
+    ],
+    exceptionHandler: new ExceptionHandler(),
+    container: $container,
+)->run();
 
-    return $router;
-});
-$container->bindSingleton(RouteRegistrar::class, RouteRegistrar::class);
-$container->bindSingleton(McpItemsRegistry::class, McpItemsRegistry::class);
+if ($app === null) {
+    exit(255);
+}
 
-// Register all commands
-$application->add(
-    $container->make(VersionCommand::class, [
-        'version' => $version['version'] ?? 'dev',
-    ]),
-);
-
-$application->add(
-    $container->make(InitCommand::class),
-);
-
-$application->add(
-    $container->make(SchemaCommand::class),
-);
-
-$application->add(
-    $container->make(SelfUpdateCommand::class, [
-        'version' => $version['version'] ?? 'dev',
-        'binaryType' => $type,
-    ]),
-);
-
-$application->add(
-    $container->make(GenerateCommand::class),
-);
-
-$application->add(
-    $container->make(DisplayCommand::class),
-);
-
-$application->add(
-    $container->make(MCPServerCommand::class),
-);
-
-$application->run($input, $output);
+$code = (int) $app->serve();
+exit($code);

@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Tests\ConfigLoader\Import;
 
 use Butschster\ContextGenerator\ConfigLoader\Import\WildcardPathFinder;
-use Butschster\ContextGenerator\FilesInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\MockObject\MockObject;
+use Spiral\Files\FilesInterface;
 
 #[CoversClass(WildcardPathFinder::class)]
 final class WildcardPathFinderTest extends TestCase

@@ -9,8 +9,8 @@ use Butschster\ContextGenerator\ConfigLoader\Exception\ConfigLoaderException;
 use Butschster\ContextGenerator\ConfigLoader\Import\PathPrefixer\DocumentOutputPathPrefixer;
 use Butschster\ContextGenerator\ConfigLoader\Import\PathPrefixer\SourcePathPrefixer;
 use Butschster\ContextGenerator\Directories;
-use Butschster\ContextGenerator\FilesInterface;
 use Psr\Log\LoggerInterface;
+use Spiral\Files\FilesInterface;
 
 /**
  * Resolves import directives in configuration files

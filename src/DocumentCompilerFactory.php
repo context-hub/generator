@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator;
 
+use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
-use Butschster\ContextGenerator\Lib\Logger\HasPrefixLoggerInterface;
 use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
+use Spiral\Files\FilesInterface;
 
 final readonly class DocumentCompilerFactory
 {

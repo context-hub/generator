@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Lib\Logger;
+namespace Butschster\ContextGenerator\Application\Logger;
 
 /**
  * Interface for log message formatters.

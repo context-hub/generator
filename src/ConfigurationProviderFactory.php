@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator;
 
+use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
 use Butschster\ContextGenerator\ConfigLoader\ConfigLoaderFactory;
 use Butschster\ContextGenerator\ConfigLoader\ConfigurationProvider;
 use Butschster\ContextGenerator\ConfigLoader\Parser\ParserPluginRegistry;
-use Butschster\ContextGenerator\Lib\Logger\HasPrefixLoggerInterface;
+use Spiral\Files\FilesInterface;
 
 final readonly class ConfigurationProviderFactory
 {

@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Console;
 
-use Butschster\ContextGenerator\FilesInterface;
+use Butschster\ContextGenerator\Application\Application;
 use Butschster\ContextGenerator\Lib\HttpClient\Exception\HttpException;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 use Spiral\Core\Container;
+use Spiral\Files\FilesInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputOption;
@@ -33,10 +34,9 @@ final class SelfUpdateCommand extends BaseCommand
 
     public function __construct(
         Container $container,
-        private readonly string $version,
+        private readonly Application $app,
         private readonly HttpClientInterface $httpClient,
         private readonly FilesInterface $files,
-        private readonly string $binaryType = 'phar',
     ) {
         parent::__construct($container);
     }
@@ -60,16 +60,17 @@ final class SelfUpdateCommand extends BaseCommand
             return Command::FAILURE;
         }
 
-        $this->output->text('Current version: ' . $this->version);
+        $this->output->title($this->app->name);
+        $this->output->text('Current version: ' . $this->app->version);
         $this->output->section('Checking for updates...');
 
         try {
             // Fetch and compare versions
             $latestVersion = $this->fetchLatestVersion();
-            $isUpdateAvailable = $this->isUpdateAvailable($this->version, $latestVersion);
+            $isUpdateAvailable = $this->isUpdateAvailable($this->app->version, $latestVersion);
 
             if (!$isUpdateAvailable) {
-                $this->output->success("You're already using the latest version ({$this->version})");
+                $this->output->success("You're already using the latest version ({$this->app->version})");
                 return Command::SUCCESS;
             }
 
@@ -114,7 +115,7 @@ final class SelfUpdateCommand extends BaseCommand
                 shortcut: 't',
                 mode: InputOption::VALUE_REQUIRED,
                 description: 'Binary type (phar or bin)',
-                default: $this->binaryType,
+                default: $this->app->isBinary ? 'bin' : 'phar',
             );
     }
 

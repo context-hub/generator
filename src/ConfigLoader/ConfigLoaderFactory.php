@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\ConfigLoader;
 
+use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
 use Butschster\ContextGenerator\ConfigLoader\Exception\ConfigLoaderException;
 use Butschster\ContextGenerator\ConfigLoader\Import\ImportResolver;
 use Butschster\ContextGenerator\ConfigLoader\Parser\CompositeConfigParser;
@@ -14,9 +15,8 @@ use Butschster\ContextGenerator\ConfigLoader\Reader\PhpReader;
 use Butschster\ContextGenerator\ConfigLoader\Reader\StringJsonReader;
 use Butschster\ContextGenerator\ConfigLoader\Reader\YamlReader;
 use Butschster\ContextGenerator\Directories;
-use Butschster\ContextGenerator\FilesInterface;
-use Butschster\ContextGenerator\Lib\Logger\HasPrefixLoggerInterface;
 use Psr\Log\LoggerInterface;
+use Spiral\Files\FilesInterface;
 
 /**
  * Factory for creating config loaders
