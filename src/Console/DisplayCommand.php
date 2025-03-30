@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Console;
 
-use Butschster\ContextGenerator\Directories;
-use Butschster\ContextGenerator\ConfigLoader\Exception\ConfigLoaderException;
-use Butschster\ContextGenerator\ConfigurationProviderFactory;
+use Butschster\ContextGenerator\Config\ConfigurationProvider;
+use Butschster\ContextGenerator\Config\Exception\ConfigLoaderException;
 use Butschster\ContextGenerator\Console\Renderer\DocumentRenderer;
 use Butschster\ContextGenerator\Console\Renderer\Style;
+use Butschster\ContextGenerator\Directories;
+use Spiral\Console\Attribute\Option;
 use Spiral\Core\Container;
+use Spiral\Core\Scope;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputOption;
 
 #[AsCommand(
     name: 'display',
@@ -20,99 +21,90 @@ use Symfony\Component\Console\Input\InputOption;
 )]
 final class DisplayCommand extends BaseCommand
 {
-    public function __construct(
-        Container $container,
-        private readonly Directories $dirs,
-    ) {
-        parent::__construct($container);
-    }
+    #[Option(
+        name: 'inline',
+        shortcut: 'i',
+        description: 'Inline JSON configuration string. If provided, file-based configuration will be ignored',
+    )]
+    protected ?string $inlineJson = null;
+
+    #[Option(
+        name: 'config-file',
+        shortcut: 'c',
+        description: 'Path to configuration file (absolute or relative to current directory).',
+    )]
+    protected ?string $configPath = null;
 
     public function __invoke(
-        ConfigurationProviderFactory $configurationProviderFactory,
+        Container $container,
+        Directories $dirs,
         DocumentRenderer $renderer,
     ): int {
-        // Get the configuration options
-        $inlineConfig = $this->input->getOption('inline');
-        $configPath = $this->input->getOption('config-file');
+        $dirs = $dirs
+            ->determineRootPath($this->configPath, $this->inlineJson);
 
-        // Create configuration provider
-        $configProvider = $configurationProviderFactory->create($this->dirs);
+        return $container->runScope(
+            bindings: new Scope(
+                name: 'compiler',
+                bindings: [
+                    Directories::class => $dirs,
+                ],
+            ),
+            scope: function (Container $container) use ($dirs, $renderer) {
+                $configProvider = $container->get(ConfigurationProvider::class);
 
-        try {
-            // Get the appropriate loader based on options provided
-            if ($inlineConfig !== null) {
-                $this->output->info('Using inline JSON configuration...');
-                $loader = $configProvider->fromString($inlineConfig);
-            } elseif ($configPath !== null) {
-                $this->output->info(\sprintf('Loading configuration from %s...', $configPath));
-                $loader = $configProvider->fromPath($configPath);
-            } else {
-                $this->output->info('Loading configuration from default location...');
-                $loader = $configProvider->fromDefaultLocation();
-            }
-        } catch (ConfigLoaderException $e) {
-            $this->logger->error('Failed to load configuration', [
-                'error' => $e->getMessage(),
-            ]);
+                try {
+                    // Get the appropriate loader based on options provided
+                    if ($this->inlineJson !== null) {
+                        $this->output->info('Using inline JSON configuration...');
+                        $loader = $configProvider->fromString($this->inlineJson);
+                    } elseif ($this->configPath !== null) {
+                        $this->output->info(\sprintf('Loading configuration from %s...', $this->configPath));
+                        $loader = $configProvider->fromPath($this->configPath);
+                    } else {
+                        $this->output->info('Loading configuration from default location...');
+                        $loader = $configProvider->fromDefaultLocation();
+                    }
+                } catch (ConfigLoaderException $e) {
+                    $this->logger->error('Failed to load configuration', [
+                        'error' => $e->getMessage(),
+                    ]);
 
-            $this->output->error(\sprintf('Failed to load configuration: %s', $e->getMessage()));
+                    $this->output->error(\sprintf('Failed to load configuration: %s', $e->getMessage()));
 
-            return Command::FAILURE;
-        }
+                    return Command::FAILURE;
+                }
 
-        try {
-            // Load the document registry
-            $registry = $loader->load();
+                try {
+                    // Load the document registry
+                    $registry = $loader->load();
 
-            $title = "Context: {$this->dirs->rootPath}";
+                    $title = "Context: {$dirs->rootPath}";
 
-            $this->output->writeln("\n" . Style::header($title));
-            $this->output->writeln(Style::separator('=', \strlen($title)) . "\n");
-            $documents = $registry->getItems();
-            $this->output->writeln(
-                Style::property("Total documents") . ": " . Style::count(\count($documents)) . "\n\n",
-            );
+                    $this->output->writeln("\n" . Style::header($title));
+                    $this->output->writeln(Style::separator('=', \strlen($title)) . "\n");
+                    $documents = $registry->getItems();
+                    $this->output->writeln(
+                        Style::property("Total documents") . ": " . Style::count(\count($documents)) . "\n\n",
+                    );
 
-            foreach ($documents as $index => $document) {
-                /** @psalm-suppress InvalidOperand */
-                $this->output->writeln(
-                    Style::header("Document") . " " . Style::itemNumber($index + 1, \count($documents)) . ":",
-                );
-                $this->output->writeln(Style::separator('=', \strlen($title)) . "\n");
-                $this->output->writeln(Style::indent($renderer->renderDocument($document)));
-                $this->output->writeln("");
-            }
+                    foreach ($documents as $index => $document) {
+                        /** @psalm-suppress InvalidOperand */
+                        $this->output->writeln(
+                            Style::header("Document") . " " . Style::itemNumber($index + 1, \count($documents)) . ":",
+                        );
+                        $this->output->writeln(Style::separator('=', \strlen($title)) . "\n");
+                        $this->output->writeln(Style::indent($renderer->renderDocument($document)));
+                        $this->output->writeln("");
+                    }
 
-            return Command::SUCCESS;
-        } catch (\Exception $e) {
-            $this->output->error(\sprintf("Error displaying configuration: %s", $e->getMessage()));
+                    return Command::SUCCESS;
+                } catch (\Exception $e) {
+                    $this->output->error(\sprintf("Error displaying configuration: %s", $e->getMessage()));
 
-            return Command::FAILURE;
-        }
-    }
-
-    protected function configure(): void
-    {
-        $this
-            ->addOption(
-                'github-token',
-                't',
-                InputOption::VALUE_OPTIONAL,
-                'GitHub token for authentication',
-                \getenv('GITHUB_TOKEN') ?: null,
-            )
-            ->addOption(
-                'inline',
-                'i',
-                InputOption::VALUE_REQUIRED,
-                'Inline JSON configuration string. If provided, file-based configuration will be ignored',
-            )
-            ->addOption(
-                'config-file',
-                'c',
-                InputOption::VALUE_REQUIRED,
-                'Path to configuration file (absolute or relative to current directory).',
-            )
-            ->setHelp('This command displays the context configuration in a human-readable format');
+                    return Command::FAILURE;
+                }
+            },
+        );
     }
 }

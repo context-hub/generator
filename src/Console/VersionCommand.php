@@ -7,10 +7,9 @@ namespace Butschster\ContextGenerator\Console;
 use Butschster\ContextGenerator\Application\Application;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 use Butschster\ContextGenerator\Lib\HttpClient\Exception\HttpException;
-use Spiral\Core\Container;
+use Spiral\Console\Attribute\Option;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputOption;
 
 #[AsCommand(
     name: 'version',
@@ -23,28 +22,31 @@ final class VersionCommand extends BaseCommand
      */
     private const string GITHUB_API_LATEST_RELEASE = 'https://api.github.com/repos/context-hub/generator/releases/latest';
 
+    #[Option(
+        name: 'check-updates',
+        shortcut: 'c',
+        description: 'Check for updates',
+    )]
+    protected bool $checkUpdates = false;
+
     public function __construct(
-        Container $container,
-        private readonly Application $app,
         private readonly HttpClientInterface $httpClient,
     ) {
-        parent::__construct($container);
+        parent::__construct();
     }
 
-    public function __invoke(): int
+    public function __invoke(Application $app): int
     {
-        $this->output->title($this->app->name);
-        $this->output->text('Current version: ' . $this->app->version);
+        $this->output->title($app->name);
+        $this->output->text('Current version: ' . $app->version);
 
-        $checkUpdates = $this->input->getOption('check-updates');
-
-        if ($checkUpdates) {
+        if ($this->checkUpdates) {
             $this->output->newLine();
             $this->output->section('Checking for updates...');
 
             try {
                 $latestVersion = $this->fetchLatestVersion();
-                $isUpdateAvailable = $this->isUpdateAvailable($this->app->version, $latestVersion);
+                $isUpdateAvailable = $this->isUpdateAvailable($app->version, $latestVersion);
 
                 if ($isUpdateAvailable) {
                     $this->output->success("A new version is available: {$latestVersion}");
@@ -57,7 +59,7 @@ final class VersionCommand extends BaseCommand
                         '- Download from: https://github.com/context-hub/generator/releases/download/' . $latestVersion . '/context-generator.phar',
                     ]);
                 } else {
-                    $this->output->success("You're using the latest version ({$this->app->version})");
+                    $this->output->success("You're using the latest version ({$app->version})");
                 }
             } catch (HttpException $e) {
                 $this->output->error("Failed to check for updates: {$e->getMessage()}");
@@ -70,16 +72,6 @@ final class VersionCommand extends BaseCommand
         }
 
         return Command::SUCCESS;
-    }
-
-    protected function configure(): void
-    {
-        $this->addOption(
-            name: 'check-updates',
-            shortcut: 'c',
-            mode: InputOption::VALUE_NONE,
-            description: 'Check for updates',
-        );
     }
 
     /**

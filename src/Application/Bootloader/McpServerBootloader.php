@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Application\Bootloader;
 
+use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
 use Butschster\ContextGenerator\Console\MCPServerCommand;
 use Butschster\ContextGenerator\McpServer\Action\Prompts\AvailableContextPromptAction;
 use Butschster\ContextGenerator\McpServer\Action\Prompts\FilesystemOperationsAction;
@@ -32,6 +33,8 @@ use Psr\Container\ContainerInterface;
 use Spiral\Boot\Bootloader\Bootloader;
 use Spiral\Boot\EnvironmentInterface;
 use Spiral\Config\ConfiguratorInterface;
+use Spiral\Core\BinderInterface;
+use Spiral\Core\ScopeInterface;
 
 final class McpServerBootloader extends Bootloader
 {
@@ -60,28 +63,32 @@ final class McpServerBootloader extends Bootloader
         );
     }
 
-    public function boot(ConsoleBootloader $bootloader): void
+    public function boot(ConsoleBootloader $bootloader, BinderInterface $binder): void
     {
         $bootloader->addCommand(MCPServerCommand::class);
-    }
 
-    #[\Override]
-    public function defineSingletons(): array
-    {
-        return [
-            ServerFactory::class => function (
+        $binder
+            ->getBinder('mcp')
+            ->bindSingleton(ServerFactory::class, function (
                 RouteRegistrar $registrar,
                 McpItemsRegistry $registry,
+                HasPrefixLoggerInterface $logger,
                 McpConfig $config,
             ) {
-                $factory = new ServerFactory($registrar, $registry);
+                $factory = new ServerFactory($registrar, $registry, $logger);
 
                 foreach ($this->actions($config) as $action) {
                     $factory->registerAction($action);
                 }
 
                 return $factory;
-            },
+            });
+    }
+
+    #[\Override]
+    public function defineSingletons(): array
+    {
+        return [
             McpItemsRegistry::class => McpItemsRegistry::class,
             RouteRegistrar::class => RouteRegistrar::class,
             StrategyInterface::class => McpResponseStrategy::class,

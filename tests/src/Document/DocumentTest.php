@@ -7,7 +7,7 @@ namespace Tests\Document;
 use Butschster\ContextGenerator\Document\Document;
 use Butschster\ContextGenerator\Modifier\Modifier;
 use Butschster\ContextGenerator\Modifier\ModifiersApplierInterface;
-use Butschster\ContextGenerator\SourceInterface;
+use Butschster\ContextGenerator\Source\SourceInterface;
 use Butschster\ContextGenerator\SourceParserInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\File;
 
-use Butschster\ContextGenerator\Fetcher\FilterableSourceInterface;
 use Butschster\ContextGenerator\Lib\TreeBuilder\TreeViewConfig;
 use Butschster\ContextGenerator\Modifier\Modifier;
+use Butschster\ContextGenerator\Source\Fetcher\FilterableSourceInterface;
 use Butschster\ContextGenerator\Source\SourceWithModifiers;
 
 /**

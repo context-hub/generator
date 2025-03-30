@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\Github;
 
-use Butschster\ContextGenerator\Fetcher\FilterableSourceInterface;
 use Butschster\ContextGenerator\Modifier\Modifier;
+use Butschster\ContextGenerator\Source\Fetcher\FilterableSourceInterface;
 use Butschster\ContextGenerator\Source\SourceWithModifiers;
 
 /**

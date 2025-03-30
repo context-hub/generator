@@ -9,11 +9,19 @@ use Butschster\ContextGenerator\Application\Bootloader\ConfigurationBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\ConsoleBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\ContentRendererBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\CoreBootloader;
-use Butschster\ContextGenerator\Application\Bootloader\GitClientBootloader;
+use Butschster\ContextGenerator\Application\Bootloader\GithubClientBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\HttpClientBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\LoggerBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\McpServerBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\ModifierBootloader;
+use Butschster\ContextGenerator\Application\Bootloader\SourceFetcherBootloader;
+use Butschster\ContextGenerator\Source\Composer\ComposerSourceBootloader;
+use Butschster\ContextGenerator\Source\File\FileSourceBootloader;
+use Butschster\ContextGenerator\Source\GitDiff\GitDiffSourceBootloader;
+use Butschster\ContextGenerator\Source\Github\GithubSourceBootloader;
+use Butschster\ContextGenerator\Source\Text\TextSourceBootloader;
+use Butschster\ContextGenerator\Source\Tree\TreeSourceBootloader;
+use Butschster\ContextGenerator\Source\Url\UrlSourceBootloader;
 use Spiral\Boot\AbstractKernel;
 use Spiral\Boot\Exception\BootException;
 
@@ -35,11 +43,21 @@ class Kernel extends AbstractKernel
         return [
             CoreBootloader::class,
             HttpClientBootloader::class,
-            GitClientBootloader::class,
+            GithubClientBootloader::class,
             ConfigLoaderBootloader::class,
             ModifierBootloader::class,
             ContentRendererBootloader::class,
             McpServerBootloader::class,
+            SourceFetcherBootloader::class,
+
+            // Sources
+            TextSourceBootloader::class,
+            FileSourceBootloader::class,
+            ComposerSourceBootloader::class,
+            UrlSourceBootloader::class,
+            GithubSourceBootloader::class,
+            GitDiffSourceBootloader::class,
+            TreeSourceBootloader::class,
         ];
     }
 

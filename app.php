@@ -8,6 +8,7 @@ use Butschster\ContextGenerator\Application\Application;
 use Butschster\ContextGenerator\Application\ExceptionHandler;
 use Butschster\ContextGenerator\Application\Kernel;
 use Spiral\Core\Container;
+use Spiral\Core\Options;
 
 // -----------------------------------------------------------------------------
 //  Prepare Global Environment
@@ -76,7 +77,10 @@ $version = \file_exists($versionFile)
 
 $type = $version['type'] ?? 'phar';
 
-$container = new Container();
+$options = new Options();
+$options->checkScope = true;
+
+$container = new Container(options: $options);
 $container->bindSingleton(
     Application::class,
     new Application(

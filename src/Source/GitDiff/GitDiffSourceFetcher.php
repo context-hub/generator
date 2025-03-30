@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\GitDiff;
 
-use Butschster\ContextGenerator\Fetcher\SourceFetcherInterface;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Lib\Finder\FinderInterface;
 use Butschster\ContextGenerator\Lib\Finder\FinderResult;
 use Butschster\ContextGenerator\Modifier\ModifiersApplierInterface;
-use Butschster\ContextGenerator\Source\GitDiff\Git\GitClientInterface;
+use Butschster\ContextGenerator\Source\Fetcher\SourceFetcherInterface;
 use Butschster\ContextGenerator\Source\GitDiff\Git\GitClient;
+use Butschster\ContextGenerator\Source\GitDiff\Git\GitClientInterface;
 use Butschster\ContextGenerator\Source\GitDiff\RenderStrategy\Enum\RenderStrategyEnum;
 use Butschster\ContextGenerator\Source\GitDiff\RenderStrategy\RenderStrategyFactory;
 use Butschster\ContextGenerator\Source\GitDiff\RenderStrategy\RenderStrategyInterface;
-use Butschster\ContextGenerator\SourceInterface;
+use Butschster\ContextGenerator\Source\SourceInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Symfony\Component\Finder\SplFileInfo;

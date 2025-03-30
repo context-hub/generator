@@ -7,9 +7,9 @@ namespace Butschster\ContextGenerator\Console\Renderer;
 use Butschster\ContextGenerator\Source\File\FileSource;
 use Butschster\ContextGenerator\Source\GitDiff\GitDiffSource;
 use Butschster\ContextGenerator\Source\Github\GithubSource;
+use Butschster\ContextGenerator\Source\SourceInterface;
 use Butschster\ContextGenerator\Source\Text\TextSource;
 use Butschster\ContextGenerator\Source\Url\UrlSource;
-use Butschster\ContextGenerator\SourceInterface;
 
 /**
  * @deprecated Should be completely redesigned

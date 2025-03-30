@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\GitDiff;
 
-use Butschster\ContextGenerator\Fetcher\FilterableSourceInterface;
 use Butschster\ContextGenerator\Lib\Finder\FinderInterface;
 use Butschster\ContextGenerator\Lib\Finder\FinderResult;
 use Butschster\ContextGenerator\Lib\TreeBuilder\FileTreeBuilder;
+use Butschster\ContextGenerator\Source\Fetcher\FilterableSourceInterface;
 use Butschster\ContextGenerator\Source\GitDiff\Fetcher\CommitRangeParser;
 use Butschster\ContextGenerator\Source\GitDiff\Fetcher\GitSourceFactory;
 use Butschster\ContextGenerator\Source\GitDiff\Fetcher\GitSourceInterface;
@@ -17,12 +17,12 @@ use Butschster\ContextGenerator\Source\GitDiff\Fetcher\Source\StagedGitSource;
 use Butschster\ContextGenerator\Source\GitDiff\Fetcher\Source\StashGitSource;
 use Butschster\ContextGenerator\Source\GitDiff\Fetcher\Source\TimeRangeGitSource;
 use Butschster\ContextGenerator\Source\GitDiff\Fetcher\Source\UnstagedGitSource;
-use Butschster\ContextGenerator\Source\GitDiff\Git\GitClientInterface;
 use Butschster\ContextGenerator\Source\GitDiff\Git\GitClient;
-use Symfony\Component\Finder\Finder;
-use Symfony\Component\Finder\SplFileInfo;
+use Butschster\ContextGenerator\Source\GitDiff\Git\GitClientInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use Symfony\Component\Finder\Finder;
+use Symfony\Component\Finder\SplFileInfo;
 
 /**
  * Finder for git commit diffs

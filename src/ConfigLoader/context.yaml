@@ -1,8 +1,0 @@
-documents:
-  - description: Configuration System
-    outputPath: core/config-loader.md
-    sources:
-      - type: file
-        sourcePaths: .
-        filePattern: '*.php'
-        showTreeView: true

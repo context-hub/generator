@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Source;
 
 use Butschster\ContextGenerator\Modifier\ModifiersApplierInterface;
-use Butschster\ContextGenerator\SourceInterface;
 use Butschster\ContextGenerator\SourceParserInterface;
 
 abstract class BaseSource implements SourceInterface

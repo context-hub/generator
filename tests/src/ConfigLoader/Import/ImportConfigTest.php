@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\ConfigLoader\Import;
 
-use Butschster\ContextGenerator\ConfigLoader\Import\ImportConfig;
+use Butschster\ContextGenerator\Config\Import\ImportConfig;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

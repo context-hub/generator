@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\Tree;
 
-use Butschster\ContextGenerator\Fetcher\FilterableSourceInterface;
 use Butschster\ContextGenerator\Lib\TreeBuilder\TreeViewConfig;
 use Butschster\ContextGenerator\Source\BaseSource;
+use Butschster\ContextGenerator\Source\Fetcher\FilterableSourceInterface;
 
 /**
  * Tree source for generating hierarchical visualizations of directory structures

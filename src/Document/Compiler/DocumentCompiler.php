@@ -13,11 +13,13 @@ use Butschster\ContextGenerator\Modifier\ModifiersApplier;
 use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
 use Butschster\ContextGenerator\SourceParserInterface;
 use Psr\Log\LoggerInterface;
+use Spiral\Core\Attribute\Scope;
 use Spiral\Files\FilesInterface;
 
 /**
  * Handles compiling documents
  */
+#[Scope('compiler')]
 final readonly class DocumentCompiler
 {
     /**

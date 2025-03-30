@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator;
 
 use Butschster\ContextGenerator\Modifier\ModifiersApplierInterface;
+use Butschster\ContextGenerator\Source\SourceInterface;
 
 interface SourceParserInterface
 {

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Lib\Finder;
 
-use Butschster\ContextGenerator\Fetcher\FilterableSourceInterface;
+use Butschster\ContextGenerator\Source\Fetcher\FilterableSourceInterface;
 
 /**
  * Interface for file finders

@@ -1,0 +1,12 @@
+documents:
+  - description: Configuration System
+    outputPath: core/config-loader.md
+    sources:
+      - type: file
+        sourcePaths:
+          - .
+          - ../Document
+          - ../Fetcher
+        filePattern: '*.php'
+        showTreeView: true
+

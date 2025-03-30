@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\Composer;
 
-use Butschster\ContextGenerator\Fetcher\SourceFetcherInterface;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Lib\TreeBuilder\FileTreeBuilder;
 use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
 use Butschster\ContextGenerator\Modifier\ModifiersApplierInterface;
 use Butschster\ContextGenerator\Source\Composer\Provider\ComposerProviderInterface;
+use Butschster\ContextGenerator\Source\Fetcher\SourceFetcherInterface;
 use Butschster\ContextGenerator\Source\File\FileSource;
 use Butschster\ContextGenerator\Source\File\FileSourceFetcher;
 use Butschster\ContextGenerator\Source\File\SymfonyFinder;
-use Butschster\ContextGenerator\SourceInterface;
+use Butschster\ContextGenerator\Source\SourceInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 

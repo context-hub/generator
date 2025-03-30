@@ -7,7 +7,9 @@ namespace Butschster\ContextGenerator\McpServer;
 use Butschster\ContextGenerator\McpServer\Registry\McpItemsRegistry;
 use Butschster\ContextGenerator\McpServer\Routing\RouteRegistrar;
 use Psr\Log\LoggerInterface;
+use Spiral\Core\Attribute\Scope;
 
+#[Scope('mcp')]
 final class ServerFactory
 {
     /**
@@ -18,6 +20,7 @@ final class ServerFactory
     public function __construct(
         private readonly RouteRegistrar $registrar,
         private readonly McpItemsRegistry $registry,
+        private readonly LoggerInterface $logger,
     ) {}
 
     /**
@@ -33,7 +36,7 @@ final class ServerFactory
     /**
      * Create a new McpServer instance with attribute-based routing
      */
-    public function create(LoggerInterface $logger): Server
+    public function create(): Server
     {
         // Register all classes with MCP item attributes. Should be before registering controllers!
         $this->registry->registerMany($this->actions);
@@ -44,7 +47,7 @@ final class ServerFactory
         // Create the server
         return new Server(
             router: $this->registrar->router,
-            logger: $logger,
+            logger: $this->logger,
         );
     }
 }

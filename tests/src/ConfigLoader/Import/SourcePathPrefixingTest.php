@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\ConfigLoader\Import;
 
-use Butschster\ContextGenerator\ConfigLoader\ConfigLoaderFactoryInterface;
-use Butschster\ContextGenerator\ConfigLoader\ConfigLoaderInterface;
-use Butschster\ContextGenerator\ConfigLoader\Import\ImportResolver;
-use Butschster\ContextGenerator\ConfigLoader\Import\PathPrefixer\SourcePathPrefixer;
+use Butschster\ContextGenerator\Config\Loader\ConfigLoaderFactoryInterface;
+use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
+use Butschster\ContextGenerator\Config\Import\ImportResolver;
+use Butschster\ContextGenerator\Config\Import\PathPrefixer\SourcePathPrefixer;
 use Butschster\ContextGenerator\Directories;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;

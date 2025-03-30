@@ -4,19 +4,18 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Document;
 
-use Butschster\ContextGenerator\ConfigLoader\Parser\ConfigParserPluginInterface;
-use Butschster\ContextGenerator\ConfigLoader\Registry\DocumentRegistry;
-use Butschster\ContextGenerator\ConfigLoader\Registry\RegistryInterface;
+use Butschster\ContextGenerator\Config\Parser\ConfigParserPluginInterface;
+use Butschster\ContextGenerator\Config\Registry\RegistryInterface;
 use Butschster\ContextGenerator\Modifier\Alias\ModifierResolver;
 use Butschster\ContextGenerator\Modifier\Modifier;
 use Butschster\ContextGenerator\Source\Composer\ComposerSource;
 use Butschster\ContextGenerator\Source\File\FileSource;
 use Butschster\ContextGenerator\Source\GitDiff\GitDiffSource;
 use Butschster\ContextGenerator\Source\Github\GithubSource;
+use Butschster\ContextGenerator\Source\SourceInterface;
 use Butschster\ContextGenerator\Source\Text\TextSource;
 use Butschster\ContextGenerator\Source\Tree\TreeSource;
 use Butschster\ContextGenerator\Source\Url\UrlSource;
-use Butschster\ContextGenerator\SourceInterface;
 use Psr\Log\LoggerInterface;
 
 /**

@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Console;
 
+use Butschster\ContextGenerator\Config\ConfigType;
 use Butschster\ContextGenerator\Directories;
 use Butschster\ContextGenerator\Document\Document;
-use Butschster\ContextGenerator\ConfigLoader\Registry\DocumentRegistry;
+use Butschster\ContextGenerator\Document\DocumentRegistry;
 use Butschster\ContextGenerator\Lib\TreeBuilder\TreeViewConfig;
 use Butschster\ContextGenerator\Source\Tree\TreeSource;
-use Spiral\Core\Container;
+use Spiral\Console\Attribute\Option;
 use Spiral\Files\FilesInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Yaml\Yaml;
 
 #[AsCommand(
@@ -22,33 +22,30 @@ use Symfony\Component\Yaml\Yaml;
 )]
 final class InitCommand extends BaseCommand
 {
-    private const string DEFAULT_CONFIG_NAME = 'context.yaml';
-    private const string DEFAULT_CONFIG_TYPE = 'yaml';
-    private const array SUPPORTED_TYPES = ['json', 'yaml'];
+    #[Option(
+        name: 'config-file',
+        shortcut: 'c',
+        description: 'The name of the file to create',
+    )]
+    protected string $configFilename = 'context.yaml';
 
-    public function __construct(
-        Container $container,
-        public Directories $dirs,
-        private readonly FilesInterface $files,
-    ) {
-        parent::__construct($container);
-    }
-
-    public function __invoke(): int
+    public function __invoke(Directories $dirs, FilesInterface $files): int
     {
-        $filename = $this->input->getArgument('filename') ?: self::DEFAULT_CONFIG_NAME;
+        $filename = $this->configFilename;
+        $ext = \pathinfo($filename, PATHINFO_EXTENSION);
 
-        $type = $this->input->getOption('type');
-        if (!\in_array($type, ['json', 'yaml'], true)) {
-            $this->output->error('Invalid type specified. Supported types are: json, yaml');
+        try {
+            $type = ConfigType::fromExtension($ext);
+        } catch (\ValueError) {
+            $this->output->error(\sprintf('Unsupported config type: %s', $ext));
 
             return Command::FAILURE;
         }
 
-        $filename = \pathinfo(\strtolower((string) $filename), PATHINFO_FILENAME) . '.' . $type;
-        $filePath = $this->dirs->getFilePath($filename);
+        $filename = \pathinfo(\strtolower($filename), PATHINFO_FILENAME) . '.' . $type->value;
+        $filePath = $dirs->getFilePath($filename);
 
-        if ($this->files->exists($filePath)) {
+        if ($files->exists($filePath)) {
             $this->output->error(\sprintf('Config %s already exists', $filePath));
 
             return Command::FAILURE;
@@ -69,12 +66,15 @@ final class InitCommand extends BaseCommand
 
         try {
             $content = match ($type) {
-                'json' => \json_encode($content, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),
-                'yaml' => Yaml::dump(
+                ConfigType::Json => \json_encode($content, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),
+                ConfigType::Yaml => Yaml::dump(
                     \json_decode(\json_encode($content), true),
                     10,
                     2,
                     Yaml::DUMP_MULTI_LINE_LITERAL_BLOCK,
+                ),
+                default => throw new \InvalidArgumentException(
+                    \sprintf('Unsupported config type: %s', $type->value),
                 ),
             };
         } catch (\Throwable $e) {
@@ -83,36 +83,17 @@ final class InitCommand extends BaseCommand
             return Command::FAILURE;
         }
 
-        if ($this->files->exists($filePath)) {
+        if ($files->exists($filePath)) {
             $this->output->error(\sprintf('Config %s already exists', $filePath));
 
             return Command::FAILURE;
         }
 
-        $this->files->ensureDirectory(\dirname($filePath));
-        $this->files->write($filePath, $content);
+        $files->ensureDirectory(\dirname($filePath));
+        $files->write($filePath, $content);
 
         $this->output->success(\sprintf('Config %s created', $filePath));
 
         return Command::SUCCESS;
-    }
-
-    protected function configure(): void
-    {
-        $this
-            ->addArgument(
-                name: 'filename',
-                mode: InputArgument::OPTIONAL,
-                description: 'The name of the file to create',
-                default: self::DEFAULT_CONFIG_NAME,
-            )
-            ->addOption(
-                name: 'type',
-                shortcut: 't',
-                mode: InputArgument::OPTIONAL,
-                description: 'The type of the file to create (json, yaml, etc.)',
-                default: self::DEFAULT_CONFIG_TYPE,
-                suggestedValues: self::SUPPORTED_TYPES,
-            );
     }
 }

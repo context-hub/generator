@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Application\Bootloader;
 
+use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
 use Butschster\ContextGenerator\Application\Logger\LoggerFactory;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
@@ -20,6 +21,7 @@ final class LoggerBootloader extends Bootloader
         return [
             LoggerFactory::class => LoggerFactory::class,
             LoggerInterface::class => NullLogger::class,
+            HasPrefixLoggerInterface::class => LoggerInterface::class,
         ];
     }
 
