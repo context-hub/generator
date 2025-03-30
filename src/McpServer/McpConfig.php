@@ -23,7 +23,7 @@ final class McpConfig extends InjectableConfig
         return \str_replace(
             ['{path}', '{description}', '{tags}'],
             [$path, $description, $tags],
-            $this->config['ctx_document_name_format'],
+            (string) $this->config['ctx_document_name_format'] ?: '',
         );
     }
 

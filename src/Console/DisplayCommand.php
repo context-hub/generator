@@ -89,7 +89,10 @@ final class DisplayCommand extends BaseCommand
                     );
 
                     foreach ($documents as $index => $document) {
-                        /** @psalm-suppress InvalidOperand */
+                        /**
+                         * @psalm-suppress InvalidScalarArgument
+                         * @psalm-suppress InvalidOperand
+                         */
                         $this->output->writeln(
                             Style::header("Document") . " " . Style::itemNumber($index + 1, \count($documents)) . ":",
                         );

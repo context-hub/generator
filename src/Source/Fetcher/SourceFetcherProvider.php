@@ -13,7 +13,7 @@ use Spiral\Core\Attribute\Singleton;
 /**
  * Registry for source fetchers
  */
-#[Scope('compiler')]
+#[Scope(name: 'compiler')]
 #[Singleton]
 final readonly class SourceFetcherProvider implements SourceParserInterface
 {

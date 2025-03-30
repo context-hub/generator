@@ -11,6 +11,18 @@
             <directory name="vendor"/>
         </ignoreFiles>
     </projectFiles>
+    <issueHandlers>
+        <InternalMethod>
+            <errorLevel type="suppress">
+                <referencedMethod name="Spiral\Core\Attribute\Scope::__construct" />
+            </errorLevel>
+        </InternalMethod>
+        <InternalClass>
+            <errorLevel type="suppress">
+                <referencedClass name="Spiral\Core\Attribute\Scope" />
+            </errorLevel>
+        </InternalClass>
+    </issueHandlers>
     <forbiddenFunctions>
         <function name="var_dump"/>
         <function name="dd"/>
