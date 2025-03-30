@@ -15,6 +15,7 @@ use Butschster\ContextGenerator\Application\Bootloader\LoggerBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\McpServerBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\ModifierBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\SourceFetcherBootloader;
+use Butschster\ContextGenerator\Application\Bootloader\VariableBootloader;
 use Butschster\ContextGenerator\Source\Composer\ComposerSourceBootloader;
 use Butschster\ContextGenerator\Source\File\FileSourceBootloader;
 use Butschster\ContextGenerator\Source\GitDiff\GitDiffSourceBootloader;
@@ -49,6 +50,7 @@ class Kernel extends AbstractKernel
             ContentRendererBootloader::class,
             McpServerBootloader::class,
             SourceFetcherBootloader::class,
+            VariableBootloader::class,
 
             // Sources
             TextSourceBootloader::class,
