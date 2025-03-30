@@ -5,16 +5,20 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Console;
 
 use Butschster\ContextGenerator\Application\Application;
+use Butschster\ContextGenerator\Application\AppScope;
+use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
 use Butschster\ContextGenerator\Config\ConfigurationProvider;
 use Butschster\ContextGenerator\Config\Exception\ConfigLoaderException;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
 use Butschster\ContextGenerator\Directories;
-use Butschster\ContextGenerator\McpServer\ServerFactoryInterface;
+use Butschster\ContextGenerator\McpServer\ServerRunnerInterface;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Level;
 use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 use Spiral\Console\Attribute\Option;
 use Spiral\Core\Container;
+use Spiral\Core\Scope;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 
@@ -59,41 +63,55 @@ final class MCPServerCommand extends BaseCommand
             ->determineRootPath($this->configPath)
             ->withEnvFile($this->envFileName);
 
-        $container->bindSingleton(Directories::class, $dirs);
+        return $container->runScope(
+            bindings: new Scope(
+                bindings: [
+                    LoggerInterface::class => $this->logger,
+                    HasPrefixLoggerInterface::class => $this->logger,
+                    Directories::class => $dirs,
+                ],
+            ),
+            scope: function (Container $container, ConfigurationProvider $configProvider) use ($dirs, $app) {
+                $this->logger->info(\sprintf('Using root path: %s', $dirs->rootPath));
 
-        $configProvider = $container->get(ConfigurationProvider::class);
-        $this->logger->info(\sprintf('Using root path: %s', $dirs->rootPath));
+                try {
+                    // Get the appropriate loader based on options provided
+                    if (!\is_dir($dirs->rootPath)) {
+                        $this->logger->info(
+                            'Loading configuration from provided path...',
+                            [
+                                'path' => $dirs->rootPath,
+                            ],
+                        );
+                        $loader = $configProvider->fromPath($dirs->configPath);
+                    } else {
+                        $this->logger->info('Using default configuration location...');
+                        $loader = $configProvider->fromDefaultLocation();
+                    }
+                } catch (ConfigLoaderException $e) {
+                    $this->logger->error('Failed to load configuration', [
+                        'error' => $e->getMessage(),
+                    ]);
 
-        try {
-            // Get the appropriate loader based on options provided
-            if (!\is_dir($dirs->rootPath)) {
-                $this->logger->info(
-                    'Loading configuration from provided path...',
-                    [
-                        'path' => $dirs->rootPath,
-                    ],
+                    return Command::FAILURE;
+                }
+
+                $container->runScope(
+                    bindings: new Scope(
+                        name: AppScope::Mcp,
+                        bindings: [
+                            ConfigLoaderInterface::class => $loader,
+                            LoggerInterface::class => $this->logger,
+                            HasPrefixLoggerInterface::class => $this->logger,
+                        ],
+                    ),
+                    scope: static function (ServerRunnerInterface $factory) use ($app): void {
+                        $factory->run(name: \sprintf('%s %s', $app->name, $app->version));
+                    },
                 );
-                $loader = $configProvider->fromPath($dirs->configPath);
-            } else {
-                $this->logger->info('Using default configuration location...');
-                $loader = $configProvider->fromDefaultLocation();
-            }
-        } catch (ConfigLoaderException $e) {
-            $this->logger->error('Failed to load configuration', [
-                'error' => $e->getMessage(),
-            ]);
 
-            return Command::FAILURE;
-        }
-
-        $binder = $container->getBinder('root');
-
-        $binder->bindSingleton(ConfigLoaderInterface::class, $loader);
-
-        $factory = $container->get(ServerFactoryInterface::class);
-        // Create and run the MCP server
-        $factory->create()->run(name: \sprintf('%s %s', $app->name, $app->version));
-
-        return self::SUCCESS;
+                return self::SUCCESS;
+            },
+        );
     }
 }

@@ -8,6 +8,7 @@ use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
 use Butschster\ContextGenerator\Config\ConfigurationProvider;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderFactory;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderFactoryInterface;
+use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
 use Butschster\ContextGenerator\Config\Parser\ParserPluginRegistry;
 use Butschster\ContextGenerator\Directories;
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
@@ -19,6 +20,7 @@ use Butschster\ContextGenerator\Modifier\Alias\ModifierResolver;
 use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
 use Butschster\ContextGenerator\SourceParserInterface;
 use Spiral\Boot\Bootloader\Bootloader;
+use Spiral\Core\Config\Proxy;
 use Spiral\Files\FilesInterface;
 
 final class ConfigLoaderBootloader extends Bootloader
@@ -80,6 +82,10 @@ final class ConfigLoaderBootloader extends Bootloader
                 files: $files,
                 dirs: $dirs,
                 logger: $logger->withPrefix('config-loader'),
+            ),
+
+            ConfigLoaderInterface::class => new Proxy(
+                interface: ConfigLoaderInterface::class,
             ),
         ];
     }

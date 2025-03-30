@@ -20,6 +20,7 @@ use Mcp\Types\ReadResourceRequestParams;
 use Mcp\Types\ReadResourceResult;
 use Mcp\Types\TextContent;
 use Psr\Log\LoggerInterface;
+use Spiral\Core\Internal\Introspector;
 
 final readonly class Server
 {
@@ -29,6 +30,7 @@ final readonly class Server
         private Router $router,
         private LoggerInterface $logger,
     ) {
+        trap(Introspector::scopeName());
         $this->bridge = new Mcp2PsrRequestAdapter();
     }
 
@@ -37,6 +39,7 @@ final readonly class Server
      */
     public function run(string $name): void
     {
+        trap(Introspector::scopeName());
         $server = new McpServer(name: $name, logger: $this->logger);
         $this->configureServer($server);
 
@@ -89,6 +92,7 @@ final readonly class Server
      */
     private function handleRoute(string $method, string $class, array $params = []): mixed
     {
+        trap(Introspector::scopeName());
         $this->logger->debug("Handling route: $method", $params);
 
         // Create PSR request from MCP method and params

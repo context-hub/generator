@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Console;
 
+use Butschster\ContextGenerator\Application\AppScope;
 use Butschster\ContextGenerator\Config\ConfigurationProvider;
 use Butschster\ContextGenerator\Config\Exception\ConfigLoaderException;
 use Butschster\ContextGenerator\Console\Renderer\DocumentRenderer;
@@ -45,14 +46,12 @@ final class DisplayCommand extends BaseCommand
 
         return $container->runScope(
             bindings: new Scope(
-                name: 'compiler',
+                name: AppScope::Compiler,
                 bindings: [
                     Directories::class => $dirs,
                 ],
             ),
-            scope: function (Container $container) use ($dirs, $renderer) {
-                $configProvider = $container->get(ConfigurationProvider::class);
-
+            scope: function (ConfigurationProvider $configProvider) use ($dirs, $renderer) {
                 try {
                     // Get the appropriate loader based on options provided
                     if ($this->inlineJson !== null) {

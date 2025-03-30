@@ -30,7 +30,7 @@
     "nette/php-generator": "^4.1",
     "nikic/php-parser": "^v4.0 | ^v5.0",
     "vlucas/phpdotenv": "^5.6",
-    "spiral/core": "^3.15",
+    "spiral/core": "3.15",
     "spiral/console": "^3.15",
     "spiral/exceptions": "^3.15",
     "spiral/boot": "^3.15",

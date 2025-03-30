@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer;
 
-interface ServerFactoryInterface
+interface ServerRunnerInterface
 {
     /**
      * Create a new McpServer instance with attribute-based routing
      */
-    public function create(): Server;
+    public function run(string $name): void;
 }

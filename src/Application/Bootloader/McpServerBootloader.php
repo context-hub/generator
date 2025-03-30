@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Application\Bootloader;
 
-use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
 use Butschster\ContextGenerator\Console\MCPServerCommand;
 use Butschster\ContextGenerator\McpServer\Action\Prompts\AvailableContextPromptAction;
 use Butschster\ContextGenerator\McpServer\Action\Prompts\FilesystemOperationsAction;
@@ -26,14 +25,15 @@ use Butschster\ContextGenerator\McpServer\McpConfig;
 use Butschster\ContextGenerator\McpServer\Registry\McpItemsRegistry;
 use Butschster\ContextGenerator\McpServer\Routing\McpResponseStrategy;
 use Butschster\ContextGenerator\McpServer\Routing\RouteRegistrar;
-use Butschster\ContextGenerator\McpServer\ServerFactory;
-use Butschster\ContextGenerator\McpServer\ServerFactoryInterface;
+use Butschster\ContextGenerator\McpServer\ServerRunner;
+use Butschster\ContextGenerator\McpServer\ServerRunnerInterface;
 use League\Route\Router;
 use League\Route\Strategy\StrategyInterface;
 use Psr\Container\ContainerInterface;
 use Spiral\Boot\Bootloader\Bootloader;
 use Spiral\Boot\EnvironmentInterface;
 use Spiral\Config\ConfiguratorInterface;
+use Spiral\Core\Attribute\Proxy;
 use Spiral\Core\BinderInterface;
 
 final class McpServerBootloader extends Bootloader
@@ -72,14 +72,10 @@ final class McpServerBootloader extends Bootloader
     public function defineSingletons(): array
     {
         return [
-            ServerFactoryInterface::class => function (
-                RouteRegistrar $registrar,
-                McpItemsRegistry $registry,
-                HasPrefixLoggerInterface $logger,
+            ServerRunnerInterface::class => function (
                 McpConfig $config,
+                ServerRunner $factory,
             ) {
-                $factory = new ServerFactory($registrar, $registry, $logger);
-
                 foreach ($this->actions($config) as $action) {
                     $factory->registerAction($action);
                 }
@@ -89,7 +85,7 @@ final class McpServerBootloader extends Bootloader
             RouteRegistrar::class => RouteRegistrar::class,
             McpItemsRegistry::class => McpItemsRegistry::class,
             StrategyInterface::class => McpResponseStrategy::class,
-            Router::class => static function (StrategyInterface $strategy, ContainerInterface $container) {
+            Router::class => static function (StrategyInterface $strategy, #[Proxy] ContainerInterface $container) {
                 $router = new Router();
                 \assert($strategy instanceof McpResponseStrategy);
                 $strategy->setContainer($container);

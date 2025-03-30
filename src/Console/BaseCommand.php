@@ -26,9 +26,10 @@ abstract class BaseCommand extends Command implements LoggerAwareInterface
     {
         $this->logger = $logger;
 
-        $this->container
-            ->get(BinderInterface::class)
-            ->bindSingleton(LoggerInterface::class, $logger);
+        $binder = $this->container->get(BinderInterface::class);
+
+        $binder->bindSingleton(LoggerInterface::class, $logger);
+        $binder->bindSingleton(HasPrefixLoggerInterface::class, $logger);
     }
 
     #[\Override]
@@ -39,15 +40,11 @@ abstract class BaseCommand extends Command implements LoggerAwareInterface
         $this->input = $input;
         $this->output = $output;
 
-        $this->container
-            ->get(BinderInterface::class)
-            ->bindSingleton(
-                HasPrefixLoggerInterface::class,
-                $logger = LoggerFactory::create(
-                    output: $output,
-                    loggingEnabled: $output->isVerbose() || $output->isDebug() || $output->isVeryVerbose(),
-                ),
-            );
+        $logger = LoggerFactory::create(
+            output: $output,
+            loggingEnabled: $output->isVerbose() || $output->isDebug() || $output->isVeryVerbose(),
+        );
+
         $this->setLogger($logger);
 
         \assert($this->logger instanceof HasPrefixLoggerInterface);
