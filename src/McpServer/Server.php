@@ -20,7 +20,6 @@ use Mcp\Types\ReadResourceRequestParams;
 use Mcp\Types\ReadResourceResult;
 use Mcp\Types\TextContent;
 use Psr\Log\LoggerInterface;
-use Spiral\Core\Internal\Introspector;
 
 final readonly class Server
 {
