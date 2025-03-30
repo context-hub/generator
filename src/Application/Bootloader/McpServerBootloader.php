@@ -65,8 +65,12 @@ final class McpServerBootloader extends Bootloader
             McpItemsRegistry::class => McpItemsRegistry::class,
             RouteRegistrar::class => RouteRegistrar::class,
             StrategyInterface::class => McpResponseStrategy::class,
-            Router::class => static function (StrategyInterface $strategy, ContainerInterface $container) {
+            Router::class => static function (
+                StrategyInterface $strategy,
+                ContainerInterface $container,
+            ) {
                 $router = new Router();
+                \assert($strategy instanceof McpResponseStrategy);
                 $strategy->setContainer($container);
                 $router->setStrategy($strategy);
 

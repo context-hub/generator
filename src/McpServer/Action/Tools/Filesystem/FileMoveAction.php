@@ -12,6 +12,7 @@ use Mcp\Types\CallToolResult;
 use Mcp\Types\TextContent;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
+use Spiral\Files\Exception\FilesException;
 use Spiral\Files\FilesInterface;
 
 #[Tool(
@@ -94,8 +95,9 @@ final readonly class FileMoveAction
             }
 
             // Read source file content
-            $content = $this->files->read($source);
-            if ($content === false) {
+            try {
+                $content = $this->files->read($source);
+            } catch (FilesException) {
                 return new CallToolResult([
                     new TextContent(
                         text: \sprintf("Error: Could not read source file '%s'", $source),

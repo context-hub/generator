@@ -12,6 +12,7 @@ use Mcp\Types\CallToolResult;
 use Mcp\Types\TextContent;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
+use Spiral\Files\Exception\FilesException;
 use Spiral\Files\FilesInterface;
 
 #[Tool(
@@ -104,9 +105,9 @@ final readonly class FileUpdateLinesAction
             }
 
             // Read the file content
-            $fileContent = $this->files->read($path);
-
-            if ($fileContent === false) {
+            try {
+                $fileContent = $this->files->read($path);
+            } catch (FilesException) {
                 return new CallToolResult([
                     new TextContent(
                         text: \sprintf("Error: Could not read file '%s'", $path),

@@ -6,6 +6,7 @@ namespace Butschster\ContextGenerator\ConfigLoader\Reader;
 
 use Butschster\ContextGenerator\ConfigLoader\Exception\ReaderException;
 use Psr\Log\LoggerInterface;
+use Spiral\Files\Exception\FilesException;
 use Spiral\Files\FilesInterface;
 
 /**
@@ -25,9 +26,9 @@ abstract readonly class AbstractReader implements ReaderInterface
             'reader' => static::class,
         ]);
 
-        $content = $this->files->read($path);
-
-        if ($content === false) {
+        try {
+            $content = $this->files->read($path);
+        } catch (FilesException) {
             $errorMessage = \sprintf('Unable to read configuration file: %s', $path);
             $this->logger?->error($errorMessage);
             throw new ReaderException($errorMessage);

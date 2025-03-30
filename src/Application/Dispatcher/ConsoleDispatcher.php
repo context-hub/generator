@@ -39,7 +39,6 @@ final readonly class ConsoleDispatcher implements DispatcherInterface
 
         /** @var Console $console */
         $console = $this->container->get(Console::class);
-        $input ??= new ArgvInput();
 
         try {
             return $console->run(

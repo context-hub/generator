@@ -8,6 +8,7 @@ use Butschster\ContextGenerator\Application\Application;
 use Butschster\ContextGenerator\Lib\HttpClient\Exception\HttpException;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 use Spiral\Core\Container;
+use Spiral\Files\Exception\FilesException;
 use Spiral\Files\FilesInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -219,13 +220,14 @@ final class SelfUpdateCommand extends BaseCommand
             }
 
             // Read the content from temp file
-            $newPharContent = $this->files->read($tempFile);
-            if ($newPharContent === false) {
+            try {
+                $newPharContent = $this->files->read($tempFile);
+            } catch (FilesException) {
                 throw new \RuntimeException("Failed to read the downloaded content");
             }
 
             // Write the content to the target file
-            if ($this->files->write($pharPath, $newPharContent, false)) {
+            if ($this->files->write($pharPath, $newPharContent)) {
                 $this->output->text("Successfully wrote new version to: {$pharPath}");
             } else {
                 throw new \RuntimeException("Failed to write the new version");
