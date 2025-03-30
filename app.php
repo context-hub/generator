@@ -78,7 +78,7 @@ $version = \file_exists($versionFile)
 $type = $version['type'] ?? 'phar';
 
 $options = new Options();
-$options->checkScope = true;
+$options->checkScope = false;
 
 $container = new Container(options: $options);
 $container->bindSingleton(

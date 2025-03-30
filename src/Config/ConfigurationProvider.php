@@ -9,13 +9,11 @@ use Butschster\ContextGenerator\Config\Loader\ConfigLoaderFactoryInterface;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
 use Butschster\ContextGenerator\Directories;
 use Psr\Log\LoggerInterface;
-use Spiral\Core\Attribute\Scope;
 use Spiral\Files\FilesInterface;
 
 /**
  * Service for providing configuration loaders based on different sources
  */
-#[Scope('compiler')]
 final readonly class ConfigurationProvider
 {
     public function __construct(

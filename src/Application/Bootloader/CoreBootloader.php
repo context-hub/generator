@@ -36,16 +36,13 @@ final class CoreBootloader extends Bootloader
         ];
     }
 
-    public function init(
-        DirectoriesInterface $dirs,
-        EnvironmentInterface $env,
-    ): void {
+    public function init(DirectoriesInterface $dirs, EnvironmentInterface $env): void
+    {
         $this->loadEnvVariables($dirs, $env);
     }
 
-    public function boot(
-        ConsoleBootloader $console,
-    ): void {
+    public function boot(ConsoleBootloader $console): void
+    {
         $console->addCommand(
             VersionCommand::class,
             InitCommand::class,

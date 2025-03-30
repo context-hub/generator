@@ -27,6 +27,7 @@ use Butschster\ContextGenerator\McpServer\Registry\McpItemsRegistry;
 use Butschster\ContextGenerator\McpServer\Routing\McpResponseStrategy;
 use Butschster\ContextGenerator\McpServer\Routing\RouteRegistrar;
 use Butschster\ContextGenerator\McpServer\ServerFactory;
+use Butschster\ContextGenerator\McpServer\ServerFactoryInterface;
 use League\Route\Router;
 use League\Route\Strategy\StrategyInterface;
 use Psr\Container\ContainerInterface;
@@ -62,13 +63,16 @@ final class McpServerBootloader extends Bootloader
         );
     }
 
-    public function boot(ConsoleBootloader $bootloader, BinderInterface $binder): void
+    public function boot(ConsoleBootloader $bootloader, BinderInterface $binder, McpConfig $config): void
     {
         $bootloader->addCommand(MCPServerCommand::class);
+    }
 
-        $binder
-            ->getBinder('mcp')
-            ->bindSingleton(ServerFactory::class, function (
+    #[\Override]
+    public function defineSingletons(): array
+    {
+        return [
+            ServerFactoryInterface::class => function (
                 RouteRegistrar $registrar,
                 McpItemsRegistry $registry,
                 HasPrefixLoggerInterface $logger,
@@ -81,20 +85,11 @@ final class McpServerBootloader extends Bootloader
                 }
 
                 return $factory;
-            });
-    }
-
-    #[\Override]
-    public function defineSingletons(): array
-    {
-        return [
-            McpItemsRegistry::class => McpItemsRegistry::class,
+            },
             RouteRegistrar::class => RouteRegistrar::class,
+            McpItemsRegistry::class => McpItemsRegistry::class,
             StrategyInterface::class => McpResponseStrategy::class,
-            Router::class => static function (
-                StrategyInterface $strategy,
-                ContainerInterface $container,
-            ) {
+            Router::class => static function (StrategyInterface $strategy, ContainerInterface $container) {
                 $router = new Router();
                 \assert($strategy instanceof McpResponseStrategy);
                 $strategy->setContainer($container);

@@ -6,13 +6,13 @@ namespace Butschster\ContextGenerator\McpServer\Routing;
 
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Route;
 use League\Route\Router;
-use Spiral\Core\FactoryInterface;
+use Psr\Container\ContainerInterface;
 
 final readonly class RouteRegistrar
 {
     public function __construct(
         public Router $router,
-        private FactoryInterface $factory,
+        private ContainerInterface $container,
     ) {}
 
     /**
@@ -56,7 +56,7 @@ final readonly class RouteRegistrar
         $registeredRoute = $this->router->map(
             $route->method,
             $path,
-            $this->factory->make($controllerClass),
+            $this->container->get($controllerClass),
         );
 
         // Set route name if provided

@@ -9,7 +9,6 @@ use Butschster\ContextGenerator\Source\Fetcher\SourceFetcherProvider;
 use Butschster\ContextGenerator\SourceParserInterface;
 use Spiral\Boot\Bootloader\Bootloader;
 use Spiral\Core\Attribute\Singleton;
-use Spiral\Core\BinderInterface;
 use Spiral\Core\Container;
 
 #[Singleton]
@@ -29,13 +28,14 @@ final class SourceFetcherBootloader extends Bootloader
         return $this;
     }
 
-    public function init(BinderInterface $binder): void
+    #[\Override]
+    public function defineSingletons(): array
     {
-        $binder = $binder->getBinder('compiler');
-
-        $binder->bindSingleton(
-            SourceParserInterface::class,
-            static function (Container $container, SourceFetcherBootloader $bootloader) {
+        return [
+            SourceParserInterface::class => static function (
+                Container $container,
+                SourceFetcherBootloader $bootloader,
+            ) {
                 $fetchers = $bootloader->getFetchers();
                 return new SourceFetcherProvider(
                     fetchers: \array_map(
@@ -44,7 +44,7 @@ final class SourceFetcherBootloader extends Bootloader
                     ),
                 );
             },
-        );
+        ];
     }
 
     public function getFetchers(): array

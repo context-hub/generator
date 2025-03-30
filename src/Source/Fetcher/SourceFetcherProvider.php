@@ -7,13 +7,11 @@ namespace Butschster\ContextGenerator\Source\Fetcher;
 use Butschster\ContextGenerator\Modifier\ModifiersApplierInterface;
 use Butschster\ContextGenerator\Source\SourceInterface;
 use Butschster\ContextGenerator\SourceParserInterface;
-use Spiral\Core\Attribute\Scope;
 use Spiral\Core\Attribute\Singleton;
 
 /**
  * Registry for source fetchers
  */
-#[Scope(name: 'compiler')]
 #[Singleton]
 final readonly class SourceFetcherProvider implements SourceParserInterface
 {

@@ -7,10 +7,10 @@ namespace Butschster\ContextGenerator\McpServer;
 use Butschster\ContextGenerator\McpServer\Registry\McpItemsRegistry;
 use Butschster\ContextGenerator\McpServer\Routing\RouteRegistrar;
 use Psr\Log\LoggerInterface;
-use Spiral\Core\Attribute\Scope;
+use Spiral\Core\Attribute\Singleton;
 
-#[Scope('mcp')]
-final class ServerFactory
+#[Singleton]
+final class ServerFactory implements ServerFactoryInterface
 {
     /**
      * @var array<class-string>
@@ -33,9 +33,6 @@ final class ServerFactory
         $this->actions[] = $class;
     }
 
-    /**
-     * Create a new McpServer instance with attribute-based routing
-     */
     public function create(): Server
     {
         // Register all classes with MCP item attributes. Should be before registering controllers!

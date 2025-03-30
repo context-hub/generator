@@ -19,7 +19,6 @@ use Butschster\ContextGenerator\Modifier\Alias\ModifierResolver;
 use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
 use Butschster\ContextGenerator\SourceParserInterface;
 use Spiral\Boot\Bootloader\Bootloader;
-use Spiral\Core\BinderInterface;
 use Spiral\Files\FilesInterface;
 
 final class ConfigLoaderBootloader extends Bootloader
@@ -43,6 +42,36 @@ final class ConfigLoaderBootloader extends Bootloader
                 ]);
             },
 
+            ConfigurationProvider::class => static fn(
+                ConfigLoaderFactoryInterface $configLoaderFactory,
+                FilesInterface $files,
+                Directories $dirs,
+                HasPrefixLoggerInterface $logger,
+                ParserPluginRegistry $pluginRegistry,
+            ) => new ConfigurationProvider(
+                loaderFactory: $configLoaderFactory,
+                files: $files,
+                dirs: $dirs,
+                logger: $logger->withPrefix('config-provider'),
+                parserPlugins: $pluginRegistry->getPlugins(),
+            ),
+
+            DocumentCompiler::class => static fn(
+                FilesInterface $files,
+                SourceParserInterface $parser,
+                Directories $dirs,
+                SourceModifierRegistry $registry,
+                ContentBuilderFactory $builderFactory,
+                HasPrefixLoggerInterface $logger,
+            ) => new DocumentCompiler(
+                files: $files,
+                parser: $parser,
+                basePath: $dirs->outputPath,
+                modifierRegistry: $registry,
+                builderFactory: $builderFactory,
+                logger: $logger->withPrefix('document-compiler'),
+            ),
+
             ConfigLoaderFactoryInterface::class => static fn(
                 FilesInterface $files,
                 Directories $dirs,
@@ -53,40 +82,5 @@ final class ConfigLoaderBootloader extends Bootloader
                 logger: $logger->withPrefix('config-loader'),
             ),
         ];
-    }
-
-    public function init(BinderInterface $binder): void
-    {
-        $binder = $binder->getBinder('compiler');
-
-        $binder->bindSingleton(DocumentCompiler::class, static fn(
-            FilesInterface $files,
-            SourceParserInterface $parser,
-            Directories $dirs,
-            SourceModifierRegistry $registry,
-            ContentBuilderFactory $builderFactory,
-            HasPrefixLoggerInterface $logger,
-        ) => new DocumentCompiler(
-            files: $files,
-            parser: $parser,
-            basePath: $dirs->outputPath,
-            modifierRegistry: $registry,
-            builderFactory: $builderFactory,
-            logger: $logger->withPrefix('document-compiler'),
-        ));
-
-        $binder->bindSingleton(ConfigurationProvider::class, static fn(
-            ConfigLoaderFactoryInterface $configLoaderFactory,
-            FilesInterface $files,
-            Directories $dirs,
-            HasPrefixLoggerInterface $logger,
-            ParserPluginRegistry $pluginRegistry,
-        ) => new ConfigurationProvider(
-            loaderFactory: $configLoaderFactory,
-            files: $files,
-            dirs: $dirs,
-            logger: $logger->withPrefix('config-provider'),
-            parserPlugins: $pluginRegistry->getPlugins(),
-        ));
     }
 }
