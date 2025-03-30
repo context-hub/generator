@@ -5,13 +5,10 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Application\Bootloader;
 
 use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
-use Butschster\ContextGenerator\Application\Logger\LoggerFactory;
-use Psr\Log\LoggerAwareInterface;
+use Butschster\ContextGenerator\Application\Logger\NullLogger;
 use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
 use Spiral\Boot\Bootloader\Bootloader;
-use Spiral\Core\BinderInterface;
-use Spiral\Exceptions\ExceptionHandlerInterface;
+use Spiral\Core\Config\Proxy;
 
 final class LoggerBootloader extends Bootloader
 {
@@ -19,24 +16,14 @@ final class LoggerBootloader extends Bootloader
     public function defineSingletons(): array
     {
         return [
-            LoggerFactory::class => LoggerFactory::class,
-            LoggerInterface::class => NullLogger::class,
-            HasPrefixLoggerInterface::class => LoggerInterface::class,
+            LoggerInterface::class => new Proxy(
+                interface: LoggerInterface::class,
+                fallbackFactory: static fn(): LoggerInterface => new NullLogger(),
+            ),
+            HasPrefixLoggerInterface::class => new Proxy(
+                interface: HasPrefixLoggerInterface::class,
+                fallbackFactory: static fn(): LoggerInterface => new NullLogger(),
+            ),
         ];
-    }
-
-    public function init(
-        LoggerFactory $factory,
-        BinderInterface $binder,
-        ExceptionHandlerInterface $handler,
-    ): void {
-        $binder->bindSingleton(
-            LoggerInterface::class,
-            $logger = $factory->create(),
-        );
-
-        if ($handler instanceof LoggerAwareInterface) {
-            $handler->setLogger($logger);
-        }
     }
 }

@@ -101,7 +101,7 @@ $app = Kernel::create(
         'config' => $appPath,
         'json-schema' => __DIR__ . '/json-schema.json',
     ],
-    exceptionHandler: new ExceptionHandler(),
+    exceptionHandler: ExceptionHandler::class,
     container: $container,
 )->run();
 

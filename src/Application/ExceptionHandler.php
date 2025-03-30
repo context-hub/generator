@@ -7,7 +7,7 @@ namespace Butschster\ContextGenerator\Application;
 use Monolog\ErrorHandler;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
+use Spiral\Core\Attribute\Proxy;
 use Spiral\Exceptions\Attribute\NonReportable;
 use Spiral\Exceptions\ExceptionHandlerInterface;
 use Spiral\Exceptions\ExceptionRendererInterface;
@@ -33,8 +33,9 @@ final class ExceptionHandler implements ExceptionHandlerInterface, LoggerAwareIn
     protected mixed $output = null;
     private ErrorHandler $handler;
 
-    public function __construct(LoggerInterface $logger = new NullLogger())
-    {
+    public function __construct(
+        #[Proxy] LoggerInterface $logger,
+    ) {
         $this->setLogger($logger);
         $this->bootBasicHandlers();
     }

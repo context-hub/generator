@@ -11,4 +11,3 @@ enum AppScope: string
     case McpServer = 'mcp-server';
     case McpServerRequest = 'mcp-server-request';
 }
-

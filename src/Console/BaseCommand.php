@@ -6,11 +6,10 @@ namespace Butschster\ContextGenerator\Console;
 
 use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
 use Butschster\ContextGenerator\Application\Logger\LoggerFactory;
-use Psr\Log\LoggerAwareInterface;
-use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
 use Spiral\Console\Command;
-use Spiral\Core\BinderInterface;
+use Spiral\Core\Scope;
+use Spiral\Core\ScopeInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -18,19 +17,9 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 /**
  * @protected HasPrefixLoggerInterface $logger
  */
-abstract class BaseCommand extends Command implements LoggerAwareInterface
+abstract class BaseCommand extends Command
 {
-    use LoggerAwareTrait;
-
-    public function setLogger(LoggerInterface $logger): void
-    {
-        $this->logger = $logger;
-
-        $binder = $this->container->get(BinderInterface::class);
-
-        $binder->bindSingleton(LoggerInterface::class, $logger);
-        $binder->bindSingleton(HasPrefixLoggerInterface::class, $logger);
-    }
+    protected LoggerInterface $logger;
 
     #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -45,11 +34,19 @@ abstract class BaseCommand extends Command implements LoggerAwareInterface
             loggingEnabled: $output->isVerbose() || $output->isDebug() || $output->isVeryVerbose(),
         );
 
-        $this->setLogger($logger);
+        $this->logger = $logger;
 
         \assert($this->logger instanceof HasPrefixLoggerInterface);
         \assert($this->logger instanceof LoggerInterface);
 
-        return parent::execute($input, new SymfonyStyle($input, $output));
+        return $this->container->get(ScopeInterface::class)->runScope(
+            bindings: new Scope(
+                bindings: [
+                    LoggerInterface::class => $logger,
+                    HasPrefixLoggerInterface::class => $logger,
+                ],
+            ),
+            scope: fn() => parent::execute($input, $output),
+        );
     }
 }

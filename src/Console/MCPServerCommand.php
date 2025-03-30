@@ -6,6 +6,7 @@ namespace Butschster\ContextGenerator\Console;
 
 use Butschster\ContextGenerator\Application\Application;
 use Butschster\ContextGenerator\Application\AppScope;
+use Butschster\ContextGenerator\Application\Logger\FileLogger;
 use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
 use Butschster\ContextGenerator\Config\ConfigurationProvider;
 use Butschster\ContextGenerator\Config\Exception\ConfigLoaderException;
@@ -44,19 +45,18 @@ final class MCPServerCommand extends BaseCommand
 
     public function __invoke(Container $container, Directories $dirs, Application $app): int
     {
-        $this->setLogger(new Logger('mcp', [
-            new RotatingFileHandler(
-                filename: $dirs->rootPath . '/mcp.log',
-                level: match (true) {
-                    $this->output->isVeryVerbose() => Level::Debug,
-                    $this->output->isVerbose() => Level::Info,
-                    $this->output->isQuiet() => Level::Error,
-                    default => Level::Warning,
-                },
-            ),
-        ]));
+        $logger = new FileLogger(
+            name: 'mcp',
+            filePath: $dirs->rootPath . '/mcp.log',
+            level: match (true) {
+                $this->output->isVeryVerbose() => Level::Debug,
+                $this->output->isVerbose() => Level::Info,
+                $this->output->isQuiet() => Level::Error,
+                default => Level::Warning,
+            },
+        );
 
-        $this->logger->info('Starting MCP server...');
+        $logger->info('Starting MCP server...');
 
         // Determine the effective root path based on config file path
         $dirs = $dirs
@@ -66,18 +66,22 @@ final class MCPServerCommand extends BaseCommand
         return $container->runScope(
             bindings: new Scope(
                 bindings: [
-                    LoggerInterface::class => $this->logger,
-                    HasPrefixLoggerInterface::class => $this->logger,
+                    LoggerInterface::class => $logger,
+                    HasPrefixLoggerInterface::class => $logger,
                     Directories::class => $dirs,
                 ],
             ),
-            scope: function (Container $container, ConfigurationProvider $configProvider) use ($dirs, $app) {
-                $this->logger->info(\sprintf('Using root path: %s', $dirs->rootPath));
+            scope: static function (Container $container, ConfigurationProvider $configProvider) use (
+                $logger,
+                $dirs,
+                $app,
+            ) {
+                $logger->info(\sprintf('Using root path: %s', $dirs->rootPath));
 
                 try {
                     // Get the appropriate loader based on options provided
                     if (!\is_dir($dirs->rootPath)) {
-                        $this->logger->info(
+                        $logger->info(
                             'Loading configuration from provided path...',
                             [
                                 'path' => $dirs->rootPath,
@@ -85,11 +89,11 @@ final class MCPServerCommand extends BaseCommand
                         );
                         $loader = $configProvider->fromPath($dirs->configPath);
                     } else {
-                        $this->logger->info('Using default configuration location...');
+                        $logger->info('Using default configuration location...');
                         $loader = $configProvider->fromDefaultLocation();
                     }
                 } catch (ConfigLoaderException $e) {
-                    $this->logger->error('Failed to load configuration', [
+                    $logger->error('Failed to load configuration', [
                         'error' => $e->getMessage(),
                     ]);
 
@@ -101,8 +105,6 @@ final class MCPServerCommand extends BaseCommand
                         name: AppScope::Mcp,
                         bindings: [
                             ConfigLoaderInterface::class => $loader,
-                            LoggerInterface::class => $this->logger,
-                            HasPrefixLoggerInterface::class => $this->logger,
                         ],
                     ),
                     scope: static function (ServerRunnerInterface $factory) use ($app): void {

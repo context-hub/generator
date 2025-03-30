@@ -12,14 +12,22 @@
         </ignoreFiles>
     </projectFiles>
     <issueHandlers>
+        <InvalidArgument>
+            <errorLevel type="suppress">
+                <referencedFunction name="Spiral\Core\ScopeInterface::runScope"/>
+            </errorLevel>
+        </InvalidArgument>
         <InternalMethod>
             <errorLevel type="suppress">
-                <referencedMethod name="Spiral\Core\Attribute\Scope::__construct" />
+                <referencedMethod name="Spiral\Core\Attribute\Scope::__construct"/>
+                <referencedMethod name="Spiral\Core\Scope::__construct"/>
             </errorLevel>
         </InternalMethod>
         <InternalClass>
             <errorLevel type="suppress">
-                <referencedClass name="Spiral\Core\Attribute\Scope" />
+                <referencedClass name="Spiral\Core\Attribute\Scope"/>
+                <referencedClass name="Spiral\Core\Attribute\Proxy"/>
+                <referencedClass name="Spiral\Core\Scope"/>
             </errorLevel>
         </InternalClass>
     </issueHandlers>
@@ -28,5 +36,7 @@
         <function name="dd"/>
         <function name="dump"/>
         <function name="trap"/>
+        <function name="tr"/>
+        <function name="td"/>
     </forbiddenFunctions>
 </psalm>
