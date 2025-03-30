@@ -12,3 +12,4 @@ node_modules
 .context
 runtime
 mcp-*.log
+.env

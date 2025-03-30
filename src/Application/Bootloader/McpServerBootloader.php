@@ -19,9 +19,9 @@ use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileInfoAction
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileMoveAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileReadAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileRenameAction;
-use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileUpdateLinesAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileWriteAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\ListToolsAction;
+use Butschster\ContextGenerator\McpServer\McpConfig;
 use Butschster\ContextGenerator\McpServer\Registry\McpItemsRegistry;
 use Butschster\ContextGenerator\McpServer\Routing\McpResponseStrategy;
 use Butschster\ContextGenerator\McpServer\Routing\RouteRegistrar;
@@ -30,15 +30,34 @@ use League\Route\Router;
 use League\Route\Strategy\StrategyInterface;
 use Psr\Container\ContainerInterface;
 use Spiral\Boot\Bootloader\Bootloader;
+use Spiral\Boot\EnvironmentInterface;
+use Spiral\Config\ConfiguratorInterface;
 
 final class McpServerBootloader extends Bootloader
 {
+    public function __construct(
+        private readonly ConfiguratorInterface $config,
+    ) {}
+
     #[\Override]
     public function defineDependencies(): array
     {
         return [
             HttpClientBootloader::class,
         ];
+    }
+
+    public function init(EnvironmentInterface $env): void
+    {
+        $this->config->setDefaults(
+            McpConfig::CONFIG,
+            [
+                'ctx_document_name_format' => $env->get('MCP_DOCUMENT_NAME_FORMAT', '[{path}] {description}'),
+                'file_operations' => [
+                    'enable' => (bool) $env->get('MCP_FILE_OPERATIONS', true),
+                ],
+            ],
+        );
     }
 
     public function boot(ConsoleBootloader $bootloader): void
@@ -53,10 +72,11 @@ final class McpServerBootloader extends Bootloader
             ServerFactory::class => function (
                 RouteRegistrar $registrar,
                 McpItemsRegistry $registry,
+                McpConfig $config,
             ) {
                 $factory = new ServerFactory($registrar, $registry);
 
-                foreach ($this->actions() as $action) {
+                foreach ($this->actions($config) as $action) {
                     $factory->registerAction($action);
                 }
 
@@ -79,9 +99,9 @@ final class McpServerBootloader extends Bootloader
         ];
     }
 
-    private function actions(): array
+    private function actions(McpConfig $config): array
     {
-        return [
+        $actions = [
             // Prompts controllers
             AvailableContextPromptAction::class,
             ProjectStructurePromptAction::class,
@@ -98,14 +118,19 @@ final class McpServerBootloader extends Bootloader
             ContextRequestAction::class,
             ContextGetAction::class,
             ContextAction::class,
-
-            // Filesystem controllers
-            FileReadAction::class,
-            FileWriteAction::class,
-            FileRenameAction::class,
-            FileMoveAction::class,
-            FileInfoAction::class,
-            FileUpdateLinesAction::class,
         ];
+
+        if ($config->isFileOperationsEnabled()) {
+            $actions = [
+                ...$actions,
+                FileInfoAction::class,
+                FileReadAction::class,
+                FileWriteAction::class,
+                FileRenameAction::class,
+                FileMoveAction::class,
+            ];
+        }
+
+        return $actions;
     }
 }
