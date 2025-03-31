@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Config\Parser;
 
+use Spiral\Core\Attribute\Singleton;
+
+#[Singleton]
 final class ParserPluginRegistry
 {
     public function __construct(

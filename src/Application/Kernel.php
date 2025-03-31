@@ -16,6 +16,7 @@ use Butschster\ContextGenerator\Application\Bootloader\McpServerBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\ModifierBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\SourceFetcherBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\VariableBootloader;
+use Butschster\ContextGenerator\McpServer\Prompt\McpPromptBootloader;
 use Butschster\ContextGenerator\Modifier\PhpContentFilter\PhpContentFilterBootloader;
 use Butschster\ContextGenerator\Modifier\PhpDocs\PhpDocsModifierBootloader;
 use Butschster\ContextGenerator\Modifier\PhpSignature\PhpSignatureModifierBootloader;
@@ -53,7 +54,6 @@ class Kernel extends AbstractKernel
             ConfigLoaderBootloader::class,
             ModifierBootloader::class,
             ContentRendererBootloader::class,
-            McpServerBootloader::class,
             VariableBootloader::class,
             SourceFetcherBootloader::class,
             SourceRegistryBootloader::class,
@@ -72,6 +72,10 @@ class Kernel extends AbstractKernel
             PhpDocsModifierBootloader::class,
             PhpSignatureModifierBootloader::class,
             SanitizerModifierBootloader::class,
+
+            // MCP Server
+            McpServerBootloader::class,
+            McpPromptBootloader::class,
         ];
     }
 
