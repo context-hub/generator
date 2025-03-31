@@ -27,27 +27,6 @@ final class UrlSource extends BaseSource
         parent::__construct(description: $description, tags: $tags);
     }
 
-    public static function fromArray(array $data): self
-    {
-        if (!isset($data['urls']) || !\is_array($data['urls'])) {
-            throw new \RuntimeException('URL source must have a "urls" array property');
-        }
-
-        // Add headers validation and parsing
-        $headers = [];
-        if (isset($data['headers']) && \is_array($data['headers'])) {
-            $headers = $data['headers'];
-        }
-
-        return new self(
-            urls: $data['urls'],
-            description: $data['description'] ?? '',
-            headers: $headers,
-            selector: $data['selector'] ?? null,
-            tags: $data['tags'] ?? [],
-        );
-    }
-
     /**
      * Get the CSS selector for content extraction
      */
@@ -64,11 +43,6 @@ final class UrlSource extends BaseSource
         return $this->selector !== null && \trim($this->selector) !== '';
     }
 
-    /**
-     * @return (string|string[])[]
-     *
-     * @psalm-return array{type: 'url', urls?: array<string>, description?: string, selector?: string}
-     */
     #[\Override]
     public function jsonSerialize(): array
     {

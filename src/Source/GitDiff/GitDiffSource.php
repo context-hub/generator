@@ -43,182 +43,61 @@ class GitDiffSource extends SourceWithModifiers implements FilterableSourceInter
         parent::__construct(description: $description, tags: $tags, modifiers: $modifiers);
     }
 
-    /**
-     * Create a GitCommitDiffSource from an array configuration
-     */
-    public static function fromArray(array $data, string $rootPath = ''): self
-    {
-        $repository = $data['repository'] ?? '.';
-        if (!\is_string($repository)) {
-            throw new \RuntimeException('"repository" must be a string in source');
-        }
-
-        // Prepend root path if repository is relative
-        $repository = \str_starts_with($repository, '/')
-            ? $repository
-            : $rootPath . '/' . \trim($repository, '/');
-
-        // Validate filePattern if present
-        if (isset($data['filePattern'])) {
-            if (!\is_string($data['filePattern']) && !\is_array($data['filePattern'])) {
-                throw new \RuntimeException('filePattern must be a string or an array of strings');
-            }
-            // If it's an array, make sure all elements are strings
-            if (\is_array($data['filePattern'])) {
-                foreach ($data['filePattern'] as $pattern) {
-                    if (!\is_string($pattern)) {
-                        throw new \RuntimeException('All elements in filePattern must be strings');
-                    }
-                }
-            }
-        }
-
-        // Ensure commit is a string
-        $commit = $data['commit'] ?? 'staged';
-        if (isset($data['commit']) && !\is_string($commit)) {
-            throw new \RuntimeException('commit must be a string');
-        }
-
-        // Process render configuration - support both legacy and new options
-        $renderConfig = new RenderConfig();
-
-        // Check if we have a render property with sub-properties
-        if (isset($data['render'])) {
-            if (\is_array($data['render'])) {
-                $renderConfig = RenderConfig::fromArray($data['render']);
-            } elseif (\is_string($data['render'])) {
-                $renderConfig = RenderConfig::fromString($data['render']);
-            }
-        }
-
-        return new self(
-            repository: $repository,
-            description: $data['description'] ?? '',
-            commit: $commit,
-            filePattern: $data['filePattern'] ?? '*.*',
-            notPath: $data['notPath'] ?? [],
-            path: $data['path'] ?? [],
-            contains: $data['contains'] ?? [],
-            notContains: $data['notContains'] ?? [],
-            renderConfig: $renderConfig,
-            modifiers: $data['modifiers'] ?? [],
-            tags: $data['tags'] ?? [],
-        );
-    }
-
-    /**
-     * Get the commit parameter
-     */
     public function getCommit(): string
     {
         return $this->commit;
     }
 
-    /**
-     * Get file name pattern(s)
-     *
-     * @return string|string[] Pattern(s) to match file names against
-     *
-     * @psalm-return array<string>|string
-     */
     public function name(): string|array|null
     {
         return $this->filePattern;
     }
 
-    /**
-     * Get file path pattern(s)
-     *
-     * @return string|string[] Pattern(s) to match file paths against
-     *
-     * @psalm-return array<string>|string
-     */
     public function path(): string|array|null
     {
         return $this->path;
     }
 
-    /**
-     * Get excluded path pattern(s)
-     *
-     * @return string[] Pattern(s) to exclude file paths
-     *
-     * @psalm-return array<string>
-     */
     public function notPath(): string|array|null
     {
         return $this->notPath;
     }
 
-    /**
-     * Get content pattern(s)
-     *
-     * @return string|string[] Pattern(s) to match file content against
-     *
-     * @psalm-return array<string>|string
-     */
     public function contains(): string|array|null
     {
         return $this->contains;
     }
 
-    /**
-     * Get excluded content pattern(s)
-     *
-     * @return string|string[] Pattern(s) to exclude file content
-     *
-     * @psalm-return array<string>|string
-     */
     public function notContains(): string|array|null
     {
         return $this->notContains;
     }
 
-    /**
-     * Get size constraint(s) - not applicable for git diffs
-     */
     public function size(): string|array|null
     {
         return null;
     }
 
-    /**
-     * Get date constraint(s) - not applicable for git diffs
-     */
     public function date(): string|array|null
     {
         return null;
     }
 
-    /**
-     * Get directories to search in - not applicable for git diffs
-     */
     public function in(): array|null
     {
         return null;
     }
 
-    /**
-     * Get individual files to include - not applicable for git diffs
-     */
     public function files(): array|null
     {
         return null;
     }
 
-    /**
-     * Check if unreadable directories should be ignored - not applicable for git diffs
-     */
     public function ignoreUnreadableDirs(): bool
     {
         return false;
     }
 
-    /**
-     * Specify data which should be serialized to JSON
-     *
-     * @return array<string, mixed>
-     */
     #[\Override]
     public function jsonSerialize(): array
     {

@@ -8,6 +8,7 @@ use Butschster\ContextGenerator\Application\Bootloader\SourceFetcherBootloader;
 use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
 use Butschster\ContextGenerator\Directories;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
+use Butschster\ContextGenerator\Source\Registry\SourceRegistryInterface;
 use Spiral\Boot\Bootloader\Bootloader;
 
 final class TreeSourceBootloader extends Bootloader
@@ -28,8 +29,12 @@ final class TreeSourceBootloader extends Bootloader
         ];
     }
 
-    public function init(SourceFetcherBootloader $registry): void
-    {
+    public function init(
+        SourceFetcherBootloader $registry,
+        SourceRegistryInterface $sourceRegistry,
+        TreeSourceFactory $factory,
+    ): void {
         $registry->register(TreeSourceFetcher::class);
+        $sourceRegistry->register($factory);
     }
 }

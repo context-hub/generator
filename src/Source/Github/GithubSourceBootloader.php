@@ -8,6 +8,7 @@ use Butschster\ContextGenerator\Application\Bootloader\GithubClientBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\SourceFetcherBootloader;
 use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
+use Butschster\ContextGenerator\Source\Registry\SourceRegistryInterface;
 use Spiral\Boot\Bootloader\Bootloader;
 
 final class GithubSourceBootloader extends Bootloader
@@ -34,8 +35,12 @@ final class GithubSourceBootloader extends Bootloader
         ];
     }
 
-    public function init(SourceFetcherBootloader $registry): void
-    {
+    public function init(
+        SourceFetcherBootloader $registry,
+        SourceRegistryInterface $sourceRegistry,
+        GithubSourceFactory $factory,
+    ): void {
         $registry->register(GithubSourceFetcher::class);
+        $sourceRegistry->register($factory);
     }
 }

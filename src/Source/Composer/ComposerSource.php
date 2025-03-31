@@ -45,117 +45,56 @@ final class ComposerSource extends SourceWithModifiers implements FilterableSour
         parent::__construct(description: $description, tags: $tags, modifiers: $modifiers);
     }
 
-    /**
-     * Create a ComposerSource from an array configuration
-     */
-    public static function fromArray(array $data, string $rootPath = ''): self
-    {
-        $composerPath = $data['composerPath'] ?? '.';
-
-        // If the path is relative, make it absolute using the root path
-        if (!\str_starts_with($composerPath, '/')) {
-            $composerPath = \rtrim($rootPath, '/') . '/' . \ltrim($composerPath, '/');
-        }
-
-        return new self(
-            composerPath: $composerPath,
-            description: $data['description'] ?? 'Composer Packages',
-            packages: $data['packages'] ?? [],
-            filePattern: $data['filePattern'] ?? '*.php',
-            notPath: $data['notPath'] ?? ['tests', 'vendor', 'examples'],
-            path: $data['path'] ?? [],
-            contains: $data['contains'] ?? [],
-            notContains: $data['notContains'] ?? [],
-            includeDevDependencies: $data['includeDevDependencies'] ?? false,
-            treeView: TreeViewConfig::fromArray($data),
-            modifiers: $data['modifiers'] ?? [],
-            tags: $data['tags'] ?? [],
-        );
-    }
-
-    /**
-     * Get file name pattern(s)
-     */
     public function name(): string|array|null
     {
         return $this->filePattern;
     }
 
-    /**
-     * Get file path pattern(s)
-     */
     public function path(): string|array|null
     {
         return $this->path;
     }
 
-    /**
-     * Get excluded path pattern(s)
-     */
     public function notPath(): string|array|null
     {
         return $this->notPath;
     }
 
-    /**
-     * Get content pattern(s)
-     */
     public function contains(): string|array|null
     {
         return $this->contains;
     }
 
-    /**
-     * Get excluded content pattern(s)
-     */
     public function notContains(): string|array|null
     {
         return $this->notContains;
     }
 
-    /**
-     * Get size constraint(s) - not applicable for composer sources
-     */
     public function size(): string|array|null
     {
         return null;
     }
 
-    /**
-     * Get date constraint(s) - not applicable for composer sources
-     */
     public function date(): string|array|null
     {
         return null;
     }
 
-    /**
-     * Get directories to search in - handled by the fetcher
-     */
     public function in(): array|null
     {
         return null;
     }
 
-    /**
-     * Get individual files to include - handled by the fetcher
-     */
     public function files(): array|null
     {
         return null;
     }
 
-    /**
-     * Whether to ignore unreadable directories
-     */
     public function ignoreUnreadableDirs(): bool
     {
         return true;
     }
 
-    /**
-     * Specify data which should be serialized to JSON
-     */
     #[\Override]
     public function jsonSerialize(): array
     {

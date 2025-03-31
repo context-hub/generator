@@ -18,6 +18,7 @@ use Butschster\ContextGenerator\Modifier\Alias\AliasesRegistry;
 use Butschster\ContextGenerator\Modifier\Alias\ModifierAliasesParserPlugin;
 use Butschster\ContextGenerator\Modifier\Alias\ModifierResolver;
 use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
+use Butschster\ContextGenerator\Source\Registry\SourceProviderInterface;
 use Butschster\ContextGenerator\SourceParserInterface;
 use Spiral\Boot\Bootloader\Bootloader;
 use Spiral\Core\Config\Proxy;
@@ -29,7 +30,10 @@ final class ConfigLoaderBootloader extends Bootloader
     public function defineSingletons(): array
     {
         return [
-            ParserPluginRegistry::class => static function () {
+            ParserPluginRegistry::class => static function (
+                SourceProviderInterface $sourceProvider,
+                HasPrefixLoggerInterface $logger,
+            ) {
                 $modifierResolver = new ModifierResolver(
                     aliasesRegistry: $aliases = new AliasesRegistry(),
                 );
@@ -39,7 +43,9 @@ final class ConfigLoaderBootloader extends Bootloader
                         aliasesRegistry: $aliases,
                     ),
                     new DocumentsParserPlugin(
+                        sources: $sourceProvider,
                         modifierResolver: $modifierResolver,
+                        logger: $logger->withPrefix('documents-parser-plugin'),
                     ),
                 ]);
             },

@@ -42,161 +42,56 @@ final class GithubSource extends SourceWithModifiers implements FilterableSource
         parent::__construct(description: $description, tags: $tags, modifiers: $modifiers);
     }
 
-    public static function fromArray(array $data): self
-    {
-        if (!isset($data['repository'])) {
-            throw new \RuntimeException('GitHub source must have a "repository" property');
-        }
-
-        // Determine source paths (required)
-        if (!isset($data['sourcePaths'])) {
-            throw new \RuntimeException('GitHub source must have a "sourcePaths" property');
-        }
-        $sourcePaths = $data['sourcePaths'];
-        if (!\is_string($sourcePaths) && !\is_array($sourcePaths)) {
-            throw new \RuntimeException('"sourcePaths" must be a string or array in source');
-        }
-
-        // Validate filePattern if present
-        if (isset($data['filePattern'])) {
-            if (!\is_string($data['filePattern']) && !\is_array($data['filePattern'])) {
-                throw new \RuntimeException('filePattern must be a string or an array of strings');
-            }
-            // If it's an array, make sure all elements are strings
-            if (\is_array($data['filePattern'])) {
-                foreach ($data['filePattern'] as $pattern) {
-                    if (!\is_string($pattern)) {
-                        throw new \RuntimeException('All elements in filePattern must be strings');
-                    }
-                }
-            }
-        }
-
-        // Convert notPath to match Symfony Finder's naming convention
-        $notPath = $data['excludePatterns'] ?? $data['notPath'] ?? [];
-
-        return new self(
-            repository: $data['repository'],
-            sourcePaths: $sourcePaths,
-            branch: $data['branch'] ?? 'main',
-            description: $data['description'] ?? '',
-            filePattern: $data['filePattern'] ?? '*.*',
-            notPath: $notPath,
-            path: $data['path'] ?? null,
-            contains: $data['contains'] ?? null,
-            notContains: $data['notContains'] ?? null,
-            showTreeView: $data['showTreeView'] ?? true,
-            githubToken: $data['githubToken'] ?? null,
-            modifiers: $data['modifiers'] ?? [],
-            tags: $data['tags'] ?? [],
-        );
-    }
-
-    /**
-     * Get file name pattern(s)
-     *
-     * @return string|array<string>|null Pattern(s) to match file names against
-     */
     public function name(): string|array|null
     {
         return $this->filePattern;
     }
 
-    /**
-     * Get file path pattern(s)
-     *
-     * @return string|array<string>|null Pattern(s) to match file paths against
-     */
     public function path(): string|array|null
     {
         return $this->path;
     }
 
-    /**
-     * Get excluded path pattern(s)
-     *
-     * @return array<string>|null Pattern(s) to exclude file paths
-     */
     public function notPath(): array|null
     {
         return $this->notPath;
     }
 
-    /**
-     * Get content pattern(s)
-     *
-     * @return string|array<string>|null Pattern(s) to match file content against
-     */
     public function contains(): string|array|null
     {
         return $this->contains;
     }
 
-    /**
-     * Get excluded content pattern(s)
-     *
-     * @return string|array<string>|null Pattern(s) to exclude file content
-     */
     public function notContains(): string|array|null
     {
         return $this->notContains;
     }
 
-    /**
-     * Get size constraint(s)
-     *
-     * @return string|array<string>|null Size constraint(s)
-     */
     public function size(): string|array|null
     {
         return null;
     }
 
-    /**
-     * Get date constraint(s)
-     *
-     * @return string|array<string>|null Date constraint(s)
-     */
     public function date(): string|array|null
     {
         return null;
     }
 
-    /**
-     * Get directories to search in
-     *
-     * @return array<string>|null Directories to search in
-     */
     public function in(): array|null
     {
         return (array) $this->sourcePaths;
     }
 
-    /**
-     * Get individual files to include
-     *
-     * @return null Individual files to include
-     */
     public function files(): array|null
     {
         return null; // GitHub source treats all sourcePaths as directories
     }
 
-    /**
-     * Check if unreadable directories should be ignored
-     *
-     * @return false Always false for GitHub sources
-     */
     public function ignoreUnreadableDirs(): bool
     {
         return false; // Not applicable for GitHub sources
     }
 
-    /**
-     * Serialize to JSON
-     *
-     * @return array<string, mixed> JSON serializable array
-     */
     #[\Override]
     public function jsonSerialize(): array
     {

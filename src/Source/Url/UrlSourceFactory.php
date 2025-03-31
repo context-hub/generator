@@ -1,0 +1,48 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Butschster\ContextGenerator\Source\Url;
+
+use Butschster\ContextGenerator\Source\Registry\AbstractSourceFactory;
+use Butschster\ContextGenerator\Source\SourceInterface;
+
+/**
+ * Factory for creating UrlSource instances
+ */
+final readonly class UrlSourceFactory extends AbstractSourceFactory
+{
+    #[\Override]
+    public function getType(): string
+    {
+        return 'url';
+    }
+
+    #[\Override]
+    public function create(array $config): SourceInterface
+    {
+        $this->logger?->debug('Creating URL source', [
+            'path' => $this->dirs->rootPath,
+            'config' => $config,
+        ]);
+
+
+        if (!isset($config['urls']) || !\is_array($config['urls'])) {
+            throw new \RuntimeException('URL source must have a "urls" array property');
+        }
+
+        // Add headers validation and parsing
+        $headers = [];
+        if (isset($config['headers']) && \is_array($config['headers'])) {
+            $headers = $config['headers'];
+        }
+
+        return new UrlSource(
+            urls: $config['urls'],
+            description: $config['description'] ?? '',
+            headers: $headers,
+            selector: $config['selector'] ?? null,
+            tags: $config['tags'] ?? [],
+        );
+    }
+}

@@ -8,6 +8,8 @@ use Butschster\ContextGenerator\Application\Bootloader\SourceFetcherBootloader;
 use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
+use Butschster\ContextGenerator\Modifier\Alias\ModifierResolver;
+use Butschster\ContextGenerator\Source\Registry\SourceRegistryInterface;
 use Spiral\Boot\Bootloader\Bootloader;
 
 final class TextSourceBootloader extends Bootloader
@@ -28,8 +30,12 @@ final class TextSourceBootloader extends Bootloader
         ];
     }
 
-    public function init(SourceFetcherBootloader $registry): void
-    {
+    public function init(
+        SourceFetcherBootloader $registry,
+        SourceRegistryInterface $sourceRegistry,
+        TextSourceFactory $factory,
+    ): void {
         $registry->register(TextSourceFetcher::class);
+        $sourceRegistry->register($factory);
     }
 }

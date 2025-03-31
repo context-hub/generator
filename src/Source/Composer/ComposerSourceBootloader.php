@@ -13,6 +13,7 @@ use Butschster\ContextGenerator\Source\Composer\Client\FileSystemComposerClient;
 use Butschster\ContextGenerator\Source\Composer\Provider\ComposerProviderInterface;
 use Butschster\ContextGenerator\Source\Composer\Provider\CompositeComposerProvider;
 use Butschster\ContextGenerator\Source\Composer\Provider\LocalComposerProvider;
+use Butschster\ContextGenerator\Source\Registry\SourceRegistryInterface;
 use Spiral\Boot\Bootloader\Bootloader;
 
 final class ComposerSourceBootloader extends Bootloader
@@ -21,6 +22,7 @@ final class ComposerSourceBootloader extends Bootloader
     public function defineSingletons(): array
     {
         return [
+
             ComposerProviderInterface::class => static fn(
                 HasPrefixLoggerInterface $logger,
             ) => new CompositeComposerProvider(
@@ -47,8 +49,12 @@ final class ComposerSourceBootloader extends Bootloader
         ];
     }
 
-    public function init(SourceFetcherBootloader $registry): void
-    {
+    public function init(
+        SourceFetcherBootloader $registry,
+        SourceRegistryInterface $sourceRegistry,
+        ComposerSourceFactory $factory,
+    ): void {
         $registry->register(ComposerSourceFetcher::class);
+        $sourceRegistry->register($factory);
     }
 }

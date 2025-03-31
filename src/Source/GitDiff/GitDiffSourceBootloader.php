@@ -7,6 +7,7 @@ namespace Butschster\ContextGenerator\Source\GitDiff;
 use Butschster\ContextGenerator\Application\Bootloader\SourceFetcherBootloader;
 use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
+use Butschster\ContextGenerator\Source\Registry\SourceRegistryInterface;
 use Spiral\Boot\Bootloader\Bootloader;
 
 final class GitDiffSourceBootloader extends Bootloader
@@ -25,8 +26,12 @@ final class GitDiffSourceBootloader extends Bootloader
         ];
     }
 
-    public function init(SourceFetcherBootloader $registry): void
-    {
+    public function init(
+        SourceFetcherBootloader $registry,
+        SourceRegistryInterface $sourceRegistry,
+        GitDiffSourceFactory $factory,
+    ): void {
         $registry->register(GitDiffSourceFetcher::class);
+        $sourceRegistry->register($factory);
     }
 }
