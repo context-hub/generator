@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\File;
 
-use Butschster\ContextGenerator\Fetcher\FilterableSourceInterface;
 use Butschster\ContextGenerator\Lib\TreeBuilder\TreeViewConfig;
 use Butschster\ContextGenerator\Modifier\Modifier;
+use Butschster\ContextGenerator\Source\Fetcher\FilterableSourceInterface;
 use Butschster\ContextGenerator\Source\SourceWithModifiers;
 
 /**
@@ -46,157 +46,41 @@ final class FileSource extends SourceWithModifiers implements FilterableSourceIn
         parent::__construct(description: $description, tags: $tags, modifiers: $modifiers);
     }
 
-    /**
-     * Create a FileSource from an array configuration
-     */
-    public static function fromArray(array $data, string $rootPath = ''): self
-    {
-        if (!isset($data['sourcePaths'])) {
-            throw new \RuntimeException('File source must have a "sourcePaths" property');
-        }
-
-        $sourcePaths = $data['sourcePaths'];
-        if (!\is_string($sourcePaths) && !\is_array($sourcePaths)) {
-            throw new \RuntimeException('"sourcePaths" must be a string or array in source');
-        }
-
-        $sourcePaths = \is_string($sourcePaths) ? [$sourcePaths] : $sourcePaths;
-        $sourcePaths = \array_map(
-            static fn(string $sourcePath): string => $rootPath . '/' . \trim($sourcePath, '/'),
-            $sourcePaths,
-        );
-
-        // Validate filePattern if present
-        if (isset($data['filePattern'])) {
-            if (!\is_string($data['filePattern']) && !\is_array($data['filePattern'])) {
-                throw new \RuntimeException('filePattern must be a string or an array of strings');
-            }
-
-            // If it's an array, make sure all elements are strings
-            if (\is_array($data['filePattern'])) {
-                foreach ($data['filePattern'] as $pattern) {
-                    if (!\is_string($pattern)) {
-                        throw new \RuntimeException('All elements in filePattern must be strings');
-                    }
-                }
-            }
-        }
-
-        // Handle filePattern parameter, allowing both string and array formats
-        $filePattern = $data['filePattern'] ?? '*.*';
-
-        // Convert notPath to match Symfony Finder's naming convention
-        $notPath = $data['excludePatterns'] ?? $data['notPath'] ?? [];
-
-        // Handle tree view configuration (either boolean or config object)
-        return new self(
-            sourcePaths: $sourcePaths,
-            description: $data['description'] ?? '',
-            filePattern: $filePattern,
-            notPath: $notPath,
-            path: $data['path'] ?? [],
-            contains: $data['contains'] ?? [],
-            notContains: $data['notContains'] ?? [],
-            size: $data['size'] ?? [],
-            date: $data['date'] ?? [],
-            ignoreUnreadableDirs: $data['ignoreUnreadableDirs'] ?? false,
-            treeView: TreeViewConfig::fromArray($data),
-            modifiers: $data['modifiers'] ?? [],
-            tags: $data['tags'] ?? [],
-        );
-    }
-
-    /**
-     * Get file name pattern(s)
-     *
-     * @return string|string[] Pattern(s) to match file names against
-     *
-     * @psalm-return array<string>|string
-     */
     public function name(): string|array|null
     {
         return $this->filePattern;
     }
 
-    /**
-     * Get file path pattern(s)
-     *
-     * @return string|string[] Pattern(s) to match file paths against
-     *
-     * @psalm-return array<string>|string
-     */
     public function path(): string|array|null
     {
         return $this->path;
     }
 
-    /**
-     * Get excluded path pattern(s)
-     *
-     * @return string[] Pattern(s) to exclude file paths
-     *
-     * @psalm-return array<string>
-     */
     public function notPath(): string|array|null
     {
         return $this->notPath;
     }
 
-    /**
-     * Get content pattern(s)
-     *
-     * @return string|string[] Pattern(s) to match file content against
-     *
-     * @psalm-return array<string>|string
-     */
     public function contains(): string|array|null
     {
         return $this->contains;
     }
 
-    /**
-     * Get excluded content pattern(s)
-     *
-     * @return string|string[] Pattern(s) to exclude file content
-     *
-     * @psalm-return array<string>|string
-     */
     public function notContains(): string|array|null
     {
         return $this->notContains;
     }
 
-    /**
-     * Get size constraint(s)
-     *
-     * @return string|string[] Size constraint(s)
-     *
-     * @psalm-return array<string>|string
-     */
     public function size(): string|array|null
     {
         return $this->size;
     }
 
-    /**
-     * Get date constraint(s)
-     *
-     * @return string|string[] Date constraint(s)
-     *
-     * @psalm-return array<string>|string
-     */
     public function date(): string|array|null
     {
         return $this->date;
     }
 
-    /**
-     * Get directories to search in
-     *
-     * @return null|string[] Directories to search in
-     *
-     * @psalm-return non-empty-list<string>|null
-     */
     public function in(): array|null
     {
         $directories = [];
@@ -211,13 +95,6 @@ final class FileSource extends SourceWithModifiers implements FilterableSourceIn
         return empty($directories) ? null : $directories;
     }
 
-    /**
-     * Get individual files to include
-     *
-     * @return null|string[] Individual files to include
-     *
-     * @psalm-return non-empty-list<string>|null
-     */
     public function files(): array|null
     {
         $files = [];
@@ -232,9 +109,6 @@ final class FileSource extends SourceWithModifiers implements FilterableSourceIn
         return empty($files) ? null : $files;
     }
 
-    /**
-     * Check if unreadable directories should be ignored
-     */
     public function ignoreUnreadableDirs(): bool
     {
         return $this->ignoreUnreadableDirs;

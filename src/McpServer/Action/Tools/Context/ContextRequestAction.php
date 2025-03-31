@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer\Action\Tools\Context;
 
-use Butschster\ContextGenerator\ConfigurationProviderFactory;
-use Butschster\ContextGenerator\Directories;
+use Butschster\ContextGenerator\Config\ConfigurationProvider;
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
 use Butschster\ContextGenerator\Document\Compiler\Error\ErrorCollection;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
@@ -31,8 +30,7 @@ final readonly class ContextRequestAction
     public function __construct(
         private LoggerInterface $logger,
         private DocumentCompiler $documentCompiler,
-        private ConfigurationProviderFactory $configurationProviderFactory,
-        private Directories $dirs,
+        private ConfigurationProvider $provider,
     ) {}
 
     #[Post(path: '/tools/call/context-request', name: 'tools.context.request')]
@@ -53,9 +51,7 @@ final readonly class ContextRequestAction
         }
 
         try {
-            $configProvider = $this->configurationProviderFactory->create($this->dirs);
-
-            $loader = $configProvider->fromString($json);
+            $loader = $this->provider->fromString($json);
             $documents = $loader->load()->getItems();
             $compiledDocuments = [];
 

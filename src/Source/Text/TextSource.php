@@ -25,20 +25,6 @@ final class TextSource extends BaseSource
         parent::__construct(description: $description, tags: $tags);
     }
 
-    public static function fromArray(array $data): self
-    {
-        if (!isset($data['content']) || !\is_string($data['content'])) {
-            throw new \RuntimeException('Text source must have a "content" string property');
-        }
-
-        return new self(
-            content: $data['content'],
-            description: $data['description'] ?? '',
-            tag: $data['tag'] ?? 'INSTRUCTION',
-            tags: $data['tags'] ?? [],
-        );
-    }
-
     #[\Override]
     public function jsonSerialize(): array
     {

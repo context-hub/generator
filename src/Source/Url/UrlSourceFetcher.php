@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\Url;
 
-use Butschster\ContextGenerator\Fetcher\SourceFetcherInterface;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Lib\Html\HtmlCleaner;
 use Butschster\ContextGenerator\Lib\Html\HtmlCleanerInterface;
@@ -13,7 +12,8 @@ use Butschster\ContextGenerator\Lib\Html\SelectorContentExtractorInterface;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
 use Butschster\ContextGenerator\Modifier\ModifiersApplierInterface;
-use Butschster\ContextGenerator\SourceInterface;
+use Butschster\ContextGenerator\Source\Fetcher\SourceFetcherInterface;
+use Butschster\ContextGenerator\Source\SourceInterface;
 use Psr\Log\LoggerInterface;
 
 /**

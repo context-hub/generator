@@ -4,20 +4,22 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Console;
 
-use Butschster\ContextGenerator\ConfigLoader\ConfigLoaderInterface;
-use Butschster\ContextGenerator\ConfigLoader\Exception\ConfigLoaderException;
-use Butschster\ContextGenerator\ConfigurationProviderFactory;
+use Butschster\ContextGenerator\Application\Application;
+use Butschster\ContextGenerator\Application\AppScope;
+use Butschster\ContextGenerator\Application\Logger\FileLogger;
+use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
+use Butschster\ContextGenerator\Config\ConfigurationProvider;
+use Butschster\ContextGenerator\Config\Exception\ConfigLoaderException;
+use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
 use Butschster\ContextGenerator\Directories;
-use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
-use Butschster\ContextGenerator\DocumentCompilerFactory;
-use Butschster\ContextGenerator\McpServer\ServerFactory;
-use Monolog\Handler\RotatingFileHandler;
+use Butschster\ContextGenerator\McpServer\ServerRunnerInterface;
 use Monolog\Level;
-use Monolog\Logger;
+use Psr\Log\LoggerInterface;
+use Spiral\Console\Attribute\Option;
 use Spiral\Core\Container;
+use Spiral\Core\Scope;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputOption;
 
 #[AsCommand(
     name: 'server',
@@ -25,105 +27,91 @@ use Symfony\Component\Console\Input\InputOption;
 )]
 final class MCPServerCommand extends BaseCommand
 {
-    public function __construct(
-        Container $container,
-        private readonly Directories $dirs,
-    ) {
-        parent::__construct($container);
-    }
+    #[Option(
+        name: 'config-file',
+        shortcut: 'c',
+        description: 'Path to configuration file (absolute or relative to current directory).',
+    )]
+    protected ?string $configPath = null;
 
-    public function __invoke(
-        DocumentCompilerFactory $documentCompilerFactory,
-        ConfigurationProviderFactory $configurationProviderFactory,
-    ): int {
-        $this->setLogger(new Logger('mcp', [
-            new RotatingFileHandler(
-                filename: $this->dirs->rootPath . '/mcp.log',
-                level: match (true) {
-                    $this->output->isVeryVerbose() => Level::Debug,
-                    $this->output->isVerbose() => Level::Info,
-                    $this->output->isQuiet() => Level::Error,
-                    default => Level::Warning,
-                },
-            ),
-        ]));
+    #[Option(
+        name: 'env',
+        shortcut: 'e',
+        description: 'Path to .env (like .env.local) file. If not provided, will ignore any .env files',
+    )]
+    protected ?string $envFileName = null;
 
-        $this->logger->info('Starting MCP server...');
+    public function __invoke(Container $container, Directories $dirs, Application $app): int
+    {
+        $logger = new FileLogger(
+            name: 'mcp',
+            filePath: $dirs->rootPath . '/mcp.log',
+            level: match (true) {
+                $this->output->isVeryVerbose() => Level::Debug,
+                $this->output->isVerbose() => Level::Info,
+                $this->output->isQuiet() => Level::Error,
+                default => Level::Warning,
+            },
+        );
 
-        $envFileName = $this->input->getOption('env') ?? null;
-        $configPath = $this->input->getOption('config-file');
+        $logger->info('Starting MCP server...');
 
         // Determine the effective root path based on config file path
-        $dirs = $this->dirs
-            ->determineRootPath($configPath)
-            ->withEnvFile($envFileName);
+        $dirs = $dirs
+            ->determineRootPath($this->configPath)
+            ->withEnvFile($this->envFileName);
 
-        $this->container->bindSingleton(Directories::class, $dirs);
+        return $container->runScope(
+            bindings: new Scope(
+                bindings: [
+                    LoggerInterface::class => $logger,
+                    HasPrefixLoggerInterface::class => $logger,
+                    Directories::class => $dirs,
+                ],
+            ),
+            scope: static function (Container $container, ConfigurationProvider $configProvider) use (
+                $logger,
+                $dirs,
+                $app,
+            ) {
+                $logger->info(\sprintf('Using root path: %s', $dirs->rootPath));
 
-        $this->logger->info(\sprintf('Using root path: %s', $dirs->rootPath));
+                try {
+                    // Get the appropriate loader based on options provided
+                    if (!\is_dir($dirs->rootPath)) {
+                        $logger->info(
+                            'Loading configuration from provided path...',
+                            [
+                                'path' => $dirs->rootPath,
+                            ],
+                        );
+                        $loader = $configProvider->fromPath($dirs->configPath);
+                    } else {
+                        $logger->info('Using default configuration location...');
+                        $loader = $configProvider->fromDefaultLocation();
+                    }
+                } catch (ConfigLoaderException $e) {
+                    $logger->error('Failed to load configuration', [
+                        'error' => $e->getMessage(),
+                    ]);
 
-        // Create the document compiler
-        $compiler = $documentCompilerFactory->create(dirs: $dirs);
+                    return Command::FAILURE;
+                }
 
-        // Create configuration provider
-        $configProvider = $configurationProviderFactory->create($dirs);
-
-        try {
-            // Get the appropriate loader based on options provided
-            if (!\is_dir($dirs->rootPath)) {
-                $this->logger->info(
-                    'Loading configuration from provided path...',
-                    [
-                        'path' => $dirs->rootPath,
-                    ],
+                $container->runScope(
+                    bindings: new Scope(
+                        name: AppScope::Mcp,
+                        bindings: [
+                            ConfigLoaderInterface::class => $loader,
+                        ],
+                    ),
+                    scope: static function (ServerRunnerInterface $factory) use ($app): void {
+                        $factory->run(name: \sprintf('%s %s', $app->name, $app->version));
+                    },
                 );
-                $loader = $configProvider->fromPath($dirs->configPath);
-            } else {
-                $this->logger->info('Using default configuration location...');
-                $loader = $configProvider->fromDefaultLocation();
-            }
-        } catch (ConfigLoaderException $e) {
-            $this->logger->error('Failed to load configuration', [
-                'error' => $e->getMessage(),
-            ]);
 
-            return Command::FAILURE;
-        }
-
-        // Register dependencies
-        $this->container->bindSingleton(ConfigLoaderInterface::class, $loader);
-        $this->container->bindSingleton(DocumentCompiler::class, $compiler);
-
-
-        // Create and run the MCP server
-        $server = $this->container->get(ServerFactory::class)->create($this->logger);
-
-        $server->run(name: $this->input->getOption('name'));
-
-        return self::SUCCESS;
-    }
-
-    protected function configure(): void
-    {
-        $this
-            ->addOption(
-                'env',
-                'e',
-                InputOption::VALUE_REQUIRED,
-                'Path to .env (like .env.local) file. If not provided, will ignore any .env files',
-            )
-            ->addOption(
-                'name',
-                null,
-                InputOption::VALUE_REQUIRED,
-                'Server name',
-                'Context Generator',
-            )
-            ->addOption(
-                'config-file',
-                'c',
-                InputOption::VALUE_REQUIRED,
-                'Path to configuration file (absolute or relative to current directory).',
-            );
+                return self::SUCCESS;
+            },
+        );
     }
 }

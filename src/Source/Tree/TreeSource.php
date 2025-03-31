@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\Tree;
 
-use Butschster\ContextGenerator\Fetcher\FilterableSourceInterface;
 use Butschster\ContextGenerator\Lib\TreeBuilder\TreeViewConfig;
 use Butschster\ContextGenerator\Source\BaseSource;
+use Butschster\ContextGenerator\Source\Fetcher\FilterableSourceInterface;
 
 /**
  * Tree source for generating hierarchical visualizations of directory structures
@@ -39,94 +39,6 @@ final class TreeSource extends BaseSource implements FilterableSourceInterface
     ) {
         parent::__construct(description: $description, tags: $tags);
     }
-
-    /**
-     * Create a TreeSource from an array configuration
-     */
-    public static function fromArray(array $data, string $rootPath = ''): self
-    {
-        if (!isset($data['sourcePaths'])) {
-            throw new \RuntimeException('Tree source must have a "sourcePaths" property');
-        }
-
-        $sourcePath = $data['sourcePaths'];
-        if (!\is_string($sourcePath) && !\is_array($sourcePath)) {
-            throw new \RuntimeException('"sourcePaths" must be a string or array in source');
-        }
-
-        $sourcePath = \is_string($sourcePath) ? [$sourcePath] : $sourcePath;
-        $sourcePath = \array_map(
-            static fn(string $sourcePath): string => $rootPath . '/' . \trim($sourcePath, '/'),
-            $sourcePath,
-        );
-
-        // Validate filePattern if present
-        if (isset($data['filePattern'])) {
-            if (!\is_string($data['filePattern']) && !\is_array($data['filePattern'])) {
-                throw new \RuntimeException('filePattern must be a string or an array of strings');
-            }
-
-            // If it's an array, make sure all elements are strings
-            if (\is_array($data['filePattern'])) {
-                foreach ($data['filePattern'] as $pattern) {
-                    if (!\is_string($pattern)) {
-                        throw new \RuntimeException('All elements in filePattern must be strings');
-                    }
-                }
-            }
-        }
-
-        // Validate renderFormat if present
-        if (isset($data['renderFormat'])) {
-            if (!\is_string($data['renderFormat'])) {
-                throw new \RuntimeException('renderFormat must be a string');
-            }
-
-            $validFormats = ['ascii'];
-            if (!\in_array($data['renderFormat'], $validFormats, true)) {
-                throw new \RuntimeException(
-                    \sprintf(
-                        'Invalid renderFormat: %s. Allowed formats: %s',
-                        $data['renderFormat'],
-                        \implode(', ', $validFormats),
-                    ),
-                );
-            }
-        }
-
-        // Handle filePattern parameter, allowing both string and array formats
-        $filePattern = $data['filePattern'] ?? '*';
-
-        // Convert notPath
-        $notPath = $data['notPath'] ?? [];
-
-        // Validate dirContext if present
-        if (isset($data['dirContext']) && !\is_array($data['dirContext'])) {
-            throw new \RuntimeException('dirContext must be an associative array');
-        }
-
-        return new self(
-            sourcePaths: $sourcePath,
-            description: $data['description'] ?? '',
-            filePattern: $filePattern,
-            notPath: $notPath,
-            path: $data['path'] ?? [],
-            contains: $data['contains'] ?? [],
-            notContains: $data['notContains'] ?? [],
-            renderFormat: $data['renderFormat'] ?? 'ascii',
-            treeView: new TreeViewConfig(
-                showSize: $data['showSize'] ?? false,
-                showLastModified: $data['showLastModified'] ?? false,
-                showCharCount: $data['showCharCount'] ?? false,
-                includeFiles: $data['includeFiles'] ?? true,
-                maxDepth: $data['maxDepth'] ?? 0,
-                dirContext: $data['dirContext'] ?? [],
-            ),
-            tags: $data['tags'] ?? [],
-        );
-    }
-
-    // Implementation of FilterableSourceInterface methods
 
     public function name(): string|array|null
     {

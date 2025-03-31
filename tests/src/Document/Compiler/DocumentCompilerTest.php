@@ -7,14 +7,14 @@ namespace Tests\Document\Compiler;
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
 use Butschster\ContextGenerator\Document\Compiler\Error\SourceError;
 use Butschster\ContextGenerator\Document\Document;
-use Butschster\ContextGenerator\FilesInterface;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
+use Butschster\ContextGenerator\Source\SourceInterface;
 use Butschster\ContextGenerator\SourceParserInterface;
-use Butschster\ContextGenerator\SourceInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use Psr\Log\LoggerInterface;
+use Spiral\Files\FilesInterface;
 use Tests\TestCase;
 
 #[CoversClass(DocumentCompiler::class)]

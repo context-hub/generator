@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\File;
 
-use Butschster\ContextGenerator\Fetcher\FilterableSourceInterface;
 use Butschster\ContextGenerator\Lib\Finder\FinderInterface;
 use Butschster\ContextGenerator\Lib\Finder\FinderResult;
 use Butschster\ContextGenerator\Lib\TreeBuilder\FileTreeBuilder;
+use Butschster\ContextGenerator\Source\Fetcher\FilterableSourceInterface;
 use Symfony\Component\Finder\Finder;
 
 /**

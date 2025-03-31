@@ -8,10 +8,8 @@ documents:
           - SourceWithModifiers.php
           - ../SourceInterface.php
           - ../SourceParserInterface.php
-          - ../SourceFetcherRegistryFactory.php
           - ../Document
           - ../Fetcher
-          - ../DocumentCompilerFactory.php
           - ../DocumentCompilerFactory.php
 
   - description: Source Implementations - File

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Lib\Sanitizer;
 
-use Butschster\ContextGenerator\Lib\Sanitizer\ContextSanitizer;
-use Butschster\ContextGenerator\Lib\Sanitizer\RuleInterface;
+use Butschster\ContextGenerator\Modifier\Sanitizer\Rule\ContextSanitizer;
+use Butschster\ContextGenerator\Modifier\Sanitizer\Rule\RuleInterface;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 

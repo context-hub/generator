@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\ConfigLoader\Import;
 
-use Butschster\ContextGenerator\ConfigLoader\ConfigLoaderFactoryInterface;
-use Butschster\ContextGenerator\ConfigLoader\ConfigLoaderInterface;
-use Butschster\ContextGenerator\ConfigLoader\Import\ImportResolver;
+use Butschster\ContextGenerator\Config\Loader\ConfigLoaderFactoryInterface;
+use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
+use Butschster\ContextGenerator\Config\Import\ImportResolver;
 use Butschster\ContextGenerator\Directories;
-use Butschster\ContextGenerator\FilesInterface;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use Spiral\Files\FilesInterface;
 
 class ImportResolverTest extends TestCase
 {

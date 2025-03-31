@@ -4,13 +4,19 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Console;
 
+use Butschster\ContextGenerator\Directories;
 use Butschster\ContextGenerator\Lib\HttpClient\Exception\HttpException;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
+use Spiral\Console\Attribute\Option;
+use Spiral\Files\FilesInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputOption;
 
-#[AsCommand(name: 'schema', description: 'Get information about or download the JSON schema for IDE integration')]
+#[AsCommand(
+    name: 'schema',
+    description: 'Get information about or download the JSON schema for IDE integration',
+    aliases: ['json-schema'],
+)]
 final class SchemaCommand extends BaseCommand
 {
     /**
@@ -18,19 +24,35 @@ final class SchemaCommand extends BaseCommand
      */
     private const string SCHEMA_URL = 'https://raw.githubusercontent.com/context-hub/generator/refs/heads/main/json-schema.json';
 
+    #[Option(
+        name: 'download',
+        shortcut: 'd',
+        description: 'Download the schema to the current directory',
+    )]
+    protected bool $download = false;
+
+    #[Option(
+        name: 'output',
+        shortcut: 'o',
+        description: 'The file path where the schema should be saved',
+    )]
+    protected string $outputPath = 'json-schema.json';
+
     /**
      * Execute the command
      */
-    public function __invoke(HttpClientInterface $httpClient): int
-    {
-        $shouldDownload = $this->input->getOption('download');
-        $outputPath = $this->input->getOption('output');
+    public function __invoke(
+        HttpClientInterface $httpClient,
+        FilesInterface $files,
+        Directories $dirs,
+    ): int {
+        $outputPath = $dirs->getFilePath($this->outputPath);
 
         // Always show the URL where the schema is hosted
         $this->output->info('JSON schema URL: ' . self::SCHEMA_URL);
 
         // If no download requested, exit early
-        if (!$shouldDownload) {
+        if (!$this->download) {
             $this->output->note('Use --download option to download the schema to your current directory');
             return Command::SUCCESS;
         }
@@ -64,7 +86,7 @@ final class SchemaCommand extends BaseCommand
             }
 
             // Save schema to file
-            if (\file_put_contents($outputPath, $schemaContent) === false) {
+            if (!$files->write($this->outputPath, $schemaContent)) {
                 $this->output->error(\sprintf('Failed to write schema to %s', $outputPath));
                 return Command::FAILURE;
             }
@@ -83,26 +105,5 @@ final class SchemaCommand extends BaseCommand
             $this->output->error(\sprintf('Error downloading schema: %s', $e->getMessage()));
             return Command::FAILURE;
         }
-    }
-
-    /**
-     * Configure the command
-     */
-    protected function configure(): void
-    {
-        $this
-            ->addOption(
-                name: 'download',
-                shortcut: 'd',
-                mode: InputOption::VALUE_NONE,
-                description: 'Download the schema to the current directory',
-            )
-            ->addOption(
-                name: 'output',
-                shortcut: 'o',
-                mode: InputOption::VALUE_REQUIRED,
-                description: 'The file path where the schema should be saved',
-                default: 'json-schema.json',
-            );
     }
 }

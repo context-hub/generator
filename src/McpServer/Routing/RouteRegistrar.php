@@ -6,20 +6,29 @@ namespace Butschster\ContextGenerator\McpServer\Routing;
 
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Route;
 use League\Route\Router;
+use Spiral\Core\Attribute\Proxy;
+use Spiral\Core\BinderInterface;
 use Spiral\Core\FactoryInterface;
 
 final readonly class RouteRegistrar
 {
+    private BinderInterface $binder;
+
     public function __construct(
         public Router $router,
-        private FactoryInterface $factory,
-    ) {}
+        #[Proxy] private FactoryInterface $factory,
+        BinderInterface $binder,
+    ) {
+        $this->binder = $binder->getBinder('mcp.server');
+    }
 
     /**
      * Register routes from a controller class
      */
     public function registerController(string $controllerClass): void
     {
+        $this->binder->bindSingleton($controllerClass, $controllerClass);
+
         $reflectionClass = new \ReflectionClass($controllerClass);
 
         // Get the controller prefix if defined
@@ -54,9 +63,11 @@ final readonly class RouteRegistrar
         $path = $this->normalizePath($route->path);
 
         $registeredRoute = $this->router->map(
-            $route->method,
-            $path,
-            $this->factory->make($controllerClass),
+            method: $route->method,
+            path: $path,
+            handler: $this->factory->make(ActionCaller::class, [
+                'class' => $controllerClass,
+            ]),
         );
 
         // Set route name if provided

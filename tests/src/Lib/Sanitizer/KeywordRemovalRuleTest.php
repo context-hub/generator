@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Lib\Sanitizer;
 
-use Butschster\ContextGenerator\Lib\Sanitizer\KeywordRemovalRule;
+use Butschster\ContextGenerator\Modifier\Sanitizer\Rule\KeywordRemovalRule;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 

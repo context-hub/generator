@@ -8,7 +8,7 @@ use Butschster\ContextGenerator\Lib\Finder\FinderInterface;
 use Butschster\ContextGenerator\Modifier\ModifiersApplier;
 use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
 use Butschster\ContextGenerator\Source\File\FileSourceFetcher;
-use Butschster\ContextGenerator\SourceInterface;
+use Butschster\ContextGenerator\Source\SourceInterface;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

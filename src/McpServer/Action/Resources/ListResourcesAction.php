@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer\Action\Resources;
 
-use Butschster\ContextGenerator\ConfigLoader\ConfigLoaderInterface;
+use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
+use Butschster\ContextGenerator\McpServer\McpConfig;
 use Butschster\ContextGenerator\McpServer\Registry\McpItemsRegistry;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Get;
 use Mcp\Types\ListResourcesResult;
@@ -18,6 +19,7 @@ final readonly class ListResourcesAction
         private LoggerInterface $logger,
         private ConfigLoaderInterface $configLoader,
         private McpItemsRegistry $registry,
+        private McpConfig $config,
     ) {}
 
     #[Get(path: '/resources/list', name: 'resources.list')]
@@ -36,17 +38,19 @@ final readonly class ListResourcesAction
         $documents = $this->configLoader->load();
 
         foreach ($documents->getItems() as $document) {
+            $tags = \implode(', ', $document->getTags());
+
             $resources[] = new Resource(
-                name: \sprintf(
-                    '[%s] %s',
-                    $document->outputPath,
-                    $document->description,
+                name: $this->config->getDocumentNameFormat(
+                    path: $document->outputPath,
+                    description: $document->description,
+                    tags: $tags,
                 ),
                 uri: 'ctx://document/' . $document->outputPath,
                 description: \sprintf(
                     '%s. Tags: %s',
                     $document->description,
-                    \implode(', ', $document->getTags()),
+                    $tags,
                 ),
                 mimeType: 'application/markdown',
             );

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Lib\Sanitizer;
 
-use Butschster\ContextGenerator\Lib\Sanitizer\CommentInsertionRule;
+use Butschster\ContextGenerator\Modifier\Sanitizer\Rule\CommentInsertionRule;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 

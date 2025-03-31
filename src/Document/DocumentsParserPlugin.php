@@ -4,19 +4,11 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Document;
 
-use Butschster\ContextGenerator\ConfigLoader\Parser\ConfigParserPluginInterface;
-use Butschster\ContextGenerator\ConfigLoader\Registry\DocumentRegistry;
-use Butschster\ContextGenerator\ConfigLoader\Registry\RegistryInterface;
+use Butschster\ContextGenerator\Config\Parser\ConfigParserPluginInterface;
+use Butschster\ContextGenerator\Config\Registry\RegistryInterface;
 use Butschster\ContextGenerator\Modifier\Alias\ModifierResolver;
 use Butschster\ContextGenerator\Modifier\Modifier;
-use Butschster\ContextGenerator\Source\Composer\ComposerSource;
-use Butschster\ContextGenerator\Source\File\FileSource;
-use Butschster\ContextGenerator\Source\GitDiff\GitDiffSource;
-use Butschster\ContextGenerator\Source\Github\GithubSource;
-use Butschster\ContextGenerator\Source\Text\TextSource;
-use Butschster\ContextGenerator\Source\Tree\TreeSource;
-use Butschster\ContextGenerator\Source\Url\UrlSource;
-use Butschster\ContextGenerator\SourceInterface;
+use Butschster\ContextGenerator\Source\Registry\SourceProviderInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -25,6 +17,7 @@ use Psr\Log\LoggerInterface;
 final readonly class DocumentsParserPlugin implements ConfigParserPluginInterface
 {
     public function __construct(
+        private SourceProviderInterface $sources,
         private ModifierResolver $modifierResolver = new ModifierResolver(),
         private ?LoggerInterface $logger = null,
     ) {}
@@ -90,8 +83,22 @@ final readonly class DocumentsParserPlugin implements ConfigParserPluginInterfac
                                 'sourceData' => $sourceData,
                             ],
                         );
-                        $source = $this->createSource($sourceData, "$index.$sourceIndex", $rootPath);
-                        $document->addSource($source);
+
+                        $type = $sourceData['type'] ?? null;
+
+                        if (!$this->sources->has($type)) {
+                            $this->logger?->warning(
+                                \sprintf('Source type "%s" not registered', $type),
+                                [
+                                    'document' => $document,
+                                    'sourceData' => $sourceData,
+                                ],
+                            );
+
+                            continue;
+                        }
+
+                        $document->addSource($this->sources->create($type, $sourceData));
                     } catch (\RuntimeException $e) {
                         $this->logger?->error(
                             \sprintf('Failed to create source at index %d: %s', $sourceIndex, $e->getMessage()),
@@ -111,43 +118,6 @@ final readonly class DocumentsParserPlugin implements ConfigParserPluginInterfac
     }
 
     /**
-     * Create a Source object from its configuration.
-     */
-    private function createSource(
-        array $sourceData,
-        string $path,
-        string $rootPath,
-    ): SourceInterface {
-        if (!isset($sourceData['type'])) {
-            throw new \RuntimeException(
-                \sprintf('Source at path %s must have a "type" property', $path),
-            );
-        }
-
-        // Parse source tags if present
-        $sourceTags = [];
-        if (isset($sourceData['tags']) && \is_array($sourceData['tags'])) {
-            $sourceTags = \array_map(\strval(...), $sourceData['tags']);
-        }
-
-        // Add tags to the source data
-        $sourceData['tags'] = $sourceTags;
-
-        return match ($sourceData['type']) {
-            'file' => $this->createFileSource($sourceData, $rootPath),
-            'url' => $this->createUrlSource($sourceData),
-            'text' => $this->createTextSource($sourceData),
-            'github' => $this->createGithubSource($sourceData),
-            'git_diff' => $this->createCommitDiffSource($sourceData, $rootPath),
-            'composer' => $this->createComposerSource($sourceData, $rootPath),
-            'tree' => $this->createTreeSource($sourceData, $rootPath),
-            default => throw new \RuntimeException(
-                \sprintf('Unknown source type "%s" at path %s', $sourceData['type'], $path),
-            ),
-        };
-    }
-
-    /**
      * Parse modifiers configuration
      *
      * @return array<Modifier>
@@ -155,63 +125,5 @@ final readonly class DocumentsParserPlugin implements ConfigParserPluginInterfac
     private function parseModifiers(array $modifiersConfig): array
     {
         return $this->modifierResolver->resolveAll($modifiersConfig);
-    }
-
-    /**
-     * Create a GithubSource from its configuration.
-     */
-    private function createGithubSource(array $data): GithubSource
-    {
-        return GithubSource::fromArray($data);
-    }
-
-    /**
-     * Create a FileSource from its configuration.
-     */
-    private function createFileSource(array $data, string $rootPath): FileSource
-    {
-        if (isset($data['modifiers'])) {
-            $data['modifiers'] = $this->parseModifiers($data['modifiers']);
-        }
-
-        return FileSource::fromArray($data, $rootPath);
-    }
-
-    /**
-     * Create a UrlSource from its configuration.
-     */
-    private function createUrlSource(array $data): UrlSource
-    {
-        return UrlSource::fromArray($data);
-    }
-
-    /**
-     * Create a TextSource from its configuration.
-     */
-    private function createTextSource(array $data): TextSource
-    {
-        return TextSource::fromArray($data);
-    }
-
-    /**
-     * Create a GitCommitDiffSource from its configuration.
-     */
-    private function createCommitDiffSource(array $data, string $rootPath): GitDiffSource
-    {
-        return GitDiffSource::fromArray($data, $rootPath);
-    }
-
-    private function createComposerSource(array $data, string $rootPath): ComposerSource
-    {
-        if (isset($data['modifiers'])) {
-            $data['modifiers'] = $this->parseModifiers($data['modifiers']);
-        }
-
-        return ComposerSource::fromArray($data, $rootPath);
-    }
-
-    private function createTreeSource(array $data, string $rootPath): TreeSource
-    {
-        return TreeSource::fromArray($data, $rootPath);
     }
 }

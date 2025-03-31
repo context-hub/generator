@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\Text;
 
-use Butschster\ContextGenerator\Fetcher\SourceFetcherInterface;
 use Butschster\ContextGenerator\Lib\Content\Block\TextBlock;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
 use Butschster\ContextGenerator\Modifier\ModifiersApplierInterface;
-use Butschster\ContextGenerator\SourceInterface;
+use Butschster\ContextGenerator\Source\Fetcher\SourceFetcherInterface;
+use Butschster\ContextGenerator\Source\SourceInterface;
 use Psr\Log\LoggerInterface;
 
 /**

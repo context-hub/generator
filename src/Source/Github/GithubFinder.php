@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\Github;
 
-use Butschster\ContextGenerator\Fetcher\FilterableSourceInterface;
 use Butschster\ContextGenerator\Lib\Finder\FinderInterface;
 use Butschster\ContextGenerator\Lib\Finder\FinderResult;
 use Butschster\ContextGenerator\Lib\GithubClient\GithubClientInterface;
@@ -16,6 +15,7 @@ use Butschster\ContextGenerator\Lib\PathFilter\FilterInterface;
 use Butschster\ContextGenerator\Lib\PathFilter\PathFilter;
 use Butschster\ContextGenerator\Lib\TreeBuilder\FileTreeBuilder;
 use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
+use Butschster\ContextGenerator\Source\Fetcher\FilterableSourceInterface;
 
 /**
  * GitHub content finder implementation

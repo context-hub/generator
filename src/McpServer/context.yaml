@@ -1,10 +1,12 @@
 documents:
-  - description: "MCP Cli command"
-    outputPath: "mcp/command.md"
+  - description: "MCP bootstrap"
+    outputPath: "mcp/bootstrap.md"
     sources:
       - type: file
         sourcePaths:
           - ../Console/MCPServerCommand.php
+          - ../Application/Bootloader/MCPServerBootloader.php
+          - ./McpConfig.php
 
   - description: "MCP Server Actions"
     outputPath: "mcp/actions.md"
