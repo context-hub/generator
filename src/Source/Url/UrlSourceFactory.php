@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Source\Url;
 
 use Butschster\ContextGenerator\Source\Registry\AbstractSourceFactory;
-use Butschster\ContextGenerator\Source\SourceInterface;
 
 /**
  * Factory for creating UrlSource instances
@@ -19,7 +18,7 @@ final readonly class UrlSourceFactory extends AbstractSourceFactory
     }
 
     #[\Override]
-    public function create(array $config): SourceInterface
+    public function create(array $config): UrlSource
     {
         $this->logger?->debug('Creating URL source', [
             'path' => $this->dirs->rootPath,

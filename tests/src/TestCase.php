@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use Butschster\ContextGenerator\Directories;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 
 /**
@@ -43,6 +44,16 @@ abstract class TestCase extends BaseTestCase
         foreach ($this->tempDirs as $dir) {
             $this->removeDirectory($dir);
         }
+    }
+
+    protected function createDirectories(string $rootPath = '/test'): Directories
+    {
+        return new Directories(
+            rootPath: $rootPath,
+            outputPath: $rootPath . '/output',
+            configPath: $rootPath . '/config',
+            jsonSchemaPath: $rootPath . '/schema.json',
+        );
     }
 
     /**

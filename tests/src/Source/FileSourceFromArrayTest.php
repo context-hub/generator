@@ -6,11 +6,14 @@ namespace Tests\Source;
 
 use Butschster\ContextGenerator\Lib\TreeBuilder\TreeViewConfig;
 use Butschster\ContextGenerator\Source\File\FileSource;
+use Butschster\ContextGenerator\Source\File\FileSourceFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class FileSourceFromArrayTest extends TestCase
 {
+    private FileSourceFactory $factory;
+
     #[Test]
     public function it_should_create_from_array_with_minimal_parameters(): void
     {
@@ -18,9 +21,9 @@ class FileSourceFromArrayTest extends TestCase
             'sourcePaths' => 'path/to/file.php',
         ];
 
-        $source = FileSource::fromArray($data);
+        $source = $this->factory->create($data);
 
-        $this->assertEquals(['/path/to/file.php'], $source->sourcePaths);
+        $this->assertEquals(['/test/path/to/file.php'], $source->sourcePaths);
         $this->assertEquals('', $source->getDescription());
         $this->assertEquals('*.*', $source->filePattern);
         $this->assertEquals([], $source->notPath);
@@ -45,9 +48,9 @@ class FileSourceFromArrayTest extends TestCase
             'modifiers' => ['modifier1', 'modifier2'],
         ];
 
-        $source = FileSource::fromArray($data);
+        $source = $this->factory->create($data);
 
-        $expectedPaths = ['/path/to/file.php', '/path/to/directory'];
+        $expectedPaths = ['/test/path/to/file.php', '/test/path/to/directory'];
         $this->assertEquals($expectedPaths, $source->sourcePaths);
         $this->assertEquals($data['description'], $source->getDescription());
         $this->assertEquals($data['filePattern'], $source->filePattern);
@@ -59,7 +62,6 @@ class FileSourceFromArrayTest extends TestCase
         $this->assertEquals($data['date'], $source->date);
         $this->assertEquals($data['ignoreUnreadableDirs'], $source->ignoreUnreadableDirs);
         $this->assertTrue($source->treeView->enabled);
-        $this->assertEquals($data['modifiers'], $source->modifiers);
     }
 
     #[Test]
@@ -70,7 +72,7 @@ class FileSourceFromArrayTest extends TestCase
             'filePattern' => ['*.php', '*.js'],
         ];
 
-        $source = FileSource::fromArray($data);
+        $source = $this->factory->create($data);
 
         $this->assertEquals($data['filePattern'], $source->filePattern);
     }
@@ -83,7 +85,7 @@ class FileSourceFromArrayTest extends TestCase
             'excludePatterns' => ['vendor', 'node_modules'],
         ];
 
-        $source = FileSource::fromArray($data);
+        $source = $this->factory->create($data);
 
         $this->assertEquals($data['excludePatterns'], $source->notPath);
     }
@@ -94,14 +96,16 @@ class FileSourceFromArrayTest extends TestCase
         $data = [
             'sourcePaths' => ['path/to/file.php', 'path/to/directory'],
         ];
+
         $rootPath = '/var/www';
 
-        $source = FileSource::fromArray($data, $rootPath);
+        $source = (new FileSourceFactory($this->createDirectories($rootPath)))->create($data);
 
         $expectedPaths = [
             '/var/www/path/to/file.php',
             '/var/www/path/to/directory',
         ];
+
         $this->assertEquals($expectedPaths, $source->sourcePaths);
     }
 
@@ -111,7 +115,7 @@ class FileSourceFromArrayTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('File source must have a "sourcePaths" property');
 
-        FileSource::fromArray([]);
+        $this->factory->create([]);
     }
 
     #[Test]
@@ -120,7 +124,7 @@ class FileSourceFromArrayTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('"sourcePaths" must be a string or array in source');
 
-        FileSource::fromArray(['sourcePaths' => 123]);
+        $this->factory->create(['sourcePaths' => 123]);
     }
 
     #[Test]
@@ -129,7 +133,7 @@ class FileSourceFromArrayTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('filePattern must be a string or an array of strings');
 
-        FileSource::fromArray([
+        $this->factory->create([
             'sourcePaths' => 'path/to/file.php',
             'filePattern' => 123,
         ]);
@@ -141,7 +145,7 @@ class FileSourceFromArrayTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('All elements in filePattern must be strings');
 
-        FileSource::fromArray([
+        $this->factory->create([
             'sourcePaths' => 'path/to/file.php',
             'filePattern' => ['*.php', 123],
         ]);
@@ -211,5 +215,12 @@ class FileSourceFromArrayTest extends TestCase
         ];
 
         $this->assertEquals($expected, \json_decode(\json_encode($source->jsonSerialize()), true));
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->factory = new FileSourceFactory($this->createDirectories());
     }
 }

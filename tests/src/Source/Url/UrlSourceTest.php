@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Tests\Source\Url;
 
 use Butschster\ContextGenerator\Source\Url\UrlSource;
+use Butschster\ContextGenerator\Source\Url\UrlSourceFactory;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 #[CoversClass(UrlSource::class)]
 class UrlSourceTest extends TestCase
@@ -18,6 +19,8 @@ class UrlSourceTest extends TestCase
     private const string SAMPLE_SELECTOR = '.content';
     private const array SAMPLE_HEADERS = ['Authorization' => 'Bearer token123'];
     private const array SAMPLE_TAGS = ['api', 'documentation'];
+
+    private UrlSourceFactory $factory;
 
     /**
      * @return array<string, array{selector: ?string, expectedHasSelector: bool}>
@@ -85,7 +88,7 @@ class UrlSourceTest extends TestCase
             'tags' => self::SAMPLE_TAGS,
         ];
 
-        $source = UrlSource::fromArray($data);
+        $source = $this->factory->create($data);
 
         $this->assertSame(self::SAMPLE_URLS, $source->urls);
         $this->assertSame(self::SAMPLE_DESCRIPTION, $source->getDescription());
@@ -101,7 +104,7 @@ class UrlSourceTest extends TestCase
             'urls' => self::SAMPLE_URLS,
         ];
 
-        $source = UrlSource::fromArray($data);
+        $source = $this->factory->create($data);
 
         $this->assertSame(self::SAMPLE_URLS, $source->urls);
         $this->assertEmpty($source->getDescription());
@@ -115,8 +118,7 @@ class UrlSourceTest extends TestCase
     {
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('URL source must have a "urls" array property');
-
-        UrlSource::fromArray([
+        $this->factory->create([
             'description' => self::SAMPLE_DESCRIPTION,
         ]);
     }
@@ -127,7 +129,7 @@ class UrlSourceTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('URL source must have a "urls" array property');
 
-        UrlSource::fromArray([
+        $this->factory->create([
             'urls' => 'not an array',
         ]);
     }
@@ -183,5 +185,12 @@ class UrlSourceTest extends TestCase
         $this->assertArrayNotHasKey('headers', $json);
         $this->assertArrayNotHasKey('selector', $json);
         $this->assertArrayNotHasKey('tags', $json);
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->factory = new UrlSourceFactory($this->createDirectories());
     }
 }

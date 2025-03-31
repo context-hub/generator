@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Source;
 
 use Butschster\ContextGenerator\Source\Text\TextSource;
+use Butschster\ContextGenerator\Source\Text\TextSourceFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -17,7 +18,7 @@ class TextSourceFromArrayTest extends TestCase
             'content' => 'This is some test content',
         ];
 
-        $source = TextSource::fromArray($data);
+        $source = $this->factory->create($data);
 
         $this->assertEquals($data['content'], $source->content);
         $this->assertEquals('', $source->getDescription());
@@ -31,7 +32,7 @@ class TextSourceFromArrayTest extends TestCase
             'description' => 'Test description',
         ];
 
-        $source = TextSource::fromArray($data);
+        $source = $this->factory->create($data);
 
         $this->assertEquals($data['content'], $source->content);
         $this->assertEquals($data['description'], $source->getDescription());
@@ -43,7 +44,7 @@ class TextSourceFromArrayTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Text source must have a "content" string property');
 
-        TextSource::fromArray([]);
+        $this->factory->create([]);
     }
 
     #[Test]
@@ -52,7 +53,7 @@ class TextSourceFromArrayTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Text source must have a "content" string property');
 
-        TextSource::fromArray(['content' => 123]);
+        $this->factory->create(['content' => 123]);
     }
 
     #[Test]
@@ -92,5 +93,12 @@ class TextSourceFromArrayTest extends TestCase
 
         $this->assertArrayNotHasKey('description', $serialized);
         $this->assertEquals($expected, $serialized);
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->factory = new TextSourceFactory($this->createDirectories());
     }
 }
