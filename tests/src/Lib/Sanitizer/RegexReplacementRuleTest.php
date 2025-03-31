@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Lib\Sanitizer;
 
-use Butschster\ContextGenerator\Lib\Sanitizer\RegexReplacementRule;
+use Butschster\ContextGenerator\Modifier\Sanitizer\Rule\RegexReplacementRule;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
