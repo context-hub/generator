@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Lib\Sanitizer;
+namespace Butschster\ContextGenerator\Modifier\Sanitizer\Rule;
 
 /**
  * Rule for replacing content using regular expressions

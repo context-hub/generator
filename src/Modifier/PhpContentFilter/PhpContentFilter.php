@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Modifier;
+namespace Butschster\ContextGenerator\Modifier\PhpContentFilter;
 
-use Butschster\ContextGenerator\SourceModifierInterface;
+use Butschster\ContextGenerator\Modifier\SourceModifierInterface;
 use Nette\PhpGenerator\ClassLike;
 use Nette\PhpGenerator\ClassType;
 use Nette\PhpGenerator\Constant;

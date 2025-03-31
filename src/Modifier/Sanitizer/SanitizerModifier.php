@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Modifier;
+namespace Butschster\ContextGenerator\Modifier\Sanitizer;
 
-use Butschster\ContextGenerator\Lib\Sanitizer\ContextSanitizer;
-use Butschster\ContextGenerator\Lib\Sanitizer\RuleFactory;
-use Butschster\ContextGenerator\SourceModifierInterface;
+use Butschster\ContextGenerator\Modifier\Sanitizer\Rule\ContextSanitizer;
+use Butschster\ContextGenerator\Modifier\Sanitizer\Rule\RuleFactory;
+use Butschster\ContextGenerator\Modifier\SourceModifierInterface;
 
 /**
  * Modifier that applies sanitization rules to source content
  */
-final readonly class ContextSanitizerModifier implements SourceModifierInterface
+final readonly class SanitizerModifier implements SourceModifierInterface
 {
     /**
      * @param array<array> $defaultRules Default sanitization rules configuration

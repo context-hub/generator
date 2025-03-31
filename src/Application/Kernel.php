@@ -16,6 +16,10 @@ use Butschster\ContextGenerator\Application\Bootloader\McpServerBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\ModifierBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\SourceFetcherBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\VariableBootloader;
+use Butschster\ContextGenerator\Modifier\PhpContentFilter\PhpContentFilterBootloader;
+use Butschster\ContextGenerator\Modifier\PhpDocs\PhpDocsModifierBootloader;
+use Butschster\ContextGenerator\Modifier\PhpSignature\PhpSignatureModifierBootloader;
+use Butschster\ContextGenerator\Modifier\Sanitizer\SanitizerModifierBootloader;
 use Butschster\ContextGenerator\Source\Composer\ComposerSourceBootloader;
 use Butschster\ContextGenerator\Source\File\FileSourceBootloader;
 use Butschster\ContextGenerator\Source\GitDiff\GitDiffSourceBootloader;
@@ -60,6 +64,12 @@ class Kernel extends AbstractKernel
             GithubSourceBootloader::class,
             GitDiffSourceBootloader::class,
             TreeSourceBootloader::class,
+
+            // Modifiers
+            PhpContentFilterBootloader::class,
+            PhpDocsModifierBootloader::class,
+            PhpSignatureModifierBootloader::class,
+            SanitizerModifierBootloader::class,
         ];
     }
 

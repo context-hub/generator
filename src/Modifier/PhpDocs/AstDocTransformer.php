@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Modifier;
+namespace Butschster\ContextGenerator\Modifier\PhpDocs;
 
-use Butschster\ContextGenerator\SourceModifierInterface;
+use Butschster\ContextGenerator\Modifier\SourceModifierInterface;
 use Nette\PhpGenerator\ClassType;
 use Nette\PhpGenerator\EnumType;
 use Nette\PhpGenerator\InterfaceType;
@@ -30,8 +30,6 @@ final class AstDocTransformer implements SourceModifierInterface
 
     public function __construct(array $config = [])
     {
-        // Default configuration values
-
         $this->config = \array_merge([
             // Include private methods in documentation
             'include_private_methods' => false,

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Modifier;
 
-use Butschster\ContextGenerator\SourceModifierInterface;
 use Spiral\Core\Attribute\Singleton;
 
 #[Singleton]

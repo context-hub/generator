@@ -16,6 +16,7 @@ use Spiral\Boot\Bootloader\Bootloader;
 
 final class VariableBootloader extends Bootloader
 {
+    #[\Override]
     public function defineSingletons(): array
     {
         return [
