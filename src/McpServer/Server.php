@@ -191,6 +191,7 @@ final readonly class Server
         try {
             $response = $this->router->dispatch($request);
             \assert($response instanceof JsonResponse);
+
             // Convert the response back to appropriate MCP type
             return $response->getPayload();
         } catch (\Throwable $e) {

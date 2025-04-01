@@ -9,6 +9,7 @@ use Butschster\ContextGenerator\Config\ConfigurationProvider;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderFactory;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderFactoryInterface;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
+use Butschster\ContextGenerator\Config\Parser\ConfigParserPluginInterface;
 use Butschster\ContextGenerator\Config\Parser\ParserPluginRegistry;
 use Butschster\ContextGenerator\Directories;
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
@@ -21,16 +22,26 @@ use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
 use Butschster\ContextGenerator\Source\Registry\SourceProviderInterface;
 use Butschster\ContextGenerator\SourceParserInterface;
 use Spiral\Boot\Bootloader\Bootloader;
+use Spiral\Core\Attribute\Singleton;
 use Spiral\Core\Config\Proxy;
 use Spiral\Files\FilesInterface;
 
+#[Singleton]
 final class ConfigLoaderBootloader extends Bootloader
 {
+    /** @var ConfigParserPluginInterface[] */
+    private array $parserPlugins = [];
+
+    public function registerParserPlugin(ConfigParserPluginInterface $plugin): void
+    {
+        $this->parserPlugins[] = $plugin;
+    }
+
     #[\Override]
     public function defineSingletons(): array
     {
         return [
-            ParserPluginRegistry::class => static function (
+            ParserPluginRegistry::class => function (
                 SourceProviderInterface $sourceProvider,
                 HasPrefixLoggerInterface $logger,
             ) {
@@ -47,6 +58,7 @@ final class ConfigLoaderBootloader extends Bootloader
                         modifierResolver: $modifierResolver,
                         logger: $logger->withPrefix('documents-parser-plugin'),
                     ),
+                    ...$this->parserPlugins,
                 ]);
             },
 

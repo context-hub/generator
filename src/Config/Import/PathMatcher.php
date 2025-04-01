@@ -25,7 +25,7 @@ final readonly class PathMatcher
     public static function containsWildcard(string $path): bool
     {
         return \str_contains($path, '*') || \str_contains($path, '?') ||
-               \str_contains($path, '[') || \str_contains($path, '{');
+            \str_contains($path, '[') || \str_contains($path, '{');
     }
 
     /**

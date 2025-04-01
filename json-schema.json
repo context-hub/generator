@@ -8,10 +8,26 @@
   "title": "ContextHub Configuration",
   "description": "Configuration schema for ContextHub document generator",
   "type": "object",
-  "required": [
-    "documents"
+  "oneOf": [
+    {
+      "required": [
+        "documents"
+      ]
+    },
+    {
+      "required": [
+        "prompts"
+      ]
+    }
   ],
   "properties": {
+    "prompts": {
+      "type": "array",
+      "description": "List of prompts to be registered",
+      "items": {
+        "$ref": "#/definitions/prompt"
+      }
+    },
     "import": {
       "type": "array",
       "description": "List of external configuration files to import",
@@ -60,6 +76,75 @@
     }
   },
   "definitions": {
+    "prompt": {
+      "type": "object",
+      "required": [
+        "id",
+        "messages"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the prompt"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of the prompt"
+        },
+        "schema": {
+          "type": "object",
+          "description": "Defines input parameters for this prompt",
+          "properties": {
+            "properties": {
+              "type": "object",
+              "description": "Property definitions for input parameters",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "description": {
+                    "type": "string",
+                    "description": "Description of this parameter"
+                  }
+                }
+              }
+            },
+            "required": {
+              "type": "array",
+              "description": "List of required parameters",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "messages": {
+          "type": "array",
+          "description": "List of messages that define the prompt",
+          "items": {
+            "type": "object",
+            "required": [
+              "role",
+              "content"
+            ],
+            "properties": {
+              "role": {
+                "type": "string",
+                "enum": [
+                  "user",
+                  "assistant"
+                ],
+                "description": "The role of the message sender"
+              },
+              "content": {
+                "type": "string",
+                "description": "The content of the message, may contain variable placeholders like ${variableName}"
+              }
+            }
+          },
+          "minItems": 1
+        }
+      }
+    },
     "document": {
       "type": "object",
       "required": [

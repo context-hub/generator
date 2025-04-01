@@ -27,8 +27,6 @@ final readonly class CompositeConfigLoader implements ConfigLoaderInterface
         ]);
 
         $registry = new DocumentRegistry();
-        $atLeastOneLoaded = false;
-
         foreach ($this->loaders as $loader) {
             if (!$loader->isSupported()) {
                 continue;
@@ -36,7 +34,6 @@ final readonly class CompositeConfigLoader implements ConfigLoaderInterface
 
             try {
                 $loadedRegistry = $loader->load();
-                $atLeastOneLoaded = true;
 
                 foreach ($loadedRegistry->getItems() as $document) {
                     $registry->register($document);
@@ -53,10 +50,6 @@ final readonly class CompositeConfigLoader implements ConfigLoaderInterface
                 ]);
                 // Continue with other loaders
             }
-        }
-
-        if (!$atLeastOneLoaded) {
-            throw new ConfigLoaderException('There are no loaders that can load the configuration in the given path');
         }
 
         return $registry;
