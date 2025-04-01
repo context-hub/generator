@@ -29,14 +29,14 @@ final readonly class VariableReplacementProcessor
         // Replace ${VAR_NAME} syntax
         $result = \preg_replace_callback(
             '/\${([a-zA-Z0-9_]+)}/',
-            fn(array $matches) => $this->replaceVariable($matches[1]),
+            fn(array $matches) => $this->replaceVariable($matches[1], '${%s}'),
             $text,
         );
 
         // Replace {{VAR_NAME}} syntax
         return \preg_replace_callback(
             '/{{([a-zA-Z0-9_]+)}}/',
-            fn(array $matches) => $this->replaceVariable($matches[1]),
+            fn(array $matches) => $this->replaceVariable($matches[1], '{{%s}}'),
             (string) $result,
         );
     }
@@ -47,11 +47,11 @@ final readonly class VariableReplacementProcessor
      * @param string $name Variable name
      * @return string Variable value or original reference if not found
      */
-    private function replaceVariable(string $name): string
+    private function replaceVariable(string $name, string $format): string
     {
         if (!$this->provider->has($name)) {
             // Keep the original reference if not found and not failing
-            return '${' . $name . '}';
+            return \sprintf($format, $name);
         }
 
         // Get the variable value

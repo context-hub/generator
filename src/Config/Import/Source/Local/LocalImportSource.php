@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Config\Import\Source;
+namespace Butschster\ContextGenerator\Config\Import\Source\Local;
 
-use Butschster\ContextGenerator\Config\Import\ImportConfig;
+use Butschster\ContextGenerator\Config\Import\Source\AbstractImportSource;
+use Butschster\ContextGenerator\Config\Import\Source\Config\SourceConfigInterface;
+use Butschster\ContextGenerator\Config\Import\Source\Exception;
 use Butschster\ContextGenerator\Config\Reader\ConfigReaderRegistry;
 use Butschster\ContextGenerator\Config\Reader\ReaderInterface;
 use Psr\Log\LoggerInterface;
@@ -28,47 +30,57 @@ final class LocalImportSource extends AbstractImportSource
         return 'local';
     }
 
-    public function supports(ImportConfig $config): bool
+    public function supports(SourceConfigInterface $config): bool
     {
-        // Local import source is the default fallback
-        // It's used when no type is specified or type is explicitly 'local'
-        $type = $config->type ?? 'local';
-        if ($type !== 'local') {
+        // Only support local source configs
+        if (!$config instanceof LocalSourceConfig) {
             return false;
         }
 
         // Check if the file exists
-        return $this->files->exists($config->absolutePath);
+        return $this->files->exists($config->getAbsolutePath());
     }
 
-    public function load(ImportConfig $config): array
+    public function load(SourceConfigInterface $config): array
     {
+        if (!$config instanceof LocalSourceConfig) {
+            throw Exception\ImportSourceException::sourceNotSupported(
+                $config->getPath(),
+                $config->getType(),
+            );
+        }
+
         if (!$this->supports($config)) {
             throw Exception\ImportSourceException::sourceNotSupported(
-                $config->path,
-                $config->type ?? 'local',
+                $config->getPath(),
+                $config->getType(),
             );
         }
 
         $this->logger->debug('Loading local import', [
-            'path' => $config->path,
-            'absolutePath' => $config->absolutePath,
+            'path' => $config->getPath(),
+            'absolutePath' => $config->getAbsolutePath(),
         ]);
 
         // Find an appropriate reader for the file
-        $reader = $this->getReaderForFile($config->absolutePath);
+        $reader = $this->getReaderForFile($config->getAbsolutePath());
 
         if (!$reader) {
             throw new Exception\ImportSourceException(
-                \sprintf('Unsupported file format for import: %s', $config->absolutePath),
+                \sprintf('Unsupported file format for import: %s', $config->getAbsolutePath()),
             );
         }
 
         // Read and parse the configuration
-        $importedConfig = $this->readConfig($config->absolutePath, $reader);
+        $importedConfig = $this->readConfig($config->getAbsolutePath(), $reader);
 
         // Process selective imports if specified
         return $this->processSelectiveImports($importedConfig, $config);
+    }
+
+    public function allowedSections(): array
+    {
+        return [];
     }
 
     /**
@@ -77,11 +89,11 @@ final class LocalImportSource extends AbstractImportSource
     private function getReaderForFile(string $path): ?ReaderInterface
     {
         $extension = \pathinfo($path, PATHINFO_EXTENSION);
-        
+
         if ($this->readers->has($extension)) {
             return $this->readers->get($extension);
         }
-        
+
         return null;
     }
 }

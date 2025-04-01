@@ -97,7 +97,7 @@ $app = Kernel::create(
         'root' => $appPath,
         'output' => $appPath . '/.context',
         'config' => $appPath,
-        'json-schema' => __DIR__ . '/json-schema.json',
+        'json-schema' => __DIR__,
     ],
     exceptionHandler: ExceptionHandler::class,
     container: $container,

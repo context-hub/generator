@@ -35,7 +35,73 @@
         "oneOf": [
           {
             "type": "string",
-            "description": "Path to configuration file (relative to this file)"
+            "description": "Path to configuration file (relative to this file) - shorthand format"
+          },
+          {
+            "type": "object",
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "file",
+                  "url"
+                ],
+                "description": "Type of import source"
+              },
+              "description": {
+                "type": "string",
+                "description": "Human-readable description of the import"
+              },
+              "pathPrefix": {
+                "type": "string",
+                "description": "Path prefix to apply to all source paths in the imported configuration"
+              }
+            },
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "type": {
+                      "const": "file"
+                    }
+                  }
+                },
+                "then": {
+                  "required": [
+                    "path"
+                  ],
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "Path to configuration file (relative to this file)"
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "type": {
+                      "const": "url"
+                    }
+                  }
+                },
+                "then": {
+                  "required": [
+                    "url"
+                  ],
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "description": "URL to fetch configuration from"
+                    }
+                  }
+                }
+              }
+            ]
           },
           {
             "type": "object",
@@ -50,8 +116,13 @@
               "pathPrefix": {
                 "type": "string",
                 "description": "Path prefix to apply to all source paths in the imported configuration"
+              },
+              "description": {
+                "type": "string",
+                "description": "Human-readable description of the import"
               }
-            }
+            },
+            "additionalProperties": false
           }
         ]
       }

@@ -2,11 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Config\Import\Source;
+namespace Butschster\ContextGenerator\Config\Import\Source\Url;
 
-use Butschster\ContextGenerator\Config\Import\ImportConfig;
+use Butschster\ContextGenerator\Config\Import\Source\AbstractImportSource;
+use Butschster\ContextGenerator\Config\Import\Source\Config\SourceConfigInterface;
+use Butschster\ContextGenerator\Config\Import\Source\Exception;
 use Butschster\ContextGenerator\Config\Reader\StringJsonReader;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
+use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Yaml\Yaml;
 
@@ -15,8 +18,11 @@ use Symfony\Component\Yaml\Yaml;
  */
 final class UrlImportSource extends AbstractImportSource
 {
+    private int $lastFetchTime = 0;
+
     public function __construct(
         private readonly HttpClientInterface $httpClient,
+        private readonly VariableResolver $variables,
         ?LoggerInterface $logger = null,
     ) {
         parent::__construct($logger);
@@ -27,29 +33,33 @@ final class UrlImportSource extends AbstractImportSource
         return 'url';
     }
 
-    public function supports(ImportConfig $config): bool
+    public function supports(SourceConfigInterface $config): bool
     {
-        // Support 'url' type or URLs that start with http/https
-        $type = $config->type ?? 'local';
-        if ($type === 'url') {
-            return true;
-        }
-
-        return \str_starts_with($config->path, 'http://') || \str_starts_with($config->path, 'https://');
+        return $config instanceof UrlSourceConfig;
     }
 
-    public function load(ImportConfig $config): array
+    public function load(SourceConfigInterface $config): array
     {
-        if (!$this->supports($config)) {
+        if (!$config instanceof UrlSourceConfig) {
             throw Exception\ImportSourceException::sourceNotSupported(
-                $config->path,
-                $config->type ?? 'unknown',
+                $config->getPath(),
+                $config->getType(),
             );
         }
 
+        // Check if the URL is still valid based on TTL
+        if ($this->lastFetchTime > 0 && \time() - $this->lastFetchTime < $config->ttl) {
+            $this->logger->debug('Using cached URL import', [
+                'url' => $config->url,
+                'ttl' => $config->ttl,
+            ]);
+
+            return [];
+        }
+
         try {
-            $url = $config->path;
-            $headers = $this->prepareHeaders($config->headers ?? []);
+            $url = $config->url;
+            $headers = $this->variables->resolve($config->headers);
 
             $this->logger->debug('Loading URL import', [
                 'url' => $url,
@@ -58,6 +68,7 @@ final class UrlImportSource extends AbstractImportSource
 
             // Fetch the content from the URL
             $response = $this->httpClient->getWithRedirects($url, $headers);
+            $this->lastFetchTime = \time();
 
             if (!$response->isSuccess()) {
                 throw new Exception\ImportSourceException(
@@ -69,7 +80,7 @@ final class UrlImportSource extends AbstractImportSource
 
             // Determine content type and parse accordingly
             $contentType = $this->getContentType($response->getHeader('Content-Type') ?? '');
-            $extension = $this->getExtensionFromUrl($url);
+            $extension = $config->getExtension();
 
             // Parse content based on content type or URL extension
             $importedConfig = $this->parseContent($content, $contentType, $extension);
@@ -78,38 +89,20 @@ final class UrlImportSource extends AbstractImportSource
             return $this->processSelectiveImports($importedConfig, $config);
         } catch (\Throwable $e) {
             $this->logger->error('URL import failed', [
-                'url' => $config->path,
+                'url' => $config->url,
                 'error' => $e->getMessage(),
             ]);
 
             throw Exception\ImportSourceException::networkError(
-                $config->path,
+                $config->url,
                 $e->getMessage(),
             );
         }
     }
 
-    /**
-     * Prepare request headers, resolving any environment variables
-     *
-     * @param array<string, string> $configHeaders
-     * @return array<string, string>
-     */
-    private function prepareHeaders(array $configHeaders): array
+    public function allowedSections(): array
     {
-        $headers = [];
-
-        foreach ($configHeaders as $name => $value) {
-            // Resolve environment variables in header values
-            if (\preg_match('/^\${([^}]+)}$/', $value, $matches)) {
-                $envVar = $matches[1];
-                $value = \getenv($envVar) ?: '';
-            }
-
-            $headers[$name] = $value;
-        }
-
-        return $headers;
+        return ['prompts'];
     }
 
     /**
@@ -123,22 +116,6 @@ final class UrlImportSource extends AbstractImportSource
         }
 
         return '';
-    }
-
-    /**
-     * Get file extension from URL
-     */
-    private function getExtensionFromUrl(string $url): string
-    {
-        // Parse URL and extract path
-        $parsedUrl = \parse_url($url);
-        if (!isset($parsedUrl['path'])) {
-            return '';
-        }
-
-        // Get extension from path
-        $extension = \pathinfo($parsedUrl['path'], PATHINFO_EXTENSION);
-        return \strtolower($extension);
     }
 
     /**

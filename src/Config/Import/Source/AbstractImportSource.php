@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Config\Import\Source;
 
-use Butschster\ContextGenerator\Config\Import\ImportConfig;
+use Butschster\ContextGenerator\Config\Import\Source\Config\SourceConfigInterface;
+use Butschster\ContextGenerator\Config\Import\Source\Local\LocalSourceConfig;
 use Butschster\ContextGenerator\Config\Reader\ReaderInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -45,16 +46,23 @@ abstract class AbstractImportSource implements ImportSourceInterface
     /**
      * Process selective imports if specified in the config
      */
-    protected function processSelectiveImports(array $config, ImportConfig $importConfig): array
+    protected function processSelectiveImports(array $config, SourceConfigInterface $sourceConfig): array
     {
-        // If no specific docs are requested, return the full config
-        if (empty($importConfig->docs)) {
+        $config = $this->filterConfigSections($config);
+
+        if (!isset($config['documents']) || !$sourceConfig instanceof LocalSourceConfig) {
             return $config;
         }
 
+        // If no specific docs are requested, return the full config
+        $selectiveDocs = $sourceConfig->getSelectiveDocuments();
+        if (empty($selectiveDocs)) {
+            return $this->filterConfigSections($config);
+        }
+
         $this->logger->debug('Processing selective imports', [
-            'path' => $importConfig->path,
-            'docs' => $importConfig->docs,
+            'path' => $sourceConfig->getPath(),
+            'docs' => $selectiveDocs,
             'source' => $this->getName(),
         ]);
 
@@ -66,7 +74,7 @@ abstract class AbstractImportSource implements ImportSourceInterface
                 if (isset($document['outputPath'])) {
                     // Check if this document's path is in the requested docs
                     $outputPath = $document['outputPath'];
-                    foreach ($importConfig->docs as $requestedDoc) {
+                    foreach ($selectiveDocs as $requestedDoc) {
                         // Simple wildcard matching
                         $pattern = $this->wildcardToRegex($requestedDoc);
                         if (\preg_match($pattern, (string) $outputPath)) {
@@ -85,7 +93,7 @@ abstract class AbstractImportSource implements ImportSourceInterface
             ]);
         }
 
-        return $config;
+        return $this->filterConfigSections($config);
     }
 
     /**
@@ -97,5 +105,21 @@ abstract class AbstractImportSource implements ImportSourceInterface
         $pattern = \str_replace('\*', '.*', $pattern);
         $pattern = \str_replace('\?', '.', $pattern);
         return '/^' . $pattern . '$/';
+    }
+
+    private function filterConfigSections(array $config): array
+    {
+        if ($this->allowedSections() === []) {
+            return $config;
+        }
+
+        $newConfig = [];
+        foreach ($this->allowedSections() as $section) {
+            if (isset($config[$section])) {
+                $newConfig[$section] = $config[$section];
+            }
+        }
+
+        return $newConfig;
     }
 }

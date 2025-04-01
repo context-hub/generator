@@ -10,6 +10,7 @@ use Spiral\Boot\Bootloader\Bootloader;
 
 final class ComposerClientBootloader extends Bootloader
 {
+    #[\Override]
     public function defineSingletons(): array
     {
         return [

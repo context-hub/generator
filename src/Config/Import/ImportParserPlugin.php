@@ -50,9 +50,7 @@ final readonly class ImportParserPlugin implements ConfigParserPluginInterface
         // Process imports and return the merged configuration
         $processedConfig = $this->importResolver->resolveImports($config, $rootPath);
 
-        $this->logger?->debug('Imports processed successfully', [
-            'documentCount' => isset($processedConfig['documents']) ? \count($processedConfig['documents']) : 0,
-        ]);
+        $this->logger?->debug('Imports processed successfully');
 
         return $processedConfig;
     }

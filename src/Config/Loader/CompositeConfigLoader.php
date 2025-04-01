@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Config\Loader;
 
-use Butschster\ContextGenerator\Config\Exception\ConfigLoaderException;
 use Butschster\ContextGenerator\Config\Registry\RegistryInterface;
 use Butschster\ContextGenerator\Document\DocumentRegistry;
 use Psr\Log\LoggerInterface;
@@ -83,7 +82,7 @@ final readonly class CompositeConfigLoader implements ConfigLoaderInterface
             }
         }
 
-        throw new ConfigLoaderException('There are no loaders that can load the raw configuration');
+        return [];
     }
 
     public function isSupported(): bool

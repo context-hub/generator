@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Config\Import\Source;
 
-use Butschster\ContextGenerator\Config\Import\ImportConfig;
+use Butschster\ContextGenerator\Config\Import\Source\Config\SourceConfigInterface;
 use Butschster\ContextGenerator\Config\Import\Source\Exception\ImportSourceException;
 
 /**
@@ -18,16 +18,23 @@ interface ImportSourceInterface
     public function getName(): string;
 
     /**
-     * Check if this source supports the given import configuration
+     * Check if this source supports the given source configuration
      */
-    public function supports(ImportConfig $config): bool;
+    public function supports(SourceConfigInterface $config): bool;
 
     /**
      * Load configuration from this source
      *
-     * @param ImportConfig $config The import configuration
+     * @param SourceConfigInterface $config The source configuration
      * @return array<mixed> The loaded configuration data
      * @throws ImportSourceException If loading fails
      */
-    public function load(ImportConfig $config): array;
+    public function load(SourceConfigInterface $config): array;
+
+    /**
+     * Get the list of sections that this source can import
+     *
+     * @return array<non-empty-string> List of section names (Empty array means all sections are allowed)
+     */
+    public function allowedSections(): array;
 }

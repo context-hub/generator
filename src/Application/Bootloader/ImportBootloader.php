@@ -7,17 +7,14 @@ namespace Butschster\ContextGenerator\Application\Bootloader;
 use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
 use Butschster\ContextGenerator\Config\Import\ImportParserPlugin;
 use Butschster\ContextGenerator\Config\Import\ImportResolver;
-use Butschster\ContextGenerator\Config\Import\Source\ComposerImportSource;
-use Butschster\ContextGenerator\Config\Import\Source\GitHubImportSource;
 use Butschster\ContextGenerator\Config\Import\Source\ImportSourceProvider;
-use Butschster\ContextGenerator\Config\Import\Source\LocalImportSource;
+use Butschster\ContextGenerator\Config\Import\Source\Local\LocalImportSource;
 use Butschster\ContextGenerator\Config\Import\Source\Registry\ImportSourceRegistry;
-use Butschster\ContextGenerator\Config\Import\Source\UrlImportSource;
+use Butschster\ContextGenerator\Config\Import\Source\Url\UrlImportSource;
 use Butschster\ContextGenerator\Config\Reader\ConfigReaderRegistry;
 use Butschster\ContextGenerator\Directories;
-use Butschster\ContextGenerator\Lib\ComposerClient\ComposerClientInterface;
-use Butschster\ContextGenerator\Lib\GithubClient\GithubClientInterface;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
+use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
 use Spiral\Boot\Bootloader\Bootloader;
 use Spiral\Core\Attribute\Singleton;
 use Spiral\Files\FilesInterface;
@@ -41,8 +38,7 @@ final class ImportBootloader extends Bootloader
                 FilesInterface $files,
                 ConfigReaderRegistry $readers,
                 HttpClientInterface $httpClient,
-                GithubClientInterface $githubClient,
-                ComposerClientInterface $composerClient,
+                VariableResolver $variables,
                 HasPrefixLoggerInterface $logger,
             ) {
                 $registry = new ImportSourceRegistry(
@@ -60,28 +56,11 @@ final class ImportBootloader extends Bootloader
                     ),
                 );
 
-                // GitHub import source
-                $registry->register(
-                    new GitHubImportSource(
-                        githubClient: $githubClient,
-                        logger: $logger->withPrefix('import-source-github'),
-                    ),
-                );
-
-                // Composer import source
-                $registry->register(
-                    new ComposerImportSource(
-                        files: $files,
-                        composerClient: $composerClient,
-                        readers: $readers,
-                        logger: $logger->withPrefix('import-source-composer'),
-                    ),
-                );
-
                 // URL import source
                 $registry->register(
                     new UrlImportSource(
                         httpClient: $httpClient,
+                        variables: $variables,
                         logger: $logger->withPrefix('import-source-url'),
                     ),
                 );
@@ -89,42 +68,36 @@ final class ImportBootloader extends Bootloader
                 return $registry;
             },
 
+            // Import source provider
+            ImportSourceProvider::class => static fn(
+                ImportSourceRegistry $sourceRegistry,
+                HasPrefixLoggerInterface $logger,
+            ) => new ImportSourceProvider(
+                sourceRegistry: $sourceRegistry,
+                logger: $logger->withPrefix('import-sources'),
+            ),
+
             // Import resolver
-            ImportResolver::class => static function (
+            ImportResolver::class => static fn(
                 FilesInterface $files,
                 Directories $dirs,
-                ImportSourceRegistry $sourceRegistry,
+                ImportSourceProvider $sourceProvider,
                 HasPrefixLoggerInterface $logger,
-            ) {
-                return new ImportResolver(
-                    dirs: $dirs,
-                    files: $files,
-                    sourceRegistry: $sourceRegistry,
-                    logger: $logger->withPrefix('import-resolver'),
-                );
-            },
-
-            // Import source provider
-            ImportSourceProvider::class => static function (
-                ImportSourceRegistry $sourceRegistry,
-                HasPrefixLoggerInterface $logger,
-            ) {
-                return new ImportSourceProvider(
-                    sourceRegistry: $sourceRegistry,
-                    logger: $logger->withPrefix('import-sources'),
-                );
-            },
+            ) => new ImportResolver(
+                dirs: $dirs,
+                files: $files,
+                sourceProvider: $sourceProvider,
+                logger: $logger->withPrefix('import-resolver'),
+            ),
 
             // Import parser plugin
-            ImportParserPlugin::class => static function (
+            ImportParserPlugin::class => static fn(
                 ImportResolver $importResolver,
                 HasPrefixLoggerInterface $logger,
-            ) {
-                return new ImportParserPlugin(
-                    importResolver: $importResolver,
-                    logger: $logger->withPrefix('import-parser'),
-                );
-            },
+            ) => new ImportParserPlugin(
+                importResolver: $importResolver,
+                logger: $logger->withPrefix('import-parser'),
+            ),
         ];
     }
 
@@ -132,7 +105,6 @@ final class ImportBootloader extends Bootloader
         ConfigLoaderBootloader $parserRegistry,
         ImportParserPlugin $importParserPlugin,
     ): void {
-        // Register import parser plugin with the registry
         $parserRegistry->registerParserPlugin($importParserPlugin);
     }
 }

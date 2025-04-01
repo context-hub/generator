@@ -22,7 +22,6 @@ final class ComposerSourceBootloader extends Bootloader
     public function defineSingletons(): array
     {
         return [
-
             ComposerProviderInterface::class => static fn(
                 HasPrefixLoggerInterface $logger,
             ) => new CompositeComposerProvider(

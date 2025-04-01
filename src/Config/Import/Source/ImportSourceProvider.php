@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Config\Import\Source;
 
 use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
-use Butschster\ContextGenerator\Config\Import\ImportConfig;
+use Butschster\ContextGenerator\Config\Import\Source\Config\SourceConfigInterface;
 use Butschster\ContextGenerator\Config\Import\Source\Registry\ImportSourceRegistry;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -37,24 +37,35 @@ final readonly class ImportSourceProvider
     }
 
     /**
-     * Get all available import sources
+     * Find an appropriate import source for the given source configuration
      *
-     * @return array<string, ImportSourceInterface>
-     */
-    public function getAllSources(): array
-    {
-        return $this->sourceRegistry->all();
-    }
-
-    /**
-     * Find an appropriate import source for the given configuration
-     *
-     * @param ImportConfig $config Import configuration
+     * @param SourceConfigInterface $config Source configuration
      * @return ImportSourceInterface|null The matching import source or null if none found
      */
-    public function findSourceForConfig(ImportConfig $config): ?ImportSourceInterface
+    public function findSourceForConfig(SourceConfigInterface $config): ?ImportSourceInterface
     {
-        return $this->sourceRegistry->findForConfig($config);
+        // First try to find source by type
+        $sourceName = $config->getType();
+        if ($this->sourceRegistry->has($sourceName)) {
+            $source = $this->sourceRegistry->get($sourceName);
+            if ($source->supports($config)) {
+                return $source;
+            }
+        }
+
+        // If not found by type, try all registered sources
+        foreach ($this->sourceRegistry->all() as $source) {
+            if ($source->supports($config)) {
+                return $source;
+            }
+        }
+
+        $this->logger?->warning('No import source found for config', [
+            'path' => $config->getPath(),
+            'type' => $config->getType(),
+        ]);
+
+        return null;
     }
 
     /**

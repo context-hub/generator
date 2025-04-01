@@ -40,6 +40,7 @@ final class ConfigLoaderBootloader extends Bootloader
     /** @var ConfigParserPluginInterface[] */
     private array $parserPlugins = [];
 
+    #[\Override]
     public function defineDependencies(): array
     {
         return [

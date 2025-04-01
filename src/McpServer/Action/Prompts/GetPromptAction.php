@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer\Action\Prompts;
 
+use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
 use Butschster\ContextGenerator\McpServer\Prompt\PromptProviderInterface;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Get;
 use Mcp\Types\GetPromptResult;
@@ -17,6 +18,7 @@ final readonly class GetPromptAction
     public function __construct(
         private LoggerInterface $logger,
         private PromptProviderInterface $prompts,
+        private VariableResolver $variables,
     ) {}
 
     #[Get(path: 'prompt/{id}', name: 'prompts.get')]
@@ -51,11 +53,16 @@ final readonly class GetPromptAction
             \array_map(static fn($key) => '{{' . $key . '}}', \array_keys($arguments)),
             \array_values($arguments),
         );
-        return \array_map(static function ($message) use ($arguments) {
+        $variables = $this->variables;
+
+        return \array_map(static function ($message) use ($variables, $arguments) {
             $content = $message->content;
 
             if ($content instanceof TextContent) {
-                $content = new TextContent(\strtr($content->text, $arguments));
+                $text = \strtr($content->text, $arguments);
+                $text = $variables->resolve($text);
+
+                $content = new TextContent($text);
             }
 
             return new PromptMessage(
