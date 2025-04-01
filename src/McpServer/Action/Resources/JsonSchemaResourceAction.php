@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer\Action\Resources;
 
-use Butschster\ContextGenerator\Directories;
+use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\McpServer\Attribute\Resource;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Get;
 use Mcp\Types\ReadResourceResult;
@@ -24,7 +24,7 @@ final readonly class JsonSchemaResourceAction
     public function __construct(
         private LoggerInterface $logger,
         private FilesInterface $files,
-        private Directories $dirs,
+        private DirectoriesInterface $dirs,
     ) {}
 
     #[Get(path: '/resource/ctx/json-schema', name: 'resources.ctx.json-schema')]
@@ -47,7 +47,7 @@ final readonly class JsonSchemaResourceAction
     private function getJsonSchema(): string
     {
         $schema = \json_decode(
-            $this->files->read($this->dirs->jsonSchemaPath),
+            $this->files->read($this->dirs->getJsonSchemaPath()),
             associative: true,
         );
 

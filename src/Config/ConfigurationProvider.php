@@ -7,7 +7,7 @@ namespace Butschster\ContextGenerator\Config;
 use Butschster\ContextGenerator\Config\Exception\ConfigLoaderException;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderFactoryInterface;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
-use Butschster\ContextGenerator\Directories;
+use Butschster\ContextGenerator\DirectoriesInterface;
 use Psr\Log\LoggerInterface;
 use Spiral\Files\FilesInterface;
 
@@ -19,7 +19,7 @@ final readonly class ConfigurationProvider
     public function __construct(
         private ConfigLoaderFactoryInterface $loaderFactory,
         private FilesInterface $files,
-        private Directories $dirs,
+        private DirectoriesInterface $dirs,
         private ?LoggerInterface $logger = null,
     ) {}
 
@@ -62,10 +62,10 @@ final readonly class ConfigurationProvider
     public function fromDefaultLocation(): ConfigLoaderInterface
     {
         $this->logger?->info('Loading configuration from default location', [
-            'rootPath' => $this->dirs->configPath,
+            'rootPath' => $this->dirs->getConfigPath(),
         ]);
 
-        return $this->loaderFactory->create($this->dirs->configPath);
+        return $this->loaderFactory->create($this->dirs->getConfigPath());
     }
 
     /**
@@ -74,11 +74,11 @@ final readonly class ConfigurationProvider
     private function resolvePath(string $path): string
     {
         // If it's an absolute path, use it directly
-        if ($this->isAbsolutePath($path)) {
+        if ($this->dirs->isAbsolutePath($path)) {
             $resolvedPath = $path;
         } else {
             // Otherwise, resolve it relative to the root path
-            $resolvedPath = \rtrim($this->dirs->rootPath, '/') . '/' . $path;
+            $resolvedPath = $this->dirs->combinePaths($this->dirs->getRootPath(), $path);
         }
 
         // Check if the path exists
@@ -87,13 +87,5 @@ final readonly class ConfigurationProvider
         }
 
         return $resolvedPath;
-    }
-
-    /**
-     * Check if a path is absolute
-     */
-    private function isAbsolutePath(string $path): bool
-    {
-        return \str_starts_with($path, '/');
     }
 }

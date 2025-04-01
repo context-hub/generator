@@ -4,12 +4,23 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator;
 
+use Butschster\ContextGenerator\Application\FSPath;
+use Spiral\Core\Attribute\Singleton;
+
 /**
- * This class is immutable and provides methods to create new instances with modified paths.
+ * This class manages application paths using FSPath for path manipulation.
+ * It's immutable and provides methods to create new instances with modified paths.
  * It's a central component for path resolution and management within the application.
  */
-final readonly class Directories
+#[Singleton]
+final readonly class Directories implements DirectoriesInterface
 {
+    private FSPath $rootPathObj;
+    private FSPath $outputPathObj;
+    private FSPath $configPathObj;
+    private FSPath $jsonSchemaPathObj;
+    private ?FSPath $envFilePathObj;
+
     /**
      * Create a new Directories instance with the specified paths.
      *
@@ -39,6 +50,53 @@ final readonly class Directories
         if ($jsonSchemaPath === '') {
             throw new \InvalidArgumentException('JSON schema path cannot be empty');
         }
+
+        // Initialize FSPath objects
+        $this->rootPathObj = FSPath::create($rootPath);
+        $this->outputPathObj = FSPath::create($outputPath);
+        $this->configPathObj = FSPath::create($configPath);
+        $this->jsonSchemaPathObj = FSPath::create($jsonSchemaPath);
+        $this->envFilePathObj = $envFilePath !== null ? FSPath::create($envFilePath) : null;
+    }
+
+    /**
+     * Get the root path of the project
+     */
+    public function getRootPath(): string
+    {
+        return $this->rootPath;
+    }
+
+    /**
+     * Get the output path where compiled documents will be saved
+     */
+    public function getOutputPath(): string
+    {
+        return $this->outputPath;
+    }
+
+    /**
+     * Get the path where configuration files are located
+     */
+    public function getConfigPath(): string
+    {
+        return $this->configPath;
+    }
+
+    /**
+     * Get the JSON schema path
+     */
+    public function getJsonSchemaPath(): string
+    {
+        return $this->jsonSchemaPath;
+    }
+
+    /**
+     * Get the environment file path if set
+     */
+    public function getEnvFilePath(): ?string
+    {
+        return $this->envFilePath;
     }
 
     /**
@@ -112,7 +170,7 @@ final readonly class Directories
      */
     public function getFilePath(string $filename): string
     {
-        return $this->combinePaths($this->rootPath, $filename);
+        return $this->rootPathObj->join($filename)->toString();
     }
 
     /**
@@ -121,9 +179,9 @@ final readonly class Directories
      * @param string $filename The relative file path
      * @return string The absolute file path
      */
-    public function getConfigPath(string $filename): string
+    public function getConfigFilePath(string $filename): string
     {
-        return $this->combinePaths($this->configPath, $filename);
+        return $this->configPathObj->join($filename)->toString();
     }
 
     /**
@@ -134,7 +192,7 @@ final readonly class Directories
      */
     public function isAbsolutePath(string $path): bool
     {
-        return \str_starts_with($path, '/');
+        return FSPath::create($path)->isAbsolute();
     }
 
     /**
@@ -146,7 +204,9 @@ final readonly class Directories
      */
     public function resolvePath(string $basePath, string $path): string
     {
-        if ($this->isAbsolutePath($path)) {
+        $pathObj = FSPath::create($path);
+
+        if ($pathObj->isAbsolute()) {
             return $path;
         }
 
@@ -162,7 +222,7 @@ final readonly class Directories
      */
     public function combinePaths(string $basePath, string $path): string
     {
-        return \rtrim($basePath, '/') . '/' . \ltrim($path, '/');
+        return FSPath::create($basePath)->join($path)->toString();
     }
 
     /**

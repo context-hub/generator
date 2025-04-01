@@ -16,7 +16,7 @@ use Butschster\ContextGenerator\Config\Reader\ConfigReaderRegistry;
 use Butschster\ContextGenerator\Config\Reader\JsonReader;
 use Butschster\ContextGenerator\Config\Reader\PhpReader;
 use Butschster\ContextGenerator\Config\Reader\YamlReader;
-use Butschster\ContextGenerator\Directories;
+use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
 use Butschster\ContextGenerator\Document\DocumentsParserPlugin;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
@@ -86,7 +86,7 @@ final class ConfigLoaderBootloader extends Bootloader
             ConfigurationProvider::class => static fn(
                 ConfigLoaderFactoryInterface $configLoaderFactory,
                 FilesInterface $files,
-                Directories $dirs,
+                DirectoriesInterface $dirs,
                 HasPrefixLoggerInterface $logger,
             ) => new ConfigurationProvider(
                 loaderFactory: $configLoaderFactory,
@@ -98,14 +98,14 @@ final class ConfigLoaderBootloader extends Bootloader
             DocumentCompiler::class => static fn(
                 FilesInterface $files,
                 SourceParserInterface $parser,
-                Directories $dirs,
+                DirectoriesInterface $dirs,
                 SourceModifierRegistry $registry,
                 ContentBuilderFactory $builderFactory,
                 HasPrefixLoggerInterface $logger,
             ) => new DocumentCompiler(
                 files: $files,
                 parser: $parser,
-                basePath: $dirs->outputPath,
+                basePath: $dirs->getOutputPath(),
                 modifierRegistry: $registry,
                 builderFactory: $builderFactory,
                 logger: $logger->withPrefix('document-compiler'),
@@ -145,7 +145,7 @@ final class ConfigLoaderBootloader extends Bootloader
                 ConfigReaderRegistry $readers,
                 ParserPluginRegistry $pluginRegistry,
                 FilesInterface $files,
-                Directories $dirs,
+                DirectoriesInterface $dirs,
                 HasPrefixLoggerInterface $logger,
             ) => new ConfigLoaderFactory(
                 readers: $readers,

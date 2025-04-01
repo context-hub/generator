@@ -6,7 +6,7 @@ namespace Butschster\ContextGenerator\Source\Composer;
 
 use Butschster\ContextGenerator\Application\Bootloader\SourceFetcherBootloader;
 use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
-use Butschster\ContextGenerator\Directories;
+use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\Lib\ComposerClient\FileSystemComposerClient;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
@@ -33,14 +33,14 @@ final class ComposerSourceBootloader extends Bootloader
             ),
 
             ComposerSourceFetcher::class => static fn(
-                Directories $dirs,
+                DirectoriesInterface $dirs,
                 ContentBuilderFactory $builderFactory,
                 VariableResolver $variables,
                 HasPrefixLoggerInterface $logger,
                 ComposerProviderInterface $composerProvider,
             ): ComposerSourceFetcher => new ComposerSourceFetcher(
                 provider: $composerProvider,
-                basePath: $dirs->rootPath,
+                basePath: $dirs->getRootPath(),
                 builderFactory: $builderFactory,
                 variableResolver: $variables,
                 logger: $logger->withPrefix('composer-source'),

@@ -12,9 +12,11 @@ use Butschster\ContextGenerator\Console\SelfUpdateCommand;
 use Butschster\ContextGenerator\Console\VersionCommand;
 use Butschster\ContextGenerator\Directories;
 use Dotenv\Dotenv;
+use Psr\Container\ContainerInterface;
 use Spiral\Boot\Bootloader\Bootloader;
 use Spiral\Boot\DirectoriesInterface;
 use Spiral\Boot\EnvironmentInterface;
+use Spiral\Core\Config\Proxy;
 use Spiral\Files\Files;
 use Spiral\Files\FilesInterface;
 
@@ -27,11 +29,18 @@ final class CoreBootloader extends Bootloader
     {
         return [
             FilesInterface::class => Files::class,
-            Directories::class => static fn(DirectoriesInterface $dirs) => new Directories(
-                rootPath: $dirs->get('root'),
-                outputPath: $dirs->get('output'),
-                configPath: $dirs->get('config'),
-                jsonSchemaPath: $dirs->get('json-schema') . 'json-schema.json',
+            \Butschster\ContextGenerator\DirectoriesInterface::class => new Proxy(
+                interface: \Butschster\ContextGenerator\DirectoriesInterface::class,
+                fallbackFactory: static function (ContainerInterface $container) {
+                    $dirs = $container->get(DirectoriesInterface::class);
+
+                    return new Directories(
+                        rootPath: $dirs->get('root'),
+                        outputPath: $dirs->get('output'),
+                        configPath: $dirs->get('config'),
+                        jsonSchemaPath: $dirs->get('json-schema') . 'json-schema.json',
+                    );
+                },
             ),
         ];
     }

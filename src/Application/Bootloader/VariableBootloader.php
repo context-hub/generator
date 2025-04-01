@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Application\Bootloader;
 
 use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
-use Butschster\ContextGenerator\Directories;
+use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\Lib\Variable\Provider\CompositeVariableProvider;
 use Butschster\ContextGenerator\Lib\Variable\Provider\DotEnvVariableProvider;
 use Butschster\ContextGenerator\Lib\Variable\Provider\PredefinedVariableProvider;
@@ -21,15 +21,15 @@ final class VariableBootloader extends Bootloader
     {
         return [
             VariableResolver::class => static function (
-                Directories $dirs,
+                DirectoriesInterface $dirs,
                 HasPrefixLoggerInterface $logger,
             ) {
                 $envFilePath = null;
                 $envFileName = null;
 
-                if ($dirs->envFilePath !== null) {
-                    $envFilePath = \dirname($dirs->envFilePath);
-                    $envFileName = \pathinfo($dirs->envFilePath, PATHINFO_BASENAME);
+                if ($dirs->getEnvFilePath() !== null) {
+                    $envFilePath = \dirname($dirs->getEnvFilePath());
+                    $envFileName = \pathinfo($dirs->getEnvFilePath(), PATHINFO_BASENAME);
                 }
 
                 return new VariableResolver(

@@ -7,7 +7,7 @@ namespace Butschster\ContextGenerator\Console;
 use Butschster\ContextGenerator\Application\JsonSchema;
 use Butschster\ContextGenerator\Config\ConfigType;
 use Butschster\ContextGenerator\Config\Registry\ConfigRegistry;
-use Butschster\ContextGenerator\Directories;
+use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\Document\Document;
 use Butschster\ContextGenerator\Document\DocumentRegistry;
 use Butschster\ContextGenerator\Lib\TreeBuilder\TreeViewConfig;
@@ -31,7 +31,7 @@ final class InitCommand extends BaseCommand
     )]
     protected string $configFilename = 'context.yaml';
 
-    public function __invoke(Directories $dirs, FilesInterface $files): int
+    public function __invoke(DirectoriesInterface $dirs, FilesInterface $files): int
     {
         $filename = $this->configFilename;
         $ext = \pathinfo($filename, PATHINFO_EXTENSION);
