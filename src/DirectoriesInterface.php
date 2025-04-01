@@ -31,7 +31,7 @@ interface DirectoriesInterface
     /**
      * Get the JSON schema path
      */
-    public function getJsonSchemaPath(): FSPath;
+    public function getJsonSchemaPath(): string;
 
     /**
      * Get the environment file path if set

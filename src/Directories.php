@@ -18,7 +18,6 @@ final readonly class Directories implements DirectoriesInterface
     private FSPath $rootPathObj;
     private FSPath $outputPathObj;
     private FSPath $configPathObj;
-    private FSPath $jsonSchemaPathObj;
     private ?FSPath $envFilePathObj;
 
     /**
@@ -55,7 +54,6 @@ final readonly class Directories implements DirectoriesInterface
         $this->rootPathObj = FSPath::create($rootPath);
         $this->outputPathObj = FSPath::create($outputPath);
         $this->configPathObj = FSPath::create($configPath);
-        $this->jsonSchemaPathObj = FSPath::create($jsonSchemaPath);
         $this->envFilePathObj = $envFilePath !== null ? FSPath::create($envFilePath) : null;
     }
 
@@ -86,9 +84,9 @@ final readonly class Directories implements DirectoriesInterface
     /**
      * Get the JSON schema path
      */
-    public function getJsonSchemaPath(): FSPath
+    public function getJsonSchemaPath(): string
     {
-        return $this->jsonSchemaPathObj;
+        return $this->jsonSchemaPath;
     }
 
     /**

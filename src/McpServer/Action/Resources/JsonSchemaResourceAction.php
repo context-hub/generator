@@ -47,7 +47,7 @@ final readonly class JsonSchemaResourceAction
     private function getJsonSchema(): string
     {
         $schema = \json_decode(
-            $this->files->read((string) $this->dirs->getJsonSchemaPath()),
+            $this->files->read($this->dirs->getJsonSchemaPath()),
             associative: true,
         );
 

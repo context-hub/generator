@@ -35,7 +35,7 @@ final readonly class GitDiffSourceFactory extends AbstractSourceFactory
         // Prepend root path if repository is relative
         $repository = \str_starts_with($repository, '/')
             ? $repository
-            : $this->dirs->getRootPath()->join($repository);
+            : (string) $this->dirs->getRootPath()->join($repository);
 
         // Validate filePattern if present
         if (isset($config['filePattern'])) {
