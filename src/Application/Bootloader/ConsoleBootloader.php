@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Application\Bootloader;
 
+use Butschster\ContextGenerator\Application\Application;
 use Butschster\ContextGenerator\Application\Dispatcher\ConsoleDispatcher;
 use Spiral\Boot\AbstractKernel;
 use Spiral\Boot\Bootloader\Bootloader;
@@ -23,7 +24,7 @@ final class ConsoleBootloader extends Bootloader
         private readonly ConfiguratorInterface $config,
     ) {}
 
-    public function init(AbstractKernel $kernel, BinderInterface $binder): void
+    public function init(AbstractKernel $kernel, BinderInterface $binder, Application $app): void
     {
         $kernel->bootstrapped(static function (AbstractKernel $kernel): void {
             $kernel->addDispatcher(ConsoleDispatcher::class);
@@ -41,6 +42,8 @@ final class ConsoleBootloader extends Bootloader
             [
                 'interceptors' => [],
                 'commands' => [],
+                'name' => $app->name,
+                'version' => $app->version,
             ],
         );
     }
