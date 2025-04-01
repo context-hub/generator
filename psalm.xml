@@ -23,6 +23,11 @@
                 <referencedMethod name="Spiral\Core\Scope::__construct"/>
             </errorLevel>
         </InternalMethod>
+        <PossiblyUnusedMethod>
+            <errorLevel type="suppress">
+                <file name="src/**/*Bootloader.php" />
+            </errorLevel>
+        </PossiblyUnusedMethod>
         <InternalClass>
             <errorLevel type="suppress">
                 <referencedClass name="Spiral\Core\Attribute\Scope"/>
@@ -30,6 +35,7 @@
                 <referencedClass name="Spiral\Core\Scope"/>
             </errorLevel>
         </InternalClass>
+        <MissingOverrideAttribute errorLevel="suppress" />
     </issueHandlers>
     <forbiddenFunctions>
         <function name="var_dump"/>
