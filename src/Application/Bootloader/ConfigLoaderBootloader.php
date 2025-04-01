@@ -6,11 +6,23 @@ namespace Butschster\ContextGenerator\Application\Bootloader;
 
 use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
 use Butschster\ContextGenerator\Config\ConfigurationProvider;
+use Butschster\ContextGenerator\Config\Import\ImportParserPlugin;
+use Butschster\ContextGenerator\Config\Import\ImportResolver;
+use Butschster\ContextGenerator\Config\Import\Source\ComposerImportSource;
+use Butschster\ContextGenerator\Config\Import\Source\GitHubImportSource;
+use Butschster\ContextGenerator\Config\Import\Source\ImportSourceProvider;
+use Butschster\ContextGenerator\Config\Import\Source\LocalImportSource;
+use Butschster\ContextGenerator\Config\Import\Source\Registry\ImportSourceRegistry;
+use Butschster\ContextGenerator\Config\Import\Source\UrlImportSource;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderFactory;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderFactoryInterface;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
 use Butschster\ContextGenerator\Config\Parser\ConfigParserPluginInterface;
 use Butschster\ContextGenerator\Config\Parser\ParserPluginRegistry;
+use Butschster\ContextGenerator\Config\Reader\ConfigReaderRegistry;
+use Butschster\ContextGenerator\Config\Reader\JsonReader;
+use Butschster\ContextGenerator\Config\Reader\PhpReader;
+use Butschster\ContextGenerator\Config\Reader\YamlReader;
 use Butschster\ContextGenerator\Directories;
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
 use Butschster\ContextGenerator\Document\DocumentsParserPlugin;
@@ -43,6 +55,7 @@ final class ConfigLoaderBootloader extends Bootloader
         return [
             ParserPluginRegistry::class => function (
                 SourceProviderInterface $sourceProvider,
+                ImportResolver $importResolver,
                 HasPrefixLoggerInterface $logger,
             ) {
                 $modifierResolver = new ModifierResolver(
@@ -58,6 +71,10 @@ final class ConfigLoaderBootloader extends Bootloader
                         modifierResolver: $modifierResolver,
                         logger: $logger->withPrefix('documents-parser-plugin'),
                     ),
+                    new ImportParserPlugin(
+                        importResolver: $importResolver,
+                        logger: $logger->withPrefix('import-parser'),
+                    ),
                     ...$this->parserPlugins,
                 ]);
             },
@@ -67,13 +84,11 @@ final class ConfigLoaderBootloader extends Bootloader
                 FilesInterface $files,
                 Directories $dirs,
                 HasPrefixLoggerInterface $logger,
-                ParserPluginRegistry $pluginRegistry,
             ) => new ConfigurationProvider(
                 loaderFactory: $configLoaderFactory,
                 files: $files,
                 dirs: $dirs,
                 logger: $logger->withPrefix('config-provider'),
-                parserPlugins: $pluginRegistry->getPlugins(),
             ),
 
             DocumentCompiler::class => static fn(
@@ -92,15 +107,117 @@ final class ConfigLoaderBootloader extends Bootloader
                 logger: $logger->withPrefix('document-compiler'),
             ),
 
-            ConfigLoaderFactoryInterface::class => static fn(
+            ConfigReaderRegistry::class => static function (
                 FilesInterface $files,
-                Directories $dirs,
                 HasPrefixLoggerInterface $logger,
-            ) => new ConfigLoaderFactory(
+            ) {
+                // Create readers
+                $jsonReader = new JsonReader(
+                    files: $files,
+                    logger: $logger->withPrefix('json-reader'),
+                );
+
+                $yamlReader = new YamlReader(
+                    files: $files,
+                    logger: $logger->withPrefix('yaml-reader'),
+                );
+
+                $phpReader = new PhpReader(
+                    files: $files,
+                    logger: $logger->withPrefix('php-reader'),
+                );
+
+                return new ConfigReaderRegistry(
+                    readers: [
+                        'json' => $jsonReader,
+                        'yaml' => $yamlReader,
+                        'yml' => $yamlReader,
+                        'php' => $phpReader,
+                    ],
+                );
+            },
+
+            ConfigLoaderFactoryInterface::class => static fn(ConfigReaderRegistry $registry, FilesInterface $files, Directories $dirs, HasPrefixLoggerInterface $logger) => new ConfigLoaderFactory(
+                readers: $registry,
                 files: $files,
                 dirs: $dirs,
                 logger: $logger->withPrefix('config-loader'),
             ),
+
+            ImportSourceRegistry::class => static function (
+                HasPrefixLoggerInterface $logger,
+                FilesInterface $files,
+            ) {
+                $registry = new ImportSourceRegistry(
+                    logger: $logger->withPrefix('import-source-registry'),
+                );
+
+                // Local import source (default)
+                $registry->register(
+                    new LocalImportSource(
+                        files: $this->files,
+                        readers: $this->readers,
+                        logger: $this->getSourceLogger('local'),
+                    ),
+                );
+
+                // GitHub import source
+                $registry->register(
+                    new GitHubImportSource(
+                        githubClient: $this->githubClient,
+                        logger: $this->getSourceLogger('github'),
+                    ),
+                );
+
+                // Composer import source
+                $registry->register(
+                    new ComposerImportSource(
+                        files: $this->files,
+                        composerClient: $this->composerClient,
+                        readers: $this->readers,
+                        logger: $this->getSourceLogger('composer'),
+                    ),
+                );
+
+                // URL import source
+                $registry->register(
+                    new UrlImportSource(
+                        httpClient: $this->httpClient,
+                        logger: $this->getSourceLogger('url'),
+                    ),
+                );
+
+                return $registry;
+            },
+
+            ImportResolver::class => static fn(
+                FilesInterface $files,
+                Directories $dirs,
+                ImportSourceRegistry $sourceRegistry,
+            ) => new ImportResolver(
+                dirs: $dirs,
+                files: $files,
+                sourceRegistry: $sourceRegistry,
+            ),
+
+            ImportSourceProvider::class => static function (
+                ConfigReaderRegistry $readers,
+                FilesInterface $files,
+                ImportSourceRegistry $sourceRegistry,
+                HasPrefixLoggerInterface $logger,
+            ) {
+                $provider = new ImportSourceProvider(
+                    files: $files,
+                    readers: $readers,
+                    logger: $logger->withPrefix('import-sources'),
+                );
+
+
+                // Register all available import sources
+                $provider->registerSources($sourceRegistry);
+
+                return $provider;
+            },
 
             ConfigLoaderInterface::class => new Proxy(
                 interface: ConfigLoaderInterface::class,

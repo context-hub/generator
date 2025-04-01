@@ -21,7 +21,6 @@ final readonly class ConfigurationProvider
         private FilesInterface $files,
         private Directories $dirs,
         private ?LoggerInterface $logger = null,
-        private array $parserPlugins = [],
     ) {}
 
     /**
@@ -33,7 +32,6 @@ final readonly class ConfigurationProvider
 
         return $this->loaderFactory->createFromString(
             jsonConfig: $jsonConfig,
-            parserPlugins: $this->parserPlugins,
         );
     }
 
@@ -49,19 +47,13 @@ final readonly class ConfigurationProvider
                 'directory' => $resolvedPath,
             ]);
 
-            return $this->loaderFactory->create(
-                dirs: $this->dirs->withConfigPath($resolvedPath),
-                parserPlugins: $this->parserPlugins,
-            );
+            return $this->loaderFactory->create($resolvedPath);
         }
         $this->logger?->info('Loading configuration from specific file', [
             'file' => $resolvedPath,
         ]);
 
-        return $this->loaderFactory->createForFile(
-            dirs: $this->dirs->withConfigPath($resolvedPath),
-            parserPlugins: $this->parserPlugins,
-        );
+        return $this->loaderFactory->createForFile($resolvedPath);
     }
 
     /**
@@ -70,13 +62,10 @@ final readonly class ConfigurationProvider
     public function fromDefaultLocation(): ConfigLoaderInterface
     {
         $this->logger?->info('Loading configuration from default location', [
-            'rootPath' => $this->dirs->rootPath,
+            'rootPath' => $this->dirs->configPath,
         ]);
 
-        return $this->loaderFactory->create(
-            dirs: $this->dirs,
-            parserPlugins: $this->parserPlugins,
-        );
+        return $this->loaderFactory->create($this->dirs->configPath);
     }
 
     /**

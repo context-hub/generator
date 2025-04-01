@@ -43,4 +43,9 @@ final readonly class StringJsonReader implements ReaderInterface
         // This reader doesn't care about the path - it always supports reading from its string
         return true;
     }
+
+    public function getSupportedExtensions(): array
+    {
+        return [];
+    }
 }

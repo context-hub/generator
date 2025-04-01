@@ -9,20 +9,14 @@ use Psr\Log\LoggerInterface;
 
 final readonly class ConfigParser implements ConfigParserInterface
 {
-    /** @var array<ConfigParserPluginInterface> */
-    private array $plugins;
-
     /**
      * @param string $rootPath The root path for resolving relative paths
-     * @param array<ConfigParserPluginInterface> $plugins The parser plugins
      */
     public function __construct(
         private string $rootPath,
+        private ParserPluginRegistry $pluginRegistry,
         private ?LoggerInterface $logger = null,
-        ConfigParserPluginInterface ...$plugins,
-    ) {
-        $this->plugins = \array_values($plugins);
-    }
+    ) {}
 
     public function parse(array $config): ConfigRegistry
     {
@@ -31,7 +25,7 @@ final readonly class ConfigParser implements ConfigParserInterface
         // First, allow plugins to update the configuration (imports etc.)
         $currentConfig = $this->preprocessConfig($config);
 
-        foreach ($this->plugins as $plugin) {
+        foreach ($this->pluginRegistry->getPlugins() as $plugin) {
             try {
                 if (!$plugin->supports($currentConfig)) {
                     continue;
@@ -64,7 +58,7 @@ final readonly class ConfigParser implements ConfigParserInterface
     {
         $currentConfig = $config;
 
-        foreach ($this->plugins as $plugin) {
+        foreach ($this->pluginRegistry->getPlugins() as $plugin) {
             try {
                 // Check if plugin can update this config
                 if (!$plugin->supports($currentConfig)) {
