@@ -136,20 +136,40 @@ jobs:
           chmod +x .build/bin/box.phar
 
       - name: Download required PHP extensions
-        run: .build/bin/spc download micro --for-extensions=ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl --with-php=8.3 --prefer-pre-built
+        run: |
+          # For ARM64 runners, ensure we're using the native architecture
+          if [[ "${{ matrix.arch }}" == "arm64" ]]; then
+            echo "Downloading extensions with ARM64 native commands"
+            arch -arm64 .build/bin/spc download micro --for-extensions=ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl --with-php=8.3 --prefer-pre-built
+          else
+            .build/bin/spc download micro --for-extensions=ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl --with-php=8.3 --prefer-pre-built
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
 
       - name: Verify environment is ready
         run: |
-          .build/bin/spc doctor --auto-fix
+          # For ARM64 runners, ensure we're using the native homebrew
+          if [[ "${{ matrix.arch }}" == "arm64" ]]; then
+            echo "Using ARM64 native commands"
+            arch -arm64 .build/bin/spc doctor --auto-fix
+          else
+            .build/bin/spc doctor --auto-fix
+          fi
 
       - name: Build PHAR file
         run: |
           php .build/bin/box.phar compile -v
 
       - name: Build the self-executable binary
-        run: .build/bin/spc build "ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl" --build-micro
+        run: |
+          # For ARM64 runners, ensure we're using the native architecture
+          if [[ "${{ matrix.arch }}" == "arm64" ]]; then
+            echo "Building with ARM64 native commands"
+            arch -arm64 .build/bin/spc build "ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl" --build-micro
+          else
+            .build/bin/spc build "ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl" --build-micro
+          fi
 
       - name: Combine micro.sfx with the PHAR
         run: |
