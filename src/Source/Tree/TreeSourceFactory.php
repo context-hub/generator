@@ -23,7 +23,7 @@ final readonly class TreeSourceFactory extends AbstractSourceFactory
     public function create(array $config): SourceInterface
     {
         $this->logger?->debug('Creating Tree source', [
-            'path' => $this->dirs->rootPath,
+            'path' => $this->dirs->getRootPath(),
             'config' => $config,
         ]);
 
@@ -39,7 +39,7 @@ final readonly class TreeSourceFactory extends AbstractSourceFactory
 
         $sourcePaths = \is_string($sourcePaths) ? [$sourcePaths] : $sourcePaths;
         $sourcePaths = \array_map(
-            fn(string $sourcePaths): string => $this->dirs->getFilePath($sourcePaths),
+            fn(string $sourcePaths): string => (string) $this->dirs->getRootPath()->join($sourcePaths),
             $sourcePaths,
         );
 

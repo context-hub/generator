@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem;
 
-use Butschster\ContextGenerator\Directories;
+use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
@@ -41,7 +41,7 @@ final readonly class FileMoveAction
     public function __construct(
         private LoggerInterface $logger,
         private FilesInterface $files,
-        private Directories $dirs,
+        private DirectoriesInterface $dirs,
     ) {}
 
     #[Post(path: '/tools/call/file-move', name: 'tools.file-move')]
@@ -51,8 +51,8 @@ final readonly class FileMoveAction
 
         // Get params from the parsed body for POST requests
         $parsedBody = $request->getParsedBody();
-        $source = $this->dirs->getFilePath($parsedBody['source'] ?? '');
-        $destination = $this->dirs->getFilePath($parsedBody['destination'] ?? '');
+        $source = (string) $this->dirs->getRootPath()->join($parsedBody['source'] ?? '');
+        $destination = (string) $this->dirs->getRootPath()->join($parsedBody['destination'] ?? '');
         $createDirectory = $parsedBody['createDirectory'] ?? true;
 
         if (empty($source)) {

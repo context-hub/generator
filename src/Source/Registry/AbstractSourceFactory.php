@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\Registry;
 
-use Butschster\ContextGenerator\Directories;
+use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\Modifier\Alias\ModifierResolver;
 use Psr\Log\LoggerInterface;
 
@@ -14,7 +14,7 @@ use Psr\Log\LoggerInterface;
 abstract readonly class AbstractSourceFactory implements SourceFactoryInterface
 {
     public function __construct(
-        protected Directories $dirs,
+        protected DirectoriesInterface $dirs,
         protected ModifierResolver $modifierResolver = new ModifierResolver(),
         protected ?LoggerInterface $logger = null,
     ) {}

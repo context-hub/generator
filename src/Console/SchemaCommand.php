@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Console;
 
 use Butschster\ContextGenerator\Application\JsonSchema;
-use Butschster\ContextGenerator\Directories;
+use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\Lib\HttpClient\Exception\HttpException;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 use Spiral\Console\Attribute\Option;
@@ -40,9 +40,9 @@ final class SchemaCommand extends BaseCommand
     public function __invoke(
         HttpClientInterface $httpClient,
         FilesInterface $files,
-        Directories $dirs,
+        DirectoriesInterface $dirs,
     ): int {
-        $outputPath = $dirs->getFilePath($this->outputPath);
+        $outputPath = (string) $dirs->getRootPath()->join($this->outputPath);
 
         // Always show the URL where the schema is hosted
         $this->output->info('JSON schema URL: ' . JsonSchema::SCHEMA_URL);

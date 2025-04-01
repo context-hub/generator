@@ -34,7 +34,7 @@ final readonly class ComposerSourceFactory extends AbstractSourceFactory
 
         // If the path is relative, make it absolute using the root path
         if (!\str_starts_with($composerPath, '/')) {
-            $composerPath = $this->dirs->getFilePath($composerPath);
+            $composerPath = $this->dirs->getRootPath()->join($composerPath);
         }
 
         return new ComposerSource(

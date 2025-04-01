@@ -12,7 +12,7 @@ use Butschster\ContextGenerator\Config\Import\Source\Local\LocalImportSource;
 use Butschster\ContextGenerator\Config\Import\Source\Registry\ImportSourceRegistry;
 use Butschster\ContextGenerator\Config\Import\Source\Url\UrlImportSource;
 use Butschster\ContextGenerator\Config\Reader\ConfigReaderRegistry;
-use Butschster\ContextGenerator\Directories;
+use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
 use Spiral\Boot\Bootloader\Bootloader;
@@ -80,7 +80,7 @@ final class ImportBootloader extends Bootloader
             // Import resolver
             ImportResolver::class => static fn(
                 FilesInterface $files,
-                Directories $dirs,
+                DirectoriesInterface $dirs,
                 ImportSourceProvider $sourceProvider,
                 HasPrefixLoggerInterface $logger,
             ) => new ImportResolver(

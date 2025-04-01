@@ -23,7 +23,7 @@ final readonly class FileSourceFactory extends AbstractSourceFactory
     public function create(array $config): SourceInterface
     {
         $this->logger?->debug('Creating file source', [
-            'path' => $this->dirs->rootPath,
+            'path' => $this->dirs->getRootPath(),
             'config' => $config,
         ]);
 
@@ -42,7 +42,7 @@ final readonly class FileSourceFactory extends AbstractSourceFactory
 
         $sourcePaths = \is_string($sourcePaths) ? [$sourcePaths] : $sourcePaths;
         $sourcePaths = \array_map(
-            fn(string $sourcePath): string => $this->dirs->getFilePath($sourcePath),
+            fn(string $sourcePath): string => (string) $this->dirs->getRootPath()->join($sourcePath),
             $sourcePaths,
         );
 

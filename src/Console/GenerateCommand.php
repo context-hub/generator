@@ -7,7 +7,7 @@ namespace Butschster\ContextGenerator\Console;
 use Butschster\ContextGenerator\Application\AppScope;
 use Butschster\ContextGenerator\Config\ConfigurationProvider;
 use Butschster\ContextGenerator\Config\Exception\ConfigLoaderException;
-use Butschster\ContextGenerator\Directories;
+use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
 use Spiral\Console\Attribute\Option;
 use Spiral\Core\Container;
@@ -43,7 +43,7 @@ final class GenerateCommand extends BaseCommand
     )]
     protected ?string $envFileName = null;
 
-    public function __invoke(Container $container, Directories $dirs): int
+    public function __invoke(Container $container, DirectoriesInterface $dirs): int
     {
         // Determine the effective root path based on config file path
         $dirs = $dirs
@@ -54,7 +54,7 @@ final class GenerateCommand extends BaseCommand
             bindings: new Scope(
                 name: AppScope::Compiler,
                 bindings: [
-                    Directories::class => $dirs,
+                    DirectoriesInterface::class => $dirs,
                 ],
             ),
             scope: function (

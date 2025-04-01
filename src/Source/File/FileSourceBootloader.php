@@ -6,7 +6,7 @@ namespace Butschster\ContextGenerator\Source\File;
 
 use Butschster\ContextGenerator\Application\Bootloader\SourceFetcherBootloader;
 use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
-use Butschster\ContextGenerator\Directories;
+use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Source\Registry\SourceRegistryInterface;
 use Spiral\Boot\Bootloader\Bootloader;
@@ -18,11 +18,11 @@ final class FileSourceBootloader extends Bootloader
     {
         return [
             FileSourceFetcher::class => static fn(
-                Directories $dirs,
+                DirectoriesInterface $dirs,
                 ContentBuilderFactory $builderFactory,
                 HasPrefixLoggerInterface $logger,
             ): FileSourceFetcher => new FileSourceFetcher(
-                basePath: $dirs->rootPath,
+                basePath: (string) $dirs->getRootPath(),
                 builderFactory: $builderFactory,
                 logger: $logger->withPrefix('file-source'),
             ),

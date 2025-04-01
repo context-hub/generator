@@ -9,7 +9,7 @@ use Butschster\ContextGenerator\Config\ConfigurationProvider;
 use Butschster\ContextGenerator\Config\Exception\ConfigLoaderException;
 use Butschster\ContextGenerator\Console\Renderer\DocumentRenderer;
 use Butschster\ContextGenerator\Console\Renderer\Style;
-use Butschster\ContextGenerator\Directories;
+use Butschster\ContextGenerator\DirectoriesInterface;
 use Spiral\Console\Attribute\Option;
 use Spiral\Core\Container;
 use Spiral\Core\Scope;
@@ -38,7 +38,7 @@ final class DisplayCommand extends BaseCommand
 
     public function __invoke(
         Container $container,
-        Directories $dirs,
+        DirectoriesInterface $dirs,
         DocumentRenderer $renderer,
     ): int {
         $dirs = $dirs
@@ -48,7 +48,7 @@ final class DisplayCommand extends BaseCommand
             bindings: new Scope(
                 name: AppScope::Compiler,
                 bindings: [
-                    Directories::class => $dirs,
+                    DirectoriesInterface::class => $dirs,
                 ],
             ),
             scope: function (ConfigurationProvider $configProvider) use ($dirs, $renderer) {
@@ -78,7 +78,7 @@ final class DisplayCommand extends BaseCommand
                     // Load the document registry
                     $registry = $loader->load();
 
-                    $title = "Context: {$dirs->rootPath}";
+                    $title = "Context: " . (string) $dirs->getRootPath();
 
                     $this->output->writeln("\n" . Style::header($title));
                     $this->output->writeln(Style::separator('=', \strlen($title)) . "\n");

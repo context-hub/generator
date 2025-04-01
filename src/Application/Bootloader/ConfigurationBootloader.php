@@ -43,7 +43,7 @@ final class ConfigurationBootloader extends Bootloader
             // configuration
             ConfigsInterface::class => ConfiguratorInterface::class,
             ConfiguratorInterface::class => ConfigManager::class,
-            ConfigManager::class => [self::class, 'configManager'],
+            ConfigManager::class => $this->configManager(...),
         ];
     }
 

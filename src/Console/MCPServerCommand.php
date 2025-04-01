@@ -11,7 +11,7 @@ use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
 use Butschster\ContextGenerator\Config\ConfigurationProvider;
 use Butschster\ContextGenerator\Config\Exception\ConfigLoaderException;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
-use Butschster\ContextGenerator\Directories;
+use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\McpServer\ServerRunnerInterface;
 use Monolog\Level;
 use Psr\Log\LoggerInterface;
@@ -41,11 +41,11 @@ final class MCPServerCommand extends BaseCommand
     )]
     protected ?string $envFileName = null;
 
-    public function __invoke(Container $container, Directories $dirs, Application $app): int
+    public function __invoke(Container $container, DirectoriesInterface $dirs, Application $app): int
     {
         $logger = new FileLogger(
             name: 'mcp',
-            filePath: $dirs->rootPath . '/mcp.log',
+            filePath: (string) $dirs->getRootPath()->join('mcp.log'),
             level: match (true) {
                 $this->output->isVeryVerbose() => Level::Debug,
                 $this->output->isVerbose() => Level::Info,
@@ -66,25 +66,26 @@ final class MCPServerCommand extends BaseCommand
                 bindings: [
                     LoggerInterface::class => $logger,
                     HasPrefixLoggerInterface::class => $logger,
-                    Directories::class => $dirs,
+                    DirectoriesInterface::class => $dirs,
                 ],
             ),
             scope: static function (
                 Container $container,
                 ConfigurationProvider $configProvider,
             ) use ($logger, $dirs, $app) {
-                $logger->info(\sprintf('Using root path: %s', $dirs->rootPath));
+                $rootPathStr = (string) $dirs->getRootPath();
+                $logger->info(\sprintf('Using root path: %s', $rootPathStr));
 
                 try {
                     // Get the appropriate loader based on options provided
-                    if (!\is_dir($dirs->rootPath)) {
+                    if (!\is_dir($rootPathStr)) {
                         $logger->info(
                             'Loading configuration from provided path...',
                             [
-                                'path' => $dirs->rootPath,
+                                'path' => $rootPathStr,
                             ],
                         );
-                        $loader = $configProvider->fromPath($dirs->configPath);
+                        $loader = $configProvider->fromPath((string) $dirs->getConfigPath());
                     } else {
                         $logger->info('Using default configuration location...');
                         $loader = $configProvider->fromDefaultLocation();

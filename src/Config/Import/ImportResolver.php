@@ -13,7 +13,7 @@ use Butschster\ContextGenerator\Config\Import\Source\Exception\ImportSourceExcep
 use Butschster\ContextGenerator\Config\Import\Source\ImportSourceProvider;
 use Butschster\ContextGenerator\Config\Import\Source\Local\LocalSourceConfig;
 use Butschster\ContextGenerator\Config\Import\Source\Url\UrlSourceConfig;
-use Butschster\ContextGenerator\Directories;
+use Butschster\ContextGenerator\DirectoriesInterface;
 use Psr\Log\LoggerInterface;
 use Spiral\Files\FilesInterface;
 
@@ -28,7 +28,7 @@ final readonly class ImportResolver
     private SourceConfigFactory $sourceConfigFactory;
 
     public function __construct(
-        private Directories $dirs,
+        private DirectoriesInterface $dirs,
         FilesInterface $files,
         private ImportSourceProvider $sourceProvider,
         private ?LoggerInterface $logger = null,
@@ -143,9 +143,11 @@ final readonly class ImportResolver
                 continue;
             }
 
+            $rootPathStr = (string) $this->dirs->getRootPath();
+
             // Create a local source config for this match
             $localConfig = new LocalSourceConfig(
-                path: \ltrim(\str_replace($this->dirs->rootPath, '', $matchingPath), '/'),
+                path: \ltrim(\str_replace($rootPathStr, '', $matchingPath), '/'),
                 absolutePath: $matchingPath,
                 hasWildcard: false,
                 pathPrefix: $sourceConfig->getPathPrefix(),

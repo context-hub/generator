@@ -21,7 +21,7 @@ final readonly class UrlSourceFactory extends AbstractSourceFactory
     public function create(array $config): UrlSource
     {
         $this->logger?->debug('Creating URL source', [
-            'path' => $this->dirs->rootPath,
+            'path' => $this->dirs->getRootPath(),
             'config' => $config,
         ]);
 
