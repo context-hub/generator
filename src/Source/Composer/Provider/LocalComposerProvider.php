@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\Composer\Provider;
 
-use Butschster\ContextGenerator\Source\Composer\Client\ComposerClientInterface;
-use Butschster\ContextGenerator\Source\Composer\Client\FileSystemComposerClient;
+use Butschster\ContextGenerator\Lib\ComposerClient\ComposerClientInterface;
+use Butschster\ContextGenerator\Lib\ComposerClient\FileSystemComposerClient;
 use Butschster\ContextGenerator\Source\Composer\Package\ComposerPackageCollection;
 use Butschster\ContextGenerator\Source\Composer\Package\ComposerPackageInfo;
 use Psr\Log\LoggerInterface;

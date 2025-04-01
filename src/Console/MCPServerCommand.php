@@ -69,11 +69,10 @@ final class MCPServerCommand extends BaseCommand
                     Directories::class => $dirs,
                 ],
             ),
-            scope: static function (Container $container, ConfigurationProvider $configProvider) use (
-                $logger,
-                $dirs,
-                $app,
-            ) {
+            scope: static function (
+                Container $container,
+                ConfigurationProvider $configProvider,
+            ) use ($logger, $dirs, $app) {
                 $logger->info(\sprintf('Using root path: %s', $dirs->rootPath));
 
                 try {

@@ -31,7 +31,7 @@ final class CoreBootloader extends Bootloader
                 rootPath: $dirs->get('root'),
                 outputPath: $dirs->get('output'),
                 configPath: $dirs->get('config'),
-                jsonSchemaPath: $dirs->get('json-schema'),
+                jsonSchemaPath: $dirs->get('json-schema') . 'json-schema.json',
             ),
         ];
     }

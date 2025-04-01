@@ -11,6 +11,11 @@ use Butschster\ContextGenerator\Config\Exception\ReaderException;
  */
 final readonly class JsonReader extends AbstractReader
 {
+    public function getSupportedExtensions(): array
+    {
+        return ['json'];
+    }
+
     protected function parseContent(string $content): array
     {
         try {
@@ -24,10 +29,5 @@ final readonly class JsonReader extends AbstractReader
         } catch (\JsonException $e) {
             throw new ReaderException('Invalid JSON in configuration file', previous: $e);
         }
-    }
-
-    protected function getSupportedExtensions(): array
-    {
-        return ['json'];
     }
 }

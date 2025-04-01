@@ -44,14 +44,14 @@ final readonly class PhpReader extends AbstractReader
         );
     }
 
+    public function getSupportedExtensions(): array
+    {
+        return ['php'];
+    }
+
     protected function parseContent(string $content): array
     {
         // Not used for PHP files since we use require directly
         throw new \LogicException('PHP files are not parsed from content, this method should not be called');
-    }
-
-    protected function getSupportedExtensions(): array
-    {
-        return ['php'];
     }
 }

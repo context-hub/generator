@@ -83,6 +83,4 @@ abstract readonly class AbstractReader implements ReaderInterface
      * @throws \Throwable If parsing fails
      */
     abstract protected function parseContent(string $content): array;
-
-    abstract protected function getSupportedExtensions(): array;
 }

@@ -13,6 +13,11 @@ use Symfony\Component\Yaml\Yaml;
  */
 final readonly class YamlReader extends AbstractReader
 {
+    public function getSupportedExtensions(): array
+    {
+        return ['yaml', 'yml'];
+    }
+
     protected function parseContent(string $content): array
     {
         try {
@@ -32,10 +37,5 @@ final readonly class YamlReader extends AbstractReader
         } catch (ParseException $e) {
             throw new ReaderException('Invalid YAML in configuration file', previous: $e);
         }
-    }
-
-    protected function getSupportedExtensions(): array
-    {
-        return ['yaml', 'yml'];
     }
 }

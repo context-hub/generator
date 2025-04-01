@@ -5,18 +5,13 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Config\Loader;
 
 use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
-use Butschster\ContextGenerator\Config\Exception\ConfigLoaderException;
-use Butschster\ContextGenerator\Config\Import\ImportParserPlugin;
-use Butschster\ContextGenerator\Config\Import\ImportResolver;
 use Butschster\ContextGenerator\Config\Parser\CompositeConfigParser;
 use Butschster\ContextGenerator\Config\Parser\ConfigParser;
-use Butschster\ContextGenerator\Config\Reader\JsonReader;
-use Butschster\ContextGenerator\Config\Reader\PhpReader;
+use Butschster\ContextGenerator\Config\Parser\ParserPluginRegistry;
+use Butschster\ContextGenerator\Config\Reader\ConfigReaderRegistry;
 use Butschster\ContextGenerator\Config\Reader\StringJsonReader;
-use Butschster\ContextGenerator\Config\Reader\YamlReader;
 use Butschster\ContextGenerator\Directories;
 use Psr\Log\LoggerInterface;
-use Spiral\Files\FilesInterface;
 
 /**
  * Factory for creating config loaders
@@ -24,79 +19,50 @@ use Spiral\Files\FilesInterface;
 final readonly class ConfigLoaderFactory implements ConfigLoaderFactoryInterface
 {
     public function __construct(
-        private FilesInterface $files,
+        private ConfigReaderRegistry $readers,
+        private ParserPluginRegistry $pluginRegistry,
         private Directories $dirs,
         private ?LoggerInterface $logger = null,
     ) {}
 
-    public function create(Directories $dirs, array $parserPlugins = []): ConfigLoaderInterface
+    public function create(string $configPath): ConfigLoaderInterface
     {
-        \assert($this->logger instanceof HasPrefixLoggerInterface);
+        $dirs = $this->dirs->withConfigPath($configPath);
 
-        // Create import resolver
-        $importResolver = new ImportResolver(
-            dirs: $dirs,
-            files: $this->files,
-            loaderFactory: $this,
-            logger: $this->logger?->withPrefix('import-resolver'),
-        );
-
-        // Create import parser plugin
-        $importParserPlugin = new ImportParserPlugin(
-            importResolver: $importResolver,
-            logger: $this->logger?->withPrefix('import-parser'),
-        );
-
-        // Add import parser plugin first in the list
-        $parserPlugins = [$importParserPlugin, ...$parserPlugins];
-
-        // Create parser
-        $parser = new ConfigParser($dirs->configPath, $this->logger, ...$parserPlugins);
-
-        // Create composite parser
-        $compositeParser = new CompositeConfigParser($parser);
-
-        // Create readers for different formats
-        $jsonReader = new JsonReader(
-            files: $this->files,
-            logger: $this->logger?->withPrefix('json-reader'),
-        );
-
-        $yamlReader = new YamlReader(
-            files: $this->files,
-            logger: $this->logger?->withPrefix('yaml-reader'),
-        );
-
-        $phpReader = new PhpReader(
-            files: $this->files,
-            logger: $this->logger?->withPrefix('php-reader'),
+        // Create composite parser using the injected plugin registry
+        $compositeParser = new CompositeConfigParser(
+            new ConfigParser(
+                $dirs->configPath,
+                $this->pluginRegistry,
+                $this->logger,
+            ),
         );
 
         // Try different file extensions
         $jsonLoader = new ConfigLoader(
             configPath: $dirs->getConfigPath('context.json'),
-            reader: $jsonReader,
+            reader: $this->readers->get('json'),
             parser: $compositeParser,
             logger: $this->logger,
         );
 
         $yamlLoader = new ConfigLoader(
             configPath: $dirs->getConfigPath('context.yaml'),
-            reader: $yamlReader,
+            reader: $this->readers->get('yaml'),
             parser: $compositeParser,
             logger: $this->logger,
         );
 
         $ymlLoader = new ConfigLoader(
             configPath: $dirs->getConfigPath('context.yml'),
-            reader: $yamlReader,
+            reader: $this->readers->get('yml'),
             parser: $compositeParser,
             logger: $this->logger,
         );
 
         $phpLoader = new ConfigLoader(
             configPath: $dirs->getConfigPath('context.php'),
-            reader: $phpReader,
+            reader: $this->readers->get('php'),
             parser: $compositeParser,
             logger: $this->logger,
         );
@@ -108,68 +74,40 @@ final readonly class ConfigLoaderFactory implements ConfigLoaderFactoryInterface
         );
     }
 
-    public function createForFile(Directories $dirs, array $parserPlugins = []): ConfigLoaderInterface
+    public function createForFile(string $configPath): ConfigLoaderInterface
     {
-        \assert($this->logger instanceof HasPrefixLoggerInterface);
+        $dirs = $this->dirs->withConfigPath($configPath);
 
-        // Create import resolver
-        $importResolver = new ImportResolver(
-            dirs: $dirs,
-            files: $this->files,
-            loaderFactory: $this,
-            logger: $this->logger?->withPrefix('import-resolver'),
+        // Create parser with the injected plugin registry
+        $parser = new ConfigParser(
+            rootPath: $this->dirs->rootPath,
+            pluginRegistry: $this->pluginRegistry,
+            logger: $this->logger,
         );
-
-        // Create import parser plugin
-        $importParserPlugin = new ImportParserPlugin(
-            importResolver: $importResolver,
-            logger: $this->logger?->withPrefix('import-parser'),
-        );
-
-        // Add import parser plugin first in the list
-        $parserPlugins = [$importParserPlugin, ...$parserPlugins];
-
-        // Create parser
-        $parser = new ConfigParser($this->dirs->rootPath, $this->logger, ...$parserPlugins);
 
         // Create composite parser
         $compositeParser = new CompositeConfigParser($parser);
 
         // Determine the file extension
-        $extension = \pathinfo($dirs->configPath, PATHINFO_EXTENSION);
-
-        // Create the appropriate reader based on file extension
-        $reader = match ($extension) {
-            'json' => new JsonReader(
-                files: $this->files,
-                logger: $this->logger?->withPrefix('json-reader'),
-            ),
-            'yaml', 'yml' => new YamlReader(
-                files: $this->files,
-                logger: $this->logger?->withPrefix('yaml-reader'),
-            ),
-            'php' => new PhpReader(
-                files: $this->files,
-                logger: $this->logger?->withPrefix('php-reader'),
-            ),
-            default => throw new ConfigLoaderException(\sprintf("Unsupported file extension: %s", $extension)),
-        };
+        $extension = \pathinfo($configPath, PATHINFO_EXTENSION);
 
         // Create loader for the specific file
         return new ConfigLoader(
-            configPath: $dirs->configPath,
-            reader: $reader,
+            configPath: $configPath,
+            reader: $this->readers->get($extension),
             parser: $compositeParser,
             logger: $this->logger,
         );
     }
 
-    public function createFromString(string $jsonConfig, array $parserPlugins = []): ConfigLoaderInterface
+    public function createFromString(string $jsonConfig): ConfigLoaderInterface
     {
-        \assert($this->logger instanceof HasPrefixLoggerInterface);
-
-        // Create parser
-        $parser = new ConfigParser($this->dirs->rootPath, $this->logger, ...$parserPlugins);
+        // Create parser with the injected plugin registry
+        $parser = new ConfigParser(
+            rootPath: $this->dirs->rootPath,
+            pluginRegistry: $this->pluginRegistry,
+            logger: $this->logger,
+        );
 
         // Create composite parser
         $compositeParser = new CompositeConfigParser($parser);
@@ -177,7 +115,9 @@ final readonly class ConfigLoaderFactory implements ConfigLoaderFactoryInterface
         // Create string JSON reader
         $stringJsonReader = new StringJsonReader(
             jsonContent: $jsonConfig,
-            logger: $this->logger?->withPrefix('string-json-reader'),
+            logger: $this->logger instanceof HasPrefixLoggerInterface
+                ? $this->logger->withPrefix('string-json-reader')
+                : $this->logger,
         );
 
         // Create loader with a dummy path (not used by StringJsonReader)

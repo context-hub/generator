@@ -27,4 +27,6 @@ interface ReaderInterface
      * @return bool True if the reader can handle this path
      */
     public function supports(string $path): bool;
+
+    public function getSupportedExtensions(): array;
 }

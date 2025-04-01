@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer\Action\Prompts;
 
+use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
 use Butschster\ContextGenerator\McpServer\Prompt\PromptProviderInterface;
 use Butschster\ContextGenerator\McpServer\Registry\McpItemsRegistry;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Get;
@@ -17,11 +18,13 @@ final readonly class ListPromptsAction
         private LoggerInterface $logger,
         private McpItemsRegistry $registry,
         private PromptProviderInterface $prompts,
+        private ConfigLoaderInterface $configLoader,
     ) {}
 
     #[Get(path: '/prompts/list', name: 'prompts.list')]
     public function __invoke(ServerRequestInterface $request): ListPromptsResult
     {
+        $this->configLoader->load();
         $this->logger->info('Listing available prompts');
 
         $prompts = [];

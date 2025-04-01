@@ -7,7 +7,12 @@ namespace Butschster\ContextGenerator\Config\Import;
 use Butschster\ContextGenerator\Config\Exception\ConfigLoaderException;
 use Butschster\ContextGenerator\Config\Import\PathPrefixer\DocumentOutputPathPrefixer;
 use Butschster\ContextGenerator\Config\Import\PathPrefixer\SourcePathPrefixer;
-use Butschster\ContextGenerator\Config\Loader\ConfigLoaderFactoryInterface;
+use Butschster\ContextGenerator\Config\Import\Source\Config\SourceConfigInterface;
+use Butschster\ContextGenerator\Config\Import\Source\Config\SourceConfigFactory;
+use Butschster\ContextGenerator\Config\Import\Source\Exception\ImportSourceException;
+use Butschster\ContextGenerator\Config\Import\Source\ImportSourceProvider;
+use Butschster\ContextGenerator\Config\Import\Source\Local\LocalSourceConfig;
+use Butschster\ContextGenerator\Config\Import\Source\Url\UrlSourceConfig;
 use Butschster\ContextGenerator\Directories;
 use Psr\Log\LoggerInterface;
 use Spiral\Files\FilesInterface;
@@ -20,16 +25,18 @@ final readonly class ImportResolver
     private WildcardPathFinder $pathFinder;
     private DocumentOutputPathPrefixer $documentPrefixer;
     private SourcePathPrefixer $sourcePrefixer;
+    private SourceConfigFactory $sourceConfigFactory;
 
     public function __construct(
         private Directories $dirs,
-        private FilesInterface $files,
-        private ConfigLoaderFactoryInterface $loaderFactory,
+        FilesInterface $files,
+        private ImportSourceProvider $sourceProvider,
         private ?LoggerInterface $logger = null,
     ) {
         $this->pathFinder = new WildcardPathFinder($files, $logger);
         $this->documentPrefixer = new DocumentOutputPathPrefixer();
         $this->sourcePrefixer = new SourcePathPrefixer();
+        $this->sourceConfigFactory = new SourceConfigFactory();
     }
 
     /**
@@ -55,38 +62,40 @@ final readonly class ImportResolver
         // Process each import
         $importedConfigs = [];
         foreach ($imports as $importConfig) {
-            $importCfg = ImportConfig::fromArray($importConfig, $basePath);
+            // Create source configuration from the raw import config
+            $sourceConfig = $this->sourceConfigFactory->createFromArray($importConfig, $basePath);
 
-            // Handle wildcard paths
-            if ($importCfg->hasWildcard) {
+            // Handle wildcard paths (only for local sources)
+            if ($sourceConfig instanceof LocalSourceConfig && $sourceConfig->hasWildcard()) {
                 $this->processWildcardImport(
-                    $importCfg,
+                    $sourceConfig,
                     $basePath,
                     $parsedImports,
                     $detector,
                     $importedConfigs,
-                    $importConfig,
                 );
                 continue;
             }
 
-            // Skip if already processed
-            if (\in_array($importCfg->absolutePath, $parsedImports, true)) {
-                $this->logger?->debug('Skipping already processed import', [
-                    'path' => $importCfg->path,
-                    'absolutePath' => $importCfg->absolutePath,
-                ]);
-                continue;
+            // For local imports, check if already processed
+            if ($sourceConfig instanceof LocalSourceConfig) {
+                $absolutePath = $sourceConfig->getAbsolutePath();
+                if (\in_array($absolutePath, $parsedImports, true)) {
+                    $this->logger?->debug('Skipping already processed import', [
+                        'path' => $sourceConfig->getPath(),
+                        'type' => $sourceConfig->getType(),
+                    ]);
+                    continue;
+                }
             }
 
-            // Process a single standard import
+            // Process a single import
             $this->processSingleImport(
-                $importCfg,
+                $sourceConfig,
                 $basePath,
                 $parsedImports,
                 $detector,
                 $importedConfigs,
-                $importConfig,
             );
         }
 
@@ -101,26 +110,25 @@ final readonly class ImportResolver
      * Process a wildcard import pattern
      */
     private function processWildcardImport(
-        ImportConfig $importCfg,
+        LocalSourceConfig $sourceConfig,
         string $basePath,
         array &$parsedImports,
         CircularImportDetectorInterface $detector,
         array &$importedConfigs,
-        array $importConfig,
     ): void {
         // Find all files that match the pattern
-        $matchingPaths = $this->pathFinder->findMatchingPaths($importCfg->path, $basePath);
+        $matchingPaths = $this->pathFinder->findMatchingPaths($sourceConfig->getPath(), $basePath);
 
         if (empty($matchingPaths)) {
             $this->logger?->warning('No files match the wildcard pattern', [
-                'pattern' => $importCfg->path,
+                'pattern' => $sourceConfig->getPath(),
                 'basePath' => $basePath,
             ]);
             return;
         }
 
         $this->logger?->debug('Found files matching wildcard pattern', [
-            'pattern' => $importCfg->path,
+            'pattern' => $sourceConfig->getPath(),
             'count' => \count($matchingPaths),
             'paths' => $matchingPaths,
         ]);
@@ -135,22 +143,22 @@ final readonly class ImportResolver
                 continue;
             }
 
-            // Create a single import config for this match
-            $singleImportCfg = new ImportConfig(
-                path: \ltrim(\str_replace($this->dirs->rootPath, '', $matchingPath), '/'), // Use the actual file path
-                absolutePath: $matchingPath, // The path finder returns absolute paths
-                pathPrefix: $importCfg->pathPrefix,
+            // Create a local source config for this match
+            $localConfig = new LocalSourceConfig(
+                path: \ltrim(\str_replace($this->dirs->rootPath, '', $matchingPath), '/'),
+                absolutePath: $matchingPath,
                 hasWildcard: false,
+                pathPrefix: $sourceConfig->getPathPrefix(),
+                selectiveDocuments: $sourceConfig->getSelectiveDocuments(),
             );
 
             // Process it using the standard import logic
             $this->processSingleImport(
-                $singleImportCfg,
+                $localConfig,
                 \dirname($matchingPath), // Base path is the directory of the matched file
                 $parsedImports,
                 $detector,
                 $importedConfigs,
-                $importConfig,
             );
         }
     }
@@ -159,89 +167,88 @@ final readonly class ImportResolver
      * Process a single non-wildcard import
      */
     private function processSingleImport(
-        ImportConfig $importCfg,
+        SourceConfigInterface $sourceConfig,
         string $basePath,
         array &$parsedImports,
         CircularImportDetectorInterface $detector,
         array &$importedConfigs,
-        array $importConfig,
     ): void {
+        // For circular dependency detection
+        $importId = match (true) {
+            $sourceConfig instanceof LocalSourceConfig => $sourceConfig->getAbsolutePath(),
+            $sourceConfig instanceof UrlSourceConfig => $sourceConfig->getPath(),
+        };
+
         // Check for circular imports
-        $detector->beginProcessing($importCfg->absolutePath);
+        $detector->beginProcessing($importId);
 
         try {
-            // Load the import configuration
-            $importedConfig = $this->loadImportConfig($importCfg);
+            // Find an appropriate import source using the provider
+            $importSource = $this->sourceProvider->findSourceForConfig($sourceConfig);
+
+            if (!$importSource) {
+                throw new ImportSourceException(
+                    \sprintf(
+                        'No import source found for type "%s" and path "%s"',
+                        $sourceConfig->getType(),
+                        $sourceConfig->getPath(),
+                    ),
+                );
+            }
+
+            // Load the configuration using the appropriate source
+            $importedConfig = $importSource->load($sourceConfig);
+
+            // For external sources, we need to resolve the base path differently
+            $importBasePath = match ($sourceConfig->getType()) {
+                'local' => $sourceConfig->getConfigDirectory(),
+                'url' => '', // URL paths are absolute
+                default => $basePath,
+            };
 
             // Recursively process nested imports
-            $dirname = \dirname($importCfg->absolutePath);
             $importedConfig = $this->resolveImports(
                 $importedConfig,
-                $dirname,
+                $importBasePath,
                 $parsedImports,
                 $detector,
             );
 
             // Apply path prefix for output document paths if specified
-            if ($importCfg->pathPrefix !== null) {
-                $importedConfig = $this->documentPrefixer->applyPrefix($importedConfig, $importCfg->pathPrefix);
-            }
 
-            // Apply source path prefix
-            $importedConfig = $this->sourcePrefixer->applyPrefix($importedConfig, $importCfg->configDirectory());
+            // Apply source path prefix for local imports
+            if ($sourceConfig instanceof LocalSourceConfig) {
+                if ($sourceConfig->getPathPrefix() !== null) {
+                    $importedConfig = $this->documentPrefixer->applyPrefix(
+                        $importedConfig,
+                        $sourceConfig->getPathPrefix(),
+                    );
+                }
+
+                $importedConfig = $this->sourcePrefixer->applyPrefix(
+                    $importedConfig,
+                    $sourceConfig->getConfigDirectory(),
+                );
+
+                // Mark as processed for local sources
+                $parsedImports[] = $sourceConfig->getAbsolutePath();
+            }
 
             // Store for later merging
             $importedConfigs[] = $importedConfig;
 
-            // Mark as processed
-            $parsedImports[] = $importCfg->absolutePath;
-
             $this->logger?->debug('Successfully processed import', [
-                'path' => $importCfg->path,
-                'absolutePath' => $importCfg->absolutePath,
+                'type' => $sourceConfig->getType(),
             ]);
         } catch (\Throwable $e) {
             $this->logger?->error('Failed to process import', [
-                'path' => $importCfg->path,
-                'absolutePath' => $importCfg->absolutePath,
+                'type' => $sourceConfig->getType(),
                 'error' => $e->getMessage(),
             ]);
             throw $e;
         } finally {
             // Always end processing to maintain stack integrity
-            $detector->endProcessing($importCfg->absolutePath);
-        }
-    }
-
-    /**
-     * Load an import configuration
-     */
-    private function loadImportConfig(ImportConfig $importConfig): array
-    {
-        if (!$this->files->exists($importConfig->absolutePath)) {
-            throw new ConfigLoaderException(
-                \sprintf('Import file not found: %s', $importConfig->absolutePath),
-            );
-        }
-
-        try {
-            $loader = $this->loaderFactory->createForFile(
-                $this->dirs->withConfigPath($importConfig->absolutePath),
-            );
-
-            if (!$loader->isSupported()) {
-                throw new ConfigLoaderException(
-                    \sprintf('Unsupported import file format: %s', $importConfig->absolutePath),
-                );
-            }
-
-            // Load the raw configuration (before registry conversion)
-            return $loader->loadRawConfig();
-        } catch (\Throwable $e) {
-            throw new ConfigLoaderException(
-                \sprintf('Failed to load import file %s: %s', $importConfig->absolutePath, $e->getMessage()),
-                previous: $e,
-            );
+            $detector->endProcessing($importId);
         }
     }
 
