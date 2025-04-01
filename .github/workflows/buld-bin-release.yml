@@ -119,6 +119,25 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "{\"version\": \"$VERSION\", \"type\":\"bin\"}" > version.json
 
+      - name: Setup Homebrew paths
+        run: |
+          if [[ "${{ matrix.arch }}" == "amd64" ]]; then
+            echo "Installing x86_64 Homebrew to /usr/local if needed"
+            if [[ ! -d "/usr/local/Homebrew" ]]; then
+              # Install Homebrew in /usr/local for Intel architecture
+              mkdir -p /usr/local
+              cd /usr/local
+              curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C /usr/local/Homebrew
+              ln -sf /usr/local/Homebrew/bin/brew /usr/local/bin/brew
+            fi
+            echo "HOMEBREW_PREFIX=/usr/local" >> $GITHUB_ENV
+            echo "Using Intel Homebrew from /usr/local"
+          else
+            # For ARM64, use the default location
+            echo "Using ARM64 Homebrew from /opt/homebrew"
+            echo "HOMEBREW_PREFIX=/opt/homebrew" >> $GITHUB_ENV
+          fi
+
       - name: Install Composer dependencies
         run: composer install --no-dev --prefer-dist --ignore-platform-reqs
 
