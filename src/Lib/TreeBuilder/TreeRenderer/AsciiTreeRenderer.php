@@ -153,7 +153,7 @@ final readonly class AsciiTreeRenderer implements TreeRendererInterface
     {
         $totalSize = 0;
 
-        foreach ($directory as $name => $children) {
+        foreach ($directory as $children) {
             if (\is_array($children)) {
                 $totalSize += $this->calculateDirectorySize($children);
             } else {

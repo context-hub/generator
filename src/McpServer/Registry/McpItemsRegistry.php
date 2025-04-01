@@ -36,7 +36,6 @@ final class McpItemsRegistry
         // Check for Prompt attribute
         $promptAttributes = $reflection->getAttributes(Prompt::class);
         if (!empty($promptAttributes)) {
-            /** @var Prompt $prompt */
             $prompt = $promptAttributes[0]->newInstance();
             $this->prompts[$prompt->name] = new \Mcp\Types\Prompt(
                 name: $prompt->name,
@@ -52,7 +51,6 @@ final class McpItemsRegistry
         // Check for Resource attribute
         $resourceAttributes = $reflection->getAttributes(Resource::class);
         if (!empty($resourceAttributes)) {
-            /** @var Resource $resource */
             $resource = $resourceAttributes[0]->newInstance();
             $this->resources[$resource->name] = new \Mcp\Types\Resource(
                 name: $resource->name,
@@ -72,7 +70,6 @@ final class McpItemsRegistry
         // Check for Tool attribute
         $toolAttributes = $reflection->getAttributes(Tool::class);
         if (!empty($toolAttributes)) {
-            /** @var Tool $tool */
             $tool = $toolAttributes[0]->newInstance();
 
             // Look for InputSchema attributes
@@ -84,7 +81,6 @@ final class McpItemsRegistry
             ];
 
             foreach ($inputSchemaAttributes as $attribute) {
-                /** @var InputSchema $schema */
                 $schema = $attribute->newInstance();
 
                 // Add to properties

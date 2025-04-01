@@ -79,7 +79,6 @@ final readonly class FSPath implements \Stringable
             return $this;
         }
 
-        $oldName = $this->name();
         $stem = $this->stem();
 
         if (!\str_starts_with($suffix, '.') && !empty($suffix)) {

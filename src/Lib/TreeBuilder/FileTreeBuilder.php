@@ -81,11 +81,10 @@ final readonly class FileTreeBuilder
      */
     private function addToTree(array &$tree, array $parts, string $fullPath = '', bool $isDirectoryPath = false): void
     {
-        $current = &$tree;
+        $_current = &$tree;
 
         foreach ($parts as $index => $part) {
-
-            if (!isset($current[$part])) {
+            if (!isset($_current[$part])) {
                 // Determine if it's a directory:
                 // - Either it's not the last segment of the path
                 // - Or the entire path represents a directory
@@ -93,12 +92,12 @@ final readonly class FileTreeBuilder
 
                 // For directories, create an array for children
                 // For files, store the full path for metadata access
-                $current[$part] = $isDirectory ? [] : $fullPath;
+                $_current[$part] = $isDirectory ? [] : $fullPath;
             }
 
             // Only continue traversing if this is a directory (array)
-            if (\is_array($current[$part])) {
-                $current = &$current[$part];
+            if (\is_array($_current[$part])) {
+                $_current = &$_current[$part];
             }
         }
     }

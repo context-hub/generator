@@ -25,7 +25,7 @@ final readonly class CharTokenCounter implements TokenCounterInterface
     {
         $totalChars = 0;
 
-        foreach ($directory as $name => $children) {
+        foreach ($directory as $children) {
             if (\is_array($children)) {
                 $totalChars += $this->calculateDirectoryCount($children);
             } else {
