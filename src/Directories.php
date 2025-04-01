@@ -10,7 +10,7 @@ use Spiral\Core\Attribute\Singleton;
 /**
  * This class manages application paths using FSPath for path manipulation.
  * It's immutable and provides methods to create new instances with modified paths.
- * It's a central component for path resolution and management within the application.
+ * It's a central component for path storage within the application.
  */
 #[Singleton]
 final readonly class Directories implements DirectoriesInterface
@@ -62,41 +62,41 @@ final readonly class Directories implements DirectoriesInterface
     /**
      * Get the root path of the project
      */
-    public function getRootPath(): string
+    public function getRootPath(): FSPath
     {
-        return $this->rootPath;
+        return $this->rootPathObj;
     }
 
     /**
      * Get the output path where compiled documents will be saved
      */
-    public function getOutputPath(): string
+    public function getOutputPath(): FSPath
     {
-        return $this->outputPath;
+        return $this->outputPathObj;
     }
 
     /**
      * Get the path where configuration files are located
      */
-    public function getConfigPath(): string
+    public function getConfigPath(): FSPath
     {
-        return $this->configPath;
+        return $this->configPathObj;
     }
 
     /**
      * Get the JSON schema path
      */
-    public function getJsonSchemaPath(): string
+    public function getJsonSchemaPath(): FSPath
     {
-        return $this->jsonSchemaPath;
+        return $this->jsonSchemaPathObj;
     }
 
     /**
      * Get the environment file path if set
      */
-    public function getEnvFilePath(): ?string
+    public function getEnvFilePath(): ?FSPath
     {
-        return $this->envFilePath;
+        return $this->envFilePathObj;
     }
 
     /**
@@ -153,76 +153,15 @@ final readonly class Directories implements DirectoriesInterface
             return $this;
         }
 
+        $envFilePath = $this->rootPathObj->join($envFileName)->toString();
+
         return new self(
             rootPath: $this->rootPath,
             outputPath: $this->outputPath,
             configPath: $this->configPath,
             jsonSchemaPath: $this->jsonSchemaPath,
-            envFilePath: $this->combinePaths($this->rootPath, $envFileName),
+            envFilePath: $envFilePath,
         );
-    }
-
-    /**
-     * Get the absolute path for a file relative to the root path.
-     *
-     * @param string $filename The relative file path
-     * @return string The absolute file path
-     */
-    public function getFilePath(string $filename): string
-    {
-        return $this->rootPathObj->join($filename)->toString();
-    }
-
-    /**
-     * Get the absolute path for a file relative to the config path.
-     *
-     * @param string $filename The relative file path
-     * @return string The absolute file path
-     */
-    public function getConfigFilePath(string $filename): string
-    {
-        return $this->configPathObj->join($filename)->toString();
-    }
-
-    /**
-     * Determine if a path is absolute.
-     *
-     * @param string $path The path to check
-     * @return bool True if the path is absolute, false otherwise
-     */
-    public function isAbsolutePath(string $path): bool
-    {
-        return FSPath::create($path)->isAbsolute();
-    }
-
-    /**
-     * Resolve a path relative to another path.
-     *
-     * @param string $basePath The base path
-     * @param string $path The path to resolve
-     * @return string The resolved path
-     */
-    public function resolvePath(string $basePath, string $path): string
-    {
-        $pathObj = FSPath::create($path);
-
-        if ($pathObj->isAbsolute()) {
-            return $path;
-        }
-
-        return $this->combinePaths($basePath, $path);
-    }
-
-    /**
-     * Combine two paths, ensuring they are properly joined with a single slash.
-     *
-     * @param string $basePath The base path
-     * @param string $path The path to append
-     * @return string The combined path
-     */
-    public function combinePaths(string $basePath, string $path): string
-    {
-        return FSPath::create($basePath)->join($path)->toString();
     }
 
     /**
@@ -242,8 +181,10 @@ final readonly class Directories implements DirectoriesInterface
         }
 
         // If relative, resolve against the original root path
-        if (!$this->isAbsolutePath($configPath)) {
-            $configPath = $this->combinePaths($this->rootPath, $configPath);
+        $configPathObj = FSPath::create($configPath);
+
+        if ($configPathObj->isRelative()) {
+            $configPath = $this->rootPathObj->join($configPath)->toString();
         }
 
         // If config path is absolute, use its directory as root

@@ -22,7 +22,7 @@ final class FileSourceBootloader extends Bootloader
                 ContentBuilderFactory $builderFactory,
                 HasPrefixLoggerInterface $logger,
             ): FileSourceFetcher => new FileSourceFetcher(
-                basePath: $dirs->getRootPath(),
+                basePath: (string) $dirs->getRootPath(),
                 builderFactory: $builderFactory,
                 logger: $logger->withPrefix('file-source'),
             ),

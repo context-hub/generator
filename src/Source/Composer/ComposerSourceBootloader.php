@@ -40,7 +40,7 @@ final class ComposerSourceBootloader extends Bootloader
                 ComposerProviderInterface $composerProvider,
             ): ComposerSourceFetcher => new ComposerSourceFetcher(
                 provider: $composerProvider,
-                basePath: $dirs->getRootPath(),
+                basePath: (string) $dirs->getRootPath(),
                 builderFactory: $builderFactory,
                 variableResolver: $variables,
                 logger: $logger->withPrefix('composer-source'),

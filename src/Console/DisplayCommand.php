@@ -78,7 +78,7 @@ final class DisplayCommand extends BaseCommand
                     // Load the document registry
                     $registry = $loader->load();
 
-                    $title = "Context: {$dirs->getRootPath()}";
+                    $title = "Context: " . (string) $dirs->getRootPath();
 
                     $this->output->writeln("\n" . Style::header($title));
                     $this->output->writeln(Style::separator('=', \strlen($title)) . "\n");

@@ -42,7 +42,7 @@ final class SchemaCommand extends BaseCommand
         FilesInterface $files,
         DirectoriesInterface $dirs,
     ): int {
-        $outputPath = $dirs->getFilePath($this->outputPath);
+        $outputPath = (string) $dirs->getRootPath()->join($this->outputPath);
 
         // Always show the URL where the schema is hosted
         $this->output->info('JSON schema URL: ' . JsonSchema::SCHEMA_URL);

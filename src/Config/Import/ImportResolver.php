@@ -143,9 +143,11 @@ final readonly class ImportResolver
                 continue;
             }
 
+            $rootPathStr = (string) $this->dirs->getRootPath();
+
             // Create a local source config for this match
             $localConfig = new LocalSourceConfig(
-                path: \ltrim(\str_replace($this->dirs->getRootPath(), '', $matchingPath), '/'),
+                path: \ltrim(\str_replace($rootPathStr, '', $matchingPath), '/'),
                 absolutePath: $matchingPath,
                 hasWildcard: false,
                 pathPrefix: $sourceConfig->getPathPrefix(),

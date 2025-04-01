@@ -22,7 +22,7 @@ final class TreeSourceBootloader extends Bootloader
                 ContentBuilderFactory $builderFactory,
                 HasPrefixLoggerInterface $logger,
             ): TreeSourceFetcher => new TreeSourceFetcher(
-                basePath: $dirs->getRootPath(),
+                basePath: (string) $dirs->getRootPath(),
                 builderFactory: $builderFactory,
                 logger: $logger->withPrefix('tree-source'),
             ),

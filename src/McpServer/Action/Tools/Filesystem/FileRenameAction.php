@@ -45,8 +45,8 @@ final readonly class FileRenameAction
 
         // Get params from the parsed body for POST requests
         $parsedBody = $request->getParsedBody();
-        $path = $this->dirs->getFilePath($parsedBody['path'] ?? '');
-        $newPath = $this->dirs->getFilePath($parsedBody['newPath'] ?? '');
+        $path = (string) $this->dirs->getRootPath()->join($parsedBody['path'] ?? '');
+        $newPath = (string) $this->dirs->getRootPath()->join($parsedBody['newPath'] ?? '');
 
         if (empty($path)) {
             return new CallToolResult([

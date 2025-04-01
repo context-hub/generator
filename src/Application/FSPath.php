@@ -106,7 +106,7 @@ final readonly class FSPath implements \Stringable
      */
     public function name(): string
     {
-        return \basename($this->path);
+        return \pathinfo($this->path, PATHINFO_BASENAME);
     }
 
     /**

@@ -85,12 +85,10 @@ final class ConfigLoaderBootloader extends Bootloader
 
             ConfigurationProvider::class => static fn(
                 ConfigLoaderFactoryInterface $configLoaderFactory,
-                FilesInterface $files,
                 DirectoriesInterface $dirs,
                 HasPrefixLoggerInterface $logger,
             ) => new ConfigurationProvider(
                 loaderFactory: $configLoaderFactory,
-                files: $files,
                 dirs: $dirs,
                 logger: $logger->withPrefix('config-provider'),
             ),
@@ -105,7 +103,7 @@ final class ConfigLoaderBootloader extends Bootloader
             ) => new DocumentCompiler(
                 files: $files,
                 parser: $parser,
-                basePath: $dirs->getOutputPath(),
+                basePath: (string) $dirs->getOutputPath(),
                 modifierRegistry: $registry,
                 builderFactory: $builderFactory,
                 logger: $logger->withPrefix('document-compiler'),

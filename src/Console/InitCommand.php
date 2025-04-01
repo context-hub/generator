@@ -45,7 +45,7 @@ final class InitCommand extends BaseCommand
         }
 
         $filename = \pathinfo(\strtolower($filename), PATHINFO_FILENAME) . '.' . $type->value;
-        $filePath = $dirs->getFilePath($filename);
+        $filePath = (string) $dirs->getRootPath()->join($filename);
 
         if ($files->exists($filePath)) {
             $this->output->error(\sprintf('Config %s already exists', $filePath));

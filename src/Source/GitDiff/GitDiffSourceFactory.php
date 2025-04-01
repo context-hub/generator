@@ -23,7 +23,7 @@ final readonly class GitDiffSourceFactory extends AbstractSourceFactory
     public function create(array $config): SourceInterface
     {
         $this->logger?->debug('Creating Git Diff source', [
-            'path' => $this->dirs->rootPath,
+            'path' => $this->dirs->getRootPath(),
             'config' => $config,
         ]);
 
@@ -35,7 +35,7 @@ final readonly class GitDiffSourceFactory extends AbstractSourceFactory
         // Prepend root path if repository is relative
         $repository = \str_starts_with($repository, '/')
             ? $repository
-            : $this->dirs->getFilePath($repository);
+            : $this->dirs->getRootPath()->join($repository);
 
         // Validate filePattern if present
         if (isset($config['filePattern'])) {

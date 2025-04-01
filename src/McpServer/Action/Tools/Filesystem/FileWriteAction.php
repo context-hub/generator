@@ -51,7 +51,7 @@ final readonly class FileWriteAction
 
         // Get params from the parsed body for POST requests
         $parsedBody = $request->getParsedBody();
-        $path = $this->dirs->getFilePath($parsedBody['path'] ?? '');
+        $path = (string) $this->dirs->getRootPath()->join($parsedBody['path'] ?? '');
         $content = $parsedBody['content'] ?? '';
         $createDirectory = $parsedBody['createDirectory'] ?? true;
 

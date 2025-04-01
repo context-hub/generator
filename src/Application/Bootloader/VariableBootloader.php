@@ -28,8 +28,8 @@ final class VariableBootloader extends Bootloader
                 $envFileName = null;
 
                 if ($dirs->getEnvFilePath() !== null) {
-                    $envFilePath = \dirname($dirs->getEnvFilePath());
-                    $envFileName = \pathinfo($dirs->getEnvFilePath(), PATHINFO_BASENAME);
+                    $envFilePath = (string) $dirs->getEnvFilePath();
+                    $envFileName = $dirs->getEnvFilePath()->name();
                 }
 
                 return new VariableResolver(

@@ -28,11 +28,12 @@ final readonly class ConfigLoaderFactory implements ConfigLoaderFactoryInterface
     public function create(string $configPath): ConfigLoaderInterface
     {
         $dirs = $this->dirs->withConfigPath($configPath);
+        $configPathObj = $dirs->getConfigPath();
 
         // Create composite parser using the injected plugin registry
         $compositeParser = new CompositeConfigParser(
             new ConfigParser(
-                $dirs->getConfigPath(),
+                (string) $configPathObj,
                 $this->pluginRegistry,
                 $this->logger,
             ),
@@ -40,28 +41,28 @@ final readonly class ConfigLoaderFactory implements ConfigLoaderFactoryInterface
 
         // Try different file extensions
         $jsonLoader = new ConfigLoader(
-            configPath: $dirs->getConfigFilePath('context.json'),
+            configPath: (string) $configPathObj->join('context.json'),
             reader: $this->readers->get('json'),
             parser: $compositeParser,
             logger: $this->logger,
         );
 
         $yamlLoader = new ConfigLoader(
-            configPath: $dirs->getConfigFilePath('context.yaml'),
+            configPath: (string) $configPathObj->join('context.yaml'),
             reader: $this->readers->get('yaml'),
             parser: $compositeParser,
             logger: $this->logger,
         );
 
         $ymlLoader = new ConfigLoader(
-            configPath: $dirs->getConfigFilePath('context.yml'),
+            configPath: (string) $configPathObj->join('context.yml'),
             reader: $this->readers->get('yml'),
             parser: $compositeParser,
             logger: $this->logger,
         );
 
         $phpLoader = new ConfigLoader(
-            configPath: $dirs->getConfigFilePath('context.php'),
+            configPath: (string) $configPathObj->join('context.php'),
             reader: $this->readers->get('php'),
             parser: $compositeParser,
             logger: $this->logger,
@@ -77,10 +78,11 @@ final readonly class ConfigLoaderFactory implements ConfigLoaderFactoryInterface
     public function createForFile(string $configPath): ConfigLoaderInterface
     {
         $dirs = $this->dirs->withConfigPath($configPath);
+        $configPathObj = $dirs->getConfigPath();
 
         // Create parser with the injected plugin registry
         $parser = new ConfigParser(
-            rootPath: $dirs->getConfigPath(),
+            rootPath: (string) $configPathObj,
             pluginRegistry: $this->pluginRegistry,
             logger: $this->logger,
         );
@@ -89,11 +91,11 @@ final readonly class ConfigLoaderFactory implements ConfigLoaderFactoryInterface
         $compositeParser = new CompositeConfigParser($parser);
 
         // Determine the file extension
-        $extension = \pathinfo($dirs->getConfigPath(), PATHINFO_EXTENSION);
+        $extension = \pathinfo((string) $configPathObj, PATHINFO_EXTENSION);
 
         // Create loader for the specific file
         return new ConfigLoader(
-            configPath: $dirs->getConfigPath(),
+            configPath: (string) $configPathObj,
             reader: $this->readers->get($extension),
             parser: $compositeParser,
             logger: $this->logger,
@@ -104,7 +106,7 @@ final readonly class ConfigLoaderFactory implements ConfigLoaderFactoryInterface
     {
         // Create parser with the injected plugin registry
         $parser = new ConfigParser(
-            rootPath: $this->dirs->getRootPath(),
+            rootPath: (string) $this->dirs->getRootPath(),
             pluginRegistry: $this->pluginRegistry,
             logger: $this->logger,
         );

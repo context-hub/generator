@@ -51,8 +51,8 @@ final readonly class FileMoveAction
 
         // Get params from the parsed body for POST requests
         $parsedBody = $request->getParsedBody();
-        $source = $this->dirs->getFilePath($parsedBody['source'] ?? '');
-        $destination = $this->dirs->getFilePath($parsedBody['destination'] ?? '');
+        $source = (string) $this->dirs->getRootPath()->join($parsedBody['source'] ?? '');
+        $destination = (string) $this->dirs->getRootPath()->join($parsedBody['destination'] ?? '');
         $createDirectory = $parsedBody['createDirectory'] ?? true;
 
         if (empty($source)) {

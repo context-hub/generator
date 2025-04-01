@@ -45,7 +45,7 @@ final class MCPServerCommand extends BaseCommand
     {
         $logger = new FileLogger(
             name: 'mcp',
-            filePath: $dirs->getFilePath('/mcp.log'),
+            filePath: (string) $dirs->getRootPath()->join('mcp.log'),
             level: match (true) {
                 $this->output->isVeryVerbose() => Level::Debug,
                 $this->output->isVerbose() => Level::Info,
@@ -73,18 +73,19 @@ final class MCPServerCommand extends BaseCommand
                 Container $container,
                 ConfigurationProvider $configProvider,
             ) use ($logger, $dirs, $app) {
-                $logger->info(\sprintf('Using root path: %s', $dirs->getRootPath()));
+                $rootPathStr = (string) $dirs->getRootPath();
+                $logger->info(\sprintf('Using root path: %s', $rootPathStr));
 
                 try {
                     // Get the appropriate loader based on options provided
-                    if (!\is_dir($dirs->getRootPath())) {
+                    if (!\is_dir($rootPathStr)) {
                         $logger->info(
                             'Loading configuration from provided path...',
                             [
-                                'path' => $dirs->getRootPath(),
+                                'path' => $rootPathStr,
                             ],
                         );
-                        $loader = $configProvider->fromPath($dirs->getConfigPath());
+                        $loader = $configProvider->fromPath((string) $dirs->getConfigPath());
                     } else {
                         $logger->info('Using default configuration location...');
                         $loader = $configProvider->fromDefaultLocation();

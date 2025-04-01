@@ -22,7 +22,7 @@ final readonly class GithubSourceFactory extends AbstractSourceFactory
     public function create(array $config): SourceInterface
     {
         $this->logger?->debug('Creating GitHub source', [
-            'path' => $this->dirs->rootPath,
+            'path' => (string) $this->dirs->getRootPath(),
             'config' => $config,
         ]);
 
