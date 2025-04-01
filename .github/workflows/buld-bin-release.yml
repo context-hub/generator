@@ -90,6 +90,7 @@ jobs:
             runner: macos-14
             arch_name: aarch64
 
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -119,25 +120,6 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "{\"version\": \"$VERSION\", \"type\":\"bin\"}" > version.json
 
-      - name: Setup Homebrew paths
-        run: |
-          if [[ "${{ matrix.arch }}" == "amd64" ]]; then
-            echo "Installing x86_64 Homebrew to /usr/local if needed"
-            if [[ ! -d "/usr/local/Homebrew" ]]; then
-              # Install Homebrew in /usr/local for Intel architecture
-              mkdir -p /usr/local
-              cd /usr/local
-              curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C /usr/local/Homebrew
-              ln -sf /usr/local/Homebrew/bin/brew /usr/local/bin/brew
-            fi
-            echo "HOMEBREW_PREFIX=/usr/local" >> $GITHUB_ENV
-            echo "Using Intel Homebrew from /usr/local"
-          else
-            # For ARM64, use the default location
-            echo "Using ARM64 Homebrew from /opt/homebrew"
-            echo "HOMEBREW_PREFIX=/opt/homebrew" >> $GITHUB_ENV
-          fi
-
       - name: Install Composer dependencies
         run: composer install --no-dev --prefer-dist --ignore-platform-reqs
 
@@ -156,25 +138,15 @@ jobs:
 
       - name: Download required PHP extensions
         run: |
-          # For ARM64 runners, ensure we're using the native architecture
-          if [[ "${{ matrix.arch }}" == "arm64" ]]; then
-            echo "Downloading extensions with ARM64 native commands"
-            arch -arm64 .build/bin/spc download micro --for-extensions=ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl --with-php=8.3 --prefer-pre-built
-          else
-            .build/bin/spc download micro --for-extensions=ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl --with-php=8.3 --prefer-pre-built
-          fi
+          export SPC_SKIP_BREW_INSTALL=1
+          .build/bin/spc download micro --for-extensions=ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl --with-php=8.3 --prefer-pre-built
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
 
       - name: Verify environment is ready
         run: |
-          # For ARM64 runners, ensure we're using the native homebrew
-          if [[ "${{ matrix.arch }}" == "arm64" ]]; then
-            echo "Using ARM64 native commands"
-            arch -arm64 .build/bin/spc doctor --auto-fix
-          else
-            .build/bin/spc doctor --auto-fix
-          fi
+          export SPC_SKIP_BREW_INSTALL=1
+          .build/bin/spc doctor --auto-fix
 
       - name: Build PHAR file
         run: |
@@ -182,13 +154,9 @@ jobs:
 
       - name: Build the self-executable binary
         run: |
-          # For ARM64 runners, ensure we're using the native architecture
-          if [[ "${{ matrix.arch }}" == "arm64" ]]; then
-            echo "Building with ARM64 native commands"
-            arch -arm64 .build/bin/spc build "ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl" --build-micro
-          else
-            .build/bin/spc build "ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl" --build-micro
-          fi
+          # Skip Homebrew installation (we don't need it)
+          export SPC_SKIP_BREW_INSTALL=1
+          .build/bin/spc build "ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl" --build-micro
 
       - name: Combine micro.sfx with the PHAR
         run: |
@@ -212,7 +180,6 @@ jobs:
           token: "${{ secrets.RELEASE_TOKEN }}"
           files: |
             dist/ctx-${{ env.VERSION }}-darwin-${{ matrix.arch }}
-
   build-windows:
     runs-on: windows-latest
     name: 📦 Build Windows (x64)
