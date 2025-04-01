@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Application;
 
-final readonly class JsonSchema {
+final readonly class JsonSchema
+{
     /**
      * The URL where the JSON schema is hosted
      */
