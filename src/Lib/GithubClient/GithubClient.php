@@ -59,7 +59,7 @@ final class GithubClient implements GithubClientInterface
         }
 
         // GitHub API returns base64 encoded content
-        return \base64_decode((string) $response['content'], true);
+        return (string) \base64_decode((string) $response['content'], true);
     }
 
     public function setToken(?string $token): void
