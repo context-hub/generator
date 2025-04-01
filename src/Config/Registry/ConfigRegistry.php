@@ -13,7 +13,7 @@ final class ConfigRegistry implements \JsonSerializable
     private array $registries = [];
 
     public function __construct(
-        private ?string $schema = null,
+        private readonly ?string $schema = null,
     ) {}
 
     /**
