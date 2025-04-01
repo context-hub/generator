@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Source\Composer\Client;
+namespace Butschster\ContextGenerator\Lib\ComposerClient;
 
 use Butschster\ContextGenerator\Source\Composer\Exception\ComposerNotFoundException;
 use Psr\Log\LoggerInterface;

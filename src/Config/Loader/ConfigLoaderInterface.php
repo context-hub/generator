@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Config\Loader;
 
+use Butschster\ContextGenerator\Application\AppScope;
 use Butschster\ContextGenerator\Config\Exception\ConfigLoaderException;
 use Butschster\ContextGenerator\Config\Registry\RegistryInterface;
+use Spiral\Core\Attribute\Scope;
 
 /**
  * Interface for configuration loaders
  */
+#[Scope(name: AppScope::Mcp)]
 interface ConfigLoaderInterface
 {
     /**

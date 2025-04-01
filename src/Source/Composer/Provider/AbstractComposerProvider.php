@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\Composer\Provider;
 
-use Butschster\ContextGenerator\Source\Composer\Client\ComposerClientInterface;
+use Butschster\ContextGenerator\Lib\ComposerClient\ComposerClientInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 

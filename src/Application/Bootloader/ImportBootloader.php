@@ -15,9 +15,9 @@ use Butschster\ContextGenerator\Config\Import\Source\Registry\ImportSourceRegist
 use Butschster\ContextGenerator\Config\Import\Source\UrlImportSource;
 use Butschster\ContextGenerator\Config\Reader\ConfigReaderRegistry;
 use Butschster\ContextGenerator\Directories;
+use Butschster\ContextGenerator\Lib\ComposerClient\ComposerClientInterface;
 use Butschster\ContextGenerator\Lib\GithubClient\GithubClientInterface;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
-use Butschster\ContextGenerator\Source\Composer\Client\ComposerClientInterface;
 use Spiral\Boot\Bootloader\Bootloader;
 use Spiral\Core\Attribute\Singleton;
 use Spiral\Files\FilesInterface;

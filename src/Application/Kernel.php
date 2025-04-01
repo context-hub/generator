@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Application;
 
+use Butschster\ContextGenerator\Application\Bootloader\ComposerClientBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\ConfigLoaderBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\ConfigurationBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\ConsoleBootloader;
@@ -51,6 +52,7 @@ class Kernel extends AbstractKernel
             CoreBootloader::class,
             HttpClientBootloader::class,
             GithubClientBootloader::class,
+            ComposerClientBootloader::class,
             ConfigLoaderBootloader::class,
             ModifierBootloader::class,
             ContentRendererBootloader::class,

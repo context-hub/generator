@@ -7,7 +7,7 @@ namespace Butschster\ContextGenerator\Config\Import\Source;
 use Butschster\ContextGenerator\Config\Import\ImportConfig;
 use Butschster\ContextGenerator\Config\Reader\ConfigReaderRegistry;
 use Butschster\ContextGenerator\Config\Reader\ReaderInterface;
-use Butschster\ContextGenerator\Source\Composer\Client\ComposerClientInterface;
+use Butschster\ContextGenerator\Lib\ComposerClient\ComposerClientInterface;
 use Psr\Log\LoggerInterface;
 use Spiral\Files\FilesInterface;
 
