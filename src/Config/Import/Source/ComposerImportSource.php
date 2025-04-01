@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Config\Import\Source;
 
 use Butschster\ContextGenerator\Config\Import\ImportConfig;
-use Butschster\ContextGenerator\Config\Reader\JsonReader;
-use Butschster\ContextGenerator\Config\Reader\YamlReader;
+use Butschster\ContextGenerator\Config\Reader\ConfigReaderRegistry;
+use Butschster\ContextGenerator\Config\Reader\ReaderInterface;
 use Butschster\ContextGenerator\Source\Composer\Client\ComposerClientInterface;
 use Psr\Log\LoggerInterface;
 use Spiral\Files\FilesInterface;
@@ -19,8 +19,7 @@ final class ComposerImportSource extends AbstractImportSource
     public function __construct(
         private readonly FilesInterface $files,
         private readonly ComposerClientInterface $composerClient,
-        private readonly JsonReader $jsonReader,
-        private readonly YamlReader $yamlReader,
+        private readonly ConfigReaderRegistry $readers,
         ?LoggerInterface $logger = null,
     ) {
         parent::__construct($logger);
@@ -134,14 +133,14 @@ final class ComposerImportSource extends AbstractImportSource
     /**
      * Get an appropriate reader for the given file
      */
-    private function getReaderForFile(string $path): ?object
+    private function getReaderForFile(string $path): ?ReaderInterface
     {
         $extension = \pathinfo($path, PATHINFO_EXTENSION);
 
-        return match ($extension) {
-            'json' => $this->jsonReader,
-            'yaml', 'yml' => $this->yamlReader,
-            default => null,
-        };
+        if ($this->readers->has($extension)) {
+            return $this->readers->get($extension);
+        }
+
+        return null;
     }
 }

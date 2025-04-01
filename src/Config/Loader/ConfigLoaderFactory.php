@@ -5,10 +5,6 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Config\Loader;
 
 use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
-use Butschster\ContextGenerator\Config\Import\ImportParserPlugin;
-use Butschster\ContextGenerator\Config\Import\ImportResolver;
-use Butschster\ContextGenerator\Config\Import\Source\ImportSourceProvider;
-use Butschster\ContextGenerator\Config\Import\Source\Registry\ImportSourceRegistry;
 use Butschster\ContextGenerator\Config\Parser\CompositeConfigParser;
 use Butschster\ContextGenerator\Config\Parser\ConfigParser;
 use Butschster\ContextGenerator\Config\Parser\ParserPluginRegistry;
@@ -16,7 +12,6 @@ use Butschster\ContextGenerator\Config\Reader\ConfigReaderRegistry;
 use Butschster\ContextGenerator\Config\Reader\StringJsonReader;
 use Butschster\ContextGenerator\Directories;
 use Psr\Log\LoggerInterface;
-use Spiral\Files\FilesInterface;
 
 /**
  * Factory for creating config loaders
@@ -26,7 +21,6 @@ final readonly class ConfigLoaderFactory implements ConfigLoaderFactoryInterface
     public function __construct(
         private ConfigReaderRegistry $readers,
         private ParserPluginRegistry $pluginRegistry,
-        private FilesInterface $files,
         private Directories $dirs,
         private ?LoggerInterface $logger = null,
     ) {}
@@ -35,17 +29,7 @@ final readonly class ConfigLoaderFactory implements ConfigLoaderFactoryInterface
     {
         $dirs = $this->dirs->withConfigPath($configPath);
 
-        \assert($this->logger instanceof HasPrefixLoggerInterface);
-
-        // Create import resolver
-        $importResolver = new ImportResolver(
-            dirs: $dirs,
-            files: $this->files,
-            sourceRegistry: $sourceRegistry,
-            logger: $this->logger?->withPrefix('import-resolver'),
-        );
-
-        // Create composite parser
+        // Create composite parser using the injected plugin registry
         $compositeParser = new CompositeConfigParser(
             new ConfigParser(
                 $dirs->configPath,
@@ -90,72 +74,40 @@ final readonly class ConfigLoaderFactory implements ConfigLoaderFactoryInterface
         );
     }
 
-    public function createForFile(Directories $dirs, array $parserPlugins = []): ConfigLoaderInterface
+    public function createForFile(string $configPath): ConfigLoaderInterface
     {
-        \assert($this->logger instanceof HasPrefixLoggerInterface);
+        $dirs = $this->dirs->withConfigPath($configPath);
 
-        // Create import source registry and import sources
-        $sourceRegistry = new ImportSourceRegistry(
-            logger: $this->logger?->withPrefix('import-registry'),
+        // Create parser with the injected plugin registry
+        $parser = new ConfigParser(
+            rootPath: $this->dirs->rootPath,
+            pluginRegistry: $this->pluginRegistry,
+            logger: $this->logger,
         );
-
-        $sourceProvider = new ImportSourceProvider(
-            files: $this->files,
-            githubClient: $this->githubClient,
-            composerClient: $this->composerClient,
-            logger: $this->logger?->withPrefix('import-sources'),
-        );
-
-        // Register all available import sources
-        $sourceProvider->registerSources($sourceRegistry);
-
-        // Create import resolver
-        $importResolver = new ImportResolver(
-            dirs: $dirs,
-            files: $this->files,
-            sourceRegistry: $sourceRegistry,
-            logger: $this->logger?->withPrefix('import-resolver'),
-        );
-
-        // Create import parser plugin
-        $importParserPlugin = new ImportParserPlugin(
-            importResolver: $importResolver,
-            logger: $this->logger?->withPrefix('import-parser'),
-        );
-
-        // Add import parser plugin first in the list
-        $parserPlugins = [$importParserPlugin, ...$parserPlugins];
-
-        // Create parser
-        $parser = new ConfigParser($this->dirs->rootPath, $this->pluginRegistry, $this->logger);
 
         // Create composite parser
         $compositeParser = new CompositeConfigParser($parser);
 
         // Determine the file extension
-        $extension = \pathinfo($dirs->configPath, PATHINFO_EXTENSION);
+        $extension = \pathinfo($configPath, PATHINFO_EXTENSION);
 
         // Create loader for the specific file
         return new ConfigLoader(
-            configPath: $dirs->configPath,
+            configPath: $configPath,
             reader: $this->readers->get($extension),
             parser: $compositeParser,
             logger: $this->logger,
         );
     }
 
-    public function createFromString(string $jsonConfig, array $parserPlugins = []): ConfigLoaderInterface
+    public function createFromString(string $jsonConfig): ConfigLoaderInterface
     {
-        \assert($this->logger instanceof HasPrefixLoggerInterface);
-
-        // Create import source registry and import sources
-        $sourceRegistry = new ImportSourceRegistry(
-            logger: $this->logger?->withPrefix('import-registry'),
+        // Create parser with the injected plugin registry
+        $parser = new ConfigParser(
+            rootPath: $this->dirs->rootPath,
+            pluginRegistry: $this->pluginRegistry,
+            logger: $this->logger,
         );
-
-
-        // Create parser
-        $parser = new ConfigParser($this->dirs->rootPath, $this->pluginRegistry, $this->logger);
 
         // Create composite parser
         $compositeParser = new CompositeConfigParser($parser);
@@ -163,7 +115,9 @@ final readonly class ConfigLoaderFactory implements ConfigLoaderFactoryInterface
         // Create string JSON reader
         $stringJsonReader = new StringJsonReader(
             jsonContent: $jsonConfig,
-            logger: $this->logger?->withPrefix('string-json-reader'),
+            logger: $this->logger instanceof HasPrefixLoggerInterface
+                ? $this->logger->withPrefix('string-json-reader')
+                : $this->logger,
         );
 
         // Create loader with a dummy path (not used by StringJsonReader)

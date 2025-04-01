@@ -7,13 +7,6 @@ namespace Butschster\ContextGenerator\Application\Bootloader;
 use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
 use Butschster\ContextGenerator\Config\ConfigurationProvider;
 use Butschster\ContextGenerator\Config\Import\ImportParserPlugin;
-use Butschster\ContextGenerator\Config\Import\ImportResolver;
-use Butschster\ContextGenerator\Config\Import\Source\ComposerImportSource;
-use Butschster\ContextGenerator\Config\Import\Source\GitHubImportSource;
-use Butschster\ContextGenerator\Config\Import\Source\ImportSourceProvider;
-use Butschster\ContextGenerator\Config\Import\Source\LocalImportSource;
-use Butschster\ContextGenerator\Config\Import\Source\Registry\ImportSourceRegistry;
-use Butschster\ContextGenerator\Config\Import\Source\UrlImportSource;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderFactory;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderFactoryInterface;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
@@ -38,12 +31,25 @@ use Spiral\Core\Attribute\Singleton;
 use Spiral\Core\Config\Proxy;
 use Spiral\Files\FilesInterface;
 
+/**
+ * Bootloader for configuration loading components
+ */
 #[Singleton]
 final class ConfigLoaderBootloader extends Bootloader
 {
     /** @var ConfigParserPluginInterface[] */
     private array $parserPlugins = [];
 
+    public function defineDependencies(): array
+    {
+        return [
+            ImportBootloader::class,
+        ];
+    }
+
+    /**
+     * Register additional parser plugins
+     */
     public function registerParserPlugin(ConfigParserPluginInterface $plugin): void
     {
         $this->parserPlugins[] = $plugin;
@@ -55,7 +61,7 @@ final class ConfigLoaderBootloader extends Bootloader
         return [
             ParserPluginRegistry::class => function (
                 SourceProviderInterface $sourceProvider,
-                ImportResolver $importResolver,
+                ImportParserPlugin $importParserPlugin,
                 HasPrefixLoggerInterface $logger,
             ) {
                 $modifierResolver = new ModifierResolver(
@@ -71,10 +77,7 @@ final class ConfigLoaderBootloader extends Bootloader
                         modifierResolver: $modifierResolver,
                         logger: $logger->withPrefix('documents-parser-plugin'),
                     ),
-                    new ImportParserPlugin(
-                        importResolver: $importResolver,
-                        logger: $logger->withPrefix('import-parser'),
-                    ),
+                    $importParserPlugin, // Injected from ImportBootloader
                     ...$this->parserPlugins,
                 ]);
             },
@@ -137,87 +140,18 @@ final class ConfigLoaderBootloader extends Bootloader
                 );
             },
 
-            ConfigLoaderFactoryInterface::class => static fn(ConfigReaderRegistry $registry, FilesInterface $files, Directories $dirs, HasPrefixLoggerInterface $logger) => new ConfigLoaderFactory(
-                readers: $registry,
-                files: $files,
+            ConfigLoaderFactoryInterface::class => static fn(
+                ConfigReaderRegistry $readers,
+                ParserPluginRegistry $pluginRegistry,
+                FilesInterface $files,
+                Directories $dirs,
+                HasPrefixLoggerInterface $logger,
+            ) => new ConfigLoaderFactory(
+                readers: $readers,
+                pluginRegistry: $pluginRegistry,
                 dirs: $dirs,
                 logger: $logger->withPrefix('config-loader'),
             ),
-
-            ImportSourceRegistry::class => static function (
-                HasPrefixLoggerInterface $logger,
-                FilesInterface $files,
-            ) {
-                $registry = new ImportSourceRegistry(
-                    logger: $logger->withPrefix('import-source-registry'),
-                );
-
-                // Local import source (default)
-                $registry->register(
-                    new LocalImportSource(
-                        files: $this->files,
-                        readers: $this->readers,
-                        logger: $this->getSourceLogger('local'),
-                    ),
-                );
-
-                // GitHub import source
-                $registry->register(
-                    new GitHubImportSource(
-                        githubClient: $this->githubClient,
-                        logger: $this->getSourceLogger('github'),
-                    ),
-                );
-
-                // Composer import source
-                $registry->register(
-                    new ComposerImportSource(
-                        files: $this->files,
-                        composerClient: $this->composerClient,
-                        readers: $this->readers,
-                        logger: $this->getSourceLogger('composer'),
-                    ),
-                );
-
-                // URL import source
-                $registry->register(
-                    new UrlImportSource(
-                        httpClient: $this->httpClient,
-                        logger: $this->getSourceLogger('url'),
-                    ),
-                );
-
-                return $registry;
-            },
-
-            ImportResolver::class => static fn(
-                FilesInterface $files,
-                Directories $dirs,
-                ImportSourceRegistry $sourceRegistry,
-            ) => new ImportResolver(
-                dirs: $dirs,
-                files: $files,
-                sourceRegistry: $sourceRegistry,
-            ),
-
-            ImportSourceProvider::class => static function (
-                ConfigReaderRegistry $readers,
-                FilesInterface $files,
-                ImportSourceRegistry $sourceRegistry,
-                HasPrefixLoggerInterface $logger,
-            ) {
-                $provider = new ImportSourceProvider(
-                    files: $files,
-                    readers: $readers,
-                    logger: $logger->withPrefix('import-sources'),
-                );
-
-
-                // Register all available import sources
-                $provider->registerSources($sourceRegistry);
-
-                return $provider;
-            },
 
             ConfigLoaderInterface::class => new Proxy(
                 interface: ConfigLoaderInterface::class,
