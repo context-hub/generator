@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\McpServer\Routing\Attribute;
 
 #[\Attribute(\Attribute::TARGET_METHOD)]
-class Post extends Route
+final class Post extends Route
 {
     public function __construct(
         string $path,

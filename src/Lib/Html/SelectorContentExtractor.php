@@ -7,7 +7,7 @@ namespace Butschster\ContextGenerator\Lib\Html;
 /**
  * Extracts content from HTML using CSS selectors
  */
-class SelectorContentExtractor implements SelectorContentExtractorInterface
+final class SelectorContentExtractor implements SelectorContentExtractorInterface
 {
     public function extract(string $html, string $selector): string
     {

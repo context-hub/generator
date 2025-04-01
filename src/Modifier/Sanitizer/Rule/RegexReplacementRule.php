@@ -7,7 +7,7 @@ namespace Butschster\ContextGenerator\Modifier\Sanitizer\Rule;
 /**
  * Rule for replacing content using regular expressions
  */
-readonly class RegexReplacementRule implements RuleInterface
+final readonly class RegexReplacementRule implements RuleInterface
 {
     /**
      * @param string $name Unique rule name

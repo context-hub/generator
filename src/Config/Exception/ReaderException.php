@@ -7,4 +7,4 @@ namespace Butschster\ContextGenerator\Config\Exception;
 /**
  * Exception thrown when a configuration reader encounters an error
  */
-class ReaderException extends \RuntimeException {}
+final class ReaderException extends \RuntimeException {}

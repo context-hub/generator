@@ -15,7 +15,7 @@ use Psr\Log\LoggerInterface;
  * Fetcher for Tree sources that generates hierarchical visualizations
  * @implements SourceFetcherInterface<TreeSource>
  */
-readonly class TreeSourceFetcher implements SourceFetcherInterface
+final readonly class TreeSourceFetcher implements SourceFetcherInterface
 {
     /**
      * @param string $basePath Base path for relative file references

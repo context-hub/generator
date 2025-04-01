@@ -7,7 +7,7 @@ namespace Butschster\ContextGenerator\Lib\PathFilter;
 /**
  * Filter GitHub items by path exclusion
  */
-class ExcludePathFilter extends AbstractFilter
+final class ExcludePathFilter extends AbstractFilter
 {
     /**
      * Create a new exclude path filter

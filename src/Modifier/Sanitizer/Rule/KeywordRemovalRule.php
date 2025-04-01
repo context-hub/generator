@@ -7,7 +7,7 @@ namespace Butschster\ContextGenerator\Modifier\Sanitizer\Rule;
 /**
  * Rule for removing content containing specific keywords
  */
-readonly class KeywordRemovalRule implements RuleInterface
+final readonly class KeywordRemovalRule implements RuleInterface
 {
     /**
      * @param string $name Unique rule name

@@ -10,7 +10,7 @@ namespace Butschster\ContextGenerator\Modifier\Sanitizer\Rule;
  * This rule inserts comments at various positions in the code to mark it as sanitized,
  * indicate restrictions, or provide warnings about its use.
  */
-readonly class CommentInsertionRule implements RuleInterface
+final readonly class CommentInsertionRule implements RuleInterface
 {
     /**
      * @param string $name Unique rule name

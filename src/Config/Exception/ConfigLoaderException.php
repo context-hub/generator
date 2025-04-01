@@ -7,4 +7,4 @@ namespace Butschster\ContextGenerator\Config\Exception;
 /**
  * Exception thrown when a configuration loader encounters an error
  */
-class ConfigLoaderException extends \RuntimeException {}
+final class ConfigLoaderException extends \RuntimeException {}
