@@ -73,11 +73,9 @@ readonly class KeywordRemovalRule implements RuleInterface
     private function replaceKeywords(string $line): string
     {
         foreach ($this->keywords as $keyword) {
-            if ($this->caseSensitive) {
-                $line = \str_replace($keyword, $this->replacement, $line);
-            } else {
-                $line = \preg_replace('/' . \preg_quote($keyword, '/') . '/i', $this->replacement, (string) $line);
-            }
+            $line = $this->caseSensitive
+                ? \str_replace($keyword, $this->replacement, $line)
+                : (string) \preg_replace('/' . \preg_quote($keyword, '/') . '/i', $this->replacement, $line);
         }
 
         return $line;

@@ -26,7 +26,8 @@ readonly class RegexReplacementRule implements RuleInterface
     public function apply(string $content): string
     {
         foreach ($this->patterns as $pattern => $replacement) {
-            $content = \preg_replace($pattern, $replacement, (string) $content);
+            /** @var string $content */
+            $content = \preg_replace($pattern, $replacement, $content);
         }
 
         return $content;

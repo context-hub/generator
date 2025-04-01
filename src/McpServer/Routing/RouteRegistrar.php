@@ -82,10 +82,10 @@ final readonly class RouteRegistrar
     private function normalizePath(string $path): string
     {
         // Replace multiple slashes with a single slash
-        $path = \preg_replace('#/+#', '/', $path);
+        $path = (string) \preg_replace('#/+#', '/', $path);
 
         // Ensure path starts with a slash
-        if (!\str_starts_with((string) $path, '/')) {
+        if (!\str_starts_with($path, '/')) {
             $path = '/' . $path;
         }
 
