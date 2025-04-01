@@ -42,7 +42,6 @@ final class GitClient implements GitClientInterface
 
         $currentDir = \getcwd();
         $output = [];
-        $errorOutput = [];
         $returnCode = 0;
 
         try {
