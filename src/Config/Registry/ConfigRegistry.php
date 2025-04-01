@@ -7,10 +7,14 @@ namespace Butschster\ContextGenerator\Config\Registry;
 /**
  * Container for all registries
  */
-final class ConfigRegistry
+final class ConfigRegistry implements \JsonSerializable
 {
     /** @var array<string, RegistryInterface> */
     private array $registries = [];
+
+    public function __construct(
+        private ?string $schema = null,
+    ) {}
 
     /**
      * Register a new registry
@@ -64,5 +68,21 @@ final class ConfigRegistry
     public function all(): array
     {
         return $this->registries;
+    }
+
+    public function jsonSerialize(): array
+    {
+        $data = [
+            '$schema' => $this->schema,
+        ];
+
+        foreach ($this->registries as $type => $registry) {
+            $data[$type] = $registry;
+        }
+
+        return \array_filter(
+            $data,
+            static fn($value) => $value !== null && $value !== [],
+        );
     }
 }

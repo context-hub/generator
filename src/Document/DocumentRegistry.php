@@ -38,8 +38,6 @@ final class DocumentRegistry implements RegistryInterface
 
     public function jsonSerialize(): array
     {
-        return [
-            'documents' => $this->documents,
-        ];
+        return $this->documents;
     }
 }

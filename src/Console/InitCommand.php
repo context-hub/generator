@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Console;
 
+use Butschster\ContextGenerator\Application\JsonSchema;
 use Butschster\ContextGenerator\Config\ConfigType;
+use Butschster\ContextGenerator\Config\Registry\ConfigRegistry;
 use Butschster\ContextGenerator\Directories;
 use Butschster\ContextGenerator\Document\Document;
 use Butschster\ContextGenerator\Document\DocumentRegistry;
@@ -51,7 +53,11 @@ final class InitCommand extends BaseCommand
             return Command::FAILURE;
         }
 
-        $content = new DocumentRegistry([
+        $config = new ConfigRegistry(
+            schema: JsonSchema::SCHEMA_URL,
+        );
+
+        $config->register(new DocumentRegistry([
             new Document(
                 description: 'Project structure overview',
                 outputPath: 'project-structure.md',
@@ -62,13 +68,13 @@ final class InitCommand extends BaseCommand
                     ),
                 ),
             ),
-        ]);
+        ]));
 
         try {
             $content = match ($type) {
-                ConfigType::Json => \json_encode($content, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),
+                ConfigType::Json => \json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),
                 ConfigType::Yaml => Yaml::dump(
-                    \json_decode(\json_encode($content), true),
+                    \json_decode(\json_encode($config), true),
                     10,
                     2,
                     Yaml::DUMP_MULTI_LINE_LITERAL_BLOCK,
