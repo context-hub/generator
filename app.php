@@ -14,7 +14,7 @@ use Spiral\Core\Options;
 //  Prepare Global Environment
 // -----------------------------------------------------------------------------
 \mb_internal_encoding('UTF-8');
-\error_reporting((E_ALL | E_STRICT) ^ E_DEPRECATED);
+\error_reporting(E_ALL ^ E_DEPRECATED);
 
 
 // -----------------------------------------------------------------------------
@@ -64,10 +64,8 @@ $vendorPath = (static function (): string {
 $insidePhar = \str_starts_with(__FILE__, 'phar://');
 $vendorPath = \dirname($vendorPath) . '/../';
 $versionFile = $vendorPath . '/version.json';
-$appPath = \realpath($vendorPath);
-if ($insidePhar) {
-    $appPath = \getcwd();
-}
+$appPath = $insidePhar ? \getcwd() : \realpath($vendorPath);
+
 $version = \file_exists($versionFile)
     ? \json_decode(\file_get_contents($versionFile), true)
     : [
