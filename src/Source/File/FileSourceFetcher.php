@@ -16,7 +16,7 @@ use Symfony\Component\Finder\SplFileInfo;
  * Enhanced fetcher for file sources with extended Symfony Finder features
  * @implements SourceFetcherInterface<FileSource>
  */
-readonly class FileSourceFetcher implements SourceFetcherInterface
+final readonly class FileSourceFetcher implements SourceFetcherInterface
 {
     /**
      * @param string $basePath Base path for relative file references

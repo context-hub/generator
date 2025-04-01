@@ -10,7 +10,7 @@ namespace Butschster\ContextGenerator\Modifier\Sanitizer\Rule;
  * This rule inserts comments at various positions in the code to mark it as sanitized,
  * indicate restrictions, or provide warnings about its use.
  */
-readonly class CommentInsertionRule implements RuleInterface
+final readonly class CommentInsertionRule implements RuleInterface
 {
     /**
      * @param string $name Unique rule name
@@ -45,7 +45,7 @@ readonly class CommentInsertionRule implements RuleInterface
         // Add class comments
         if (!empty($this->classComment)) {
             $comment = $this->formatPhpComment($this->classComment);
-            $content = \preg_replace(
+            $content = (string) \preg_replace(
                 '/(class|interface|trait|enum)\s+([a-zA-Z0-9_]+)/',
                 PHP_EOL . $comment . PHP_EOL . '$1 $2',
                 $content,
@@ -55,7 +55,7 @@ readonly class CommentInsertionRule implements RuleInterface
         // Add method comments
         if (!empty($this->methodComment)) {
             $comment = $this->formatPhpComment($this->methodComment);
-            $content = \preg_replace(
+            $content = (string) \preg_replace(
                 '/(\s+)public|private|protected\s+function/',
                 '$1' . PHP_EOL . '$1' . $comment . PHP_EOL . '$1$0',
                 (string) $content,

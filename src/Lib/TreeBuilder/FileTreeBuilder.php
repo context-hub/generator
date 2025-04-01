@@ -82,10 +82,8 @@ final readonly class FileTreeBuilder
     private function addToTree(array &$tree, array $parts, string $fullPath = '', bool $isDirectoryPath = false): void
     {
         $current = &$tree;
-        $path = '';
 
         foreach ($parts as $index => $part) {
-            $path .= '/' . $part;
 
             if (!isset($current[$part])) {
                 // Determine if it's a directory:

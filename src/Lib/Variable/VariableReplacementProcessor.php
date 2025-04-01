@@ -34,7 +34,7 @@ final readonly class VariableReplacementProcessor
         );
 
         // Replace {{VAR_NAME}} syntax
-        return \preg_replace_callback(
+        return (string) \preg_replace_callback(
             '/{{([a-zA-Z0-9_]+)}}/',
             fn(array $matches) => $this->replaceVariable($matches[1], '{{%s}}'),
             (string) $result,

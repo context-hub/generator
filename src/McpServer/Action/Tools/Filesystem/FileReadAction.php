@@ -47,7 +47,7 @@ final readonly class FileReadAction
         // Get params from the parsed body for POST requests
         $parsedBody = $request->getParsedBody();
         $path = $this->dirs->getFilePath($parsedBody['path'] ?? '');
-        $encoding = $parsedBody['encoding'] ?? 'utf-8';
+        $parsedBody['encoding'] ?? 'utf-8';
 
         if (empty($path)) {
             return new CallToolResult([

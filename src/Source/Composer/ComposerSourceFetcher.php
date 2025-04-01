@@ -106,7 +106,7 @@ final readonly class ComposerSourceFetcher implements SourceFetcherInterface
         }
 
         // For each package, fetch its source code
-        foreach ($packages as $packageName => $package) {
+        foreach ($packages as $package) {
             $this->logInfo('Processing package', [
                 'name' => $package->name,
                 'version' => $package->version,

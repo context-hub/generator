@@ -12,7 +12,7 @@ use Butschster\ContextGenerator\Source\SourceWithModifiers;
 /**
  * Source for git commit diffs with simplified commit range support
  */
-class GitDiffSource extends SourceWithModifiers implements FilterableSourceInterface, \JsonSerializable
+final class GitDiffSource extends SourceWithModifiers implements FilterableSourceInterface, \JsonSerializable
 {
     /**
      * @param string $repository Path to the git repository

@@ -7,7 +7,7 @@ namespace Butschster\ContextGenerator\Modifier\Sanitizer\Rule;
 /**
  * Rule for replacing content using regular expressions
  */
-readonly class RegexReplacementRule implements RuleInterface
+final readonly class RegexReplacementRule implements RuleInterface
 {
     /**
      * @param string $name Unique rule name
@@ -26,7 +26,8 @@ readonly class RegexReplacementRule implements RuleInterface
     public function apply(string $content): string
     {
         foreach ($this->patterns as $pattern => $replacement) {
-            $content = \preg_replace($pattern, $replacement, (string) $content);
+            /** @var string $content */
+            $content = \preg_replace($pattern, $replacement, $content);
         }
 
         return $content;
