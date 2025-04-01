@@ -137,6 +137,8 @@ jobs:
 
       - name: Download required PHP extensions
         run: .build/bin/spc download micro --for-extensions=ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl --with-php=8.3 --prefer-pre-built
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
 
       - name: Verify environment is ready
         run: |
