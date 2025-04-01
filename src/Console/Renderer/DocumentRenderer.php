@@ -21,7 +21,7 @@ final class DocumentRenderer
 
         $sourceRenderer = new SourceRenderer();
 
-        foreach ($sources as $index => $source) {
+        foreach ($sources as $source) {
             $sourceOutput = $sourceRenderer->renderSource($source);
             $output .= Style::indent($sourceOutput) . "\n";
         }

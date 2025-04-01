@@ -108,7 +108,7 @@ final readonly class ComposerPackageInfo
         // Check PSR-4 autoload configuration
         $psr4Dirs = [];
         if (isset($this->composerConfig['autoload']['psr-4'])) {
-            foreach ($this->composerConfig['autoload']['psr-4'] as $namespace => $dirs) {
+            foreach ($this->composerConfig['autoload']['psr-4'] as $dirs) {
                 if (\is_array($dirs)) {
                     foreach ($dirs as $dir) {
                         $psr4Dirs[] = $dir;
@@ -127,7 +127,7 @@ final readonly class ComposerPackageInfo
         // Check PSR-0 autoload configuration as fallback
         $psr0Dirs = [];
         if (isset($this->composerConfig['autoload']['psr-0'])) {
-            foreach ($this->composerConfig['autoload']['psr-0'] as $namespace => $dirs) {
+            foreach ($this->composerConfig['autoload']['psr-0'] as $dirs) {
                 if (\is_array($dirs)) {
                     foreach ($dirs as $dir) {
                         $psr0Dirs[] = $dir;
@@ -145,9 +145,9 @@ final readonly class ComposerPackageInfo
 
         // Check classmap autoload configuration as fallback
         $classmapDirs = [];
-        if (isset($this->composerConfig['autoload']['classmap']) && \is_array(
-            $this->composerConfig['autoload']['classmap'],
-        )) {
+        if (isset($this->composerConfig['autoload']['classmap'])
+            && \is_array($this->composerConfig['autoload']['classmap'])
+        ) {
             foreach ($this->composerConfig['autoload']['classmap'] as $dir) {
                 if (\is_string($dir)) {
                     $classmapDirs[] = $dir;

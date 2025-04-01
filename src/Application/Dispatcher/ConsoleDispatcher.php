@@ -42,7 +42,6 @@ final readonly class ConsoleDispatcher implements DispatcherInterface
                 name: 'console',
             ),
             scope: function (Container $container) use ($input, $output) {
-                /** @var Console $console */
                 $console = $container->get(Console::class);
 
                 try {

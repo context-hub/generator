@@ -61,7 +61,7 @@ final readonly class LLMFriendlyRenderStrategy implements RenderStrategyInterfac
         $additionBuffer = [];
         $removalBuffer = [];
 
-        foreach ($lines as $lineIndex => $line) {
+        foreach ($lines as $line) {
             // Skip diff headers/metadata that start with 'diff', 'index', '---', '+++', or '@@'
             if (\str_starts_with($line, 'diff') ||
                 \str_starts_with($line, 'index') ||

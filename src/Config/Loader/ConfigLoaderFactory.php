@@ -76,8 +76,6 @@ final readonly class ConfigLoaderFactory implements ConfigLoaderFactoryInterface
 
     public function createForFile(string $configPath): ConfigLoaderInterface
     {
-        $dirs = $this->dirs->withConfigPath($configPath);
-
         // Create parser with the injected plugin registry
         $parser = new ConfigParser(
             rootPath: $this->dirs->rootPath,
