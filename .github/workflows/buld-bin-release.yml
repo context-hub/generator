@@ -75,6 +75,201 @@ jobs:
           files: |
             ./dist/ctx-${{ env.VERSION }}-${{ matrix.platform.os }}-${{ matrix.platform.arch }}
 
+  build-macos-arm64:
+    runs-on: macos-14
+    name: 📦 Build macOS ARM64
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, curl, sockets
+          coverage: none
+
+      - name: Extract version from tag or set dev version
+        id: get_version
+        shell: bash
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" && -n "${{ github.event.inputs.version }}" ]]; then
+            VERSION="${{ github.event.inputs.version }}"
+          elif [[ "$GITHUB_REF" == refs/pull/* || "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+            # For pull requests or manual triggers without version, use "dev" as version
+            VERSION="dev"
+          else
+            # For releases, extract version from tag (remove 'v' prefix if present)
+            VERSION=${GITHUB_REF_NAME#v}
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "{\"version\": \"$VERSION\", \"type\":\"bin\"}" > version.json
+
+      - name: Install Composer dependencies
+        run: composer install --no-dev --prefer-dist --ignore-platform-reqs
+
+      - name: Create build directories
+        run: mkdir -p .build/phar .build/bin dist
+
+      - name: Download SPC for macOS ARM64
+        run: |
+          curl -fsSL -o .build/bin/spc https://dl.static-php.dev/static-php-cli/spc-bin/nightly/spc-macos-aarch64
+          chmod +x .build/bin/spc
+
+      - name: Download box tool
+        run: |
+          curl -fsSL -o .build/bin/box.phar https://github.com/box-project/box/releases/download/4.6.6/box.phar
+          chmod +x .build/bin/box.phar
+
+      - name: Download required PHP extensions
+        run: |
+          export SPC_SKIP_BREW_INSTALL=1
+          .build/bin/spc download micro --for-extensions=ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl --with-php=8.3 --prefer-pre-built
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+
+      - name: Verify environment is ready
+        run: |
+          export SPC_SKIP_BREW_INSTALL=1
+          .build/bin/spc doctor --auto-fix
+
+      - name: Build PHAR file
+        run: |
+          php .build/bin/box.phar compile -v
+
+      - name: Build the self-executable binary
+        run: |
+          # Skip Homebrew installation (we don't need it)
+          export SPC_SKIP_BREW_INSTALL=1
+          .build/bin/spc build "ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl" --build-micro
+
+      - name: Combine micro.sfx with the PHAR
+        run: |
+          .build/bin/spc micro:combine .build/phar/ctx.phar --output=dist/ctx-${{ env.VERSION }}-darwin-arm64
+
+      - name: Test binary
+        run: |
+          chmod +x dist/ctx-${{ env.VERSION }}-darwin-arm64
+          dist/ctx-${{ env.VERSION }}-darwin-arm64 --help
+
+      - name: 📤 Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ctx-${{ env.VERSION }}-darwin-arm64
+          path: dist/ctx-${{ env.VERSION }}-darwin-arm64
+
+      - name: 📤 Upload release assets
+        uses: softprops/action-gh-release@v2.2.1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          token: "${{ secrets.RELEASE_TOKEN }}"
+          files: |
+            dist/ctx-${{ env.VERSION }}-darwin-arm64
+
+  build-macos-amd64:
+    runs-on: macos-latest
+    name: 📦 Build macOS (x64)
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, curl, sockets
+          coverage: none
+
+      - name: Extract version from tag or set dev version
+        id: get_version
+        shell: bash
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" && -n "${{ github.event.inputs.version }}" ]]; then
+            VERSION="${{ github.event.inputs.version }}"
+          elif [[ "$GITHUB_REF" == refs/pull/* || "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+            # For pull requests or manual triggers without version, use "dev" as version
+            VERSION="dev"
+          else
+            # For releases, extract version from tag (remove 'v' prefix if present)
+            VERSION=${GITHUB_REF_NAME#v}
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "{\"version\": \"$VERSION\", \"type\":\"bin\"}" > version.json
+
+      - name: Install Composer dependencies
+        run: composer install --no-dev --prefer-dist --ignore-platform-reqs
+
+      - name: Create build directories
+        run: mkdir -p .build/phar .build/bin dist
+
+      - name: Download SPC for macOS AMD64
+        run: |
+          curl -fsSL -o .build/bin/spc https://dl.static-php.dev/static-php-cli/spc-bin/nightly/spc-macos-x86_64
+          chmod +x .build/bin/spc
+
+      - name: Download box tool
+        run: |
+          curl -fsSL -o .build/bin/box.phar https://github.com/box-project/box/releases/download/4.6.6/box.phar
+          chmod +x .build/bin/box.phar
+
+      - name: Install Intel Homebrew for AMD64
+        run: |
+          # Check if we need to install Intel Homebrew
+          if [[ ! -d "/usr/local/Homebrew" ]]; then
+            echo "Installing Intel (x86_64) version of Homebrew"
+            arch -x86_64 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          fi
+
+      - name: Download required PHP extensions
+        run: |
+          # For AMD64, ensure we're using the Intel Homebrew
+          export PATH="/usr/local/bin:$PATH"
+          .build/bin/spc download micro --for-extensions=ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl --with-php=8.3 --prefer-pre-built
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+
+      - name: Verify environment is ready
+        run: |
+          export PATH="/usr/local/bin:$PATH"
+          .build/bin/spc doctor --auto-fix
+
+      - name: Build PHAR file
+        run: |
+          php .build/bin/box.phar compile -v
+
+      - name: Build the self-executable binary
+        run: |
+          export PATH="/usr/local/bin:$PATH"
+          .build/bin/spc build "ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl" --build-micro
+
+      - name: Combine micro.sfx with the PHAR
+        run: |
+          export PATH="/usr/local/bin:$PATH"
+          .build/bin/spc micro:combine .build/phar/ctx.phar --output=dist/ctx-${{ env.VERSION }}-darwin-amd64
+
+      - name: Test binary
+        run: |
+          chmod +x dist/ctx-${{ env.VERSION }}-darwin-amd64
+          dist/ctx-${{ env.VERSION }}-darwin-amd64 --help
+
+      - name: 📤 Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ctx-${{ env.VERSION }}-darwin-amd64
+          path: dist/ctx-${{ env.VERSION }}-darwin-amd64
+
+      - name: 📤 Upload release assets
+        uses: softprops/action-gh-release@v2.2.1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          token: "${{ secrets.RELEASE_TOKEN }}"
+          files: |
+            dist/ctx-${{ env.VERSION }}-darwin-amd64
+
   build-windows:
     runs-on: windows-latest
     name: 📦 Build Windows (x64)
