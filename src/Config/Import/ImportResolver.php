@@ -216,7 +216,6 @@ final readonly class ImportResolver
                 $detector,
             );
 
-            // Apply path prefix for output document paths if specified
 
             // Apply source path prefix for local imports
             if ($sourceConfig instanceof LocalSourceConfig) {
@@ -269,6 +268,14 @@ final readonly class ImportResolver
                     $config['documents'],
                 );
                 unset($config['documents']);
+            }
+
+            if (isset($config['prompts']) && \is_array($config['prompts'])) {
+                $result['prompts'] = \array_merge(
+                    $result['prompts'] ?? [],
+                    $config['prompts'],
+                );
+                unset($config['prompts']);
             }
 
             // Merge the rest of the configuration

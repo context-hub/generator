@@ -49,14 +49,14 @@ final readonly class ImportSourceProvider
         if ($this->sourceRegistry->has($sourceName)) {
             $source = $this->sourceRegistry->get($sourceName);
             if ($source->supports($config)) {
-                return $source;
+                return clone $source;
             }
         }
 
         // If not found by type, try all registered sources
         foreach ($this->sourceRegistry->all() as $source) {
             if ($source->supports($config)) {
-                return $source;
+                return clone $source;
             }
         }
 
