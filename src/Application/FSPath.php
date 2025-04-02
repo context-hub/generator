@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Application;
 
-final readonly class FSPath implements \Stringable
+final class FSPath implements \Stringable
 {
+    /**
+     * Override for the directory separator - used for testing only
+     */
+    private static ?string $overriddenDirectorySeparator = null;
+
     /**
      * @param string $path The filesystem path
      */
     private function __construct(
-        private string $path,
+        private readonly string $path,
     ) {}
 
     /**
@@ -27,6 +32,22 @@ final readonly class FSPath implements \Stringable
     public static function cwd(): self
     {
         return new self(\getcwd() ?: '.');
+    }
+
+    /**
+     * Get the directory separator - can be overridden for testing
+     */
+    public static function getDirectorySeparator(): string
+    {
+        return self::$overriddenDirectorySeparator ?? \DIRECTORY_SEPARATOR;
+    }
+
+    /**
+     * Set an override for the directory separator - for testing only
+     */
+    public static function setDirectorySeparator(?string $separator): void
+    {
+        self::$overriddenDirectorySeparator = $separator;
     }
 
     /**
@@ -48,13 +69,14 @@ final readonly class FSPath implements \Stringable
                 continue;
             }
 
-            if ($result !== '' && !\str_ends_with($result, \DIRECTORY_SEPARATOR)) {
-                $result .= \DIRECTORY_SEPARATOR;
+            if ($result !== '' && !\str_ends_with($result, self::getDirectorySeparator())) {
+                $result .= self::getDirectorySeparator();
             }
 
-            $result .= \ltrim($path, \DIRECTORY_SEPARATOR);
+            $result .= \ltrim($path, self::getDirectorySeparator());
         }
 
+        // We return the raw string, not a normalized path, since it's already normalized
         return new self($result);
     }
 
@@ -98,6 +120,11 @@ final readonly class FSPath implements \Stringable
         }
 
         $suffix = $this->extension();
+        // Fix: Add period before extension if it's not empty
+        if (!empty($suffix)) {
+            $suffix = '.' . $suffix;
+        }
+
         return $this->withName($stem . $suffix);
     }
 
@@ -139,13 +166,34 @@ final readonly class FSPath implements \Stringable
      */
     public function parent(): self
     {
-        $parent = \dirname($this->path);
-
-        if ($parent === $this->path) {
+        // If this is a root path, return it unchanged
+        if ($this->isRoot()) {
             return $this;
         }
 
-        return new self($parent);
+        $parts = $this->parts();
+        // If there are no parts, return the current directory
+        if (empty($parts)) {
+            return self::create('.');
+        }
+
+        // If the path is a single part, return the current directory
+        if (\count($parts) === 1) {
+            return self::create('.');
+        }
+
+        // Remove the last part to get the parent directory
+        $parts = \array_slice($parts, 0, -1);
+        $isAbsPath = \str_starts_with($this->path, self::getDirectorySeparator());
+
+        // If the path is absolute, ensure the first part is preserved
+        $path = \implode(self::getDirectorySeparator(), $parts);
+        if ($isAbsPath) {
+            $path = self::getDirectorySeparator() . $path;
+        }
+
+        // Use dirname for a simple, reliable solution
+        return new self($path);
     }
 
     /**
@@ -153,8 +201,8 @@ final readonly class FSPath implements \Stringable
      */
     public function parts(): array
     {
-        $normalizedPath = \str_replace(['\\', '/'], \DIRECTORY_SEPARATOR, $this->path);
-        return \array_values(\array_filter(\explode(\DIRECTORY_SEPARATOR, $normalizedPath), \strlen(...)));
+        $normalizedPath = \str_replace(['\\', '/'], self::getDirectorySeparator(), $this->path);
+        return \array_values(\array_filter(\explode(self::getDirectorySeparator(), $normalizedPath), \strlen(...)));
     }
 
     /**
@@ -203,7 +251,7 @@ final readonly class FSPath implements \Stringable
     public function relativeTo(self $other): self
     {
         // If paths are on different drives (Windows), return the absolute path
-        if (\DIRECTORY_SEPARATOR === '\\') {
+        if (self::getDirectorySeparator() === '\\') {
             $thisRoot = $this->_getWindowsDrive($this->path);
             $otherRoot = $this->_getWindowsDrive($other->path);
 
@@ -251,7 +299,7 @@ final readonly class FSPath implements \Stringable
             return self::create('.');
         }
 
-        return self::create(\implode(\DIRECTORY_SEPARATOR, $relParts));
+        return self::create(\implode(self::getDirectorySeparator(), $relParts));
     }
 
     /**
@@ -285,7 +333,7 @@ final readonly class FSPath implements \Stringable
     private static function _isAbsolute(string $path): bool
     {
         // Windows absolute path
-        if (\DIRECTORY_SEPARATOR === '\\') {
+        if (self::getDirectorySeparator() === '\\') {
             // Drive letter, UNC path, or absolute path
             return (bool) \preg_match('~^(?:[a-zA-Z]:(?:\\\\|/)|\\\\\\\\|/)~', $path);
         }
@@ -300,19 +348,37 @@ final readonly class FSPath implements \Stringable
     private static function normalizePath(string $path): string
     {
         // Normalize directory separators
-        $path = \str_replace(['\\', '/'], \DIRECTORY_SEPARATOR, $path);
+        $path = \str_replace(['\\', '/'], self::getDirectorySeparator(), $path);
 
         // Normalize multiple separators
-        $path = \preg_replace('~' . \preg_quote(\DIRECTORY_SEPARATOR, '~') . '{2,}~', \DIRECTORY_SEPARATOR, $path);
+        $path = \preg_replace(
+            '~' . \preg_quote(self::getDirectorySeparator(), '~') . '{2,}~',
+            self::getDirectorySeparator(),
+            $path,
+        );
 
         // Empty path becomes current directory
         if ($path === '') {
             return '.';
         }
 
-        // Resolve special path segments
+        // Extract Windows drive letter if present
+        $driveLetter = '';
+        $isWindowsPath = false;
+        if (self::getDirectorySeparator() === '\\' && \preg_match('~^([a-zA-Z]:)~', (string) $path, $matches)) {
+            $driveLetter = $matches[1];
+            $path = \substr((string) $path, 2); // Remove drive letter for normalization
+            $isWindowsPath = true;
+        }
+
+        // Determine if the path is absolute
         $isAbsolute = self::_isAbsolute($path);
-        $parts = \array_filter(\explode(\DIRECTORY_SEPARATOR, (string) $path), static fn($part) => $part !== '');
+
+        // Resolve special path segments
+        $parts = \array_filter(
+            \explode(self::getDirectorySeparator(), (string) $path),
+            static fn($part) => $part !== '',
+        );
         $result = [];
 
         foreach ($parts as $part) {
@@ -333,16 +399,23 @@ final readonly class FSPath implements \Stringable
         }
 
         // Reconstruct the path
-        $normalizedPath = \implode(\DIRECTORY_SEPARATOR, $result);
+        $normalizedPath = \implode(self::getDirectorySeparator(), $result);
 
-        // Add leading separator if original path was absolute
-        if ($isAbsolute) {
-            $normalizedPath = \DIRECTORY_SEPARATOR . $normalizedPath;
-
-            // Handle Windows drive letters
-            if (\DIRECTORY_SEPARATOR === '\\' && \preg_match('~^([a-zA-Z]:)~', (string) $path, $matches)) {
-                $normalizedPath = $matches[1] . $normalizedPath;
+        // Handle Windows paths specifically
+        if ($isWindowsPath) {
+            // For Windows, construct with drive letter and separator
+            if (empty($normalizedPath)) {
+                // If path is just the root (e.g., C:\)
+                return $driveLetter . self::getDirectorySeparator();
             }
+
+            // For normal Windows paths (e.g., C:\Users\test)
+            return $driveLetter . self::getDirectorySeparator() . $normalizedPath;
+        }
+
+        // Handle Unix paths or Windows paths without drive letters
+        if ($isAbsolute) {
+            $normalizedPath = self::getDirectorySeparator() . $normalizedPath;
         }
 
         return $normalizedPath ?: '.';
@@ -361,7 +434,7 @@ final readonly class FSPath implements \Stringable
         }
 
         // Windows root (C:\ or similar)
-        if (\DIRECTORY_SEPARATOR === '\\' && \preg_match('~^[a-zA-Z]:[\\\\/]?$~', $normalized)) {
+        if (self::getDirectorySeparator() === '\\' && \preg_match('~^[a-zA-Z]:[\\\\/]?$~', $normalized)) {
             return true;
         }
 
