@@ -11,12 +11,17 @@ final class McpConfig extends InjectableConfig
     public const string CONFIG = 'mcp';
 
     protected array $config = [
-        'ctx_document_name_format' => '[{path}] {description}',
-
+        'document_name_format' => '[{path}] {description}',
         'file_operations' => [
             'enable' => true,
+            'write' => true,
+            'apply-patch' => false,
+            'directories-list' => true,
         ],
         'context_operations' => [
+            'enable' => true,
+        ],
+        'prompt_operations' => [
             'enable' => true,
         ],
     ];
@@ -26,7 +31,7 @@ final class McpConfig extends InjectableConfig
         return \str_replace(
             ['{path}', '{description}', '{tags}'],
             [$path, $description, $tags],
-            (string) $this->config['ctx_document_name_format'] ?: '',
+            (string) $this->config['document_name_format'] ?: '',
         );
     }
 
@@ -35,8 +40,28 @@ final class McpConfig extends InjectableConfig
         return $this->config['file_operations']['enable'] ?? false;
     }
 
+    public function isFileWriteEnabled(): bool
+    {
+        return $this->config['file_operations']['write'] ?? false;
+    }
+
+    public function isFileApplyPatchEnabled(): bool
+    {
+        return $this->config['file_operations']['apply-patch'] ?? false;
+    }
+
+    public function isFileDirectoriesListEnabled(): bool
+    {
+        return $this->config['file_operations']['directories-list'] ?? false;
+    }
+
     public function isContextOperationsEnabled(): bool
     {
         return $this->config['context_operations']['enable'] ?? false;
+    }
+
+    public function isPromptOperationsEnabled(): bool
+    {
+        return $this->config['prompt_operations']['enable'] ?? false;
     }
 }

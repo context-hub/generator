@@ -20,11 +20,11 @@ final class MarkdownRenderer extends AbstractRenderer
     public function renderCodeBlock(CodeBlock $block): string
     {
         $language = $block->getLanguage() ?: '';
-        $path = $block->getFilePath() ? "// Path: {$block->getFilePath()}\n" : '';
+        $path = $block->getFilePath() ? "Path: `{$block->getFilePath()}`\n" : '';
 
         return <<<CODE
+            ###  $path
             ```{$language}
-            $path
             $block
             ```
             \n\n

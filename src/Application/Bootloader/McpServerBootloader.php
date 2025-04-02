@@ -15,6 +15,8 @@ use Butschster\ContextGenerator\McpServer\Action\Resources\ListResourcesAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Context\ContextAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Context\ContextGetAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Context\ContextRequestAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\DirectoryListAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileApplyPatchAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileInfoAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileMoveAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileReadAction;
@@ -55,12 +57,18 @@ final class McpServerBootloader extends Bootloader
         $this->config->setDefaults(
             McpConfig::CONFIG,
             [
-                'ctx_document_name_format' => $env->get('MCP_DOCUMENT_NAME_FORMAT', '[{path}] {description}'),
+                'document_name_format' => $env->get('MCP_DOCUMENT_NAME_FORMAT', '[{path}] {description}'),
                 'file_operations' => [
                     'enable' => (bool) $env->get('MCP_FILE_OPERATIONS', true),
+                    'write' => (bool) $env->get('MCP_FILE_WRITE', true),
+                    'apply-patch' => (bool) $env->get('MCP_FILE_APPLY_PATCH', false),
+                    'directories-list' => (bool) $env->get('MCP_FILE_DIRECTORIES_LIST', true),
                 ],
                 'context_operations' => [
                     'enable' => (bool) $env->get('MCP_CONTEXT_OPERATIONS', true),
+                ],
+                'prompt_operations' => [
+                    'enable' => (bool) $env->get('MCP_PROMPT_OPERATIONS', false),
                 ],
             ],
         );
@@ -105,8 +113,6 @@ final class McpServerBootloader extends Bootloader
             // Prompts controllers
             ProjectStructurePromptAction::class,
             FilesystemOperationsAction::class,
-            GetPromptAction::class,
-            ListPromptsAction::class,
 
             // Resources controllers
             ListResourcesAction::class,
@@ -116,6 +122,14 @@ final class McpServerBootloader extends Bootloader
             // Tools controllers
             ListToolsAction::class,
         ];
+
+        if ($config->isPromptOperationsEnabled()) {
+            $actions = [
+                ...$actions,
+                GetPromptAction::class,
+                ListPromptsAction::class,
+            ];
+        }
 
         if ($config->isContextOperationsEnabled()) {
             $actions = [
@@ -131,10 +145,21 @@ final class McpServerBootloader extends Bootloader
                 ...$actions,
                 FileInfoAction::class,
                 FileReadAction::class,
-                FileWriteAction::class,
                 FileRenameAction::class,
                 FileMoveAction::class,
             ];
+
+            if ($config->isFileDirectoriesListEnabled()) {
+                $actions[] = DirectoryListAction::class;
+            }
+
+            if ($config->isFileApplyPatchEnabled()) {
+                $actions[] = FileApplyPatchAction::class;
+            }
+
+            if ($config->isFileWriteEnabled()) {
+                $actions[] = FileWriteAction::class;
+            }
         }
 
         return $actions;
