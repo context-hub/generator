@@ -168,9 +168,102 @@ jobs:
           files: |
             dist/ctx-${{ env.VERSION }}-darwin-arm64
 
+build-macos-arm64:
+  runs-on: macos-14
+  name: 📦 Build macOS (arm64)
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3'
+        extensions: mbstring, xml, curl, sockets
+        coverage: none
+
+    - name: Extract version from tag or set dev version
+      id: get_version
+      shell: bash
+      run: |
+        if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" && -n "${{ github.event.inputs.version }}" ]]; then
+          VERSION="${{ github.event.inputs.version }}"
+        elif [[ "$GITHUB_REF" == refs/pull/* || "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+          # For pull requests or manual triggers without version, use "dev" as version
+          VERSION="dev"
+        else
+          # For releases, extract version from tag (remove 'v' prefix if present)
+          VERSION=${GITHUB_REF_NAME#v}
+        fi
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        echo "{\"version\": \"$VERSION\", \"type\":\"bin\"}" > version.json
+
+    - name: Install Composer dependencies
+      run: composer install --no-dev --prefer-dist --ignore-platform-reqs
+
+    - name: Create build directories
+      run: mkdir -p .build/phar .build/bin dist
+
+    - name: Download SPC for macOS ARM64
+      run: |
+        curl -fsSL -o .build/bin/spc https://dl.static-php.dev/static-php-cli/spc-bin/nightly/spc-macos-aarch64
+        chmod +x .build/bin/spc
+
+    - name: Download box tool
+      run: |
+        curl -fsSL -o .build/bin/box.phar https://github.com/box-project/box/releases/download/4.6.6/box.phar
+        chmod +x .build/bin/box.phar
+
+    - name: Download required PHP extensions
+      run: |
+        export SPC_SKIP_BREW_INSTALL=1
+        .build/bin/spc download micro --for-extensions=ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl --with-php=8.3 --prefer-pre-built
+      env:
+        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+
+    - name: Verify environment is ready
+      run: |
+        export SPC_SKIP_BREW_INSTALL=1
+        .build/bin/spc doctor --auto-fix
+
+    - name: Build PHAR file
+      run: |
+        php .build/bin/box.phar compile -v
+
+    - name: Build the self-executable binary
+      run: |
+        # Skip Homebrew installation (we don't need it)
+        export SPC_SKIP_BREW_INSTALL=1
+        .build/bin/spc build "ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl" --build-micro
+
+    - name: Combine micro.sfx with the PHAR
+      run: |
+        .build/bin/spc micro:combine .build/phar/ctx.phar --output=dist/ctx-${{ env.VERSION }}-darwin-arm64
+
+    - name: Test binary
+      run: |
+        chmod +x dist/ctx-${{ env.VERSION }}-darwin-arm64
+        dist/ctx-${{ env.VERSION }}-darwin-arm64 --help
+
+    - name: 📤 Upload build artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ctx-${{ env.VERSION }}-darwin-arm64
+        path: dist/ctx-${{ env.VERSION }}-darwin-arm64
+
+    - name: 📤 Upload release assets
+      uses: softprops/action-gh-release@v2.2.1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        token: "${{ secrets.RELEASE_TOKEN }}"
+        files: |
+          dist/ctx-${{ env.VERSION }}-darwin-arm64
+
   build-macos-amd64:
     runs-on: macos-latest
-    name: 📦 Build macOS AMD64
+    name: 📦 Build macOS (x64)
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -216,60 +309,25 @@ jobs:
           curl -fsSL -o .build/bin/box.phar https://github.com/box-project/box/releases/download/4.6.6/box.phar
           chmod +x .build/bin/box.phar
 
-      - name: Fix Homebrew for x86_64
+      - name: Install Intel Homebrew for AMD64
         run: |
-          # Check if we're on Rosetta 2
-          if [[ "$(uname -m)" == "x86_64" && "$(sysctl -n hw.optional.arm64)" == "1" ]]; then
-            echo "Running on Rosetta 2 - need to install x86_64 Homebrew"
-            # Install Homebrew for x86_64 in /usr/local if it doesn't exist
-            if [[ ! -d "/usr/local/Homebrew" ]]; then
-              echo "Installing x86_64 Homebrew in /usr/local"
-              mkdir -p /tmp/homebrew-x86
-              curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C /tmp/homebrew-x86
-              sudo mv /tmp/homebrew-x86 /usr/local/Homebrew
-              sudo mkdir -p /usr/local/bin
-              sudo ln -sf /usr/local/Homebrew/bin/brew /usr/local/bin/brew
-              export PATH="/usr/local/bin:$PATH"
-            fi
-            echo "Using x86_64 Homebrew in /usr/local"
-            export HOMEBREW_PREFIX="/usr/local"
-            export HOMEBREW_CELLAR="/usr/local/Cellar"
-            export HOMEBREW_REPOSITORY="/usr/local/Homebrew"
-          else
-            echo "Regular x86_64 environment - Homebrew should be in /usr/local"
+          # Check if we need to install Intel Homebrew
+          if [[ ! -d "/usr/local/Homebrew" ]]; then
+            echo "Installing Intel (x86_64) version of Homebrew"
+            arch -x86_64 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
           fi
-          # Make sure brew command is available in PATH
-          which brew || echo "Brew not found in PATH"
-
-      - name: Install automake using x86_64 Homebrew
-        run: |
-          # Force using x86_64 arch for brew
-          arch -x86_64 /usr/local/bin/brew install automake || true
 
       - name: Download required PHP extensions
         run: |
-          # Tell SPC to skip the automatic Homebrew installation
-          export SPC_SKIP_BREW_INSTALL=1
-          # Explicitly set Homebrew paths for x86_64
-          export HOMEBREW_PREFIX="/usr/local"
-          export HOMEBREW_CELLAR="/usr/local/Cellar"
-          export HOMEBREW_REPOSITORY="/usr/local/Homebrew"
+          # For AMD64, ensure we're using the Intel Homebrew
           export PATH="/usr/local/bin:$PATH"
-          
           .build/bin/spc download micro --for-extensions=ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl --with-php=8.3 --prefer-pre-built
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
 
       - name: Verify environment is ready
         run: |
-          # Tell SPC to skip the automatic Homebrew installation
-          export SPC_SKIP_BREW_INSTALL=1
-          # Explicitly set Homebrew paths for x86_64
-          export HOMEBREW_PREFIX="/usr/local"
-          export HOMEBREW_CELLAR="/usr/local/Cellar"
-          export HOMEBREW_REPOSITORY="/usr/local/Homebrew"
           export PATH="/usr/local/bin:$PATH"
-          
           .build/bin/spc doctor --auto-fix
 
       - name: Build PHAR file
@@ -278,18 +336,12 @@ jobs:
 
       - name: Build the self-executable binary
         run: |
-          # Tell SPC to skip the automatic Homebrew installation
-          export SPC_SKIP_BREW_INSTALL=1
-          # Explicitly set Homebrew paths for x86_64
-          export HOMEBREW_PREFIX="/usr/local"
-          export HOMEBREW_CELLAR="/usr/local/Cellar"
-          export HOMEBREW_REPOSITORY="/usr/local/Homebrew"
           export PATH="/usr/local/bin:$PATH"
-          
           .build/bin/spc build "ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl" --build-micro
 
       - name: Combine micro.sfx with the PHAR
         run: |
+          export PATH="/usr/local/bin:$PATH"
           .build/bin/spc micro:combine .build/phar/ctx.phar --output=dist/ctx-${{ env.VERSION }}-darwin-amd64
 
       - name: Test binary
