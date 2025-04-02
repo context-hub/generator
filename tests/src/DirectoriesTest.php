@@ -216,9 +216,9 @@ final class DirectoriesTest extends TestCase
             jsonSchemaPath: '/test/schema',
         );
 
-        $this->assertSame('/test/root/file.txt', $dirs->getFilePath('file.txt'));
-        $this->assertSame('/test/root/dir/file.txt', $dirs->getFilePath('dir/file.txt'));
-        $this->assertSame('/test/root/file.txt', $dirs->getFilePath('/file.txt'));
+        $this->assertSame('/test/root/file.txt', (string) $dirs->getRootPath()->join('file.txt'));
+        $this->assertSame('/test/root/dir/file.txt', (string) $dirs->getRootPath()->join('dir/file.txt'));
+        $this->assertSame('/file.txt', (string) $dirs->getRootPath()->join('/file.txt'));
     }
 
     #[Test]
@@ -231,59 +231,9 @@ final class DirectoriesTest extends TestCase
             jsonSchemaPath: '/test/schema',
         );
 
-        $this->assertSame('/test/config/config.json', $dirs->getConfigPath('config.json'));
-        $this->assertSame('/test/config/dir/config.json', $dirs->getConfigPath('dir/config.json'));
-        $this->assertSame('/test/config/config.json', $dirs->getConfigPath('/config.json'));
-    }
-
-    #[Test]
-    public function it_should_detect_absolute_paths(): void
-    {
-        $dirs = new Directories(
-            rootPath: '/test/root',
-            outputPath: '/test/output',
-            configPath: '/test/config',
-            jsonSchemaPath: '/test/schema',
-        );
-
-        $this->assertTrue($dirs->isAbsolutePath('/absolute/path'));
-        $this->assertFalse($dirs->isAbsolutePath('relative/path'));
-        $this->assertFalse($dirs->isAbsolutePath('./relative/path'));
-        $this->assertFalse($dirs->isAbsolutePath('../relative/path'));
-    }
-
-    #[Test]
-    public function it_should_resolve_paths_correctly(): void
-    {
-        $dirs = new Directories(
-            rootPath: '/test/root',
-            outputPath: '/test/output',
-            configPath: '/test/config',
-            jsonSchemaPath: '/test/schema',
-        );
-
-        // Absolute paths should remain unchanged
-        $this->assertSame('/absolute/path', $dirs->resolvePath('/base/path', '/absolute/path'));
-
-        // Relative paths should be resolved against the base path
-        $this->assertSame('/base/path/relative/path', $dirs->resolvePath('/base/path', 'relative/path'));
-    }
-
-    #[Test]
-    public function it_should_combine_paths_correctly(): void
-    {
-        $dirs = new Directories(
-            rootPath: '/test/root',
-            outputPath: '/test/output',
-            configPath: '/test/config',
-            jsonSchemaPath: '/test/schema',
-        );
-
-        // Should handle paths with and without trailing/leading slashes
-        $this->assertSame('/base/path/file.txt', $dirs->combinePaths('/base/path', 'file.txt'));
-        $this->assertSame('/base/path/file.txt', $dirs->combinePaths('/base/path/', 'file.txt'));
-        $this->assertSame('/base/path/file.txt', $dirs->combinePaths('/base/path', '/file.txt'));
-        $this->assertSame('/base/path/file.txt', $dirs->combinePaths('/base/path/', '/file.txt'));
+        $this->assertSame('/test/config/config.json', (string) $dirs->getConfigPath()->join('config.json'));
+        $this->assertSame('/test/config/dir/config.json', (string) $dirs->getConfigPath()->join('dir/config.json'));
+        $this->assertSame('/config.json', (string) $dirs->getConfigPath()->join('/config.json'));
     }
 
     #[Test]
