@@ -23,6 +23,8 @@ use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileReadAction
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileRenameAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileWriteAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\ListToolsAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Prompts\GetPromptToolAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Prompts\ListPromptsToolAction;
 use Butschster\ContextGenerator\McpServer\McpConfig;
 use Butschster\ContextGenerator\McpServer\Registry\McpItemsRegistry;
 use Butschster\ContextGenerator\McpServer\Routing\McpResponseStrategy;
@@ -113,6 +115,8 @@ final class McpServerBootloader extends Bootloader
             // Prompts controllers
             ProjectStructurePromptAction::class,
             FilesystemOperationsAction::class,
+            GetPromptAction::class,
+            ListPromptsAction::class,
 
             // Resources controllers
             ListResourcesAction::class,
@@ -126,8 +130,8 @@ final class McpServerBootloader extends Bootloader
         if ($config->isPromptOperationsEnabled()) {
             $actions = [
                 ...$actions,
-                GetPromptAction::class,
-                ListPromptsAction::class,
+                GetPromptToolAction::class,
+                ListPromptsToolAction::class,
             ];
         }
 
