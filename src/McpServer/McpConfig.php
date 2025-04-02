@@ -16,6 +16,9 @@ final class McpConfig extends InjectableConfig
         'file_operations' => [
             'enable' => true,
         ],
+        'context_operations' => [
+            'enable' => true,
+        ],
     ];
 
     public function getDocumentNameFormat(string $path, string $description, string $tags): string
@@ -30,5 +33,10 @@ final class McpConfig extends InjectableConfig
     public function isFileOperationsEnabled(): bool
     {
         return $this->config['file_operations']['enable'] ?? false;
+    }
+
+    public function isContextOperationsEnabled(): bool
+    {
+        return $this->config['context_operations']['enable'] ?? false;
     }
 }

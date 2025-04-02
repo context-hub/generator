@@ -59,6 +59,9 @@ final class McpServerBootloader extends Bootloader
                 'file_operations' => [
                     'enable' => (bool) $env->get('MCP_FILE_OPERATIONS', true),
                 ],
+                'context_operations' => [
+                    'enable' => (bool) $env->get('MCP_CONTEXT_OPERATIONS', true),
+                ],
             ],
         );
     }
@@ -112,10 +115,16 @@ final class McpServerBootloader extends Bootloader
 
             // Tools controllers
             ListToolsAction::class,
-            ContextRequestAction::class,
-            ContextGetAction::class,
-            ContextAction::class,
         ];
+
+        if ($config->isContextOperationsEnabled()) {
+            $actions = [
+                ...$actions,
+                ContextRequestAction::class,
+                ContextGetAction::class,
+                ContextAction::class,
+            ];
+        }
 
         if ($config->isFileOperationsEnabled()) {
             $actions = [
