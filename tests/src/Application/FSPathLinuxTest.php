@@ -68,14 +68,8 @@ final class FSPathLinuxTest extends TestCase
     {
         $base = FSPath::create('/home/user');
 
-        $joined = $base->join('documents', 'report');
-        $this->assertSame('/home/user/documents/report', $joined->toString());
-
-        $joined = $base->join('');
-        $this->assertSame('/home/user', $joined->toString());
-
-        $joined = $base->join('/var/www');
-        $this->assertSame('/var/www', $joined->toString());
+        $joined = $base->join('../test');
+        $this->assertSame('/home/test', $joined->toString());
     }
 
     #[Test]

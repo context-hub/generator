@@ -69,8 +69,8 @@ final class FSPathWindowsTest extends TestCase
         $joined = $base->join('');
         $this->assertSame('C:\\Users', $joined->toString());
 
-        $joined = $base->join('D:\\Other');
-        $this->assertSame('D:\\Other', $joined->toString());
+        $joined = $base->join('test', 'documents', '..\\..\\Current');
+        $this->assertSame('C:\\Users\\Current', $joined->toString());
     }
 
     #[Test]

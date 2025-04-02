@@ -62,8 +62,6 @@ final class FSPath implements \Stringable
                 continue;
             }
 
-            $path = self::normalizePath($path);
-
             if (self::_isAbsolute($path)) {
                 $result = $path;
                 continue;
@@ -77,7 +75,7 @@ final class FSPath implements \Stringable
         }
 
         // We return the raw string, not a normalized path, since it's already normalized
-        return new self($result);
+        return new self(self::normalizePath($result));
     }
 
     /**
@@ -133,7 +131,20 @@ final class FSPath implements \Stringable
      */
     public function name(): string
     {
-        return \pathinfo($this->path, PATHINFO_BASENAME);
+        $parts = $this->parts();
+
+        // If there are no parts, return the current directory
+        if (empty($parts)) {
+            return '';
+        }
+
+        // If the path is a single part, return the current directory
+        if (\count($parts) === 1) {
+            return $parts[0];
+        }
+
+        // get the last part of the path
+        return \array_pop($parts);
     }
 
     /**
@@ -365,7 +376,7 @@ final class FSPath implements \Stringable
         // Extract Windows drive letter if present
         $driveLetter = '';
         $isWindowsPath = false;
-        if (self::getDirectorySeparator() === '\\' && \preg_match('~^([a-zA-Z]:)~', (string) $path, $matches)) {
+        if (self::getDirectorySeparator() === '\\' && \preg_match('~^([a-zA-Z]:)~', (string) $path, $matches) === 1) {
             $driveLetter = $matches[1];
             $path = \substr((string) $path, 2); // Remove drive letter for normalization
             $isWindowsPath = true;
