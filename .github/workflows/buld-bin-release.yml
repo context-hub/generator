@@ -216,24 +216,60 @@ jobs:
           curl -fsSL -o .build/bin/box.phar https://github.com/box-project/box/releases/download/4.6.6/box.phar
           chmod +x .build/bin/box.phar
 
-      - name: Fix Homebrew path for AMD64
+      - name: Fix Homebrew for x86_64
         run: |
-          # Ensure correct Homebrew path for x86_64
-          if [[ ! -d "/usr/local/Homebrew" && -d "/opt/homebrew" ]]; then
-            echo "Setting up Homebrew symlinks for x86_64 compatibility"
-            sudo mkdir -p /usr/local/Homebrew
-            sudo ln -sf /opt/homebrew/bin /usr/local/bin
+          # Check if we're on Rosetta 2
+          if [[ "$(uname -m)" == "x86_64" && "$(sysctl -n hw.optional.arm64)" == "1" ]]; then
+            echo "Running on Rosetta 2 - need to install x86_64 Homebrew"
+            # Install Homebrew for x86_64 in /usr/local if it doesn't exist
+            if [[ ! -d "/usr/local/Homebrew" ]]; then
+              echo "Installing x86_64 Homebrew in /usr/local"
+              mkdir -p /tmp/homebrew-x86
+              curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C /tmp/homebrew-x86
+              sudo mv /tmp/homebrew-x86 /usr/local/Homebrew
+              sudo mkdir -p /usr/local/bin
+              sudo ln -sf /usr/local/Homebrew/bin/brew /usr/local/bin/brew
+              export PATH="/usr/local/bin:$PATH"
+            fi
+            echo "Using x86_64 Homebrew in /usr/local"
+            export HOMEBREW_PREFIX="/usr/local"
+            export HOMEBREW_CELLAR="/usr/local/Cellar"
+            export HOMEBREW_REPOSITORY="/usr/local/Homebrew"
+          else
+            echo "Regular x86_64 environment - Homebrew should be in /usr/local"
           fi
+          # Make sure brew command is available in PATH
+          which brew || echo "Brew not found in PATH"
+
+      - name: Install automake using x86_64 Homebrew
+        run: |
+          # Force using x86_64 arch for brew
+          arch -x86_64 /usr/local/bin/brew install automake || true
 
       - name: Download required PHP extensions
         run: |
-          # For AMD64, we don't skip Homebrew installation as it needs to be in the correct path
+          # Tell SPC to skip the automatic Homebrew installation
+          export SPC_SKIP_BREW_INSTALL=1
+          # Explicitly set Homebrew paths for x86_64
+          export HOMEBREW_PREFIX="/usr/local"
+          export HOMEBREW_CELLAR="/usr/local/Cellar"
+          export HOMEBREW_REPOSITORY="/usr/local/Homebrew"
+          export PATH="/usr/local/bin:$PATH"
+          
           .build/bin/spc download micro --for-extensions=ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl --with-php=8.3 --prefer-pre-built
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
 
       - name: Verify environment is ready
         run: |
+          # Tell SPC to skip the automatic Homebrew installation
+          export SPC_SKIP_BREW_INSTALL=1
+          # Explicitly set Homebrew paths for x86_64
+          export HOMEBREW_PREFIX="/usr/local"
+          export HOMEBREW_CELLAR="/usr/local/Cellar"
+          export HOMEBREW_REPOSITORY="/usr/local/Homebrew"
+          export PATH="/usr/local/bin:$PATH"
+          
           .build/bin/spc doctor --auto-fix
 
       - name: Build PHAR file
@@ -242,6 +278,14 @@ jobs:
 
       - name: Build the self-executable binary
         run: |
+          # Tell SPC to skip the automatic Homebrew installation
+          export SPC_SKIP_BREW_INSTALL=1
+          # Explicitly set Homebrew paths for x86_64
+          export HOMEBREW_PREFIX="/usr/local"
+          export HOMEBREW_CELLAR="/usr/local/Cellar"
+          export HOMEBREW_REPOSITORY="/usr/local/Homebrew"
+          export PATH="/usr/local/bin:$PATH"
+          
           .build/bin/spc build "ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl" --build-micro
 
       - name: Combine micro.sfx with the PHAR
