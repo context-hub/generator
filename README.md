@@ -8,6 +8,9 @@
     <a href="https://packagist.org/packages/context-hub/generator"><img alt="Latest Version" src="https://img.shields.io/packagist/v/context-hub/generator"></a>
 </p>
 
+![Good morning, LLM](https://github.com/user-attachments/assets/8129f227-dc3f-4671-bc0e-0ecd2f3a1888)
+
+
 Context Generator is a tool designed to solve a common problem when working with LLMs like ChatGPT, Claude: **providing
 sufficient context about your codebase.**
 
