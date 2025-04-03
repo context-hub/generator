@@ -43,6 +43,11 @@ final class MCPServerCommand extends BaseCommand
 
     public function __invoke(Container $container, DirectoriesInterface $dirs, Application $app): int
     {
+        // Determine the effective root path based on config file path
+        $dirs = $dirs
+            ->determineRootPath($this->configPath)
+            ->withEnvFile($this->envFileName);
+
         $logger = new FileLogger(
             name: 'mcp',
             filePath: (string) $dirs->getRootPath()->join('mcp.log'),
@@ -55,11 +60,6 @@ final class MCPServerCommand extends BaseCommand
         );
 
         $logger->info('Starting MCP server...');
-
-        // Determine the effective root path based on config file path
-        $dirs = $dirs
-            ->determineRootPath($this->configPath)
-            ->withEnvFile($this->envFileName);
 
         return $container->runScope(
             bindings: new Scope(
