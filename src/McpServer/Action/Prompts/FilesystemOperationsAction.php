@@ -28,12 +28,18 @@ final readonly class FilesystemOperationsAction
     {
         $this->logger->info('Getting filesystem operations prompt');
 
+        $rules = [
+            'When handling file operations, use the following tools:',
+            '- Whenever you need to do file operations, use these tools: file-info, file-read, file-write, file-apply-patch, file-move, file-rename.',
+            '- Always use file-write when creating new files. For updating existing files, use file-apply-patch whenever possible to reduce token consumption.',
+        ];
+
         return new GetPromptResult(
             messages: [
                 new PromptMessage(
                     role: Role::USER,
                     content: new TextContent(
-                        text: "Whenever you need to do file operations, use these tools: file-info, file-read, file-write, file-move, file-rename",
+                        text: \implode("\n", $rules),
                     ),
                 ),
             ],
