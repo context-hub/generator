@@ -1,4 +1,4 @@
-# Context Generator for LLM with MCP server
+# ctx: The missing link between your codebase and your LLM. Context as Code (CaC) tool with MCP server inside.
 
 <p>
     <a href="https://docs.ctxgithub.com/"><img alt="Docs" src="https://img.shields.io/badge/docs-green"></a>
@@ -11,50 +11,50 @@
 ![Good morning, LLM](https://github.com/user-attachments/assets/8129f227-dc3f-4671-bc0e-0ecd2f3a1888)
 
 
-Context Generator is a tool designed to solve a common problem when working with LLMs like ChatGPT, Claude: **providing
-sufficient context about your codebase.**
+**ctx** is a tool made to solve a big problem when chatting with LLMs like ChatGPT or Claude: **giving them enough context about your project**.
 
 > There is an article about Context Generator
 > on [Medium](https://medium.com/@butschster/context-not-prompts-2-0-the-evolution-9c4a84214784) that explains the
 > motivation behind the project and the problem it solves.
 
-It automates the process of building context files from various sources:
+Instead of manually copying or explaining your entire codebase each time, ctx automatically builds neat, organized context files from:
 
 - Code files,
 - GitHub repositories,
-- Git commit changes and diffs
+- Git commits and diffs
 - Web pages (URLs) with CSS selectors,
 - and plain text.
 
 It was created to solve a common problem: **efficiently providing AI language models like ChatGPT, Claude with necessary
 context about your codebase.**
 
-## Why You Need This
+## Why you need this
 
-When working with AI-powered development tools context is everything.
+When you're using AI in development, contextt isn't just helpful — it's everything.
 
-- **Code Refactoring Assistance**: Want AI help refactoring a complex class? Context Generator builds a properly
-  formatted document containing all relevant code files.
+- **Code Refactoring Help**: Need AI assistance refactoring messy code? **ctx** creates clean, structured documents with all necessary code files.
 
 - **Multiple Iteration Development**: Working through several iterations with an AI helper requires constantly updating
-  the context. Context Generator automates this process.
+  the context. **ctx** automates this process.
 
-- **Documentation Generation:** Transform your codebase into comprehensive documentation by combining source code with
+- **Documentation Generation**: Transform your codebase into comprehensive documentation by combining source code with
   custom explanations. Use AI to generate user guides, API references, or developer documentation based on your actual
   code.
 
-- **Seamless AI Integration**: With MCP support, [connect](https://docs.ctxgithub.com/mcp-server.html) Claude AI directly to your codebase, allowing
+- **Seamless AI Integration**: hanks to built-in MCP support, you can [connect](https://docs.ctxgithub.com/mcp-server.html) Claude AI directly to your codebase, allowing
   for real-time, context-aware assistance without manual context sharing.
 
 ## How it works
 
-1. Gathers code from files, directories, GitHub repositories, web pages, or custom text.
+1. Gathers code from files, directories, GitHub repositories, web pages, or plain text.
 2. Targets specific files through pattern matching, content search, size, or date filters
 3. Applies optional modifiers (like extracting PHP signatures without implementation details)
 4. Organizes content into well-structured markdown documents
 5. Saves context files ready to be shared with LLMs
 6. Optionally serves context through an MCP server, allowing AI assistants like Claude to directly access project
    information
+
+**With ctx, your AI conversations just got a whole lot smarter—and easier.**
 
 # Quick Start
 
