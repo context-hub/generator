@@ -25,6 +25,33 @@ final readonly class Release
     ) {}
 
     /**
+     * Create a Release instance from GitHub API response data.
+     *
+     * @param array<string, mixed> $data GitHub API release data
+     */
+    public static function fromApiResponse(array $data): self
+    {
+        $assets = [];
+
+        // Process assets to create a map of filename => download URL
+        if (isset($data['assets']) && \is_array($data['assets'])) {
+            foreach ($data['assets'] as $asset) {
+                if (isset($asset['name'], $asset['browser_download_url'])) {
+                    $assets[(string) $asset['name']] = (string) $asset['browser_download_url'];
+                }
+            }
+        }
+
+        return new self(
+            tagName: (string) ($data['tag_name'] ?? ''),
+            name: (string) ($data['name'] ?? ''),
+            body: (string) ($data['body'] ?? ''),
+            htmlUrl: (string) ($data['html_url'] ?? ''),
+            assets: $assets,
+        );
+    }
+
+    /**
      * Get the version number without the "v" prefix.
      */
     public function getVersion(): string
@@ -50,32 +77,5 @@ final readonly class Release
     public function getAssetUrl(string $fileName): ?string
     {
         return $this->assets[$fileName] ?? null;
-    }
-
-    /**
-     * Create a Release instance from GitHub API response data.
-     *
-     * @param array<string, mixed> $data GitHub API release data
-     */
-    public static function fromApiResponse(array $data): self
-    {
-        $assets = [];
-
-        // Process assets to create a map of filename => download URL
-        if (isset($data['assets']) && \is_array($data['assets'])) {
-            foreach ($data['assets'] as $asset) {
-                if (isset($asset['name'], $asset['browser_download_url'])) {
-                    $assets[(string) $asset['name']] = (string) $asset['browser_download_url'];
-                }
-            }
-        }
-
-        return new self(
-            tagName: (string) ($data['tag_name'] ?? ''),
-            name: (string) ($data['name'] ?? ''),
-            body: (string) ($data['body'] ?? ''),
-            htmlUrl: (string) ($data['html_url'] ?? ''),
-            assets: $assets,
-        );
     }
 }

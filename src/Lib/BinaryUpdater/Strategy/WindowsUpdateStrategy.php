@@ -20,12 +20,18 @@ final readonly class WindowsUpdateStrategy implements UpdateStrategyInterface
 
     public function update(string $sourcePath, string $targetPath): bool
     {
+        $this->logger?->info("Using Windows update strategy for binary: {$targetPath}");
+
         // Create the update script
+        $this->logger?->info("Creating Windows batch script...");
         $scriptPath = $this->createUpdateScript($sourcePath, $targetPath);
 
         if ($scriptPath === null) {
+            $this->logger?->error("Failed to create Windows batch script");
             return false;
         }
+
+        $this->logger?->info("Created batch script at: {$scriptPath}");
 
         // Run the script in the background
         $command = \sprintf(
@@ -33,12 +39,22 @@ final readonly class WindowsUpdateStrategy implements UpdateStrategyInterface
             \escapeshellarg($scriptPath),
         );
 
+        $this->logger?->info("Executing batch script in background with command: {$command}");
+
         // Execute the command
         $output = [];
         $resultCode = 0;
         \exec($command, $output, $resultCode);
 
-        return $resultCode === 0;
+        $success = $resultCode === 0;
+
+        if ($success) {
+            $this->logger?->info("Successfully started background update process");
+        } else {
+            $this->logger?->error("Failed to start background update process, exit code: {$resultCode}");
+        }
+
+        return $success;
     }
 
     /**
@@ -48,14 +64,17 @@ final readonly class WindowsUpdateStrategy implements UpdateStrategyInterface
      */
     private function createUpdateScript(string $sourcePath, string $targetPath): ?string
     {
-        $scriptPath = $this->files->tempFilename('.bat');
-
         try {
+            $scriptPath = $this->files->tempFilename('.bat');
+            $this->logger?->info("Generated temporary script path: {$scriptPath}");
+
             // Convert paths to Windows-style
             $sourcePath = \str_replace('/', '\\', $sourcePath);
             $targetPath = \str_replace('/', '\\', $targetPath);
             $targetDir = \str_replace('/', '\\', \dirname($targetPath));
             $scriptPathWin = \str_replace('/', '\\', $scriptPath);
+
+            $this->logger?->debug("Windows paths: source={$sourcePath}, target={$targetPath}, target_dir={$targetDir}");
 
             $scriptContent = <<<BATCH
                 @echo off
@@ -111,9 +130,12 @@ final readonly class WindowsUpdateStrategy implements UpdateStrategyInterface
                 exit /b 0
                 BATCH;
 
+            $this->logger?->debug("Writing batch script content to temporary file");
             $this->files->write($scriptPath, $scriptContent);
+
             return $scriptPath;
-        } catch (\Throwable) {
+        } catch (\Throwable $e) {
+            $this->logger?->error("Error creating batch script: {$e->getMessage()}");
             return null;
         }
     }

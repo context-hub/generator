@@ -12,7 +12,7 @@ use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 /**
  * Manages GitHub releases for a repository.
  */
-final class ReleaseManager
+final readonly class ReleaseManager
 {
     /**
      * @param HttpClientInterface $httpClient HTTP client for API requests
@@ -20,8 +20,8 @@ final class ReleaseManager
      * @param string|null $token GitHub API token
      */
     public function __construct(
-        private readonly HttpClientInterface $httpClient,
-        private readonly GithubRepository $repository,
+        private HttpClientInterface $httpClient,
+        private GithubRepository $repository,
         private ?string $token = null,
     ) {}
 
@@ -36,8 +36,6 @@ final class ReleaseManager
             'https://api.github.com/repos/%s/releases/latest',
             $this->repository->repository,
         );
-
-        trap($url);
 
         $response = $this->httpClient->get(
             $url,

@@ -20,15 +20,23 @@ final readonly class UnixUpdateStrategy implements UpdateStrategyInterface
 
     public function update(string $sourcePath, string $targetPath): bool
     {
+        $this->logger?->info("Using Unix update strategy for binary: {$targetPath}");
+
         // Create the update script
+        $this->logger?->info("Creating Unix update script...");
         $scriptPath = $this->createUpdateScript($sourcePath, $targetPath);
 
         if ($scriptPath === null) {
+            $this->logger?->error("Failed to create Unix update script");
             return false;
         }
 
+        $this->logger?->info("Created update script at: {$scriptPath}");
+
         // Make the script executable
+        $this->logger?->info("Setting executable permissions on script");
         if (!\chmod($scriptPath, 0755)) {
+            $this->logger?->error("Failed to set executable permissions on script");
             return false;
         }
 
@@ -38,13 +46,23 @@ final readonly class UnixUpdateStrategy implements UpdateStrategyInterface
             \escapeshellarg($scriptPath),
         );
 
+        $this->logger?->info("Executing update script in background with command: {$command}");
+
         // Execute the command and capture the process ID
         $output = [];
         $resultCode = 0;
         \exec($command, $output, $resultCode);
 
         // If we got a process ID and the command executed successfully, consider it a success
-        return $resultCode === 0 && !empty($output[0]) && \is_numeric($output[0]);
+        $success = $resultCode === 0 && !empty($output[0]) && \is_numeric($output[0]);
+
+        if ($success) {
+            $this->logger?->info("Successfully started background update process with PID: {$output[0]}");
+        } else {
+            $this->logger?->error("Failed to start background update process, exit code: {$resultCode}");
+        }
+
+        return $success;
     }
 
     /**
@@ -54,9 +72,10 @@ final readonly class UnixUpdateStrategy implements UpdateStrategyInterface
      */
     private function createUpdateScript(string $sourcePath, string $targetPath): ?string
     {
-        $scriptPath = $this->files->tempFilename('.sh');
-
         try {
+            $scriptPath = $this->files->tempFilename('.sh');
+            $this->logger?->info("Generated temporary script path: {$scriptPath}");
+
             $scriptContent = <<<BASH
                 #!/bin/bash
                 
@@ -108,9 +127,12 @@ final readonly class UnixUpdateStrategy implements UpdateStrategyInterface
                 exit 0
                 BASH;
 
+            $this->logger?->debug("Writing bash script content to temporary file");
             $this->files->write($scriptPath, $scriptContent);
+
             return $scriptPath;
-        } catch (\Throwable) {
+        } catch (\Throwable $e) {
+            $this->logger?->error("Error creating update script: {$e->getMessage()}");
             return null;
         }
     }

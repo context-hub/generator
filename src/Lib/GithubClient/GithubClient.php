@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Lib\GithubClient;
 
 use Butschster\ContextGenerator\Lib\GithubClient\Model\GithubRepository;
-use Butschster\ContextGenerator\Lib\GithubClient\Model\Release;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 
 final class GithubClient implements GithubClientInterface
