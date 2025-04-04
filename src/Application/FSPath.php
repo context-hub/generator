@@ -387,7 +387,8 @@ final class FSPath implements \Stringable
 
         // Resolve special path segments
         $parts = \array_filter(
-            \explode(self::getDirectorySeparator(), $path),
+            /** @psalm-suppress RedundantCast */
+            \explode(self::getDirectorySeparator(), (string) $path),
             static fn($part) => $part !== '',
         );
         $result = [];
