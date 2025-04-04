@@ -54,7 +54,7 @@ final class GithubFinder implements FinderInterface
         }
 
         // Parse repository from string
-        $repository = GithubRepository::fromString($source->repository, $source->branch);
+        $repository = new GithubRepository($source->repository, $source->branch);
 
         // Initialize path filters based on source configuration
         $this->initializePathFilters($source);
