@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Console;
 
 use Butschster\ContextGenerator\Application\Application;
+use Butschster\ContextGenerator\Lib\BinaryUpdater\BinaryUpdater;
+use Butschster\ContextGenerator\Lib\BinaryUpdater\UpdaterFactory;
 use Butschster\ContextGenerator\Lib\GithubClient\GithubClientInterface;
 use Butschster\ContextGenerator\Lib\GithubClient\Model\GithubRepository;
 use Spiral\Boot\EnvironmentInterface;
@@ -122,63 +124,30 @@ final class SelfUpdateCommand extends BaseCommand
             $manager->downloadAsset($assetUrl, $tempFile);
 
             $this->output->section('Installing the update...');
-            $this->installUpdate($tempFile, $binaryPath);
 
-            $this->output->success("Successfully updated to version {$release->getVersion()}");
+            // Use our BinaryUpdater to handle the update safely
+            $updaterFactory = new UpdaterFactory($this->files, $this->logger);
+            $binaryUpdater = new BinaryUpdater($this->files, $updaterFactory->createStrategy(), $this->logger);
+
+            if ($binaryUpdater->update($tempFile, $binaryPath)) {
+                $this->output->success("Update process started successfully for version {$release->getVersion()}");
+
+                // Add a note about how the update works
+                if ($app->isBinary) {
+                    $this->output->note(
+                        "The update will complete automatically after this process exits. " .
+                        "The next time you run the command, you'll be using the new version.",
+                    );
+                }
+            } else {
+                $this->output->error("Failed to start the update process.");
+                return Command::FAILURE;
+            }
 
             return Command::SUCCESS;
         } catch (\Throwable $e) {
             $this->output->error("Failed to update: {$e->getMessage()}");
             return Command::FAILURE;
-        }
-    }
-
-    /**
-     * Install the update by replacing the current binary
-     */
-    private function installUpdate(string $tempFile, string $targetPath): void
-    {
-        try {
-            $this->output->text("Replacing current binary at: {$targetPath}");
-
-            // On Windows, we need to delete the file first
-            if (\PHP_OS_FAMILY === 'Windows' && $this->files->exists($targetPath)) {
-                if (!$this->files->delete($targetPath)) {
-                    throw new \RuntimeException("Failed to delete current file");
-                }
-            }
-
-            // Read the content from temp file
-            $newContent = $this->files->read($tempFile);
-
-            // Create directory if it doesn't exist
-            $targetDir = \dirname($targetPath);
-            if (!\is_dir($targetDir)) {
-                if (!@\mkdir($targetDir, 0755, true) && !\is_dir($targetDir)) {
-                    throw new \RuntimeException("Failed to create directory: {$targetDir}");
-                }
-            }
-
-            // Write the content to the target file
-            if ($this->files->write($targetPath, $newContent)) {
-                $this->output->text("Successfully wrote new version to: {$targetPath}");
-            } else {
-                throw new \RuntimeException("Failed to write the new version");
-            }
-
-            // Make sure the new file is executable if it's not a Windows system
-            if (\PHP_OS_FAMILY !== 'Windows') {
-                if (!\chmod($targetPath, 0755)) {
-                    $this->output->warning("Failed to set executable permissions on the new file");
-                }
-            }
-
-            $this->output->text("Successfully replaced the binary file");
-        } finally {
-            // Clean up the temporary file
-            if ($this->files->exists($tempFile)) {
-                $this->files->delete($tempFile);
-            }
         }
     }
 }
