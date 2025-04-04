@@ -59,7 +59,7 @@ final class Style
         }
 
         if (\is_numeric($value)) {
-            return "\033[0;36m" . $value . "\033[0m";
+            return "\033[0;36m" . (string) $value . "\033[0m";
         }
 
         return (string) $value;

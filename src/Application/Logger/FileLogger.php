@@ -10,13 +10,18 @@ use Monolog\Logger;
 use Monolog\Processor\TagProcessor;
 
 /**
- * @psalm-suppress all
+ * @psalm-suppress InvalidExtendClass
  */
 final class FileLogger extends Logger implements HasPrefixLoggerInterface
 {
     /**
      * @param non-empty-string $name
      * @param non-empty-string $filePath
+     * @psalm-suppress ImplementedParamTypeMismatch
+     * @psalm-suppress ConstructorSignatureMismatch
+     * @psalm-suppress ParamNameMismatch
+     * @psalm-suppress MethodSignatureMismatch
+     * @psalm-suppress MoreSpecificImplementedParamType
      */
     public function __construct(string $name, string $filePath, Level $level)
     {

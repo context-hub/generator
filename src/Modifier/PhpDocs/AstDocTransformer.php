@@ -476,7 +476,7 @@ final class AstDocTransformer implements SourceModifierInterface
 
         $params = [];
         foreach ($method->getParameters() as $param) {
-            $paramType = $param->getType() ? $param->getType() . ' ' : '';
+            $paramType = $param->getType() ? (string) $param->getType() . ' ' : '';
             $paramName = '$' . $param->getName();
 
             $paramStr = $paramType . $paramName;
@@ -490,7 +490,7 @@ final class AstDocTransformer implements SourceModifierInterface
         }
 
         $paramsStr = \implode(', ', $params);
-        $returnType = $method->getReturnType() ? ': ' . $method->getReturnType() : '';
+        $returnType = $method->getReturnType() ? ': ' . (string) $method->getReturnType() : '';
 
         return "{$visibility}{$staticFlag}{$abstractFlag}{$finalFlag}function {$methodName}({$paramsStr}){$returnType}";
     }

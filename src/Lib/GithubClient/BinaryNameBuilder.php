@@ -31,13 +31,6 @@ final readonly class BinaryNameBuilder
             $extension = ($platform->isWindows() && $type === 'bin') ? $platform->extension() : '';
 
             return match ($type) {
-                'phar' => \sprintf(
-                    "%s-%s-%s-%s.phar",
-                    $baseName,
-                    $version,
-                    $platform->value,
-                    $architecture->value,
-                ),
                 'bin' => \sprintf(
                     "%s-%s-%s-%s%s",
                     $baseName,

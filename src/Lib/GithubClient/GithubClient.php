@@ -21,14 +21,13 @@ final class GithubClient implements GithubClientInterface
         private ?string $token = null,
     ) {}
 
-    public function getContents(string $owner, string $repo, string $path = '', string $branch = 'main'): array
+    public function getContents(GithubRepository $repository, string $path = ''): array
     {
         $url = \sprintf(
-            '/repos/%s/%s/contents/%s?ref=%s',
-            \urlencode($owner),
-            \urlencode($repo),
+            '/repos/%s/contents/%s?ref=%s',
+            $repository->repository,
             $path ? \urlencode($path) : '',
-            \urlencode($branch),
+            \urlencode($repository->branch),
         );
 
         $response = $this->sendRequest('GET', $url);
@@ -43,14 +42,13 @@ final class GithubClient implements GithubClientInterface
         return $response;
     }
 
-    public function getFileContent(string $owner, string $repo, string $path, string $branch = 'main'): string
+    public function getFileContent(GithubRepository $repository, string $path): string
     {
         $url = \sprintf(
-            '/repos/%s/%s/contents/%s?ref=%s',
-            \urlencode($owner),
-            \urlencode($repo),
+            '/repos/%s/contents/%s?ref=%s',
+            $repository->repository,
             \urlencode($path),
-            \urlencode($branch),
+            \urlencode($repository->branch),
         );
 
         $response = $this->sendRequest('GET', $url);
