@@ -53,7 +53,9 @@ final readonly class BinaryUpdater
             $content = $this->files->read($sourcePath);
 
             // Write to target
-            $this->files->write($targetPath, $content);
+            if (!$this->files->write($targetPath, $content)) {
+                throw new \RuntimeException(\sprintf("Failed to write to target file: %s", $targetPath));
+            }
 
             // Make executable (except on Windows)
             if (\PHP_OS_FAMILY !== 'Windows') {

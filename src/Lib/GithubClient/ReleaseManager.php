@@ -8,21 +8,19 @@ use Butschster\ContextGenerator\Lib\GithubClient\Model\GithubRepository;
 use Butschster\ContextGenerator\Lib\GithubClient\Model\Release;
 use Butschster\ContextGenerator\Lib\HttpClient\Exception\HttpException;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Manages GitHub releases for a repository.
  */
 final readonly class ReleaseManager
 {
-    /**
-     * @param HttpClientInterface $httpClient HTTP client for API requests
-     * @param GithubRepository $repository Target repository
-     * @param string|null $token GitHub API token
-     */
     public function __construct(
         private HttpClientInterface $httpClient,
         private GithubRepository $repository,
         private ?string $token = null,
+        private BinaryNameBuilder $binaryNameBuilder = new BinaryNameBuilder(),
+        private ?LoggerInterface $logger = null,
     ) {}
 
     /**
@@ -57,13 +55,45 @@ final readonly class ReleaseManager
     }
 
     /**
-     * Download a release asset to a local file.
-     *
-     * @param string $assetUrl URL of the asset to download
-     * @param string $destinationPath Local path to save the file
-     * @throws \RuntimeException If the download fails
+     * Attempts to download the appropriate binary for the current platform.
+     * First tries the platform-specific binary, then falls back to the generic binary.
      */
-    public function downloadAsset(string $assetUrl, string $destinationPath): void
+    public function downloadBinary(string $version, string $binaryName, string $type, string $destinationPath): bool
+    {
+        // First try platform-specific binary
+        try {
+            $fileName = $this->binaryNameBuilder->buildPlatformSpecificName($binaryName, $version, $type);
+            $this->logger?->info("Attempting to download platform-specific binary: {$fileName}");
+
+            $assetUrl = $this->getAssetUrlOrFail($fileName);
+            $this->downloadAsset($assetUrl, $destinationPath);
+
+            $this->logger?->info("Successfully downloaded platform-specific binary: {$fileName}");
+            return true;
+        } catch (\Throwable $e) {
+            $this->logger?->warning("Failed to download platform-specific binary: {$e->getMessage()}");
+
+            // Fall back to generic binary
+            try {
+                $fileName = $this->binaryNameBuilder->buildGenericName($binaryName, $type);
+                $this->logger?->info("Falling back to generic binary: {$fileName}");
+
+                $assetUrl = $this->getAssetUrlOrFail($fileName);
+                $this->downloadAsset($assetUrl, $destinationPath);
+
+                $this->logger?->info("Successfully downloaded generic binary: {$fileName}");
+                return true;
+            } catch (\Throwable $e2) {
+                $this->logger?->error("Failed to download generic binary: {$e2->getMessage()}");
+                throw new \RuntimeException("Failed to download binary: {$e2->getMessage()}", 0, $e2);
+            }
+        }
+    }
+
+    /**
+     * Download a release asset to a local file.
+     */
+    private function downloadAsset(string $assetUrl, string $destinationPath): void
     {
         $response = $this->httpClient->getWithRedirects(
             $assetUrl,
@@ -87,6 +117,25 @@ final readonly class ReleaseManager
                 throw new \RuntimeException("Failed to set executable permissions on the file: {$destinationPath}");
             }
         }
+    }
+
+    /**
+     * Gets the asset URL for a specific filename or throws an exception if not found.
+     *
+     * @param string $fileName Name of the file
+     * @return string The asset URL
+     * @throws \RuntimeException If the asset is not found
+     */
+    private function getAssetUrlOrFail(string $fileName): string
+    {
+        $release = $this->getLatestRelease();
+        $assetUrl = $release->getAssetUrl($fileName);
+
+        if ($assetUrl === null) {
+            throw new \RuntimeException("Could not find asset '{$fileName}' in release {$release->getVersion()}");
+        }
+
+        return $assetUrl;
     }
 
     /**

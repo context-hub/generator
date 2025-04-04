@@ -7,8 +7,11 @@ namespace Butschster\ContextGenerator\Console;
 use Butschster\ContextGenerator\Application\Application;
 use Butschster\ContextGenerator\Lib\BinaryUpdater\BinaryUpdater;
 use Butschster\ContextGenerator\Lib\BinaryUpdater\UpdaterFactory;
+use Butschster\ContextGenerator\Lib\GithubClient\BinaryNameBuilder;
 use Butschster\ContextGenerator\Lib\GithubClient\GithubClientInterface;
 use Butschster\ContextGenerator\Lib\GithubClient\Model\GithubRepository;
+use Butschster\ContextGenerator\Lib\GithubClient\ReleaseManager;
+use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 use Spiral\Boot\EnvironmentInterface;
 use Spiral\Console\Attribute\Option;
 use Spiral\Files\FilesInterface;
@@ -54,6 +57,7 @@ final class SelfUpdateCommand extends BaseCommand
     public function __construct(
         private readonly GithubClientInterface $githubClient,
         private readonly FilesInterface $files,
+        private readonly HttpClientInterface $httpClient,
     ) {
         parent::__construct();
     }
@@ -65,12 +69,6 @@ final class SelfUpdateCommand extends BaseCommand
         $storeLocation = \trim($this->storeLocation ?: $env->get('CTX_BINARY_PATH', '/usr/local/bin'));
         $type = \trim($this->type ?: ($app->isBinary ? 'bin' : 'phar'));
 
-        $fileName = match ($type) {
-            'phar' => \sprintf('%s.phar', $this->binaryName),
-            'bin' => $this->binaryName,
-            default => throw new \InvalidArgumentException('Invalid type provided'),
-        };
-
         // Check if we have a valid store location
         if (empty($storeLocation)) {
             $this->output->error(
@@ -79,18 +77,19 @@ final class SelfUpdateCommand extends BaseCommand
             return Command::FAILURE;
         }
 
-        // Full path to the binary
-        $binaryPath = \rtrim($storeLocation, '/') . '/' . $fileName;
+        $binaryPath = \rtrim($storeLocation, '/') . '/' . $this->binaryName;
 
         $this->output->title($app->name);
         $this->output->text('Current version: ' . $app->version);
         $this->output->section('Checking for updates...');
 
-        $manager = $this->githubClient->getReleaseManager(new GithubRepository($this->repository));
+        // Create repository and get standard release manager
+        $repository = new GithubRepository($this->repository);
+        $baseReleaseManager = $this->githubClient->getReleaseManager($repository);
 
         try {
             // Fetch the latest release
-            $release = $manager->getLatestRelease();
+            $release = $baseReleaseManager->getLatestRelease();
 
             // Check if an update is available
             if (!$release->isNewerThan($app->version)) {
@@ -105,14 +104,6 @@ final class SelfUpdateCommand extends BaseCommand
                 return Command::SUCCESS;
             }
 
-            // Get the asset URL
-            $assetUrl = $release->getAssetUrl($fileName);
-
-            if ($assetUrl === null) {
-                $this->output->error("Could not find asset '$fileName' in the release.");
-                return Command::FAILURE;
-            }
-
             // Start the update process
             $this->output->section('Downloading the latest version...');
 
@@ -120,8 +111,35 @@ final class SelfUpdateCommand extends BaseCommand
             $tempFile = $this->files->tempFilename();
             $this->output->text("Downloading to temporary file: $tempFile");
 
-            // Download the asset
-            $manager->downloadAsset($assetUrl, $tempFile);
+            // Initialize the BinaryNameBuilder
+            $binaryNameBuilder = new BinaryNameBuilder();
+
+            // Create an enhanced release manager with the binary name builder
+            $releaseManager = new ReleaseManager(
+                $this->httpClient,
+                $repository,
+                null, // token
+                $binaryNameBuilder,
+                $this->logger,
+            );
+
+            // Attempt to download the binary with platform awareness
+            try {
+                $this->output->text("Attempting to download platform-specific binary...");
+                $downloadSuccess = $releaseManager->downloadBinary(
+                    $release->getVersion(),
+                    $this->binaryName,
+                    $type,
+                    $tempFile,
+                );
+
+                if (!$downloadSuccess) {
+                    throw new \RuntimeException("Failed to download binary");
+                }
+            } catch (\Throwable $e) {
+                $this->output->error("Failed to download platform-specific binary: {$e->getMessage()}");
+                return Command::FAILURE;
+            }
 
             $this->output->section('Installing the update...');
 
