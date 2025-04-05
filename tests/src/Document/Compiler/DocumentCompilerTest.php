@@ -8,6 +8,7 @@ use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
 use Butschster\ContextGenerator\Document\Compiler\Error\SourceError;
 use Butschster\ContextGenerator\Document\Document;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
+use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
 use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
 use Butschster\ContextGenerator\Source\SourceInterface;
 use Butschster\ContextGenerator\SourceParserInterface;
@@ -300,6 +301,7 @@ final class DocumentCompilerTest extends TestCase
             parser: $this->parser,
             basePath: '/base/path',
             modifierRegistry: $this->modifierRegistry,
+            variables: new VariableResolver(),
             builderFactory: $this->builderFactory,
             logger: $this->logger,
         );
