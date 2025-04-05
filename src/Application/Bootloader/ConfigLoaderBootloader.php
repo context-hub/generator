@@ -20,6 +20,7 @@ use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
 use Butschster\ContextGenerator\Document\DocumentsParserPlugin;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
+use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
 use Butschster\ContextGenerator\Modifier\Alias\AliasesRegistry;
 use Butschster\ContextGenerator\Modifier\Alias\ModifierAliasesParserPlugin;
 use Butschster\ContextGenerator\Modifier\Alias\ModifierResolver;
@@ -100,11 +101,13 @@ final class ConfigLoaderBootloader extends Bootloader
                 SourceModifierRegistry $registry,
                 ContentBuilderFactory $builderFactory,
                 HasPrefixLoggerInterface $logger,
+                VariableResolver $variables,
             ) => new DocumentCompiler(
                 files: $files,
                 parser: $parser,
                 basePath: (string) $dirs->getOutputPath(),
                 modifierRegistry: $registry,
+                variables: $variables,
                 builderFactory: $builderFactory,
                 logger: $logger->withPrefix('document-compiler'),
             ),

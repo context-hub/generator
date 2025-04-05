@@ -9,6 +9,7 @@ use Butschster\ContextGenerator\Document\Compiler\Error\SourceError;
 use Butschster\ContextGenerator\Document\Document;
 use Butschster\ContextGenerator\Lib\Content\Block\TextBlock;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
+use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
 use Butschster\ContextGenerator\Modifier\ModifiersApplier;
 use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
 use Butschster\ContextGenerator\SourceParserInterface;
@@ -30,6 +31,7 @@ final readonly class DocumentCompiler
         private SourceParserInterface $parser,
         private string $basePath,
         private SourceModifierRegistry $modifierRegistry,
+        private VariableResolver $variables,
         private ContentBuilderFactory $builderFactory = new ContentBuilderFactory(),
         private ?LoggerInterface $logger = null,
     ) {}
@@ -39,13 +41,14 @@ final readonly class DocumentCompiler
      */
     public function compile(Document $document): CompiledDocument
     {
+        $outputPath = $this->variables->resolve($document->outputPath);
+
         $this->logger?->info('Starting document compilation', [
-            'document' => $document->description,
-            'outputPath' => $document->outputPath,
+            'outputPath' => $outputPath,
         ]);
 
         $errors = new ErrorCollection();
-        $resultPath = \rtrim($this->basePath, '/') . '/' . \ltrim($document->outputPath, '/');
+        $resultPath = \rtrim($this->basePath, '/') . '/' . \ltrim($outputPath, '/');
 
         if (!$document->overwrite && $this->files->exists($resultPath)) {
             $this->logger?->notice('Document already exists and overwrite is disabled', [
@@ -86,11 +89,13 @@ final readonly class DocumentCompiler
      */
     public function buildContent(ErrorCollection $errors, Document $document): CompiledDocument
     {
+        $description = $this->variables->resolve($document->description);
+
         $this->logger?->debug('Creating content builder');
         $builder = $this->builderFactory->create();
 
-        $this->logger?->debug('Adding document title', ['title' => $document->description]);
-        $builder->addTitle($document->description);
+        $this->logger?->debug('Adding document title', ['title' => $description]);
+        $builder->addTitle($description);
 
         // Add document tags if present
         if ($document->hasTags()) {
