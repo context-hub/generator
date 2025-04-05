@@ -20,8 +20,8 @@ final class DirectorySorter
     {
         // First, remove any duplicates and ensure consistent path separators
         $normalized = \array_map(
-            static fn(string $path): string => \rtrim(\str_replace('\\', '/', $path), '/'),
-            \array_unique($directories),
+            static fn(string $path): string => self::normalizePath($path),
+            \array_unique((array) $directories),
         );
 
         // Early return for empty arrays or single item arrays (already sorted)
@@ -29,12 +29,11 @@ final class DirectorySorter
             return $normalized;
         }
 
-        // Sort by path segments count (depth) first, then alphabetically
-        \usort($normalized, static function (string $a, string $b): int {
-            // Count path segments (depth)
-            $depthA = \substr_count($a, '/');
-            $depthB = \substr_count($b, '/');
+        // First sort alphabetically to ensure consistent ordering
+        \sort($normalized);
 
+        // Then re-sort to ensure parent directories appear before their children
+        \usort($normalized, static function (string $a, string $b): int {
             // If one path is a direct parent of another, make sure the parent comes first
             if (\str_starts_with($b, $a . '/')) {
                 return -1;
@@ -44,16 +43,29 @@ final class DirectorySorter
                 return 1;
             }
 
-            // If paths have the same depth, sort alphabetically
-            if ($depthA === $depthB) {
-                return \strcmp($a, $b);
+            // Get the top-level directories for comparison
+            $topDirA = \explode('/', $a)[0];
+            $topDirB = \explode('/', $b)[0];
+
+            // If top-level directories are different, sort alphabetically
+            if ($topDirA !== $topDirB) {
+                return \strcmp($topDirA, $topDirB);
             }
 
-            // Sort by depth
-            return $depthA <=> $depthB;
+            // Count path segments (depth)
+            $depthA = \substr_count($a, '/');
+            $depthB = \substr_count($b, '/');
+
+            // Sort by depth for paths with the same parent
+            if ($depthA !== $depthB) {
+                return $depthA <=> $depthB;
+            }
+
+            // If same depth and not parent-child, sort alphabetically
+            return \strcmp($a, $b);
         });
 
-        return $normalized;
+        return \array_unique($normalized);
     }
 
     /**
@@ -65,14 +77,24 @@ final class DirectorySorter
      */
     public static function sortPreservingSeparators(array $directories): array
     {
+        // Handle empty cases early
+        if (empty($directories)) {
+            return [];
+        }
+
         // Create mapping of normalized paths to original paths
         $mapping = [];
         $normalized = [];
 
         foreach ($directories as $path) {
-            $normalizedPath = \rtrim(\str_replace('\\', '/', $path), '/');
-            $mapping[$normalizedPath] = $path;
-            $normalized[] = $normalizedPath;
+            // Make sure we handle Windows path separators consistently
+            $normalizedPath = self::normalizePath($path);
+
+            // Avoid duplicate keys in the mapping
+            if (!isset($mapping[$normalizedPath])) {
+                $mapping[$normalizedPath] = $path;
+                $normalized[] = $normalizedPath;
+            }
         }
 
         // Sort the normalized paths
@@ -83,5 +105,30 @@ final class DirectorySorter
             static fn(string $normalizedPath): string => $mapping[$normalizedPath],
             $sorted,
         );
+    }
+
+    /**
+     * Normalize a path to a standard format for comparison
+     * - Converts backslashes to forward slashes
+     * - Removes trailing slashes
+     * - Handles Windows drive letters consistently
+     *
+     * @param string $path Path to normalize
+     * @return string Normalized path
+     */
+    private static function normalizePath(string $path): string
+    {
+        // Replace Windows backslashes with forward slashes
+        $path = \str_replace('\\', '/', $path);
+
+        // Remove trailing slashes
+        $path = \rtrim($path, '/');
+
+        // Normalize Windows drive letter format (if present)
+        if (\preg_match('/^[A-Z]:\//i', $path)) {
+            $path = \substr($path, 2); // Remove drive letter and colon (e.g., "C:")
+        }
+
+        return $path;
     }
 }

@@ -30,19 +30,27 @@ final readonly class FileTreeBuilder
     ): string {
         $files = DirectorySorter::sortPreservingSeparators($files);
 
+
         // Get or create a renderer
         $renderer = $this->renderer;
 
         // Normalize file paths and remove base path prefix
         $normalizedFiles = [];
         foreach ($files as $file) {
-            $normalizedPath = \trim(\str_replace($basePath, '', $file));
+            // Normalize both file and base path consistently across all platforms
+            $normalizedFile = $this->normalizePath($file);
+            $normalizedBasePath = $this->normalizePath($basePath);
+
+            // Remove base path from file path to get the relative path
+            $normalizedPath = \trim(\str_replace($normalizedBasePath, '', $normalizedFile));
+
+            // Additional cleaning (Windows can produce paths with mixed separators)
             if (!\str_starts_with($normalizedPath, '/')) {
                 $normalizedPath = '/' . $normalizedPath;
             }
 
-            // Check if this path is a directory
-            $isDirectory = \is_dir($file);
+            $ext = \pathinfo($normalizedPath, PATHINFO_EXTENSION);
+            $isDirectory = \is_dir($file) || $ext === '';
 
             $normalizedFiles[] = [
                 'path' => $normalizedPath,
@@ -51,13 +59,15 @@ final readonly class FileTreeBuilder
             ];
         }
 
+
         // Sort files for consistent display
         \usort($normalizedFiles, static fn($a, $b) => $a['path'] <=> $b['path']);
 
         // Build tree structure with all files and directories
         $tree = [];
         foreach ($normalizedFiles as $fileInfo) {
-            $parts = \explode('/', \trim($fileInfo['path'], '/'));
+            $parts = \array_filter(\explode('/', \trim($fileInfo['path'], '/')), strlen(...));
+
             $this->addToTree(
                 $tree,
                 $parts,
@@ -100,5 +110,26 @@ final readonly class FileTreeBuilder
                 $_current = &$_current[$part];
             }
         }
+    }
+
+    /**
+     * Normalize a path to a standard format for comparison
+     * - Converts backslashes to forward slashes
+     * - Handles Windows drive letters consistently
+     *
+     * @param string $path Path to normalize
+     * @return string Normalized path
+     */
+    private function normalizePath(string $path): string
+    {
+        // Replace Windows backslashes with forward slashes
+        $path = \str_replace('\\', '/', $path);
+
+        // Normalize Windows drive letter format (if present)
+        if (\preg_match('/^[A-Z]:\//i', $path)) {
+            $path = \substr($path, 2); // Remove drive letter and colon (e.g., "C:")
+        }
+
+        return $path;
     }
 }
