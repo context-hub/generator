@@ -39,11 +39,11 @@ final class ConfigRegistry implements \JsonSerializable
      *
      * @template T of RegistryInterface
      * @param class-string<T> $className Optional class name to validate the registry type
-     * @return RegistryInterface The requested registry
+     * @return T
      *
      * @throws \InvalidArgumentException If the registry does not exist or is not of the expected type
      */
-    public function get(string $type, string $className = RegistryInterface::class): RegistryInterface
+    public function get(string $type, string $className): RegistryInterface
     {
         if (!$this->has($type)) {
             throw new \InvalidArgumentException(\sprintf('Registry of type "%s" does not exist', $type));

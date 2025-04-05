@@ -255,6 +255,8 @@ final readonly class ImportResolver
 
     /**
      * Merge multiple configurations
+     *
+     * todo: move to a parsers??
      */
     private function mergeConfigurations(array $configs): array
     {

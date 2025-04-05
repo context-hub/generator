@@ -28,6 +28,31 @@
         "$ref": "#/definitions/prompt"
       }
     },
+    "variables": {
+      "type": "object",
+      "description": "Custom variables to use throughout the configuration",
+      "additionalProperties": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "boolean"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "version": "1.0.0",
+          "project_name": "My Project",
+          "environment": "development",
+          "api_token": "xyz-123-abc"
+        }
+      ]
+    },
     "import": {
       "type": "array",
       "description": "List of external configuration files to import",

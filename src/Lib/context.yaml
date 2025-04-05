@@ -23,6 +23,14 @@ documents:
         filePattern: '*.php'
         showTreeView: true
 
+  - description: Binary Updater
+    outputPath: utilities/binary-updater.md
+    sources:
+      - type: file
+        sourcePaths: ./BinaryUpdater
+        filePattern: '*.php'
+        showTreeView: true
+
   - description: GitHub Client
     outputPath: utilities/github-client.md
     sources:
