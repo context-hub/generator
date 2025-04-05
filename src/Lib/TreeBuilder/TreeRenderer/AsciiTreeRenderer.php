@@ -198,9 +198,15 @@ final readonly class AsciiTreeRenderer implements TreeRendererInterface
         $units = ['B', 'KB', 'MB', 'GB', 'TB'];
 
         $bytes = \max($bytes, 0);
+        /**
+         * @psalm-suppress InvalidOperand
+         */
         $pow = \floor(($bytes ? \log($bytes) : 0) / \log(1024));
         $pow = \min($pow, \count($units) - 1);
 
+        /**
+         * @psalm-suppress InvalidOperand
+         */
         $bytes /= (1 << (10 * $pow));
 
         return \sprintf('%.1f %s', $bytes, $units[$pow]);

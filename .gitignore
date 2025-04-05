@@ -3,6 +3,7 @@
 .php_cs.cache
 .phpunit.result.cache
 .build
+.output
 composer.lock
 coverage
 docs

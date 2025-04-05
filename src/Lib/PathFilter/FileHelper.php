@@ -39,6 +39,7 @@ final readonly class FileHelper
         $inCurlies = 0;
         $regex = '';
         $sizeGlob = \strlen($glob);
+        /** @psalm-suppress InvalidOperand */
         for ($i = 0; $i < $sizeGlob; ++$i) {
             /** @psalm-suppress InvalidArrayOffset */
             $car = $glob[$i];
@@ -48,10 +49,16 @@ final readonly class FileHelper
 
             $firstByte = $car === '/';
 
-            /** @psalm-suppress InvalidArrayOffset */
+            /**
+             * @psalm-suppress InvalidArrayOffset
+             * @psalm-suppress InvalidOperand
+             */
             if ($firstByte && $strictWildcardSlash && isset($glob[$i + 2]) && '**' === $glob[$i + 1] . $glob[$i + 2] && (!isset($glob[$i + 3]) || $glob[$i + 3] === '/')) {
                 $car = '[^/]++/';
-                /** @psalm-suppress InvalidArrayOffset */
+                /**
+                 * @psalm-suppress InvalidArrayOffset
+                 * @psalm-suppress InvalidOperand
+                 */
                 if (!isset($glob[$i + 3])) {
                     $car .= '?';
                 }

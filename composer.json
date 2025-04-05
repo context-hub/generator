@@ -64,7 +64,7 @@
     "cs-check": "vendor/bin/php-cs-fixer fix --dry-run",
     "cs-fix": "vendor/bin/php-cs-fixer fix",
     "psalm": "vendor/bin/psalm --config=psalm.xml ./src",
-    "psalm:ci": "psalm --output-format=github --shepherd --show-info=false --stats --threads=4",
+    "psalm:ci": "vendor/bin/psalm --config=psalm.xml ./src --output-format=github --shepherd --show-info=false --stats --threads=4 --no-cache",
     "refactor": "rector process --config=rector.php",
     "refactor:ci": "rector process --config=rector.php --dry-run --ansi",
     "test": "vendor/bin/phpunit",
@@ -74,5 +74,10 @@
     ]
   },
   "minimum-stability": "dev",
-  "prefer-stable": true
+  "prefer-stable": true,
+  "config": {
+    "allow-plugins": {
+      "spiral/composer-publish-plugin": false
+    }
+  }
 }

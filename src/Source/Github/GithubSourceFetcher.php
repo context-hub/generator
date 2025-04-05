@@ -57,7 +57,7 @@ final readonly class GithubSourceFetcher implements SourceFetcherInterface
             'repository' => $source->repository,
             'branch' => $source->branch,
         ]);
-        $repository = GithubRepository::fromString($source->repository, $source->branch);
+        $repository = new GithubRepository($source->repository, $source->branch);
 
         // Create builder
         $this->logger?->debug('Creating content builder');

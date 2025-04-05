@@ -385,7 +385,10 @@ final class FSPath implements \Stringable
         // Determine if the path is absolute
         $isAbsolute = self::_isAbsolute($path);
 
-        // Resolve special path segments
+        /**
+         * Resolve special path segments
+         * @psalm-suppress RedundantCast
+         */
         $parts = \array_filter(
             \explode(self::getDirectorySeparator(), (string) $path),
             static fn($part) => $part !== '',

@@ -5,11 +5,15 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Console;
 
 use Butschster\ContextGenerator\Application\Application;
-use Butschster\ContextGenerator\Lib\HttpClient\Exception\HttpException;
+use Butschster\ContextGenerator\Lib\BinaryUpdater\BinaryUpdater;
+use Butschster\ContextGenerator\Lib\BinaryUpdater\UpdaterFactory;
+use Butschster\ContextGenerator\Lib\GithubClient\BinaryNameBuilder;
+use Butschster\ContextGenerator\Lib\GithubClient\GithubClientInterface;
+use Butschster\ContextGenerator\Lib\GithubClient\Model\GithubRepository;
+use Butschster\ContextGenerator\Lib\GithubClient\ReleaseManager;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 use Spiral\Boot\EnvironmentInterface;
 use Spiral\Console\Attribute\Option;
-use Spiral\Files\Exception\FilesException;
 use Spiral\Files\FilesInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -21,15 +25,7 @@ use Symfony\Component\Console\Command\Command;
 )]
 final class SelfUpdateCommand extends BaseCommand
 {
-    /**
-     * GitHub API URL for latest release
-     */
-    private const string GITHUB_API_LATEST_RELEASE = 'https://api.github.com/repos/context-hub/generator/releases/latest';
-
-    /**
-     * GitHub download URL format for the PHAR file
-     */
-    private const string GITHUB_DOWNLOAD_URL = 'https://github.com/context-hub/generator/releases/download/%s/%s';
+    private const string GITHUB_REPOSITORY = 'context-hub/generator';
 
     #[Option(
         name: 'path',
@@ -40,7 +36,7 @@ final class SelfUpdateCommand extends BaseCommand
 
     #[Option(
         name: 'name',
-        shortcut: 'n',
+        shortcut: 'b',
         description: 'Name of the binary file. Default is [ctx]',
     )]
     protected string $binaryName = 'ctx';
@@ -52,9 +48,16 @@ final class SelfUpdateCommand extends BaseCommand
     )]
     protected ?string $type = null;
 
+    #[Option(
+        name: 'repository',
+        description: 'GitHub repository to update from',
+    )]
+    protected string $repository = self::GITHUB_REPOSITORY;
+
     public function __construct(
-        private readonly HttpClientInterface $httpClient,
+        private readonly GithubClientInterface $githubClient,
         private readonly FilesInterface $files,
+        private readonly HttpClientInterface $httpClient,
     ) {
         parent::__construct();
     }
@@ -66,13 +69,7 @@ final class SelfUpdateCommand extends BaseCommand
         $storeLocation = \trim($this->storeLocation ?: $env->get('CTX_BINARY_PATH', '/usr/local/bin'));
         $type = \trim($this->type ?: ($app->isBinary ? 'bin' : 'phar'));
 
-        $fileName = match ($type) {
-            'phar' => 'ctx.phar',
-            'bin' => 'ctx',
-            default => throw new \InvalidArgumentException('Invalid type provided'),
-        };
-
-        // Check if running as a PHAR
+        // Check if we have a valid store location
         if (empty($storeLocation)) {
             $this->output->error(
                 'Self-update is only available when running the PHAR version of Context Generator.',
@@ -80,21 +77,27 @@ final class SelfUpdateCommand extends BaseCommand
             return Command::FAILURE;
         }
 
+        $binaryPath = \rtrim($storeLocation, '/') . '/' . $this->binaryName;
+
         $this->output->title($app->name);
         $this->output->text('Current version: ' . $app->version);
         $this->output->section('Checking for updates...');
 
-        try {
-            // Fetch and compare versions
-            $latestVersion = $this->fetchLatestVersion();
-            $isUpdateAvailable = $this->isUpdateAvailable($app->version, $latestVersion);
+        // Create repository and get standard release manager
+        $repository = new GithubRepository($this->repository);
+        $baseReleaseManager = $this->githubClient->getReleaseManager($repository);
 
-            if (!$isUpdateAvailable) {
+        try {
+            // Fetch the latest release
+            $release = $baseReleaseManager->getLatestRelease();
+
+            // Check if an update is available
+            if (!$release->isNewerThan($app->version)) {
                 $this->output->success("You're already using the latest version ({$app->version})");
                 return Command::SUCCESS;
             }
 
-            $this->output->success("A new version is available: {$latestVersion}");
+            $this->output->success("A new version is available: {$release->getVersion()}");
 
             // Confirm the update
             if (!$this->output->confirm('Do you want to update now?', true)) {
@@ -103,152 +106,66 @@ final class SelfUpdateCommand extends BaseCommand
 
             // Start the update process
             $this->output->section('Downloading the latest version...');
-            $tempFile = $this->downloadLatestVersion($fileName, $latestVersion);
+
+            // Create a temporary file
+            $tempFile = $this->files->tempFilename();
+            $this->output->text("Downloading to temporary file: $tempFile");
+
+            // Initialize the BinaryNameBuilder
+            $binaryNameBuilder = new BinaryNameBuilder();
+
+            // Create an enhanced release manager with the binary name builder
+            $releaseManager = new ReleaseManager(
+                $this->httpClient,
+                $repository,
+                null, // token
+                $binaryNameBuilder,
+                $this->logger,
+            );
+
+            // Attempt to download the binary with platform awareness
+            try {
+                $this->output->text("Attempting to download platform-specific binary...");
+                $downloadSuccess = $releaseManager->downloadBinary(
+                    $release->getVersion(),
+                    $this->binaryName,
+                    $type,
+                    $tempFile,
+                );
+
+                if (!$downloadSuccess) {
+                    throw new \RuntimeException("Failed to download binary");
+                }
+            } catch (\Throwable $e) {
+                $this->output->error("Failed to download platform-specific binary: {$e->getMessage()}");
+                return Command::FAILURE;
+            }
 
             $this->output->section('Installing the update...');
-            $this->installUpdate($tempFile, $storeLocation);
 
-            $this->output->success("Successfully updated to version {$latestVersion}");
+            // Use our BinaryUpdater to handle the update safely
+            $updaterFactory = new UpdaterFactory($this->files, $this->logger);
+            $binaryUpdater = new BinaryUpdater($this->files, $updaterFactory->createStrategy(), $this->logger);
+
+            if ($binaryUpdater->update($tempFile, $binaryPath)) {
+                $this->output->success("Update process started successfully for version {$release->getVersion()}");
+
+                // Add a note about how the update works
+                if ($app->isBinary) {
+                    $this->output->note(
+                        "The update will complete automatically after this process exits. " .
+                        "The next time you run the command, you'll be using the new version.",
+                    );
+                }
+            } else {
+                $this->output->error("Failed to start the update process.");
+                return Command::FAILURE;
+            }
 
             return Command::SUCCESS;
-        } catch (HttpException $e) {
-            $this->output->error("HTTP error: {$e->getMessage()}");
-            return Command::FAILURE;
         } catch (\Throwable $e) {
             $this->output->error("Failed to update: {$e->getMessage()}");
             return Command::FAILURE;
-        }
-    }
-
-    /**
-     * Fetch the latest version from GitHub
-     */
-    private function fetchLatestVersion(): string
-    {
-        $response = $this->httpClient->get(
-            self::GITHUB_API_LATEST_RELEASE,
-            [
-                'User-Agent' => 'Context-Generator-Self-Update',
-                'Accept' => 'application/vnd.github.v3+json',
-            ],
-        );
-
-        if (!$response->isSuccess()) {
-            throw new \RuntimeException(
-                "Failed to fetch latest version. Server returned status code {$response->getStatusCode()}",
-            );
-        }
-
-        try {
-            // Use the new getJsonValue method with a default to handle missing tags
-            $tagName = $response->getJsonValue('tag_name');
-
-            if ($tagName === null) {
-                throw new \RuntimeException("Invalid response format: 'tag_name' missing");
-            }
-
-            // Remove 'v' prefix if present
-            return \ltrim((string) $tagName, 'v');
-        } catch (HttpException $e) {
-            throw new \RuntimeException("Failed to parse GitHub response: {$e->getMessage()}");
-        }
-    }
-
-    /**
-     * Check if an update is available by comparing versions
-     */
-    private function isUpdateAvailable(string $currentVersion, string $latestVersion): bool
-    {
-        // Clean up versions for comparison
-        $currentVersion = \ltrim($currentVersion, 'v');
-        $latestVersion = \ltrim($latestVersion, 'v');
-
-        return \version_compare($currentVersion, $latestVersion, '<');
-    }
-
-    /**
-     * Download the latest version to a temporary file
-     */
-    private function downloadLatestVersion(string $fileName, string $version): string
-    {
-        $downloadUrl = \sprintf(self::GITHUB_DOWNLOAD_URL, $version, $fileName);
-
-        $this->output->text("Requesting from: $downloadUrl");
-
-        $response = $this->httpClient->getWithRedirects(
-            $downloadUrl,
-            ['User-Agent' => 'Context-Generator-Self-Update'],
-        );
-
-        if (!$response->isSuccess()) {
-            throw new \RuntimeException(
-                "Failed to download. Server returned status code {$response->getStatusCode()}",
-            );
-        }
-
-        // Create a temporary file
-        $tempFile = \sys_get_temp_dir() . '/context-generator-' . \uniqid();
-
-        // Use FilesInterface to write the content
-        $this->files->write($tempFile, $response->getBody());
-
-        // Verify the downloaded file
-        if (!$this->files->exists($tempFile)) {
-            throw new \RuntimeException("Downloaded file does not exist");
-        }
-
-        $this->output->text("Downloaded new version to temporary file: $tempFile");
-
-        return $tempFile;
-    }
-
-    /**
-     * Install the update by replacing the current PHAR
-     */
-    private function installUpdate(string $tempFile, string $pharPath): void
-    {
-        try {
-            $this->output->text("Replacing current PHAR at: {$pharPath}");
-
-            // On Windows, we need to delete the file first
-            if (\PHP_OS_FAMILY === 'Windows' && $this->files->exists($pharPath)) {
-                // Since FilesInterface doesn't have a method to delete files,
-                // we have to use native PHP function here
-                if (!$this->files->delete($pharPath)) {
-                    throw new \RuntimeException("Failed to delete current file");
-                }
-            }
-
-            // Read the content from temp file
-            try {
-                $newPharContent = $this->files->read($tempFile);
-            } catch (FilesException) {
-                throw new \RuntimeException("Failed to read the downloaded content");
-            }
-
-            // Write the content to the target file
-            if ($this->files->write($pharPath, $newPharContent)) {
-                $this->output->text("Successfully wrote new version to: {$pharPath}");
-            } else {
-                throw new \RuntimeException("Failed to write the new version");
-            }
-
-            // Make sure the new PHAR is executable
-            if (\PHP_OS_FAMILY !== 'Windows') {
-                // FilesInterface doesn't provide chmod functionality,
-                // so we still need the native function here
-                if (!\chmod($pharPath, 0755)) {
-                    $this->output->warning("Failed to set executable permissions on the new file");
-                }
-            }
-
-            $this->output->text("Successfully replaced the PHAR file");
-        } finally {
-            // Since FilesInterface doesn't have a delete method,
-            // we need to use unlink directly
-            if ($this->files->exists($tempFile)) {
-                $this->files->delete($tempFile);
-            }
         }
     }
 }
