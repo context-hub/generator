@@ -13,10 +13,10 @@ final readonly class GitSourceFactory
      * @param GitSourceInterface[] $sources Array of Git source instances
      */
     public function __construct(
+        private GitSourceInterface $fallbackSource,
         #[LoggerPrefix(prefix: 'git-source-factory')]
         private ?LoggerInterface $logger = null,
         private array $sources = [],
-        private GitSourceInterface $fallbackSource,
     ) {}
 
     public function create(string $commitReference): GitSourceInterface

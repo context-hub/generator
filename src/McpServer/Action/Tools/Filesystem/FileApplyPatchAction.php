@@ -64,16 +64,6 @@ final readonly class FileApplyPatchAction
         }
 
         try {
-            // Check if the directory is a git repository
-            if (!$this->commandsExecutor->isGitRepository()) {
-                return new CallToolResult([
-                    new TextContent(
-                        text: 'Error: The project directory is not a git repository',
-                    ),
-                ], isError: true);
-            }
-
-            // Apply the patch
             $result = $this->commandsExecutor->applyPatch($path, $patch);
 
             return new CallToolResult([

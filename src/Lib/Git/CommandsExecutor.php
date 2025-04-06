@@ -50,7 +50,6 @@ final class CommandsExecutor implements CommandsExecutorInterface
 
         try {
             $process = new Process($commandParts, $repositoryPath);
-            trap($process);
             $process->run();
 
             if (!$process->isSuccessful()) {
@@ -144,6 +143,15 @@ final class CommandsExecutor implements CommandsExecutorInterface
     public function applyPatch(string $filePath, string $patchContent): string
     {
         $rootPath = $this->dirs->getRootPath();
+
+        if (!$this->isValidRepository((string) $rootPath)) {
+            $this->logger?->error('Not a valid Git repository', [
+                'repository' => (string) $rootPath,
+            ]);
+
+            throw new \InvalidArgumentException(\sprintf('"%s" is not a valid Git repository', $rootPath));
+        }
+
         $file = $rootPath->join($filePath);
 
         // Ensure the file exists

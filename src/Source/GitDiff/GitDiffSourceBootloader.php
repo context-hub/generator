@@ -20,6 +20,7 @@ use Spiral\Core\FactoryInterface;
 
 final class GitDiffSourceBootloader extends Bootloader
 {
+    #[\Override]
     public function defineDependencies(): array
     {
         return [GitClientBootloader::class];
