@@ -31,8 +31,8 @@ final readonly class CommitRangeParser
         'last-year' => 'HEAD@{1.year.ago}..HEAD',
 
         // Special cases
-        'unstaged' => '', // Special case handled in the fetcher
-        'staged' => '--cached', // Changes staged but not committed
+        'unstaged' => 'unstaged', // Special case handled in the fetcher
+        'staged' => 'staged', // Changes staged but not committed
         'wip' => 'HEAD~1..HEAD', // Same as 'last' but semantically for WIP commits
 
         // Branch comparison patterns

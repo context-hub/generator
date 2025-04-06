@@ -9,6 +9,9 @@ use Psr\Log\LoggerInterface;
 
 final readonly class GitSourceFactory
 {
+    /**
+     * @param GitSourceInterface[] $sources Array of Git source instances
+     */
     public function __construct(
         #[LoggerPrefix(prefix: 'git-source-factory')]
         private ?LoggerInterface $logger = null,

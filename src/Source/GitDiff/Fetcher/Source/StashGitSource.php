@@ -38,7 +38,7 @@ final readonly class StashGitSource extends AbstractGitSource
         if (\preg_match('/^stash@\{\d+\}$/', $commitReference)) {
             return $this->executeGitCommand(
                 repository: $repository,
-                command: 'git stash show --name-only ' . $commitReference,
+                command: 'stash show --name-only ' . $commitReference,
             );
         }
 
@@ -63,7 +63,7 @@ final readonly class StashGitSource extends AbstractGitSource
             for ($i = $startIndex; $i <= $endIndex; $i++) {
                 $stashOutput = $this->executeGitCommand(
                     repository: $repository,
-                    command: 'git stash show --name-only stash@{' . $i . '}',
+                    command: 'stash show --name-only stash@{' . $i . '}',
                 );
 
                 if (!empty($stashOutput)) {
@@ -85,7 +85,7 @@ final readonly class StashGitSource extends AbstractGitSource
             // First, get the stash index that matches the message
             $listOutput = $this->executeGitCommand(
                 repository: $repository,
-                command: 'git stash list',
+                command: 'stash list',
             );
 
             if (empty($listOutput)) {
@@ -107,7 +107,7 @@ final readonly class StashGitSource extends AbstractGitSource
 
             return $this->executeGitCommand(
                 repository: $repository,
-                command: 'git stash show --name-only stash@{' . $matchingStashIndex . '}',
+                command: 'stash show --name-only stash@{' . $matchingStashIndex . '}',
             );
         }
 
@@ -126,7 +126,7 @@ final readonly class StashGitSource extends AbstractGitSource
             // Build the command with the stash index
             return $this->executeGitCommandString(
                 repository: $repository,
-                command: 'git diff stash@{' . $stashIndex . '} -- ' . \escapeshellarg($file),
+                command: 'diff stash@{' . $stashIndex . '} -- ' . $file,
             );
         }
 
@@ -140,7 +140,7 @@ final readonly class StashGitSource extends AbstractGitSource
             // Build the command
             return $this->executeGitCommandString(
                 repository: $repository,
-                command: 'git diff stash@{' . $stashIndex . '} -- ' . \escapeshellarg($file),
+                command: 'diff stash@{' . $stashIndex . '} -- ' . $file,
             );
         }
 
@@ -155,7 +155,7 @@ final readonly class StashGitSource extends AbstractGitSource
             // First, get the stash index that matches the message
             $listOutput = $this->executeGitCommand(
                 repository: $repository,
-                command: 'git stash list',
+                command: 'stash list',
             );
 
             if (empty($listOutput)) {
@@ -178,7 +178,7 @@ final readonly class StashGitSource extends AbstractGitSource
             // Use the correct diff command format
             return $this->executeGitCommandString(
                 repository: $repository,
-                command: 'git diff stash@{' . $matchingStashIndex . '} -- ' . \escapeshellarg($file),
+                command: 'diff stash@{' . $matchingStashIndex . '} -- ' . $file,
             );
         }
 

@@ -47,7 +47,7 @@ final readonly class CommitGitSource extends AbstractGitSource
     {
         return $this->executeGitCommand(
             repository: $repository,
-            command: \sprintf('git diff --name-only %s', \escapeshellarg($commitReference)),
+            command: \sprintf('diff --name-only %s', $commitReference),
         );
     }
 
@@ -55,11 +55,7 @@ final readonly class CommitGitSource extends AbstractGitSource
     {
         return $this->executeGitCommandString(
             repository: $repository,
-            command: \sprintf(
-                'git diff %s -- %s',
-                \escapeshellarg($commitReference),
-                \escapeshellarg($file),
-            ),
+            command: \sprintf('diff %s -- %s', $commitReference, $file),
         );
     }
 

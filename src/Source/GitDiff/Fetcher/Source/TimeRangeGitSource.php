@@ -44,7 +44,7 @@ final readonly class TimeRangeGitSource extends AbstractGitSource
         if (\str_contains($commitReference, '--since=')) {
             $output = $this->executeGitCommand(
                 repository: $repository,
-                command: 'git log ' . $commitReference . ' --name-only --pretty=format:""',
+                command: 'log ' . $commitReference . ' --name-only --pretty=format:""',
             );
 
             // Remove empty lines and duplicates
@@ -53,7 +53,7 @@ final readonly class TimeRangeGitSource extends AbstractGitSource
 
         return $this->executeGitCommand(
             repository: $repository,
-            command: \sprintf('git diff --name-only %s', \escapeshellarg($commitReference)),
+            command: \sprintf('diff --name-only %s', $commitReference),
         );
     }
 
@@ -62,14 +62,14 @@ final readonly class TimeRangeGitSource extends AbstractGitSource
         if (\str_contains($commitReference, '--since=')) {
             return $this->executeGitCommandString(
                 repository: $repository,
-                command: \sprintf('git log %s -p -- %s', \escapeshellarg($commitReference), \escapeshellarg($file)),
+                command: \sprintf('log %s -p -- %s', $commitReference, $file),
             );
         }
 
 
         return $this->executeGitCommandString(
             repository: $repository,
-            command: \sprintf('git diff %s -- %s', \escapeshellarg($commitReference), \escapeshellarg($file)),
+            command: \sprintf('diff %s -- %s', $commitReference, $file),
         );
     }
 

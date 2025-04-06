@@ -1,48 +1,30 @@
-$schema: https://raw.githubusercontent.com/context-hub/generator/refs/heads/main/json-schema.json
+$schema: 'https://raw.githubusercontent.com/context-hub/generator/refs/heads/main/json-schema.json'
 
 import:
-  - path: src/*/context.yaml
+  - path: src/**/context.yaml
+
+variables:
+  name: Context Generator
+
+prompts:
+  - id: my-local-prompt
+    description: My local prompt
+    messages:
+      - role: user
+        content: |
+          You are an expert in generating {{name}}. You love your work and always aim for clean, efficient, and 
+          well-structured PHP code, focusing on detail and best practices.
 
 documents:
-  - description: "Context Generator Project Structure"
-    outputPath: "project-structure.md"
+  - description: 'Project structure overview'
+    outputPath: project-structure.md
+    overwrite: true
     sources:
       - type: tree
         sourcePaths:
           - src
         showCharCount: true
         showSize: true
-        dirContext:
-          "src": "Root directory containing all Context Generator source code."
-          "src/ConfigLoader": "Configuration loading system that reads, parses, and validates config files in JSON, PHP, and YAML formats."
-          "src/Console": "Command-line interface components providing user interaction through commands."
-          "src/Document": "Document definition and compilation system that transforms source content into output files."
-          "src/Fetcher": "Content fetching interfaces and registry for retrieving data from various sources."
-          "src/Lib": "Utility libraries providing supporting functionality for the core components."
-          "src/Modifier": "Content transformation system for filtering, formatting, and sanitizing source content."
-          "src/Source": "Source implementations for various content locations (files, URLs, GitHub, etc.)."
-          "src/Source/Composer": "Composer integration for accessing package dependencies."
-          "src/Source/File": "Local filesystem source implementation."
-          "src/Source/GitDiff": "Git diff source for accessing changes in repositories."
-          "src/Source/Github": "GitHub API integration for remote repository access."
-          "src/Source/Text": "Text source for embedding custom content."
-          "src/Source/Tree": "Directory structure visualization source."
-          "src/Source/Url": "Web URL source for retrieving online content."
-          "src/Lib/Content": "Content building and rendering system for structured document output."
-          "src/Lib/Finder": "File discovery components for locating content across different storage types."
-          "src/Lib/GithubClient": "GitHub API client for repository access."
-          "src/Lib/Html": "HTML processing utilities for web content."
-          "src/Lib/HttpClient": "HTTP client abstraction for web requests."
-          "src/Lib/Logger": "Logging system for operation visibility."
-          "src/Lib/PathFilter": "Path filtering utilities for including/excluding content by pattern."
-          "src/Lib/Sanitizer": "Content sanitization for removing sensitive information."
-          "src/Lib/TreeBuilder": "Tree visualization generation for directory structures."
-          "src/Lib/Variable": "Variable substitution system for configuration values."
-        description: >-
-          A hierarchical visualization of the Context Generator project structure, showing
-          the main directories and files with explanations of their purpose. This provides
-          a high-level overview of the project organization and helps understand the 
-          relationships between different components.
 
   - description: Core Interfaces
     outputPath: core/interfaces.md
@@ -51,17 +33,6 @@ documents:
         sourcePaths: src
         filePattern:
           - '*Interface.php'
-          - 'SourceInterface.php'
-          - 'SourceModifierInterface.php'
-          - 'FilesInterface.php'
-        showTreeView: true
-
-  - description: Config parser
-    outputPath: core/config-parser.md
-    sources:
-      - type: file
-        sourcePaths: src/ConfigLoader
-        filePattern: '*.php'
         showTreeView: true
 
   - description: "Changes in the Project"

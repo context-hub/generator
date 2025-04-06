@@ -21,7 +21,7 @@ final readonly class StagedGitSource extends AbstractGitSource
     {
         return $this->executeGitCommand(
             repository: $repository,
-            command: 'git diff --name-only --cached',
+            command: 'diff --name-only --cached',
         );
     }
 
@@ -29,7 +29,7 @@ final readonly class StagedGitSource extends AbstractGitSource
     {
         return $this->executeGitCommandString(
             repository: $repository,
-            command: \sprintf('git diff --cached -- %s', \escapeshellarg($file)),
+            command: \sprintf('diff --cached -- %s', $file),
         );
     }
 

@@ -6,16 +6,13 @@ namespace Butschster\ContextGenerator\Lib\Git;
 
 use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\DirectoriesInterface;
-use Butschster\ContextGenerator\Lib\Git\Exception\GitClientException;
 use Butschster\ContextGenerator\Lib\Git\Exception\GitCommandException;
 use Psr\Log\LoggerInterface;
 use Spiral\Files\Exception\FilesException;
 use Spiral\Files\FilesInterface;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
-/**
- * Executes git commands and handles their results.
- */
 final class CommandsExecutor implements CommandsExecutorInterface
 {
     /**
@@ -31,102 +28,69 @@ final class CommandsExecutor implements CommandsExecutorInterface
         private readonly ?LoggerInterface $logger = null,
     ) {}
 
-    /**
-     * Execute a Git command and return the output as an array of lines.
-     *
-     * @inheritDoc
-     */
-    public function execute(string $repository, string $command): array
+    public function executeString(Command $command): string
     {
-        $repoPath = (string) $this->dirs->getRootPath()->join($repository);
+        $repository = $command->repository;
+        $repositoryPath = $this->resolvePath($repository);
 
-        $this->validateRepository($repoPath);
-
-        $currentDir = \getcwd();
-        $output = [];
-        $returnCode = 0;
-
-        try {
-            // Change to the repository directory
-            \chdir($repoPath);
-
-            // Add 'git' prefix to the command if not already present
-            $fullCommand = $this->prepareCommand($command);
-
-            $this->logger?->debug('Executing Git command', [
-                'command' => $fullCommand,
-                'repository' => $repoPath,
+        if (!$this->isValidRepository($repositoryPath)) {
+            $this->logger?->error('Not a valid Git repository', [
+                'repository' => $repositoryPath,
             ]);
 
-            // Execute the command with error output capture
-            \exec($fullCommand . ' 2>&1', $output, $returnCode);
+            throw new \InvalidArgumentException(\sprintf('"%s" is not a valid Git repository', $repositoryPath));
+        }
 
-            if ($returnCode !== 0) {
-                $errorOutput = $output;
+        $commandParts = ['git', ...$command->getCommandParts()];
+
+        $this->logger?->debug('Executing Git command', [
+            'command' => \implode(' ', $commandParts),
+            'repository' => $repositoryPath,
+        ]);
+
+        try {
+            $process = new Process($commandParts, $repositoryPath);
+            trap($process);
+            $process->run();
+
+            if (!$process->isSuccessful()) {
                 $this->logger?->error('Git command failed', [
-                    'command' => $fullCommand,
-                    'exitCode' => $returnCode,
-                    'errorOutput' => $errorOutput,
+                    'command' => \implode(' ', $commandParts),
+                    'exitCode' => $process->getExitCode(),
+                    'errorOutput' => $process->getErrorOutput(),
                 ]);
 
-                throw new GitClientException($fullCommand, $returnCode, $errorOutput);
+                throw new GitCommandException(
+                    \sprintf(
+                        'Git command "%s" failed with exit code %d: %s',
+                        \implode(' ', $commandParts),
+                        $process->getExitCode(),
+                        $process->getErrorOutput(),
+                    ),
+                    $process->getExitCode(),
+                );
             }
 
             $this->logger?->debug('Git command executed successfully', [
-                'command' => $fullCommand,
-                'outputLines' => \count($output),
+                'command' => \implode(' ', $commandParts),
+                'outputLength' => \strlen($process->getOutput()),
             ]);
 
-            return $output;
-        } finally {
-            // Restore the original directory
-            if ($currentDir !== false) {
-                \chdir($currentDir);
-            }
-        }
-    }
+            return $process->getOutput();
+        } catch (ProcessFailedException $e) {
+            $this->logger?->error('Git command process failed', [
+                'command' => \implode(' ', $commandParts),
+                'error' => $e->getMessage(),
+            ]);
 
-    /**
-     * Execute a Git command and return the output as a string.
-     *
-     * @inheritDoc
-     */
-    public function executeString(string $repository, string $command): string
-    {
-        $output = $this->execute($repository, $command);
-
-        return \implode(PHP_EOL, $output);
-    }
-
-    /**
-     * Execute a Git command using an array of command parts.
-     *
-     * @inheritDoc
-     */
-    public function executeCommand(array $command): string
-    {
-        // Prepend 'git' to the command array
-        $gitCommand = ['git'];
-        $fullCommand = \array_merge($gitCommand, $command);
-
-        $process = new Process($fullCommand, (string) $this->dirs->getRootPath());
-        $process->run();
-
-        if (!$process->isSuccessful()) {
             throw new GitCommandException(
-                \sprintf('Git command failed: %s', $process->getErrorOutput()),
-                $process->getExitCode(),
+                \sprintf('Git command process failed: %s', $e->getMessage()),
+                $e->getCode(),
+                $e,
             );
         }
-
-        return $process->getOutput();
     }
 
-    /**
-     * Check if a directory is a valid Git repository.
-     *
-     * @inheritDoc
-     */
     public function isValidRepository(string $repository): bool
     {
         // Return cached result if available
@@ -138,7 +102,9 @@ final class CommandsExecutor implements CommandsExecutorInterface
             return self::$validatedRepositories[$repository];
         }
 
-        if (!\is_dir($repository)) {
+        $repositoryPath = $this->resolvePath($repository);
+
+        if (!\is_dir($repositoryPath)) {
             $this->logger?->debug('Repository directory does not exist', [
                 'repository' => $repository,
             ]);
@@ -146,16 +112,15 @@ final class CommandsExecutor implements CommandsExecutorInterface
             return false;
         }
 
-        $currentDir = \getcwd();
-
         try {
-            \chdir($repository);
+            $process = new Process(
+                ['git', 'rev-parse', '--is-inside-work-tree'],
+                $repositoryPath,
+            );
 
-            // Check if this is a git repository by running a simple git command
-            /** @var array<string> $output */
-            \exec('git rev-parse --is-inside-work-tree 2>/dev/null', $output, $returnCode);
+            $process->run();
 
-            $isValid = ($returnCode === 0 && isset($output[0]) && \trim($output[0]) === 'true');
+            $isValid = $process->isSuccessful() && \trim($process->getOutput()) === 'true';
 
             $this->logger?->debug('Repository validation result', [
                 'repository' => $repository,
@@ -173,19 +138,9 @@ final class CommandsExecutor implements CommandsExecutorInterface
             ]);
             self::$validatedRepositories[$repository] = false;
             return false;
-        } finally {
-            // Restore the original directory
-            if ($currentDir !== false) {
-                \chdir($currentDir);
-            }
         }
     }
 
-    /**
-     * Applies a git patch to a file.
-     *
-     * @inheritDoc
-     */
     public function applyPatch(string $filePath, string $patchContent): string
     {
         $rootPath = $this->dirs->getRootPath();
@@ -229,57 +184,15 @@ final class CommandsExecutor implements CommandsExecutorInterface
 
             return \sprintf('Successfully applied patch to %s', $filePath);
         } finally {
-            if ($this->files->exists($patchFile)) {
-                $this->files->delete($patchFile);
-            }
+            $this->files->delete($patchFile);
         }
     }
 
     /**
-     * Checks if the given directory is a git repository.
-     *
-     * @return bool True if the directory is a git repository, false otherwise
-     * @internal This method is kept for backward compatibility
+     * Resolve repository path relative to the root path.
      */
-    public function isGitRepository(): bool
+    private function resolvePath(string $repository): string
     {
-        try {
-            $this->executeCommand(['rev-parse', '--is-inside-work-tree']);
-            return true;
-        } catch (GitCommandException) {
-            return false;
-        }
-    }
-
-    /**
-     * Validate that the repository directory exists and is a valid Git repository
-     * Uses cached results when available
-     *
-     * @param string $repository Path to the Git repository
-     * @throws \InvalidArgumentException If the repository is invalid
-     */
-    private function validateRepository(string $repository): void
-    {
-        if (!$this->isValidRepository($repository)) {
-            $this->logger?->error('Not a valid Git repository', [
-                'repository' => $repository,
-            ]);
-            throw new \InvalidArgumentException(\sprintf('"%s" is not a valid Git repository', $repository));
-        }
-    }
-
-    /**
-     * Prepare a Git command by adding 'git' prefix if needed
-     */
-    private function prepareCommand(string $command): string
-    {
-        $command = \trim($command);
-
-        // If the command already starts with 'git', use it as is
-        if (\str_starts_with($command, 'git ')) {
-            return $command;
-        }
-
-        return 'git ' . $command;
+        return (string) $this->dirs->getRootPath()->join($repository);
     }
 }

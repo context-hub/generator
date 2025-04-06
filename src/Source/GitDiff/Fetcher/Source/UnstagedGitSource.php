@@ -21,7 +21,7 @@ final readonly class UnstagedGitSource extends AbstractGitSource
     {
         return $this->executeGitCommand(
             repository: $repository,
-            command: 'git diff --name-only',
+            command: 'diff --name-only',
         );
     }
 
@@ -29,7 +29,7 @@ final readonly class UnstagedGitSource extends AbstractGitSource
     {
         return $this->executeGitCommandString(
             repository: $repository,
-            command: \sprintf('git diff -- %s', \escapeshellarg($file)),
+            command: \sprintf('diff -- %s', $file),
         );
     }
 

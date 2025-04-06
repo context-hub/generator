@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\GitDiff\Fetcher\Source;
 
-use Butschster\ContextGenerator\Lib\Git\Exception\GitClientException;
+use Butschster\ContextGenerator\Lib\Git\Command;
 use Butschster\ContextGenerator\Lib\Git\CommandsExecutorInterface;
+use Butschster\ContextGenerator\Lib\Git\Exception\GitCommandException;
 use Butschster\ContextGenerator\Source\GitDiff\Fetcher\GitSourceInterface;
 use Psr\Log\LoggerInterface;
 use Spiral\Files\FilesInterface;
@@ -81,7 +82,7 @@ abstract readonly class AbstractGitSource implements GitSourceInterface
     }
 
     /**
-     * Execute a Git command in the repository directory
+     * Execute a Git command in the repository directory and return the output as an array of lines
      *
      * @param string $repository Path to the Git repository
      * @param string $command Git command to execute
@@ -90,11 +91,11 @@ abstract readonly class AbstractGitSource implements GitSourceInterface
     protected function executeGitCommand(string $repository, string $command): array
     {
         try {
-            return $this->git->execute($repository, $command);
-        } catch (GitClientException $e) {
+            $result = $this->executeGitCommandString(repository: $repository, command: $command);
+            return \array_filter(\explode(PHP_EOL, $result));
+        } catch (GitCommandException $e) {
             $this->logger?->warning('Git command failed, returning empty result', [
-                'command' => $e->getCommand(),
-                'exitCode' => $e->getExitCode(),
+                'command' => $command,
                 'error' => $e->getMessage(),
             ]);
             return [];
@@ -111,11 +112,10 @@ abstract readonly class AbstractGitSource implements GitSourceInterface
     protected function executeGitCommandString(string $repository, string $command): string
     {
         try {
-            return $this->git->executeString($repository, $command);
-        } catch (GitClientException $e) {
+            return $this->git->executeString(new Command(repository: $repository, command: $command));
+        } catch (GitCommandException $e) {
             $this->logger?->warning('Git command failed, returning empty result', [
-                'command' => $e->getCommand(),
-                'exitCode' => $e->getExitCode(),
+                'command' => $command,
                 'error' => $e->getMessage(),
             ]);
             return '';

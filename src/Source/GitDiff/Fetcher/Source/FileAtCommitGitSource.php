@@ -22,13 +22,10 @@ final readonly class FileAtCommitGitSource extends AbstractGitSource
     {
         [$commit, $path] = \explode(' -- ', $commitReference, 2);
 
-        $command = \sprintf(
-            'git show --name-only %s -- %s',
-            \escapeshellarg($commit),
-            \escapeshellarg($path),
+        $output = $this->executeGitCommand(
+            repository: $repository,
+            command: \sprintf('show --name-only %s -- %s', $commit, $path),
         );
-
-        $output = $this->executeGitCommand($repository, $command);
 
         // The first line is the commit hash, so skip it
         if (!empty($output) && \preg_match('/^[0-9a-f]{40}$/', $output[0])) {
@@ -49,17 +46,14 @@ final readonly class FileAtCommitGitSource extends AbstractGitSource
 
         return $this->executeGitCommandString(
             repository: $repository,
-            command: \sprintf(
-                'git show %s:%s',
-                \escapeshellarg($commit),
-                \escapeshellarg($file),
-            ),
+            command: \sprintf('show %s:%s', $commit, $file),
         );
     }
 
     public function formatReferenceForDisplay(string $commitReference): string
     {
         [$commit, $path] = \explode(' -- ', $commitReference, 2);
+
         return "Files at commit {$commit} with path: {$path}";
     }
 }
