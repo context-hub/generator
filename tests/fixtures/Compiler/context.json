@@ -1,0 +1,70 @@
+{
+  "$schema": "https://raw.githubusercontent.com/context-hub/generator/refs/heads/main/json-schema.json",
+  "documents": [
+    {
+      "description": "Project structure",
+      "outputPath": "structure.md",
+      "sources": [
+        {
+          "type": "tree",
+          "sourcePaths": [
+            "src"
+          ],
+          "showCharCount": true,
+          "showSize": true
+        }
+      ]
+    },
+    {
+      "description": "This is a test document",
+      "outputPath": "test-document.md",
+      "sources": [
+        {
+          "type": "file",
+          "sourcePaths": [
+            "src/dir1"
+          ],
+          "filePattern": "*.php"
+        },
+        {
+          "type": "text",
+          "content": "Foo Bar"
+        }
+      ]
+    },
+    {
+      "description": "This is a test document 1",
+      "outputPath": "test-document1.md",
+      "sources": [
+        {
+          "type": "file",
+          "sourcePaths": [
+            "src/dir2"
+          ],
+          "filePattern": "*.php"
+        },
+        {
+          "type": "text",
+          "content": "Foo Bar"
+        }
+      ]
+    },
+    {
+      "description": "This is a test document 2",
+      "outputPath": "test-document2.md",
+      "sources": [
+        {
+          "type": "file",
+          "sourcePaths": [
+            "src"
+          ],
+          "filePattern": "*.txt"
+        },
+        {
+          "type": "text",
+          "content": "Foo Bar"
+        }
+      ]
+    }
+  ]
+}

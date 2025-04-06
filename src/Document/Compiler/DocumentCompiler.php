@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Document\Compiler;
 
+use Butschster\ContextGenerator\Application\FSPath;
 use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Document\Compiler\Error\ErrorCollection;
 use Butschster\ContextGenerator\Document\Compiler\Error\SourceError;
@@ -50,7 +51,7 @@ final readonly class DocumentCompiler
         ]);
 
         $errors = new ErrorCollection();
-        $resultPath = \rtrim($this->basePath, '/') . '/' . \ltrim($outputPath, '/');
+        $resultPath = (string) FSPath::create($this->basePath)->join($outputPath);
 
         if (!$document->overwrite && $this->files->exists($resultPath)) {
             $this->logger?->notice('Document already exists and overwrite is disabled', [

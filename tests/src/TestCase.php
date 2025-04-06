@@ -61,10 +61,10 @@ abstract class TestCase extends BaseTestCase
      */
     protected function getFixturesDir(string $subdirectory = ''): string
     {
-        $basePath = \dirname(__DIR__) . '/fixtures';
+        $basePath = __DIR__ . '/../fixtures';
 
-        if ($subdirectory) {
-            return $basePath . '/' . $subdirectory;
+        if ($subdirectory !== '') {
+            $basePath = $basePath . '/' . $subdirectory;
         }
 
         return $basePath;
