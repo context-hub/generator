@@ -16,7 +16,10 @@ final class HttpClientBootloader extends Bootloader
     public function defineSingletons(): array
     {
         return [
-            HttpClientInterface::class => static fn(Client $httpClient, HttpFactory $httpMessageFactory) => HttpClientFactory::create(
+            HttpClientInterface::class => static fn(
+                Client $httpClient,
+                HttpFactory $httpMessageFactory,
+            ) => HttpClientFactory::create(
                 $httpClient,
                 $httpMessageFactory,
             ),

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\Registry;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Source\SourceInterface;
 use Psr\Log\LoggerInterface;
 
@@ -18,6 +19,7 @@ final class SourceRegistry implements SourceRegistryInterface, SourceProviderInt
     private array $factories = [];
 
     public function __construct(
+        #[LoggerPrefix(prefix: 'source-registry')]
         private readonly ?LoggerInterface $logger = null,
     ) {}
 

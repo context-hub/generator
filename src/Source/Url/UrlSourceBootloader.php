@@ -12,6 +12,7 @@ use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
 use Butschster\ContextGenerator\Source\Registry\SourceRegistryInterface;
 use Spiral\Boot\Bootloader\Bootloader;
+use Spiral\Core\FactoryInterface;
 
 final class UrlSourceBootloader extends Bootloader
 {
@@ -26,16 +27,18 @@ final class UrlSourceBootloader extends Bootloader
     {
         return [
             UrlSourceFetcher::class => static fn(
+                FactoryInterface $factory,
                 ContentBuilderFactory $builderFactory,
                 HttpClientInterface $httpClient,
                 VariableResolver $variables,
                 HasPrefixLoggerInterface $logger,
-            ): UrlSourceFetcher => new UrlSourceFetcher(
-                httpClient: $httpClient,
-                variableResolver: $variables,
-                builderFactory: $builderFactory,
-                logger: $logger->withPrefix('url-source'),
-            ),
+            ): UrlSourceFetcher => $factory->make(UrlSourceFetcher::class, [
+                'defaultHeaders' => [
+                    'User-Agent' => 'Context Generator Bot',
+                    'Accept' => 'text/html,application/xhtml+xml',
+                    'Accept-Language' => 'en-US,en;q=0.9',
+                ],
+            ]),
         ];
     }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Config\Import;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Psr\Log\LoggerInterface;
 use Spiral\Files\FilesInterface;
 use Symfony\Component\Finder\Finder;
@@ -20,6 +21,7 @@ final readonly class WildcardPathFinder
 
     public function __construct(
         private FilesInterface $files,
+        #[LoggerPrefix(prefix: 'wildcard-path-finder')]
         private ?LoggerInterface $logger = null,
     ) {}
 

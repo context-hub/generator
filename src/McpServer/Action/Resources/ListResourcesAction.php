@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer\Action\Resources;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
 use Butschster\ContextGenerator\McpServer\McpConfig;
 use Butschster\ContextGenerator\McpServer\Registry\McpItemsRegistry;
@@ -16,6 +17,7 @@ use Psr\Log\LoggerInterface;
 final readonly class ListResourcesAction
 {
     public function __construct(
+        #[LoggerPrefix(prefix: 'resources.list')]
         private LoggerInterface $logger,
         private ConfigLoaderInterface $configLoader,
         private McpItemsRegistry $registry,

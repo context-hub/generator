@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Config\Import\Source\Local;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Config\Import\Source\AbstractImportSource;
 use Butschster\ContextGenerator\Config\Import\Source\Config\SourceConfigInterface;
 use Butschster\ContextGenerator\Config\Import\Source\Exception;
@@ -15,6 +16,7 @@ use Spiral\Files\FilesInterface;
 /**
  * Import source for local filesystem configurations
  */
+#[LoggerPrefix(prefix: 'import-source-local')]
 final class LocalImportSource extends AbstractImportSource
 {
     public function __construct(

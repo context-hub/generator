@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\Composer;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Lib\TreeBuilder\FileTreeBuilder;
 use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
@@ -31,6 +32,7 @@ final readonly class ComposerSourceFetcher implements SourceFetcherInterface
         private ContentBuilderFactory $builderFactory = new ContentBuilderFactory(),
         private FileTreeBuilder $treeBuilder = new FileTreeBuilder(),
         private VariableResolver $variableResolver = new VariableResolver(),
+        #[LoggerPrefix(prefix: 'composer-source-fetcher')]
         private ?LoggerInterface $logger = null,
     ) {
         // Create a FileSourceFetcher to handle the actual file fetching

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\Github;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
-use Butschster\ContextGenerator\Lib\Finder\FinderInterface;
 use Butschster\ContextGenerator\Lib\GithubClient\Model\GithubRepository;
 use Butschster\ContextGenerator\Modifier\ModifiersApplierInterface;
 use Butschster\ContextGenerator\Source\Fetcher\SourceFetcherInterface;
@@ -20,8 +20,9 @@ use Psr\Log\LoggerInterface;
 final readonly class GithubSourceFetcher implements SourceFetcherInterface
 {
     public function __construct(
-        private FinderInterface $finder,
+        private GithubFinder $finder,
         private ContentBuilderFactory $builderFactory = new ContentBuilderFactory(),
+        #[LoggerPrefix(prefix: 'github-source')]
         private ?LoggerInterface $logger = null,
     ) {}
 

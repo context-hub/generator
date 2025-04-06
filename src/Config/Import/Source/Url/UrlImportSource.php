@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Config\Import\Source\Url;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Config\Import\Source\AbstractImportSource;
 use Butschster\ContextGenerator\Config\Import\Source\Config\SourceConfigInterface;
 use Butschster\ContextGenerator\Config\Import\Source\Exception;
@@ -16,6 +17,7 @@ use Symfony\Component\Yaml\Yaml;
 /**
  * Import source for remote URL configurations
  */
+#[LoggerPrefix(prefix: 'import-source-url')]
 final class UrlImportSource extends AbstractImportSource
 {
     private int $lastFetchTime = 0;

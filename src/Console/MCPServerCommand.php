@@ -14,7 +14,6 @@ use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
 use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\McpServer\ServerRunnerInterface;
 use Monolog\Level;
-use Psr\Log\LoggerInterface;
 use Spiral\Console\Attribute\Option;
 use Spiral\Core\Container;
 use Spiral\Core\Scope;
@@ -59,13 +58,16 @@ final class MCPServerCommand extends BaseCommand
             },
         );
 
+        $container->getBinder('root')->bind(
+            HasPrefixLoggerInterface::class,
+            $logger,
+        );
+
         $logger->info('Starting MCP server...');
 
         return $container->runScope(
             bindings: new Scope(
                 bindings: [
-                    LoggerInterface::class => $logger,
-                    HasPrefixLoggerInterface::class => $logger,
                     DirectoriesInterface::class => $dirs,
                 ],
             ),

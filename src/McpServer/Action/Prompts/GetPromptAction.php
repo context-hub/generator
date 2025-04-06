@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer\Action\Prompts;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
 use Butschster\ContextGenerator\McpServer\Prompt\PromptProviderInterface;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Get;
@@ -16,6 +17,7 @@ use Psr\Log\LoggerInterface;
 final readonly class GetPromptAction
 {
     public function __construct(
+        #[LoggerPrefix(prefix: 'prompts.get')]
         private LoggerInterface $logger,
         private PromptProviderInterface $prompts,
         private VariableResolver $variables,

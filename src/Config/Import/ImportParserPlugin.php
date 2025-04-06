@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Config\Import;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Config\Parser\ConfigParserPluginInterface;
 use Butschster\ContextGenerator\Config\Registry\RegistryInterface;
 use Psr\Log\LoggerInterface;
@@ -15,6 +16,7 @@ final readonly class ImportParserPlugin implements ConfigParserPluginInterface
 {
     public function __construct(
         private ImportResolver $importResolver,
+        #[LoggerPrefix(prefix: 'import-parser')]
         private ?LoggerInterface $logger = null,
     ) {}
 

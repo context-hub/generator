@@ -11,13 +11,8 @@ use Butschster\ContextGenerator\Config\Import\Source\ImportSourceProvider;
 use Butschster\ContextGenerator\Config\Import\Source\Local\LocalImportSource;
 use Butschster\ContextGenerator\Config\Import\Source\Registry\ImportSourceRegistry;
 use Butschster\ContextGenerator\Config\Import\Source\Url\UrlImportSource;
-use Butschster\ContextGenerator\Config\Reader\ConfigReaderRegistry;
-use Butschster\ContextGenerator\DirectoriesInterface;
-use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
-use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
 use Spiral\Boot\Bootloader\Bootloader;
 use Spiral\Core\Attribute\Singleton;
-use Spiral\Files\FilesInterface;
 
 /**
  * Bootloader for Import-related components
@@ -35,69 +30,23 @@ final class ImportBootloader extends Bootloader
         return [
             // Import source registry with all sources registered
             ImportSourceRegistry::class => static function (
-                FilesInterface $files,
-                ConfigReaderRegistry $readers,
-                HttpClientInterface $httpClient,
-                VariableResolver $variables,
                 HasPrefixLoggerInterface $logger,
+                LocalImportSource $localImportSource,
+                UrlImportSource $urlImportSource,
             ) {
                 $registry = new ImportSourceRegistry(
                     logger: $logger->withPrefix('import-source-registry'),
                 );
 
-                // Register all import sources
-
-                // Local import source (default)
-                $registry->register(
-                    new LocalImportSource(
-                        files: $files,
-                        readers: $readers,
-                        logger: $logger->withPrefix('import-source-local'),
-                    ),
-                );
-
-                // URL import source
-                $registry->register(
-                    new UrlImportSource(
-                        httpClient: $httpClient,
-                        variables: $variables,
-                        logger: $logger->withPrefix('import-source-url'),
-                    ),
-                );
+                $registry->register($localImportSource);
+                $registry->register($urlImportSource);
 
                 return $registry;
             },
 
-            // Import source provider
-            ImportSourceProvider::class => static fn(
-                ImportSourceRegistry $sourceRegistry,
-                HasPrefixLoggerInterface $logger,
-            ) => new ImportSourceProvider(
-                sourceRegistry: $sourceRegistry,
-                logger: $logger->withPrefix('import-sources'),
-            ),
-
-            // Import resolver
-            ImportResolver::class => static fn(
-                FilesInterface $files,
-                DirectoriesInterface $dirs,
-                ImportSourceProvider $sourceProvider,
-                HasPrefixLoggerInterface $logger,
-            ) => new ImportResolver(
-                dirs: $dirs,
-                files: $files,
-                sourceProvider: $sourceProvider,
-                logger: $logger->withPrefix('import-resolver'),
-            ),
-
-            // Import parser plugin
-            ImportParserPlugin::class => static fn(
-                ImportResolver $importResolver,
-                HasPrefixLoggerInterface $logger,
-            ) => new ImportParserPlugin(
-                importResolver: $importResolver,
-                logger: $logger->withPrefix('import-parser'),
-            ),
+            ImportSourceProvider::class => ImportSourceProvider::class,
+            ImportResolver::class => ImportResolver::class,
+            ImportParserPlugin::class => ImportParserPlugin::class,
         ];
     }
 

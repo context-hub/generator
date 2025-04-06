@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Config\Parser;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Config\Registry\RegistryInterface;
 use Butschster\ContextGenerator\Lib\Variable\Provider\ConfigVariableProvider;
 use Psr\Log\LoggerInterface;
@@ -15,6 +16,7 @@ final readonly class VariablesParserPlugin implements ConfigParserPluginInterfac
 {
     public function __construct(
         private ConfigVariableProvider $variableProvider,
+        #[LoggerPrefix(prefix: 'variables-parser')]
         private ?LoggerInterface $logger = null,
     ) {}
 

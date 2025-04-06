@@ -4,19 +4,17 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\GitDiff;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
-use Butschster\ContextGenerator\Lib\Finder\FinderInterface;
 use Butschster\ContextGenerator\Lib\Finder\FinderResult;
 use Butschster\ContextGenerator\Modifier\ModifiersApplierInterface;
 use Butschster\ContextGenerator\Source\Fetcher\SourceFetcherInterface;
-use Butschster\ContextGenerator\Source\GitDiff\Git\GitClient;
 use Butschster\ContextGenerator\Source\GitDiff\Git\GitClientInterface;
 use Butschster\ContextGenerator\Source\GitDiff\RenderStrategy\Enum\RenderStrategyEnum;
 use Butschster\ContextGenerator\Source\GitDiff\RenderStrategy\RenderStrategyFactory;
 use Butschster\ContextGenerator\Source\GitDiff\RenderStrategy\RenderStrategyInterface;
 use Butschster\ContextGenerator\Source\SourceInterface;
 use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
 use Symfony\Component\Finder\SplFileInfo;
 
 /**
@@ -25,30 +23,19 @@ use Symfony\Component\Finder\SplFileInfo;
  */
 final readonly class GitDiffSourceFetcher implements SourceFetcherInterface
 {
-    /**
-     * @param GitClientInterface $gitClient Git client for executing commands
-     * @param FinderInterface $finder Finder for filtering diffs
-     * @param ContentBuilderFactory $builderFactory Factory for creating ContentBuilder instances
-     * @param RenderStrategyFactory $renderStrategyFactory Factory for creating render strategies
-     * @param LoggerInterface $logger PSR Logger instance
-     */
     public function __construct(
-        private GitClientInterface $gitClient = new GitClient(),
-        private FinderInterface $finder = new GitDiffFinder(),
+        private GitDiffFinder $finder,
+        private GitClientInterface $gitClient,
         private ContentBuilderFactory $builderFactory = new ContentBuilderFactory(),
         private RenderStrategyFactory $renderStrategyFactory = new RenderStrategyFactory(),
-        private LoggerInterface $logger = new NullLogger(),
-    ) {
-        // If finder is not a GitDiffFinder, create a new one with our GitClient
-        if (!$finder instanceof GitDiffFinder) {
-            $this->finder = new GitDiffFinder($this->gitClient, $this->logger);
-        }
-    }
+        #[LoggerPrefix(prefix: 'commit-diff-source')]
+        private ?LoggerInterface $logger = null,
+    ) {}
 
     public function supports(SourceInterface $source): bool
     {
         $isSupported = $source instanceof GitDiffSource;
-        $this->logger->debug('Checking if source is supported', [
+        $this->logger?->debug('Checking if source is supported', [
             'sourceType' => $source::class,
             'isSupported' => $isSupported,
         ]);
@@ -59,13 +46,13 @@ final readonly class GitDiffSourceFetcher implements SourceFetcherInterface
     {
         if (!$source instanceof GitDiffSource) {
             $errorMessage = 'Source must be an instance of GitDiffSource';
-            $this->logger->error($errorMessage, [
+            $this->logger?->error($errorMessage, [
                 'sourceType' => $source::class,
             ]);
             throw new \InvalidArgumentException($errorMessage);
         }
 
-        $this->logger->info('Fetching git diff source content', [
+        $this->logger?->info('Fetching git diff source content', [
             'description' => $source->getDescription(),
             'repository' => $source->repository,
             'commit' => $source->commit,
@@ -75,12 +62,12 @@ final readonly class GitDiffSourceFetcher implements SourceFetcherInterface
         // Validate repository
         if (!$this->gitClient->isValidRepository($source->repository)) {
             $errorMessage = \sprintf('"%s" is not a valid Git repository', $source->repository);
-            $this->logger->error($errorMessage);
+            $this->logger?->error($errorMessage);
             throw new \RuntimeException($errorMessage);
         }
 
         // Use the finder to get the diffs
-        $this->logger->debug('Finding git diffs', [
+        $this->logger?->debug('Finding git diffs', [
             'repository' => $source->repository,
             'commit' => $source->commit,
         ]);
@@ -89,18 +76,18 @@ final readonly class GitDiffSourceFetcher implements SourceFetcherInterface
             $finderResult = $this->finder->find($source);
 
             // Extract diffs from the finder result
-            $this->logger->debug('Extracting diffs from finder result');
+            $this->logger?->debug('Extracting diffs from finder result');
             $diffs = $this->extractDiffsFromFinderResult($finderResult);
-            $this->logger->debug('Diffs extracted', ['diffCount' => \count($diffs)]);
+            $this->logger?->debug('Diffs extracted', ['diffCount' => \count($diffs)]);
 
             // Format the output using the specified render strategy
-            $this->logger->debug('Using render strategy to format output', [
+            $this->logger?->debug('Using render strategy to format output', [
                 'strategy' => $source->renderConfig->strategy,
             ]);
 
             $content = $this->renderOutput($diffs, $finderResult->treeView, $source);
 
-            $this->logger->info('Git diff source content fetched successfully', [
+            $this->logger?->info('Git diff source content fetched successfully', [
                 'diffCount' => \count($diffs),
                 'contentLength' => \strlen($content),
                 'renderStrategy' => $source->renderConfig->strategy,
@@ -108,7 +95,7 @@ final readonly class GitDiffSourceFetcher implements SourceFetcherInterface
 
             return $content;
         } catch (\Throwable $e) {
-            $this->logger->error('Error fetching git diff content', [
+            $this->logger?->error('Error fetching git diff content', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
@@ -125,11 +112,11 @@ final readonly class GitDiffSourceFetcher implements SourceFetcherInterface
     {
         $diffs = [];
         $fileCount = $finderResult->count();
-        $this->logger->debug('Processing files for diff extraction', ['fileCount' => $fileCount]);
+        $this->logger?->debug('Processing files for diff extraction', ['fileCount' => $fileCount]);
 
         foreach ($finderResult->files as $index => $file) {
             if (!$file instanceof SplFileInfo) {
-                $this->logger->warning('Skipping non-SplFileInfo file', [
+                $this->logger?->warning('Skipping non-SplFileInfo file', [
                     'fileType' => $file::class,
                     'index' => $index,
                 ]);
@@ -141,7 +128,7 @@ final readonly class GitDiffSourceFetcher implements SourceFetcherInterface
                 ? $file->getOriginalPath()
                 : $file->getRelativePathname();
 
-            $this->logger->debug('Processing diff file', [
+            $this->logger?->debug('Processing diff file', [
                 'file' => $originalPath,
                 'index' => $index + 1,
                 'total' => $fileCount,
@@ -152,17 +139,17 @@ final readonly class GitDiffSourceFetcher implements SourceFetcherInterface
             // Get the stats for this file
             $stats = '';
             if (\method_exists($file, 'getStats')) {
-                $this->logger->debug('Getting stats from file method');
+                $this->logger?->debug('Getting stats from file method');
                 $stats = $file->getStats();
             } else {
-                $this->logger->debug('Extracting stats from diff content');
+                $this->logger?->debug('Extracting stats from diff content');
                 // Try to extract stats from the diff content
                 \preg_match('/^(.*?)(?=diff --git)/s', $diffContent, $matches);
                 if (!empty($matches[1])) {
                     $stats = \trim($matches[1]);
-                    $this->logger->debug('Stats extracted from diff content');
+                    $this->logger?->debug('Stats extracted from diff content');
                 } else {
-                    $this->logger->debug('No stats found in diff content');
+                    $this->logger?->debug('No stats found in diff content');
                 }
             }
 
@@ -172,14 +159,14 @@ final readonly class GitDiffSourceFetcher implements SourceFetcherInterface
                 'stats' => $stats,
             ];
 
-            $this->logger->debug('Diff processed', [
+            $this->logger?->debug('Diff processed', [
                 'file' => $originalPath,
                 'diffLength' => \strlen($diffContent),
                 'hasStats' => !empty($stats),
             ]);
         }
 
-        $this->logger->debug('All diffs extracted', ['diffCount' => \count($diffs)]);
+        $this->logger?->debug('All diffs extracted', ['diffCount' => \count($diffs)]);
         return $diffs;
     }
 
@@ -190,13 +177,13 @@ final readonly class GitDiffSourceFetcher implements SourceFetcherInterface
      */
     private function renderOutput(array $diffs, string $treeView, GitDiffSource $source): string
     {
-        try {
-            $this->logger->debug('Creating content builder');
-            $builder = $this->builderFactory->create();
+        $this->logger?->debug('Creating content builder');
+        $builder = $this->builderFactory->create();
 
+        try {
             // Handle empty diffs case
             if (empty($diffs)) {
-                $this->logger->info('No diffs found for commit range', ['commit' => $source->commit]);
+                $this->logger?->info('No diffs found for commit range', ['commit' => $source->commit]);
                 $builder
                     ->addTitle("Git Diff for Commit Range: {$source->commit}", 1)
                     ->addText("No changes found in this commit range.");
@@ -218,14 +205,14 @@ final readonly class GitDiffSourceFetcher implements SourceFetcherInterface
                 ->merge($strategy->render($diffs, $source->renderConfig))
                 ->build();
 
-            $this->logger->debug('Output rendered using strategy', [
+            $this->logger?->debug('Output rendered using strategy', [
                 'contentLength' => \strlen($content),
             ]);
 
             return $content;
         } catch (\Throwable $e) {
             // Log the error and fall back to raw rendering if there's an issue with the strategy
-            $this->logger->error('Error using render strategy, falling back to raw rendering', [
+            $this->logger?->error('Error using render strategy, falling back to raw rendering', [
                 'strategy' => $source->renderConfig->strategy,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),

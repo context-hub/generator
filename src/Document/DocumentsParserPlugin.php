@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Document;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Config\Parser\ConfigParserPluginInterface;
 use Butschster\ContextGenerator\Config\Registry\RegistryInterface;
 use Butschster\ContextGenerator\Modifier\Alias\ModifierResolver;
@@ -19,6 +20,7 @@ final readonly class DocumentsParserPlugin implements ConfigParserPluginInterfac
     public function __construct(
         private SourceProviderInterface $sources,
         private ModifierResolver $modifierResolver = new ModifierResolver(),
+        #[LoggerPrefix(prefix: 'documents-parser-plugin')]
         private ?LoggerInterface $logger = null,
     ) {}
 

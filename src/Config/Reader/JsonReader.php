@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Config\Reader;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Config\Exception\ReaderException;
 
 /**
  * Reader for JSON configuration files
  */
+#[LoggerPrefix(prefix: 'json-reader')]
 final readonly class JsonReader extends AbstractReader
 {
     public function getSupportedExtensions(): array

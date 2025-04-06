@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Config\Import\Source;
 
 use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Config\Import\Source\Config\SourceConfigInterface;
 use Butschster\ContextGenerator\Config\Import\Source\Registry\ImportSourceRegistry;
 use Psr\Log\LoggerInterface;
@@ -15,12 +16,9 @@ use Psr\Log\NullLogger;
  */
 final readonly class ImportSourceProvider
 {
-    /**
-     * @param ImportSourceRegistry $sourceRegistry Pre-configured registry with all registered import sources
-     * @param LoggerInterface|null $logger Optional logger for debugging purposes
-     */
     public function __construct(
         private ImportSourceRegistry $sourceRegistry,
+        #[LoggerPrefix(prefix: 'import-sources')]
         private ?LoggerInterface $logger = null,
     ) {}
 

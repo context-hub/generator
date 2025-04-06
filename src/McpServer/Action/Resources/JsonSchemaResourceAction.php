@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer\Action\Resources;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\McpServer\Attribute\Resource;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Get;
@@ -22,6 +23,7 @@ use Spiral\Files\FilesInterface;
 final readonly class JsonSchemaResourceAction
 {
     public function __construct(
+        #[LoggerPrefix(prefix: 'resources.ctx.json-schema')]
         private LoggerInterface $logger,
         private FilesInterface $files,
         private DirectoriesInterface $dirs,

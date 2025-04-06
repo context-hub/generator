@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Document\Compiler;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Document\Compiler\Error\ErrorCollection;
 use Butschster\ContextGenerator\Document\Compiler\Error\SourceError;
 use Butschster\ContextGenerator\Document\Document;
@@ -33,6 +34,7 @@ final readonly class DocumentCompiler
         private SourceModifierRegistry $modifierRegistry,
         private VariableResolver $variables,
         private ContentBuilderFactory $builderFactory = new ContentBuilderFactory(),
+        #[LoggerPrefix(prefix: 'document-compiler')]
         private ?LoggerInterface $logger = null,
     ) {}
 
