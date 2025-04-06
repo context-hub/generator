@@ -2,17 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Source\GitDiff\Git;
+namespace Butschster\ContextGenerator\Lib\Git;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
+use Butschster\ContextGenerator\Lib\Git\Exception\GitClientException;
 use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
 
-/**
- * Default implementation of the GitClientInterface
- *
- * Provides methods to execute Git commands in a repository context.
- * Uses static caching to avoid checking repositories on every request.
- */
 final class GitClient implements GitClientInterface
 {
     /**
@@ -21,21 +16,11 @@ final class GitClient implements GitClientInterface
      */
     private static array $validatedRepositories = [];
 
-    /**
-     * @param LoggerInterface $logger PSR Logger instance
-     */
     public function __construct(
-        private readonly LoggerInterface $logger = new NullLogger(),
+        #[LoggerPrefix(prefix: 'git-client')]
+        private readonly ?LoggerInterface $logger = null,
     ) {}
 
-    /**
-     * Execute a Git command and return the output as an array of lines
-     *
-     * @param string $repository Path to the Git repository
-     * @param string $command Git command to execute (without 'git' prefix)
-     * @return array<string> Command output lines
-     * @throws GitCommandException If the command execution fails
-     */
     public function execute(string $repository, string $command): array
     {
         $this->validateRepository($repository);
@@ -51,7 +36,7 @@ final class GitClient implements GitClientInterface
             // Add 'git' prefix to the command if not already present
             $fullCommand = $this->prepareCommand($command);
 
-            $this->logger->debug('Executing Git command', [
+            $this->logger?->debug('Executing Git command', [
                 'command' => $fullCommand,
                 'repository' => $repository,
             ]);
@@ -61,16 +46,16 @@ final class GitClient implements GitClientInterface
 
             if ($returnCode !== 0) {
                 $errorOutput = $output;
-                $this->logger->error('Git command failed', [
+                $this->logger?->error('Git command failed', [
                     'command' => $fullCommand,
                     'exitCode' => $returnCode,
                     'errorOutput' => $errorOutput,
                 ]);
 
-                throw new GitCommandException($fullCommand, $returnCode, $errorOutput);
+                throw new GitClientException($fullCommand, $returnCode, $errorOutput);
             }
 
-            $this->logger->debug('Git command executed successfully', [
+            $this->logger?->debug('Git command executed successfully', [
                 'command' => $fullCommand,
                 'outputLines' => \count($output),
             ]);
@@ -84,32 +69,17 @@ final class GitClient implements GitClientInterface
         }
     }
 
-    /**
-     * Execute a Git command and return the output as a string
-     *
-     * @param string $repository Path to the Git repository
-     * @param string $command Git command to execute (without 'git' prefix)
-     * @return string Command output as a string
-     * @throws GitCommandException If the command execution fails
-     */
     public function executeString(string $repository, string $command): string
     {
         $output = $this->execute($repository, $command);
         return \implode(PHP_EOL, $output);
     }
 
-    /**
-     * Check if a directory is a valid Git repository
-     * Uses static cache for already validated repositories
-     *
-     * @param string $repository Path to the Git repository
-     * @return bool True if the directory is a valid Git repository
-     */
     public function isValidRepository(string $repository): bool
     {
         // Return cached result if available
         if (isset(self::$validatedRepositories[$repository])) {
-            $this->logger->debug('Using cached repository validation result', [
+            $this->logger?->debug('Using cached repository validation result', [
                 'repository' => $repository,
                 'isValid' => self::$validatedRepositories[$repository],
             ]);
@@ -117,7 +87,7 @@ final class GitClient implements GitClientInterface
         }
 
         if (!\is_dir($repository)) {
-            $this->logger->debug('Repository directory does not exist', [
+            $this->logger?->debug('Repository directory does not exist', [
                 'repository' => $repository,
             ]);
             self::$validatedRepositories[$repository] = false;
@@ -135,7 +105,7 @@ final class GitClient implements GitClientInterface
 
             $isValid = ($returnCode === 0 && isset($output[0]) && \trim($output[0]) === 'true');
 
-            $this->logger->debug('Repository validation result', [
+            $this->logger?->debug('Repository validation result', [
                 'repository' => $repository,
                 'isValid' => $isValid,
             ]);
@@ -145,7 +115,7 @@ final class GitClient implements GitClientInterface
 
             return $isValid;
         } catch (\Exception $e) {
-            $this->logger->error('Error validating repository', [
+            $this->logger?->error('Error validating repository', [
                 'repository' => $repository,
                 'error' => $e->getMessage(),
             ]);
@@ -169,14 +139,14 @@ final class GitClient implements GitClientInterface
     private function validateRepository(string $repository): void
     {
         if (!\is_dir($repository)) {
-            $this->logger->error('Repository directory does not exist', [
+            $this->logger?->error('Repository directory does not exist', [
                 'repository' => $repository,
             ]);
             throw new \InvalidArgumentException(\sprintf('Git repository "%s" does not exist', $repository));
         }
 
         if (!$this->isValidRepository($repository)) {
-            $this->logger->error('Not a valid Git repository', [
+            $this->logger?->error('Not a valid Git repository', [
                 'repository' => $repository,
             ]);
             throw new \InvalidArgumentException(\sprintf('"%s" is not a valid Git repository', $repository));

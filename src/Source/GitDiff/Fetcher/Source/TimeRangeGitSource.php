@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\GitDiff\Fetcher\Source;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
+
 /**
  * Git source for time-based ranges
  */
+#[LoggerPrefix(prefix: 'git.time_range')]
 final class TimeRangeGitSource extends AbstractGitSource
 {
-    /**
-     * Check if this source supports the given commit reference
-     */
     public function supports(string $commitReference): bool
     {
         // Match time-based ranges like HEAD@{1.week.ago}..HEAD
@@ -39,13 +39,6 @@ final class TimeRangeGitSource extends AbstractGitSource
         return \in_array($commitReference, $timeBasedPresets, true);
     }
 
-    /**
-     * Get a list of files changed in this time range
-     *
-     * @param string $repository Path to the Git repository
-     * @param string $commitReference The time-based reference
-     * @return array<string> List of changed file paths
-     */
     public function getChangedFiles(string $repository, string $commitReference): array
     {
         if (\str_contains($commitReference, '--since=')) {
@@ -60,14 +53,6 @@ final class TimeRangeGitSource extends AbstractGitSource
         return $this->executeGitCommand($repository, $command);
     }
 
-    /**
-     * Get the diff for a specific file in the time range
-     *
-     * @param string $repository Path to the Git repository
-     * @param string $commitReference The time-based reference
-     * @param string $file Path to the file
-     * @return string Diff content
-     */
     public function getFileDiff(string $repository, string $commitReference, string $file): string
     {
         if (\str_contains($commitReference, '--since=')) {
@@ -89,12 +74,6 @@ final class TimeRangeGitSource extends AbstractGitSource
         return $this->executeGitCommandString($repository, $command);
     }
 
-    /**
-     * Format the time-based reference for display in the tree view
-     *
-     * @param string $commitReference The time-based reference
-     * @return string Formatted reference for display
-     */
     public function formatReferenceForDisplay(string $commitReference): string
     {
         $humanReadable = [

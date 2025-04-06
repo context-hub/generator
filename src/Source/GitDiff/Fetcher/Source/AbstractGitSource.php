@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\GitDiff\Fetcher\Source;
 
+use Butschster\ContextGenerator\Lib\Git\Exception\GitCommandException;
+use Butschster\ContextGenerator\Lib\Git\GitClientInterface;
 use Butschster\ContextGenerator\Source\GitDiff\Fetcher\GitSourceInterface;
-use Butschster\ContextGenerator\Source\GitDiff\Git\GitClientInterface;
-use Butschster\ContextGenerator\Source\GitDiff\Git\GitClient;
-use Butschster\ContextGenerator\Source\GitDiff\Git\GitCommandException;
-use Symfony\Component\Finder\SplFileInfo;
 use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
+use Symfony\Component\Finder\SplFileInfo;
 
 /**
  * Abstract base class for Git sources
@@ -19,13 +17,9 @@ use Psr\Log\NullLogger;
  */
 abstract class AbstractGitSource implements GitSourceInterface
 {
-    /**
-     * @param GitClientInterface $gitClient Git client for executing commands
-     * @param LoggerInterface $logger PSR Logger instance
-     */
     public function __construct(
-        protected readonly GitClientInterface $gitClient = new GitClient(),
-        protected readonly LoggerInterface $logger = new NullLogger(),
+        protected readonly GitClientInterface $gitClient,
+        protected readonly ?LoggerInterface $logger = null,
     ) {}
 
     /**

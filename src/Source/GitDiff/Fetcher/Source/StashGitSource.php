@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\GitDiff\Fetcher\Source;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
+
 /**
  * Git source for stash references
  */
+#[LoggerPrefix(prefix: 'git.stash')]
 final class StashGitSource extends AbstractGitSource
 {
-    /**
-     * Check if this source supports the given commit reference
-     */
     public function supports(string $commitReference): bool
     {
         // Support regular stash references like stash@{0}
@@ -32,13 +32,6 @@ final class StashGitSource extends AbstractGitSource
         return false;
     }
 
-    /**
-     * Get a list of files changed in this stash
-     *
-     * @param string $repository Path to the Git repository
-     * @param string $commitReference The stash reference
-     * @return array<string> List of changed file paths
-     */
     public function getChangedFiles(string $repository, string $commitReference): array
     {
         // Handle single stash reference: stash@{0}
@@ -113,14 +106,6 @@ final class StashGitSource extends AbstractGitSource
         return [];
     }
 
-    /**
-     * Get the diff for a specific file in the stash
-     *
-     * @param string $repository Path to the Git repository
-     * @param string $commitReference The stash reference
-     * @param string $file Path to the file
-     * @return string Diff content
-     */
     public function getFileDiff(string $repository, string $commitReference, string $file): string
     {
         // Handle single stash reference: stash@{0}
@@ -183,12 +168,6 @@ final class StashGitSource extends AbstractGitSource
         return '';
     }
 
-    /**
-     * Format the stash reference for display in the tree view
-     *
-     * @param string $commitReference The stash reference
-     * @return string Formatted reference for display
-     */
     public function formatReferenceForDisplay(string $commitReference): string
     {
         $humanReadable = [

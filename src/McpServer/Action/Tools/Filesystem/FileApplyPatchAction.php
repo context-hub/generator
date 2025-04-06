@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem;
 
-use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\Lib\Git\Exception\GitCommandException;
 use Butschster\ContextGenerator\Lib\Git\GitCommandsExecutor;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
@@ -35,7 +34,7 @@ final readonly class FileApplyPatchAction
 {
     public function __construct(
         private LoggerInterface $logger,
-        private DirectoriesInterface $dirs,
+        private GitCommandsExecutor $commandsExecutor,
     ) {}
 
     #[Post(path: '/tools/call/file-apply-patch', name: 'tools.file-apply-patch')]
@@ -65,13 +64,8 @@ final readonly class FileApplyPatchAction
         }
 
         try {
-            $projectRoot = (string) $this->dirs->getRootPath();
-
-            // Initialize the git commands executor
-            $gitExecutor = new GitCommandsExecutor($projectRoot);
-
             // Check if the directory is a git repository
-            if (!$gitExecutor->isGitRepository()) {
+            if (!$this->commandsExecutor->isGitRepository()) {
                 return new CallToolResult([
                     new TextContent(
                         text: 'Error: The project directory is not a git repository',
@@ -80,7 +74,7 @@ final readonly class FileApplyPatchAction
             }
 
             // Apply the patch
-            $result = $gitExecutor->applyPatch($path, $patch);
+            $result = $this->commandsExecutor->applyPatch($path, $patch);
 
             return new CallToolResult([
                 new TextContent(

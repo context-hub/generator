@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Source\GitDiff\Fetcher\Source;
 
-use PHPUnit\Framework\TestCase;
+use Butschster\ContextGenerator\Lib\Git\GitClientInterface;
 use PHPUnit\Framework\MockObject\MockObject;
-use Butschster\ContextGenerator\Source\GitDiff\Git\GitClientInterface;
+use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 

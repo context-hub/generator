@@ -4,7 +4,12 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Lib\Git;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
+use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\Lib\Git\Exception\GitCommandException;
+use Psr\Log\LoggerInterface;
+use Spiral\Files\Exception\FilesException;
+use Spiral\Files\FilesInterface;
 use Symfony\Component\Process\Process;
 
 /**
@@ -13,7 +18,10 @@ use Symfony\Component\Process\Process;
 final readonly class GitCommandsExecutor
 {
     public function __construct(
-        private string $workingDirectory,
+        private FilesInterface $files,
+        private DirectoriesInterface $dirs,
+        #[LoggerPrefix(prefix: 'git-commands-executor')]
+        private ?LoggerInterface $logger = null,
     ) {}
 
     /**
@@ -21,25 +29,33 @@ final readonly class GitCommandsExecutor
      */
     public function applyPatch(string $filePath, string $patchContent): string
     {
+        $rootPath = $this->dirs->getRootPath();
+        $file = $rootPath->join($filePath);
+
         // Ensure the file exists
-        if (!\file_exists($this->workingDirectory . '/' . $filePath)) {
+        if (!$file->exists()) {
             throw new GitCommandException(\sprintf('File "%s" does not exist', $filePath));
         }
 
         // Create a temporary file for the patch
-        $patchFile = \tempnam(\sys_get_temp_dir(), 'git_patch_');
-        if ($patchFile === false) {
-            throw new GitCommandException('Failed to create temporary file for patch');
+        try {
+            $patchFile = $this->files->tempFilename();
+        } catch (FilesException $e) {
+            $this->logger?->error('Failed to create temporary file for patch', [
+                'error' => $e->getMessage(),
+            ]);
+
+            throw new GitCommandException('Failed to create temporary file for patch', 0, $e);
         }
 
         try {
             // Write the patch content to a temporary file
-            \file_put_contents($patchFile, $patchContent);
+            $this->files->write($patchFile, $patchContent, FilesInterface::READONLY);
 
             // Apply the patch using git apply command
             $process = new Process(
                 ['git', 'apply', '--whitespace=nowarn', $patchFile],
-                $this->workingDirectory,
+                (string) $rootPath,
             );
 
             $process->run();
@@ -54,10 +70,7 @@ final readonly class GitCommandsExecutor
 
             return \sprintf('Successfully applied patch to %s', $filePath);
         } finally {
-            // Clean up the temporary file
-            if (\file_exists($patchFile)) {
-                \unlink($patchFile);
-            }
+            $this->files->exists($filePath) && $this->files->delete($filePath);
         }
     }
 
@@ -70,7 +83,7 @@ final readonly class GitCommandsExecutor
         // Prepend 'git' to the command array
         \array_unshift($command, 'git');
 
-        $process = new Process($command, $this->workingDirectory);
+        $process = new Process($command, (string) $this->dirs->getRootPath());
         $process->run();
 
         if (!$process->isSuccessful()) {

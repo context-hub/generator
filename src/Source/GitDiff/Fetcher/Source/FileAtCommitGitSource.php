@@ -4,27 +4,20 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\GitDiff\Fetcher\Source;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
+
 /**
  * Git source for specific files at a commit
  */
+#[LoggerPrefix(prefix: 'git.file_at_commit')]
 final class FileAtCommitGitSource extends AbstractGitSource
 {
-    /**
-     * Check if this source supports the given commit reference
-     */
     public function supports(string $commitReference): bool
     {
         // Support format: commit -- path
         return \str_contains($commitReference, ' -- ');
     }
 
-    /**
-     * Get a list of files at this commit that match the path filter
-     *
-     * @param string $repository Path to the Git repository
-     * @param string $commitReference The commit reference with path filter
-     * @return array<string> List of matching file paths
-     */
     public function getChangedFiles(string $repository, string $commitReference): array
     {
         [$commit, $path] = \explode(' -- ', $commitReference, 2);
@@ -45,14 +38,6 @@ final class FileAtCommitGitSource extends AbstractGitSource
         return \array_filter($output);
     }
 
-    /**
-     * Get the content of a specific file at the commit
-     *
-     * @param string $repository Path to the Git repository
-     * @param string $commitReference The commit reference with path filter
-     * @param string $file Path to the file
-     * @return string File content at that commit
-     */
     public function getFileDiff(string $repository, string $commitReference, string $file): string
     {
         [$commit, $path] = \explode(' -- ', $commitReference, 2);
@@ -71,12 +56,6 @@ final class FileAtCommitGitSource extends AbstractGitSource
         return $this->executeGitCommandString($repository, $command);
     }
 
-    /**
-     * Format the reference for display in the tree view
-     *
-     * @param string $commitReference The commit reference with path filter
-     * @return string Formatted reference for display
-     */
     public function formatReferenceForDisplay(string $commitReference): string
     {
         [$commit, $path] = \explode(' -- ', $commitReference, 2);

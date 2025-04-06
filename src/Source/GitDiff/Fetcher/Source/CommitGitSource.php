@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\GitDiff\Fetcher\Source;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
+
 /**
  * Git source for commit references
  */
+#[LoggerPrefix(prefix: 'git.commit')]
 final class CommitGitSource extends AbstractGitSource
 {
-    /**
-     * Check if this source supports the given commit reference
-     */
     public function supports(string $commitReference): bool
     {
         // Basic commit range like commit1..commit2
@@ -43,27 +43,12 @@ final class CommitGitSource extends AbstractGitSource
         return false;
     }
 
-    /**
-     * Get a list of files changed in this commit range
-     *
-     * @param string $repository Path to the Git repository
-     * @param string $commitReference The commit reference
-     * @return array<string> List of changed file paths
-     */
     public function getChangedFiles(string $repository, string $commitReference): array
     {
         $command = \sprintf('git diff --name-only %s', \escapeshellarg($commitReference));
         return $this->executeGitCommand($repository, $command);
     }
 
-    /**
-     * Get the diff for a specific file in the commit range
-     *
-     * @param string $repository Path to the Git repository
-     * @param string $commitReference The commit reference
-     * @param string $file Path to the file
-     * @return string Diff content
-     */
     public function getFileDiff(string $repository, string $commitReference, string $file): string
     {
         $command = \sprintf(
@@ -75,12 +60,6 @@ final class CommitGitSource extends AbstractGitSource
         return $this->executeGitCommandString($repository, $command);
     }
 
-    /**
-     * Format the commit reference for display in the tree view
-     *
-     * @param string $commitReference The commit reference
-     * @return string Formatted reference for display
-     */
     public function formatReferenceForDisplay(string $commitReference): string
     {
         $humanReadable = [

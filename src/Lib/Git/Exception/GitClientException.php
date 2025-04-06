@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Source\GitDiff\Git;
+namespace Butschster\ContextGenerator\Lib\Git\Exception;
 
 /**
  * Exception thrown when a Git command fails
  */
-final class GitCommandException extends \RuntimeException
+final class GitClientException extends \RuntimeException
 {
     /**
      * @param string $command The git command that failed
