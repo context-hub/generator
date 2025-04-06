@@ -11,10 +11,6 @@ documents:
           - 'PhpContentFilter.php'
           - 'PhpSignature.php'
           - 'ContextSanitizerModifier.php'
-        showTreeView: true
-      - type: file
-        sourcePaths:
-          - ../ModifierRegistryFactory.php
 
   - description: PHP Content Modifiers
     outputPath: modifiers/php-modifiers.md
@@ -24,14 +20,11 @@ documents:
         filePattern:
           - 'PhpContentFilter.php'
           - 'PhpSignature.php'
-        showTreeView: true
 
   - description: Sanitizer Modifier
     outputPath: modifiers/sanitizer.md
     sources:
       - type: file
         sourcePaths:
-          - ./ContextSanitizerModifier.php
+          - ./Sanitizer
           - ../Lib/Sanitizer
-        filePattern: '*.php'
-        showTreeView: true
