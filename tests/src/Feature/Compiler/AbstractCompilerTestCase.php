@@ -31,6 +31,14 @@ abstract class AbstractCompilerTestCase extends AppTestCase
         );
     }
 
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        $files = new Files();
+        $files->deleteDirectory($this->getContextsDir());
+    }
+
     protected function getContextsDir(string $path = ''): string
     {
         return (string) FSPath::create($this->getFixturesDir('Compiler/.context'))->join($path);
@@ -194,13 +202,5 @@ abstract class AbstractCompilerTestCase extends AppTestCase
                 CONTENT,
             $results['test-document2.md'],
         );
-    }
-
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        $files = new Files();
-        $files->deleteDirectory($this->getContextsDir());
     }
 }
