@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer\Action\Resources;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
 use Butschster\ContextGenerator\Document\Compiler\Error\ErrorCollection;
@@ -16,6 +17,7 @@ use Psr\Log\LoggerInterface;
 final readonly class GetDocumentContentResourceAction
 {
     public function __construct(
+        #[LoggerPrefix(prefix: 'resources.ctx.document')]
         private LoggerInterface $logger,
         private ConfigLoaderInterface $configLoader,
         private DocumentCompiler $compiler,

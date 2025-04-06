@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\Text;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Lib\Content\Block\TextBlock;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
@@ -21,6 +22,7 @@ final readonly class TextSourceFetcher implements SourceFetcherInterface
     public function __construct(
         private ContentBuilderFactory $builderFactory = new ContentBuilderFactory(),
         private VariableResolver $variableResolver = new VariableResolver(),
+        #[LoggerPrefix(prefix: 'text-source')]
         private ?LoggerInterface $logger = null,
     ) {}
 

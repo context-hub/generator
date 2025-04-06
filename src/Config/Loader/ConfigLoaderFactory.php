@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Config\Loader;
 
 use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Config\Parser\CompositeConfigParser;
 use Butschster\ContextGenerator\Config\Parser\ConfigParser;
 use Butschster\ContextGenerator\Config\Parser\ParserPluginRegistry;
@@ -22,6 +23,7 @@ final readonly class ConfigLoaderFactory implements ConfigLoaderFactoryInterface
         private ConfigReaderRegistry $readers,
         private ParserPluginRegistry $pluginRegistry,
         private DirectoriesInterface $dirs,
+        #[LoggerPrefix(prefix: 'config-loader')]
         private ?LoggerInterface $logger = null,
     ) {}
 

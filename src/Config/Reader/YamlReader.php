@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Config\Reader;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Config\Exception\ReaderException;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
@@ -11,6 +12,7 @@ use Symfony\Component\Yaml\Yaml;
 /**
  * Reader for YAML configuration files
  */
+#[LoggerPrefix(prefix: 'yaml-reader')]
 final readonly class YamlReader extends AbstractReader
 {
     public function getSupportedExtensions(): array

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Config;
 
 use Butschster\ContextGenerator\Application\FSPath;
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Config\Exception\ConfigLoaderException;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderFactoryInterface;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
@@ -19,6 +20,7 @@ final readonly class ConfigurationProvider
     public function __construct(
         private ConfigLoaderFactoryInterface $loaderFactory,
         private DirectoriesInterface $dirs,
+        #[LoggerPrefix(prefix: 'config-provider')]
         private ?LoggerInterface $logger = null,
     ) {}
 

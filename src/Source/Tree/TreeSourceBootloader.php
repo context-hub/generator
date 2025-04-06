@@ -10,6 +10,7 @@ use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Source\Registry\SourceRegistryInterface;
 use Spiral\Boot\Bootloader\Bootloader;
+use Spiral\Core\FactoryInterface;
 
 final class TreeSourceBootloader extends Bootloader
 {
@@ -18,14 +19,13 @@ final class TreeSourceBootloader extends Bootloader
     {
         return [
             TreeSourceFetcher::class => static fn(
+                FactoryInterface $factory,
                 DirectoriesInterface $dirs,
                 ContentBuilderFactory $builderFactory,
                 HasPrefixLoggerInterface $logger,
-            ): TreeSourceFetcher => new TreeSourceFetcher(
-                basePath: (string) $dirs->getRootPath(),
-                builderFactory: $builderFactory,
-                logger: $logger->withPrefix('tree-source'),
-            ),
+            ): TreeSourceFetcher => $factory->make(TreeSourceFetcher::class, [
+                'basePath' => (string) $dirs->getRootPath(),
+            ]),
         ];
     }
 

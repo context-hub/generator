@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer\Action\Prompts;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\McpServer\Attribute\Prompt;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Get;
 use Mcp\Types\GetPromptResult;
@@ -20,6 +21,7 @@ use Psr\Log\LoggerInterface;
 final readonly class FilesystemOperationsAction
 {
     public function __construct(
+        #[LoggerPrefix(prefix: 'prompts.filesystem-ops')]
         private LoggerInterface $logger,
     ) {}
 

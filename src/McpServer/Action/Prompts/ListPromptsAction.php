@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer\Action\Prompts;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
 use Butschster\ContextGenerator\McpServer\Prompt\PromptProviderInterface;
 use Butschster\ContextGenerator\McpServer\Registry\McpItemsRegistry;
@@ -15,6 +16,7 @@ use Psr\Log\LoggerInterface;
 final readonly class ListPromptsAction
 {
     public function __construct(
+        #[LoggerPrefix(prefix: 'prompts.list')]
         private LoggerInterface $logger,
         private McpItemsRegistry $registry,
         private PromptProviderInterface $prompts,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Lib\Variable;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Lib\Variable\Provider\PredefinedVariableProvider;
 use Butschster\ContextGenerator\Lib\Variable\Provider\VariableProviderInterface;
 use Psr\Log\LoggerInterface;
@@ -15,6 +16,7 @@ final readonly class VariableReplacementProcessor
 {
     public function __construct(
         private VariableProviderInterface $provider = new PredefinedVariableProvider(),
+        #[LoggerPrefix(prefix: 'variable-replacement')]
         private ?LoggerInterface $logger = null,
     ) {}
 

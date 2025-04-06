@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\Tree;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Modifier\ModifiersApplierInterface;
 use Butschster\ContextGenerator\Source\Fetcher\SourceFetcherInterface;
@@ -17,16 +18,11 @@ use Psr\Log\LoggerInterface;
  */
 final readonly class TreeSourceFetcher implements SourceFetcherInterface
 {
-    /**
-     * @param string $basePath Base path for relative file references
-     * @param ContentBuilderFactory $builderFactory Factory for creating ContentBuilder instances
-     * @param SymfonyFinder $finder Finder for filtering files
-     * @param LoggerInterface|null $logger PSR Logger instance
-     */
     public function __construct(
         private string $basePath,
         private ContentBuilderFactory $builderFactory = new ContentBuilderFactory(),
         private SymfonyFinder $finder = new SymfonyFinder(),
+        #[LoggerPrefix(prefix: 'tree-source')]
         private ?LoggerInterface $logger = null,
     ) {}
 

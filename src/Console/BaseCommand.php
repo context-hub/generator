@@ -8,6 +8,7 @@ use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
 use Butschster\ContextGenerator\Application\Logger\LoggerFactory;
 use Psr\Log\LoggerInterface;
 use Spiral\Console\Command;
+use Spiral\Core\BinderInterface;
 use Spiral\Core\Scope;
 use Spiral\Core\ScopeInterface;
 use Symfony\Component\Console\Input\InputInterface;
@@ -39,10 +40,15 @@ abstract class BaseCommand extends Command
         \assert($this->logger instanceof HasPrefixLoggerInterface);
         \assert($this->logger instanceof LoggerInterface);
 
+        $this->container
+            ->get(BinderInterface::class)
+            ->getBinder('root')
+            ->bind(HasPrefixLoggerInterface::class, $logger);
+
         return $this->container->get(ScopeInterface::class)->runScope(
             bindings: new Scope(
                 bindings: [
-                    LoggerInterface::class => $logger,
+                    // LoggerInterface::class => $logger,
                     HasPrefixLoggerInterface::class => $logger,
                 ],
             ),

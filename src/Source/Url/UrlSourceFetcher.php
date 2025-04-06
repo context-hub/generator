@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\Url;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Lib\Html\HtmlCleaner;
 use Butschster\ContextGenerator\Lib\Html\HtmlCleanerInterface;
@@ -24,7 +25,6 @@ final readonly class UrlSourceFetcher implements SourceFetcherInterface
 {
     /**
      * @param array<string, string> $defaultHeaders Default HTTP headers to use for all requests
-     * @param LoggerInterface|null $logger PSR Logger instance
      */
     public function __construct(
         private HttpClientInterface $httpClient,
@@ -37,6 +37,7 @@ final readonly class UrlSourceFetcher implements SourceFetcherInterface
         private HtmlCleanerInterface $cleaner = new HtmlCleaner(),
         private ?SelectorContentExtractorInterface $selectorExtractor = new SelectorContentExtractor(),
         private ContentBuilderFactory $builderFactory = new ContentBuilderFactory(),
+        #[LoggerPrefix(prefix: 'url-source')]
         private ?LoggerInterface $logger = null,
     ) {}
 

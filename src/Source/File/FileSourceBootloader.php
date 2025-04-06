@@ -10,6 +10,7 @@ use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Source\Registry\SourceRegistryInterface;
 use Spiral\Boot\Bootloader\Bootloader;
+use Spiral\Core\FactoryInterface;
 
 final class FileSourceBootloader extends Bootloader
 {
@@ -18,14 +19,13 @@ final class FileSourceBootloader extends Bootloader
     {
         return [
             FileSourceFetcher::class => static fn(
+                FactoryInterface $factory,
                 DirectoriesInterface $dirs,
                 ContentBuilderFactory $builderFactory,
                 HasPrefixLoggerInterface $logger,
-            ): FileSourceFetcher => new FileSourceFetcher(
-                basePath: (string) $dirs->getRootPath(),
-                builderFactory: $builderFactory,
-                logger: $logger->withPrefix('file-source'),
-            ),
+            ): FileSourceFetcher => $factory->make(FileSourceFetcher::class, [
+                'basePath' => (string) $dirs->getRootPath(),
+            ]),
         ];
     }
 

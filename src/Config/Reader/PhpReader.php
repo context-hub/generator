@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Config\Reader;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Config\Exception\ReaderException;
 use Butschster\ContextGenerator\Config\Registry\RegistryInterface;
 
 /**
  * Reader for PHP configuration files
  */
+#[LoggerPrefix(prefix: 'php-reader')]
 final readonly class PhpReader extends AbstractReader
 {
     #[\Override]

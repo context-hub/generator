@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Application\Bootloader;
 
-use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
-use Butschster\ContextGenerator\Config\ConfigurationProvider;
 use Butschster\ContextGenerator\Config\Import\ImportParserPlugin;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderFactory;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderFactoryInterface;
@@ -19,17 +17,13 @@ use Butschster\ContextGenerator\Config\Reader\YamlReader;
 use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
 use Butschster\ContextGenerator\Document\DocumentsParserPlugin;
-use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
-use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
 use Butschster\ContextGenerator\Modifier\Alias\AliasesRegistry;
 use Butschster\ContextGenerator\Modifier\Alias\ModifierAliasesParserPlugin;
 use Butschster\ContextGenerator\Modifier\Alias\ModifierResolver;
-use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
-use Butschster\ContextGenerator\Source\Registry\SourceProviderInterface;
-use Butschster\ContextGenerator\SourceParserInterface;
 use Spiral\Boot\Bootloader\Bootloader;
 use Spiral\Core\Attribute\Singleton;
 use Spiral\Core\Config\Proxy;
+use Spiral\Core\FactoryInterface;
 use Spiral\Files\FilesInterface;
 
 /**
@@ -61,99 +55,42 @@ final class ConfigLoaderBootloader extends Bootloader
     public function defineSingletons(): array
     {
         return [
-            ParserPluginRegistry::class => function (
-                SourceProviderInterface $sourceProvider,
-                ImportParserPlugin $importParserPlugin,
-                HasPrefixLoggerInterface $logger,
-            ) {
-                $modifierResolver = new ModifierResolver(
-                    aliasesRegistry: $aliases = new AliasesRegistry(),
-                );
+            AliasesRegistry::class => AliasesRegistry::class,
+            ModifierResolver::class => ModifierResolver::class,
+            ParserPluginRegistry::class => fn(ImportParserPlugin $importParserPlugin, DocumentsParserPlugin $documentsParserPlugin, ModifierAliasesParserPlugin $modifierAliasesParserPlugin) => new ParserPluginRegistry([
+                $modifierAliasesParserPlugin,
+                $documentsParserPlugin,
+                $importParserPlugin,
+                ...$this->parserPlugins,
+            ]),
 
-                return new ParserPluginRegistry([
-                    new ModifierAliasesParserPlugin(
-                        aliasesRegistry: $aliases,
-                    ),
-                    new DocumentsParserPlugin(
-                        sources: $sourceProvider,
-                        modifierResolver: $modifierResolver,
-                        logger: $logger->withPrefix('documents-parser-plugin'),
-                    ),
-                    $importParserPlugin, // Injected from ImportBootloader
-                    ...$this->parserPlugins,
-                ]);
-            },
-
-            ConfigurationProvider::class => static fn(
-                ConfigLoaderFactoryInterface $configLoaderFactory,
-                DirectoriesInterface $dirs,
-                HasPrefixLoggerInterface $logger,
-            ) => new ConfigurationProvider(
-                loaderFactory: $configLoaderFactory,
-                dirs: $dirs,
-                logger: $logger->withPrefix('config-provider'),
-            ),
+            //            ConfigurationProvider::class => static fn(
+            //                ConfigLoaderFactoryInterface $configLoaderFactory,
+            //                DirectoriesInterface $dirs,
+            //                HasPrefixLoggerInterface $logger,
+            //            ) => new ConfigurationProvider(
+            //                loaderFactory: $configLoaderFactory,
+            //                dirs: $dirs,
+            //                logger: $logger->withPrefix('config-provider'),
+            //            ),
 
             DocumentCompiler::class => static fn(
-                FilesInterface $files,
-                SourceParserInterface $parser,
+                FactoryInterface $factory,
                 DirectoriesInterface $dirs,
-                SourceModifierRegistry $registry,
-                ContentBuilderFactory $builderFactory,
-                HasPrefixLoggerInterface $logger,
-                VariableResolver $variables,
-            ) => new DocumentCompiler(
-                files: $files,
-                parser: $parser,
-                basePath: (string) $dirs->getOutputPath(),
-                modifierRegistry: $registry,
-                variables: $variables,
-                builderFactory: $builderFactory,
-                logger: $logger->withPrefix('document-compiler'),
+            ) => $factory->make(DocumentCompiler::class, [
+                'basePath' => (string) $dirs->getOutputPath(),
+            ]),
+
+            ConfigReaderRegistry::class => static fn(FilesInterface $files, JsonReader $jsonReader, YamlReader $yamlReader, PhpReader $phpReader) => new ConfigReaderRegistry(
+                readers: [
+                    'json' => $jsonReader,
+                    'yaml' => $yamlReader,
+                    'yml' => $yamlReader,
+                    'php' => $phpReader,
+                ],
             ),
 
-            ConfigReaderRegistry::class => static function (
-                FilesInterface $files,
-                HasPrefixLoggerInterface $logger,
-            ) {
-                // Create readers
-                $jsonReader = new JsonReader(
-                    files: $files,
-                    logger: $logger->withPrefix('json-reader'),
-                );
-
-                $yamlReader = new YamlReader(
-                    files: $files,
-                    logger: $logger->withPrefix('yaml-reader'),
-                );
-
-                $phpReader = new PhpReader(
-                    files: $files,
-                    logger: $logger->withPrefix('php-reader'),
-                );
-
-                return new ConfigReaderRegistry(
-                    readers: [
-                        'json' => $jsonReader,
-                        'yaml' => $yamlReader,
-                        'yml' => $yamlReader,
-                        'php' => $phpReader,
-                    ],
-                );
-            },
-
-            ConfigLoaderFactoryInterface::class => static fn(
-                ConfigReaderRegistry $readers,
-                ParserPluginRegistry $pluginRegistry,
-                FilesInterface $files,
-                DirectoriesInterface $dirs,
-                HasPrefixLoggerInterface $logger,
-            ) => new ConfigLoaderFactory(
-                readers: $readers,
-                pluginRegistry: $pluginRegistry,
-                dirs: $dirs,
-                logger: $logger->withPrefix('config-loader'),
-            ),
+            ConfigLoaderFactoryInterface::class => ConfigLoaderFactory::class,
 
             ConfigLoaderInterface::class => new Proxy(
                 interface: ConfigLoaderInterface::class,

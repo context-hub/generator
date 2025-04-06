@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Config\Import;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Config\Exception\ConfigLoaderException;
 use Butschster\ContextGenerator\Config\Import\PathPrefixer\DocumentOutputPathPrefixer;
 use Butschster\ContextGenerator\Config\Import\PathPrefixer\SourcePathPrefixer;
@@ -22,22 +23,17 @@ use Spiral\Files\FilesInterface;
  */
 final readonly class ImportResolver
 {
-    private WildcardPathFinder $pathFinder;
-    private DocumentOutputPathPrefixer $documentPrefixer;
-    private SourcePathPrefixer $sourcePrefixer;
-    private SourceConfigFactory $sourceConfigFactory;
-
     public function __construct(
         private DirectoriesInterface $dirs,
         FilesInterface $files,
         private ImportSourceProvider $sourceProvider,
+        private WildcardPathFinder $pathFinder,
+        private DocumentOutputPathPrefixer $documentPrefixer = new DocumentOutputPathPrefixer(),
+        private SourcePathPrefixer $sourcePrefixer = new SourcePathPrefixer(),
+        private SourceConfigFactory $sourceConfigFactory = new SourceConfigFactory(),
+        #[LoggerPrefix(prefix: 'import-resolver')]
         private ?LoggerInterface $logger = null,
-    ) {
-        $this->pathFinder = new WildcardPathFinder($files, $logger);
-        $this->documentPrefixer = new DocumentOutputPathPrefixer();
-        $this->sourcePrefixer = new SourcePathPrefixer();
-        $this->sourceConfigFactory = new SourceConfigFactory();
-    }
+    ) {}
 
     /**
      * Process imports in a configuration

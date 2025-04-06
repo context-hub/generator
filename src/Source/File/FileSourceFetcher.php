@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\File;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Lib\Finder\FinderInterface;
 use Butschster\ContextGenerator\Modifier\ModifiersApplierInterface;
@@ -18,16 +19,11 @@ use Symfony\Component\Finder\SplFileInfo;
  */
 final readonly class FileSourceFetcher implements SourceFetcherInterface
 {
-    /**
-     * @param string $basePath Base path for relative file references
-     * @param FinderInterface $finder Finder for locating files
-     * @param ContentBuilderFactory $builderFactory Factory for creating ContentBuilder instances
-     * @param LoggerInterface|null $logger PSR Logger instance
-     */
     public function __construct(
         private string $basePath,
         private FinderInterface $finder = new SymfonyFinder(),
         private ContentBuilderFactory $builderFactory = new ContentBuilderFactory(),
+        #[LoggerPrefix(prefix: 'file-source')]
         private ?LoggerInterface $logger = null,
     ) {}
 
