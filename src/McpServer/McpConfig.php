@@ -24,6 +24,10 @@ final class McpConfig extends InjectableConfig
         'prompt_operations' => [
             'enable' => true,
         ],
+        'custom_tools' => [
+            'enable' => true,
+            'max_runtime' => 30,
+        ],
     ];
 
     public function getDocumentNameFormat(string $path, string $description, string $tags): string
@@ -63,5 +67,10 @@ final class McpConfig extends InjectableConfig
     public function isPromptOperationsEnabled(): bool
     {
         return $this->config['prompt_operations']['enable'] ?? false;
+    }
+
+    public function isCustomToolsEnabled(): bool
+    {
+        return $this->config['custom_tools']['enable'] ?? true;
     }
 }

@@ -18,9 +18,21 @@
       "required": [
         "prompts"
       ]
+    },
+    {
+      "required": [
+        "tools"
+      ]
     }
   ],
   "properties": {
+    "tools": {
+      "type": "array",
+      "description": "List of custom tools to be registered for execution",
+      "items": {
+        "$ref": "#/definitions/tool"
+      }
+    },
     "prompts": {
       "type": "array",
       "description": "List of prompts to be registered",
@@ -172,6 +184,69 @@
     }
   },
   "definitions": {
+    "tool": {
+      "type": "object",
+      "required": [
+        "id",
+        "description",
+        "commands"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the tool"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of the tool"
+        },
+        "env": {
+          "type": "object",
+          "description": "Environment variables for command executions",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "commands": {
+          "type": "array",
+          "description": "List of commands to execute",
+          "items": {
+            "$ref": "#/definitions/toolCommand"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "toolCommand": {
+      "type": "object",
+      "required": [
+        "cmd"
+      ],
+      "properties": {
+        "cmd": {
+          "type": "string",
+          "description": "Command to execute"
+        },
+        "args": {
+          "type": "array",
+          "description": "Command arguments",
+          "items": {
+            "type": "string"
+          }
+        },
+        "workingDir": {
+          "type": "string",
+          "description": "Working directory for command execution (relative to project root)"
+        },
+        "env": {
+          "type": "object",
+          "description": "Environment variables for command execution",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "prompt": {
       "type": "object",
       "required": [

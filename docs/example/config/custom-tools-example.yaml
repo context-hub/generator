@@ -1,0 +1,159 @@
+# Custom Tools Example Configuration
+
+# This is a sample configuration file demonstrating the custom tools feature
+
+variables:
+  ROOT_DIR: /var/www/project
+  LOG_DIR: ${ROOT_DIR}/logs
+  DB_NAME: myapp_db
+
+# Custom Tools Configuration
+tools:
+  # Code Quality Tools
+  - id: cs-fixer
+    description: 'Fix code style issues'
+    type: run
+    commands:
+      - cmd: composer
+        args: [ 'cs:fix' ]
+        workingDir: ${ROOT_DIR}
+
+  - id: phpstan
+    description: 'Run static analysis'
+    type: run
+    commands:
+      - cmd: vendor/bin/phpstan
+        args: [ 'analyse', 'src', '--level', '8' ]
+        workingDir: ${ROOT_DIR}
+
+  # Testing Tools
+  - id: run-tests
+    description: 'Run PHPUnit tests'
+    type: run
+    commands:
+      - cmd: vendor/bin/phpunit
+        args: [ '--colors=always' ]
+        workingDir: ${ROOT_DIR}
+
+  - id: test-with-coverage
+    description: 'Run tests with code coverage'
+    type: run
+    commands:
+      - cmd: vendor/bin/phpunit
+        args: [ '--colors=always', '--coverage-html', '${LOG_DIR}/coverage' ]
+        workingDir: ${ROOT_DIR}
+        env:
+          XDEBUG_MODE: coverage
+
+  # Build and Deployment
+  - id: build-assets
+    description: 'Build frontend assets'
+    type: run
+    commands:
+      - cmd: npm
+        args: [ 'install' ]
+        workingDir: ${ROOT_DIR}/frontend
+      - cmd: npm
+        args: [ 'run', 'build' ]
+        workingDir: ${ROOT_DIR}/frontend
+
+  # Multi-step Process
+  - id: prepare-release
+    description: 'Prepare project for release'
+    type: run
+    commands:
+      - cmd: composer
+        args: [ 'install', '--no-dev', '--optimize-autoloader' ]
+        workingDir: ${ROOT_DIR}
+      - cmd: npm
+        args: [ 'install', '--production' ]
+        workingDir: ${ROOT_DIR}/frontend
+      - cmd: npm
+        args: [ 'run', 'build' ]
+        workingDir: ${ROOT_DIR}/frontend
+      - cmd: php
+        args: [ 'artisan', 'optimize' ]
+        workingDir: ${ROOT_DIR}
+      - cmd: php
+        args: [ 'artisan', 'config:cache' ]
+        workingDir: ${ROOT_DIR}
+
+  # Script Execution
+  - id: clear-logs
+    description: 'Clear log files'
+    type: run
+    commands:
+      - cmd: bash
+        args: [ '-c', 'find ${LOG_DIR} -name "*.log" -type f -delete' ]
+        workingDir: ${ROOT_DIR}
+
+  # Database Backup
+  - id: backup-db
+    description: 'Backup database to SQL file'
+    type: run
+    commands:
+      - cmd: bash
+        args: [ '-c', 'mkdir -p ${ROOT_DIR}/backups' ]
+        workingDir: ${ROOT_DIR}
+      - cmd: bash
+        args: [
+          '-c',
+          'mysqldump -u ${DB_USER} -p${DB_PASSWORD} ${DB_NAME} > ${ROOT_DIR}/backups/${DB_NAME}_$(date +%Y%m%d).sql'
+        ]
+        workingDir: ${ROOT_DIR}
+        env:
+          DB_USER: root
+          DB_PASSWORD: "${DB_ROOT_PASSWORD}"
+
+  # Application Maintenance
+  - id: maintenance-mode
+    description: 'Toggle application maintenance mode'
+    type: run
+    commands:
+      - cmd: php
+        args: [ 'artisan', 'down', '--message="System maintenance in progress. Please check back later."' ]
+        workingDir: ${ROOT_DIR}
+
+  - id: end-maintenance
+    description: 'End application maintenance mode'
+    type: run
+    commands:
+      - cmd: php
+        args: [ 'artisan', 'up' ]
+        workingDir: ${ROOT_DIR}
+
+  # Cache Management
+  - id: clear-cache
+    description: 'Clear application cache'
+    type: run
+    commands:
+      - cmd: php
+        args: [ 'artisan', 'cache:clear' ]
+        workingDir: ${ROOT_DIR}
+      - cmd: php
+        args: [ 'artisan', 'config:clear' ]
+        workingDir: ${ROOT_DIR}
+      - cmd: php
+        args: [ 'artisan', 'route:clear' ]
+        workingDir: ${ROOT_DIR}
+      - cmd: php
+        args: [ 'artisan', 'view:clear' ]
+        workingDir: ${ROOT_DIR}
+
+  # Combined Project Tools
+  - id: project-health-check
+    description: 'Run comprehensive project health check'
+    type: run
+    commands:
+      - cmd: composer
+        args: [ 'validate' ]
+        workingDir: ${ROOT_DIR}
+      - cmd: vendor/bin/phpstan
+        args: [ 'analyse', 'src', '--level', '5' ]
+        workingDir: ${ROOT_DIR}
+      - cmd: vendor/bin/phpunit
+        args: [ '--testsuite', 'unit' ]
+        workingDir: ${ROOT_DIR}
+      - cmd: bash
+        args: [ '-c', 'php artisan migrate:status' ]
+        workingDir: ${ROOT_DIR}

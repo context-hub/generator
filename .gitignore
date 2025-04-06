@@ -6,7 +6,6 @@
 .output
 composer.lock
 coverage
-docs
 vendor
 node_modules
 .php-cs-fixer.cache
