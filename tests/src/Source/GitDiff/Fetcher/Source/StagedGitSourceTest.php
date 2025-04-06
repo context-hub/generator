@@ -7,6 +7,7 @@ namespace Tests\Source\GitDiff\Fetcher\Source;
 use Butschster\ContextGenerator\Source\GitDiff\Fetcher\Source\StagedGitSource;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
+use Spiral\Files\Files;
 
 #[CoversClass(StagedGitSource::class)]
 final class StagedGitSourceTest extends GitSourceTestCase
@@ -34,7 +35,7 @@ final class StagedGitSourceTest extends GitSourceTestCase
     public function it_should_get_staged_files(): void
     {
         // Mock the git command for getting staged files
-        $expectedCommand = 'git diff --name-only --cached';
+        $expectedCommand = 'diff --name-only --cached';
         $expectedFiles = ['staged.txt'];
         $this->mockChangedFiles($expectedCommand, $expectedFiles);
 
@@ -50,7 +51,7 @@ final class StagedGitSourceTest extends GitSourceTestCase
     public function it_should_get_staged_file_diff(): void
     {
         // Mock the git command for getting file diff
-        $expectedCommand = 'git diff --cached -- \'existing.txt\'';
+        $expectedCommand = 'diff --cached -- existing.txt';
         $expectedDiff = "diff --git a/existing.txt b/existing.txt\nindex 1234567..abcdef 100644\n--- a/existing.txt\n+++ b/existing.txt\n@@ -1 +1 @@\n-Original content\n+Modified content\n";
         $this->mockFileDiff($expectedCommand, $expectedDiff);
 
@@ -80,7 +81,7 @@ final class StagedGitSourceTest extends GitSourceTestCase
     public function it_should_handle_new_staged_files(): void
     {
         // Mock the git command for getting staged files
-        $expectedCommand = 'git diff --cached -- \'new-staged.txt\'';
+        $expectedCommand = 'diff --cached -- new-staged.txt';
         $expectedDiff = "diff --git a/new-staged.txt b/new-staged.txt\nnew file mode 100644\nindex 0000000..abcdef\n--- /dev/null\n+++ b/new-staged.txt\n@@ -0,0 +1 @@\n+New staged content\n";
         $this->mockFileDiff($expectedCommand, $expectedDiff);
 
@@ -95,7 +96,7 @@ final class StagedGitSourceTest extends GitSourceTestCase
     public function it_should_handle_no_staged_changes(): void
     {
         // Mock empty response for no staged changes
-        $expectedCommand = 'git diff --name-only --cached';
+        $expectedCommand = 'diff --name-only --cached';
         $this->mockChangedFiles($expectedCommand, []);
 
         // Get staged files when there are none
@@ -109,7 +110,7 @@ final class StagedGitSourceTest extends GitSourceTestCase
     public function it_should_handle_multiple_staged_files(): void
     {
         // Mock multiple staged files
-        $expectedCommand = 'git diff --name-only --cached';
+        $expectedCommand = 'diff --name-only --cached';
         $expectedFiles = ['staged1.txt', 'staged2.txt', 'staged3.txt'];
         $this->mockChangedFiles($expectedCommand, $expectedFiles);
 
@@ -127,6 +128,6 @@ final class StagedGitSourceTest extends GitSourceTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->stagedGitSource = new StagedGitSource($this->gitClientMock, $this->logger);
+        $this->stagedGitSource = new StagedGitSource($this->commandExecutorMock, new Files(), $this->logger);
     }
 }

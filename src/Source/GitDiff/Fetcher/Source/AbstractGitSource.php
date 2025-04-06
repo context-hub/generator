@@ -15,7 +15,7 @@ use Symfony\Component\Finder\SplFileInfo;
 abstract readonly class AbstractGitSource implements GitSourceInterface
 {
     public function __construct(
-        protected CommandsExecutorInterface $git,
+        protected CommandsExecutorInterface $commandsExecutor,
         private FilesInterface $files,
         protected ?LoggerInterface $logger = null,
     ) {}
@@ -112,7 +112,7 @@ abstract readonly class AbstractGitSource implements GitSourceInterface
     protected function executeGitCommandString(string $repository, string $command): string
     {
         try {
-            return $this->git->executeString(new Command(repository: $repository, command: $command));
+            return $this->commandsExecutor->executeString(new Command(repository: $repository, command: $command));
         } catch (GitCommandException $e) {
             $this->logger?->warning('Git command failed, returning empty result', [
                 'command' => $command,

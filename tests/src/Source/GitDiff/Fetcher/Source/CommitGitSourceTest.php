@@ -7,6 +7,7 @@ namespace Tests\Source\GitDiff\Fetcher\Source;
 use Butschster\ContextGenerator\Source\GitDiff\Fetcher\Source\CommitGitSource;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
+use Spiral\Files\Files;
 
 #[CoversClass(CommitGitSource::class)]
 final class CommitGitSourceTest extends GitSourceTestCase
@@ -44,7 +45,7 @@ final class CommitGitSourceTest extends GitSourceTestCase
     public function it_should_get_changed_files_in_commit_range(): void
     {
         // Mock the git command for getting changed files
-        $expectedCommand = 'git diff --name-only \'HEAD~1..HEAD\'';
+        $expectedCommand = 'diff --name-only HEAD~1..HEAD';
         $expectedFiles = ['test2.txt'];
         $this->mockChangedFiles($expectedCommand, $expectedFiles);
 
@@ -60,7 +61,7 @@ final class CommitGitSourceTest extends GitSourceTestCase
     public function it_should_get_file_diff_for_specific_file(): void
     {
         // Mock the git command for getting file diff
-        $expectedCommand = 'git diff \'HEAD~1..HEAD\' -- \'test.txt\'';
+        $expectedCommand = 'diff HEAD~1..HEAD -- test.txt';
         $expectedDiff = "diff --git a/test.txt b/test.txt\nindex 1234567..abcdef 100644\n--- a/test.txt\n+++ b/test.txt\n@@ -1 +1 @@\n-Original content\n+Modified content\n";
         $this->mockFileDiff($expectedCommand, $expectedDiff);
 
@@ -105,7 +106,7 @@ final class CommitGitSourceTest extends GitSourceTestCase
         $commitHash = 'abc1234567890abcdef1234567890abcdef123456';
 
         // Mock the git command for getting changed files
-        $expectedCommand = "git diff --name-only '{$commitHash}~1..{$commitHash}'";
+        $expectedCommand = "diff --name-only {$commitHash}~1..{$commitHash}";
         $expectedFiles = ['specific.txt'];
         $this->mockChangedFiles($expectedCommand, $expectedFiles);
 
@@ -124,6 +125,6 @@ final class CommitGitSourceTest extends GitSourceTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->commitGitSource = new CommitGitSource($this->gitClientMock, $this->logger);
+        $this->commitGitSource = new CommitGitSource($this->commandExecutorMock, new Files(), $this->logger);
     }
 }
