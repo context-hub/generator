@@ -15,6 +15,7 @@ use Butschster\ContextGenerator\McpServer\Action\Resources\ListResourcesAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Context\ContextAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Context\ContextGetAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Context\ContextRequestAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\ExecuteCustomToolAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\DirectoryListAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileApplyPatchAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileInfoAction;
@@ -31,6 +32,7 @@ use Butschster\ContextGenerator\McpServer\Routing\McpResponseStrategy;
 use Butschster\ContextGenerator\McpServer\Routing\RouteRegistrar;
 use Butschster\ContextGenerator\McpServer\ServerRunner;
 use Butschster\ContextGenerator\McpServer\ServerRunnerInterface;
+use Butschster\ContextGenerator\McpServer\Tool\McpToolBootloader;
 use League\Route\Router;
 use League\Route\Strategy\StrategyInterface;
 use Psr\Container\ContainerInterface;
@@ -51,6 +53,7 @@ final class McpServerBootloader extends Bootloader
     {
         return [
             HttpClientBootloader::class,
+            McpToolBootloader::class,
         ];
     }
 
@@ -71,6 +74,10 @@ final class McpServerBootloader extends Bootloader
                 ],
                 'prompt_operations' => [
                     'enable' => (bool) $env->get('MCP_PROMPT_OPERATIONS', false),
+                ],
+                'custom_tools' => [
+                    'enable' => (bool) $env->get('MCP_CUSTOM_TOOLS_ENABLE', true),
+                    'max_runtime' => (int) $env->get('MCP_TOOL_MAX_RUNTIME', 30),
                 ],
             ],
         );
@@ -164,6 +171,13 @@ final class McpServerBootloader extends Bootloader
             if ($config->isFileWriteEnabled()) {
                 $actions[] = FileWriteAction::class;
             }
+        }
+
+        if ($config->isCustomToolsEnabled()) {
+            $actions = [
+                ...$actions,
+                ExecuteCustomToolAction::class,
+            ];
         }
 
         return $actions;

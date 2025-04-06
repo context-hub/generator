@@ -6,6 +6,31 @@ import:
 variables:
   name: Context Generator
 
+tools:
+  - id: run-tests
+    description: Run unit tests
+    env:
+      COMPOSER_ALLOW_SUPERUSER: 'true'
+    commands:
+      - cmd: composer
+        args:
+          - test
+
+  - id: code-quality
+    description: Run code quality checks
+    env:
+      COMPOSER_ALLOW_SUPERUSER: 'true'
+    commands:
+      - cmd: composer
+        args:
+          - cs-fix
+      - cmd: composer
+        args:
+          - refactor
+      - cmd: composer
+        args:
+          - psalm
+
 prompts:
   - id: my-local-prompt
     description: My local prompt

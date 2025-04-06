@@ -7,6 +7,13 @@ documents:
           - .
           - ../Document
           - ../Fetcher
-        filePattern: '*.php'
-        showTreeView: true
+          - ../Application/Bootloader/ConfigLoaderBootloader.php
+          - ../Application/Bootloader/ImportBootloader.php
+
+  - description: Configuration Parser
+    outputPath: core/config-parser.md
+    sources:
+      - type: file
+        sourcePaths:
+          - ./Parser
 

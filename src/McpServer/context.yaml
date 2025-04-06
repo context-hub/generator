@@ -17,6 +17,20 @@ documents:
           - ./Attribute
           - ./Registry
 
+  - description: "MCP Server Prompts"
+    outputPath: "mcp/prompts.md"
+    sources:
+      - type: file
+        sourcePaths:
+          - ./Prompt
+
+  - description: "MCP Server Tools"
+    outputPath: "mcp/tools.md"
+    sources:
+      - type: file
+        sourcePaths:
+          - ./Action/Tools
+
   - description: "MCP Server routing"
     outputPath: "mcp/routing.md"
     sources:
