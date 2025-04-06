@@ -15,6 +15,7 @@ use Tests\AppTestCase;
 
 abstract class AbstractCompilerTestCase extends AppTestCase
 {
+    #[\Override]
     public function rootDirectory(): string
     {
         return $this->getFixturesDir('Compiler');
@@ -29,6 +30,15 @@ abstract class AbstractCompilerTestCase extends AppTestCase
             ),
             scope: $this->compileDocuments(...),
         );
+    }
+
+    #[\Override]
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        $files = new Files();
+        $files->deleteDirectory($this->getContextsDir());
     }
 
     protected function getContextsDir(string $path = ''): string
@@ -194,13 +204,5 @@ abstract class AbstractCompilerTestCase extends AppTestCase
                 CONTENT,
             $results['test-document2.md'],
         );
-    }
-
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        $files = new Files();
-        $files->deleteDirectory($this->getContextsDir());
     }
 }

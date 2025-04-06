@@ -168,6 +168,6 @@ final class ContentBuilder implements \Stringable
 
     public function __toString(): string
     {
-        return \preg_replace("/(\r\n|\n)+$/", '', $this->build());
+        return (string) \preg_replace("/(\r\n|\n)+$/", '', $this->build());
     }
 }
