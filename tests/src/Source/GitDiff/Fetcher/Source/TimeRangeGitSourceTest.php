@@ -7,6 +7,7 @@ namespace Tests\Source\GitDiff\Fetcher\Source;
 use Butschster\ContextGenerator\Source\GitDiff\Fetcher\Source\TimeRangeGitSource;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
+use Spiral\Files\Files;
 
 #[CoversClass(TimeRangeGitSource::class)]
 final class TimeRangeGitSourceTest extends GitSourceTestCase
@@ -36,7 +37,7 @@ final class TimeRangeGitSourceTest extends GitSourceTestCase
     public function it_should_get_changed_files_for_time_range(): void
     {
         // Mock the git command for getting files in a time range with --since format
-        $expectedCommand = 'git log --since=1.minute.ago --name-only --pretty=format:""';
+        $expectedCommand = 'log --since=1.minute.ago --name-only --pretty=format:""';
         $expectedFiles = ['', 'time-test1.txt', '', 'time-test2.txt', ''];  // Git log output includes empty lines
         $this->mockChangedFiles($expectedCommand, $expectedFiles);
 
@@ -56,7 +57,7 @@ final class TimeRangeGitSourceTest extends GitSourceTestCase
     public function it_should_get_changed_files_for_head_time_range(): void
     {
         // Mock the git command for getting files in a HEAD time range
-        $expectedCommand = "git diff --name-only 'HEAD@{1.week.ago}..HEAD'";
+        $expectedCommand = "diff --name-only HEAD@{1.week.ago}..HEAD";
         $expectedFiles = ['time-test1.txt', 'time-test2.txt'];
         $this->mockChangedFiles($expectedCommand, $expectedFiles);
 
@@ -76,7 +77,7 @@ final class TimeRangeGitSourceTest extends GitSourceTestCase
     public function it_should_get_file_diff_for_time_range(): void
     {
         // Mock the git command for getting file diff with --since format
-        $expectedCommand = "git log '--since=1.minute.ago' -p -- 'time-diff.txt'";
+        $expectedCommand = "log --since=1.minute.ago -p -- time-diff.txt";
         $expectedDiff = "commit abcdef1234567890abcdef1234567890abcdef1234\nAuthor: Test User <test@example.com>\nDate:   Sun Mar 31 12:00:00 2025 +0000\n\n    Test commit\n\ndiff --git a/time-diff.txt b/time-diff.txt\nindex 1234567..abcdef 100644\n--- a/time-diff.txt\n+++ b/time-diff.txt\n@@ -1 +1 @@\n-Original time content\n+Modified time content\n";
         $this->mockFileDiff($expectedCommand, $expectedDiff);
 
@@ -96,7 +97,7 @@ final class TimeRangeGitSourceTest extends GitSourceTestCase
     public function it_should_get_file_diff_for_head_time_range(): void
     {
         // Mock the git command for getting file diff with HEAD time range
-        $expectedCommand = "git diff 'HEAD@{1.week.ago}..HEAD' -- 'time-diff.txt'";
+        $expectedCommand = "diff HEAD@{1.week.ago}..HEAD -- time-diff.txt";
         $expectedDiff = "diff --git a/time-diff.txt b/time-diff.txt\nindex 1234567..abcdef 100644\n--- a/time-diff.txt\n+++ b/time-diff.txt\n@@ -1 +1 @@\n-Original time content\n+Modified time content\n";
         $this->mockFileDiff($expectedCommand, $expectedDiff);
 
@@ -148,7 +149,7 @@ final class TimeRangeGitSourceTest extends GitSourceTestCase
     public function it_should_handle_empty_time_range(): void
     {
         // Mock the git command for an empty time range
-        $expectedCommand = 'git log --since=2099-01-01 --name-only --pretty=format:""';
+        $expectedCommand = 'log --since=2099-01-01 --name-only --pretty=format:""';
         $this->mockChangedFiles($expectedCommand, []);
 
         // Try to get changes in a time range with no commits
@@ -165,6 +166,6 @@ final class TimeRangeGitSourceTest extends GitSourceTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->timeRangeGitSource = new TimeRangeGitSource($this->gitClientMock, $this->logger);
+        $this->timeRangeGitSource = new TimeRangeGitSource($this->commandExecutorMock, new Files(), $this->logger);
     }
 }

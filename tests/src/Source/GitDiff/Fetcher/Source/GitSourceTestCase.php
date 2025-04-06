@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Source\GitDiff\Fetcher\Source;
 
-use PHPUnit\Framework\TestCase;
+use Butschster\ContextGenerator\Lib\Git\Command;
+use Butschster\ContextGenerator\Lib\Git\CommandsExecutorInterface;
 use PHPUnit\Framework\MockObject\MockObject;
-use Butschster\ContextGenerator\Source\GitDiff\Git\GitClientInterface;
+use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
@@ -17,7 +18,7 @@ use Psr\Log\NullLogger;
 abstract class GitSourceTestCase extends TestCase
 {
     protected string $repoDir = '/mocked/repo/path';
-    protected MockObject&GitClientInterface $gitClientMock;
+    protected MockObject&CommandsExecutorInterface $commandExecutorMock;
     protected LoggerInterface $logger;
 
     protected function setUp(): void
@@ -25,13 +26,13 @@ abstract class GitSourceTestCase extends TestCase
         parent::setUp();
 
         // Create a mock for GitClientInterface
-        $this->gitClientMock = $this->createMock(GitClientInterface::class);
+        $this->commandExecutorMock = $this->createMock(CommandsExecutorInterface::class);
 
         // Create a logger instance
         $this->logger = new NullLogger();
 
         // Set default mock behavior for isValidRepository
-        $this->gitClientMock
+        $this->commandExecutorMock
             ->method('isValidRepository')
             ->with($this->repoDir)
             ->willReturn(true);
@@ -45,11 +46,11 @@ abstract class GitSourceTestCase extends TestCase
      */
     protected function mockChangedFiles(string $command, array $files): void
     {
-        $this->gitClientMock
+        $this->commandExecutorMock
             ->expects($this->atLeastOnce())
-            ->method('execute')
-            ->with($this->repoDir, $command)
-            ->willReturn($files);
+            ->method('executeString')
+            ->with(new Command($this->repoDir, $command))
+            ->willReturn(\implode("\n", $files));
     }
 
     /**
@@ -60,10 +61,10 @@ abstract class GitSourceTestCase extends TestCase
      */
     protected function mockFileDiff(string $command, string $diff): void
     {
-        $this->gitClientMock
+        $this->commandExecutorMock
             ->expects($this->atLeastOnce())
             ->method('executeString')
-            ->with($this->repoDir, $command)
+            ->with(new Command($this->repoDir, $command))
             ->willReturn($diff);
     }
 
@@ -74,9 +75,9 @@ abstract class GitSourceTestCase extends TestCase
      */
     protected function mockCommitHash(string $hash): string
     {
-        $this->gitClientMock
+        $this->commandExecutorMock
             ->method('executeString')
-            ->with($this->repoDir, 'git rev-parse HEAD')
+            ->with(new Command($this->repoDir, 'git rev-parse HEAD'))
             ->willReturn($hash);
 
         return $hash;
@@ -91,9 +92,9 @@ abstract class GitSourceTestCase extends TestCase
      */
     protected function mockGitCommand(string $repository, string $command, array $result): void
     {
-        $this->gitClientMock
-            ->method('execute')
-            ->with($repository, $command)
+        $this->commandExecutorMock
+            ->method('executeString')
+            ->with(new Command($this->repoDir, $command))
             ->willReturn($result);
     }
 }

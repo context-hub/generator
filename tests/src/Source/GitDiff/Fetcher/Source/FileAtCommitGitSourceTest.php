@@ -7,6 +7,7 @@ namespace Tests\Source\GitDiff\Fetcher\Source;
 use Butschster\ContextGenerator\Source\GitDiff\Fetcher\Source\FileAtCommitGitSource;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
+use Spiral\Files\Files;
 
 #[CoversClass(FileAtCommitGitSource::class)]
 final class FileAtCommitGitSourceTest extends GitSourceTestCase
@@ -39,7 +40,7 @@ final class FileAtCommitGitSourceTest extends GitSourceTestCase
         $commitHash = 'abc1234567890abcdef1234567890abcdef123456';
 
         // Mock the git command for getting files at commit with path filter
-        $expectedCommand = "git show --name-only '{$commitHash}' -- 'src/'";
+        $expectedCommand = "show --name-only {$commitHash} -- src/";
         $expectedFiles = ['src/test1.php'];
         $this->mockChangedFiles($expectedCommand, $expectedFiles);
 
@@ -59,7 +60,7 @@ final class FileAtCommitGitSourceTest extends GitSourceTestCase
         $commitHash = 'abc1234567890abcdef1234567890abcdef123456';
 
         // Mock the git command for getting multiple files matching pattern
-        $expectedCommand = "git show --name-only '{$commitHash}' -- 'src/models/'";
+        $expectedCommand = "show --name-only {$commitHash} -- src/models/";
         $expectedFiles = [
             'src/models/User.php',
             'src/models/Post.php',
@@ -84,7 +85,7 @@ final class FileAtCommitGitSourceTest extends GitSourceTestCase
         $commitHash = 'abc1234567890abcdef1234567890abcdef123456';
 
         // Mock the git command for getting file content at commit
-        $expectedCommand = "git show '{$commitHash}':'test.php'";
+        $expectedCommand = "show {$commitHash}:test.php";
         $expectedContent = '<?php echo "Original";';
         $this->mockFileDiff($expectedCommand, $expectedContent);
 
@@ -125,6 +126,6 @@ final class FileAtCommitGitSourceTest extends GitSourceTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->fileAtCommitGitSource = new FileAtCommitGitSource($this->gitClientMock, $this->logger);
+        $this->fileAtCommitGitSource = new FileAtCommitGitSource($this->commandExecutorMock, new Files(), $this->logger);
     }
 }

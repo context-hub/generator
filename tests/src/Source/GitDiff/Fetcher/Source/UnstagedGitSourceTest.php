@@ -7,6 +7,7 @@ namespace Tests\Source\GitDiff\Fetcher\Source;
 use Butschster\ContextGenerator\Source\GitDiff\Fetcher\Source\UnstagedGitSource;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
+use Spiral\Files\Files;
 
 #[CoversClass(UnstagedGitSource::class)]
 final class UnstagedGitSourceTest extends GitSourceTestCase
@@ -34,7 +35,7 @@ final class UnstagedGitSourceTest extends GitSourceTestCase
     public function it_should_get_unstaged_files(): void
     {
         // Mock the git command for getting unstaged files
-        $expectedCommand = 'git diff --name-only';
+        $expectedCommand = 'diff --name-only';
         $expectedFiles = ['unstaged.txt', 'committed.txt'];
         $this->mockChangedFiles($expectedCommand, $expectedFiles);
 
@@ -51,7 +52,7 @@ final class UnstagedGitSourceTest extends GitSourceTestCase
     public function it_should_get_unstaged_file_diff(): void
     {
         // Mock the git command for getting unstaged file diff
-        $expectedCommand = "git diff -- 'unstaged-diff.txt'";
+        $expectedCommand = "diff -- unstaged-diff.txt";
         $expectedDiff = "diff --git a/unstaged-diff.txt b/unstaged-diff.txt\nindex 1234567..abcdef 100644\n--- a/unstaged-diff.txt\n+++ b/unstaged-diff.txt\n@@ -1 +1 @@\n-Original unstaged content\n+Modified unstaged content\n";
         $this->mockFileDiff($expectedCommand, $expectedDiff);
 
@@ -81,7 +82,7 @@ final class UnstagedGitSourceTest extends GitSourceTestCase
     public function it_should_handle_new_unstaged_files(): void
     {
         // Mock the git command for getting unstaged files
-        $expectedCommand = 'git diff --name-only';
+        $expectedCommand = 'diff --name-only';
         $expectedFiles = ['new-unstaged.txt'];
         $this->mockChangedFiles($expectedCommand, $expectedFiles);
 
@@ -96,7 +97,7 @@ final class UnstagedGitSourceTest extends GitSourceTestCase
     public function it_should_handle_no_unstaged_changes(): void
     {
         // Mock empty response for no unstaged changes
-        $expectedCommand = 'git diff --name-only';
+        $expectedCommand = 'diff --name-only';
         $this->mockChangedFiles($expectedCommand, []);
 
         // Get unstaged files when there are none
@@ -110,7 +111,7 @@ final class UnstagedGitSourceTest extends GitSourceTestCase
     public function it_should_handle_multiple_unstaged_changes(): void
     {
         // Mock multiple unstaged files
-        $expectedCommand = 'git diff --name-only';
+        $expectedCommand = 'diff --name-only';
         $expectedFiles = ['base1.txt', 'new1.txt', 'new2.txt'];
         $this->mockChangedFiles($expectedCommand, $expectedFiles);
 
@@ -128,6 +129,6 @@ final class UnstagedGitSourceTest extends GitSourceTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->unstagedGitSource = new UnstagedGitSource($this->gitClientMock, $this->logger);
+        $this->unstagedGitSource = new UnstagedGitSource($this->commandExecutorMock, new Files(), $this->logger);
     }
 }

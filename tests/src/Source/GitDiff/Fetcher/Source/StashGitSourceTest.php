@@ -7,6 +7,7 @@ namespace Tests\Source\GitDiff\Fetcher\Source;
 use Butschster\ContextGenerator\Source\GitDiff\Fetcher\Source\StashGitSource;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
+use Spiral\Files\Files;
 
 #[CoversClass(StashGitSource::class)]
 final class StashGitSourceTest extends GitSourceTestCase
@@ -36,7 +37,7 @@ final class StashGitSourceTest extends GitSourceTestCase
     public function it_should_get_files_from_stash(): void
     {
         // Mock the git command for getting files from stash
-        $expectedCommand = 'git stash show --name-only stash@{0}';
+        $expectedCommand = 'stash show --name-only stash@{0}';
         $expectedFiles = ['stashed.txt', 'new-stashed.txt'];
         $this->mockChangedFiles($expectedCommand, $expectedFiles);
 
@@ -52,7 +53,7 @@ final class StashGitSourceTest extends GitSourceTestCase
     public function it_should_get_stash_diff_for_specific_file(): void
     {
         // Mock the git command for getting stash diff
-        $expectedCommand = "git diff stash@{0} -- 'stashed-diff.txt'";
+        $expectedCommand = "diff stash@{0} -- stashed-diff.txt";
         $expectedDiff = "diff --git a/stashed-diff.txt b/stashed-diff.txt\nindex 1234567..abcdef 100644\n--- a/stashed-diff.txt\n+++ b/stashed-diff.txt\n@@ -1 +1 @@\n-Original content\n+Modified content for stashing\n";
         $this->mockFileDiff($expectedCommand, $expectedDiff);
 
@@ -93,7 +94,7 @@ final class StashGitSourceTest extends GitSourceTestCase
     public function it_should_return_empty_array_for_non_existent_stash(): void
     {
         // Mock the git command for a non-existent stash
-        $expectedCommand = 'git stash show --name-only stash@{100}';
+        $expectedCommand = 'stash show --name-only stash@{100}';
         $this->mockChangedFiles($expectedCommand, []);
 
         // Try to get files from a non-existent stash index
@@ -107,7 +108,7 @@ final class StashGitSourceTest extends GitSourceTestCase
     public function it_should_return_empty_string_for_non_existent_stash_diff(): void
     {
         // Mock the git command for a non-existent stash diff
-        $expectedCommand = "git diff stash@{100} -- 'file.txt'";
+        $expectedCommand = "diff stash@{100} -- file.txt";
         $this->mockFileDiff($expectedCommand, '');
 
         // Try to get diff from a non-existent stash
@@ -121,6 +122,6 @@ final class StashGitSourceTest extends GitSourceTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->stashGitSource = new StashGitSource($this->gitClientMock, $this->logger);
+        $this->stashGitSource = new StashGitSource($this->commandExecutorMock, new Files(), $this->logger);
     }
 }

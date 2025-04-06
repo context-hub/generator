@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\GitDiff;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Lib\Finder\FinderInterface;
 use Butschster\ContextGenerator\Lib\Finder\FinderResult;
 use Butschster\ContextGenerator\Lib\TreeBuilder\FileTreeBuilder;
@@ -11,44 +12,24 @@ use Butschster\ContextGenerator\Source\Fetcher\FilterableSourceInterface;
 use Butschster\ContextGenerator\Source\GitDiff\Fetcher\CommitRangeParser;
 use Butschster\ContextGenerator\Source\GitDiff\Fetcher\GitSourceFactory;
 use Butschster\ContextGenerator\Source\GitDiff\Fetcher\GitSourceInterface;
-use Butschster\ContextGenerator\Source\GitDiff\Fetcher\Source\CommitGitSource;
-use Butschster\ContextGenerator\Source\GitDiff\Fetcher\Source\FileAtCommitGitSource;
-use Butschster\ContextGenerator\Source\GitDiff\Fetcher\Source\StagedGitSource;
-use Butschster\ContextGenerator\Source\GitDiff\Fetcher\Source\StashGitSource;
-use Butschster\ContextGenerator\Source\GitDiff\Fetcher\Source\TimeRangeGitSource;
-use Butschster\ContextGenerator\Source\GitDiff\Fetcher\Source\UnstagedGitSource;
-use Butschster\ContextGenerator\Source\GitDiff\Git\GitClient;
-use Butschster\ContextGenerator\Source\GitDiff\Git\GitClientInterface;
 use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
+use Spiral\Files\FilesInterface;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 
 /**
- * Finder for git commit diffs
- *
  * This finder extracts diffs from git commits, stashes, and other sources and applies filters to them
  */
 final readonly class GitDiffFinder implements FinderInterface
 {
-    private GitSourceFactory $sourceFactory;
-
     public function __construct(
-        private GitClientInterface $gitClient = new GitClient(),
-        private LoggerInterface $logger = new NullLogger(),
-        private FileTreeBuilder $fileTreeBuilder = new FileTreeBuilder(),
-        private CommitRangeParser $rangeParser = new CommitRangeParser(),
-    ) {
-        // Initialize the source factory with all available sources
-        $this->sourceFactory = new GitSourceFactory([
-            new StashGitSource($gitClient, $logger),
-            new CommitGitSource($gitClient, $logger),
-            new StagedGitSource($gitClient, $logger),
-            new UnstagedGitSource($gitClient, $logger),
-            new TimeRangeGitSource($gitClient, $logger),
-            new FileAtCommitGitSource($gitClient, $logger),
-        ]);
-    }
+        private FilesInterface $files,
+        private GitSourceFactory $sourceFactory,
+        private FileTreeBuilder $fileTreeBuilder,
+        private CommitRangeParser $rangeParser,
+        #[LoggerPrefix(prefix: 'git-diff-finder')]
+        private ?LoggerInterface $logger = null,
+    ) {}
 
     /**
      * Find git commit diffs based on the given source configuration
@@ -63,15 +44,10 @@ final readonly class GitDiffFinder implements FinderInterface
             throw new \InvalidArgumentException('Source must be an instance of CommitDiffSource');
         }
 
-        // Validate repository
-        if (!$this->gitClient->isValidRepository($source->repository)) {
-            throw new \RuntimeException(\sprintf('"%s" is not a valid Git repository', $source->repository));
-        }
-
         // Get the commit range from the source
         $commitRange = $this->rangeParser->resolve($source->commit);
 
-        $this->logger->debug('Resolved commit range', [
+        $this->logger?->debug('Resolved commit range', [
             'original' => $source->commit,
             'resolved' => $commitRange,
         ]);
@@ -79,34 +55,34 @@ final readonly class GitDiffFinder implements FinderInterface
         // Get the appropriate Git source for this commit range
         $gitSource = $this->sourceFactory->create($commitRange);
 
-        $this->logger->debug('Selected Git source', [
+        $this->logger?->debug('Selected Git source', [
             'source' => $gitSource::class,
         ]);
 
         // Create a temporary directory for the diffs
         $tempDir = \sys_get_temp_dir() . '/git-diff-' . \uniqid();
-        \mkdir($tempDir, 0777, true);
+        $this->files->ensureDirectory($tempDir);
 
         try {
             // Get file infos from the Git source
-            $this->logger->debug('Getting file infos from Git source');
+            $this->logger?->debug('Getting file infos from Git source');
             $fileInfos = $gitSource->createFileInfos($source->repository, $commitRange, $tempDir);
 
             if (empty($fileInfos)) {
-                $this->logger->info('No changes found for the commit range', [
+                $this->logger?->info('No changes found for the commit range', [
                     'commitRange' => $commitRange,
                 ]);
                 return new FinderResult([], 'No changes found');
             }
 
-            $this->logger->debug('Found files', [
+            $this->logger?->debug('Found files', [
                 'count' => \count($fileInfos),
             ]);
 
             // Apply filters if needed
             $fileInfos = $this->applyFilters($fileInfos, $source, $tempDir);
 
-            $this->logger->debug('After applying filters', [
+            $this->logger?->debug('After applying filters', [
                 'count' => \count($fileInfos),
             ]);
 
@@ -123,14 +99,13 @@ final readonly class GitDiffFinder implements FinderInterface
 
             return new FinderResult(\array_values($fileInfos), $treeView);
         } catch (\Throwable $e) {
-            $this->logger->error('Error finding git diffs', [
+            $this->logger?->error('Error finding git diffs', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
             throw $e;
         } finally {
-            // Clean up the temporary directory
-            $this->removeDirectory($tempDir);
+            $this->files->deleteDirectory($tempDir);
         }
     }
 
@@ -146,7 +121,7 @@ final readonly class GitDiffFinder implements FinderInterface
             return [];
         }
 
-        $this->logger->debug('Applying filters to file infos', [
+        $this->logger?->debug('Applying filters to file infos', [
             'fileCount' => \count($fileInfos),
             'name' => $source->name(),
             'path' => $source->path(),
@@ -196,7 +171,7 @@ final readonly class GitDiffFinder implements FinderInterface
             return isset($filteredPaths[$relativePath]);
         });
 
-        $this->logger->debug('Filter results', [
+        $this->logger?->debug('Filter results', [
             'originalCount' => \count($fileInfos),
             'filteredCount' => \count($filtered),
         ]);
@@ -229,24 +204,5 @@ final readonly class GitDiffFinder implements FinderInterface
         $tree = $this->fileTreeBuilder->buildTree($files, '', $options);
 
         return $treeHeader . $tree;
-    }
-
-    /**
-     * Recursively remove a directory
-     */
-    private function removeDirectory(string $dir): void
-    {
-        if (!\is_dir($dir)) {
-            return;
-        }
-
-        $files = \array_diff(\scandir($dir), ['.', '..']);
-
-        foreach ($files as $file) {
-            $path = $dir . '/' . $file;
-            \is_dir($path) ? $this->removeDirectory($path) : \unlink($path);
-        }
-
-        \rmdir($dir);
     }
 }

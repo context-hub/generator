@@ -31,8 +31,8 @@ final readonly class CommitRangeParser
         'last-year' => 'HEAD@{1.year.ago}..HEAD',
 
         // Special cases
-        'unstaged' => '', // Special case handled in the fetcher
-        'staged' => '--cached', // Changes staged but not committed
+        'unstaged' => 'unstaged', // Special case handled in the fetcher
+        'staged' => 'staged', // Changes staged but not committed
         'wip' => 'HEAD~1..HEAD', // Same as 'last' but semantically for WIP commits
 
         // Branch comparison patterns
@@ -67,6 +67,7 @@ final readonly class CommitRangeParser
         if (\is_array($commitRange)) {
             return \array_map(fn(string $range): string => $this->resolveExpression($range), $commitRange);
         }
+
         return $this->resolveExpression($commitRange);
     }
 
@@ -139,56 +140,5 @@ final readonly class CommitRangeParser
         // If nothing matches and it's not a recognized pattern, return as is
         // (let git decide if it's valid)
         return $expression;
-    }
-
-    /**
-     * Format a commit range for display in output
-     *
-     * @param string|array<string> $commitRange The commit range to format
-     * @return string Formatted commit range for display
-     */
-    public function formatForDisplay(string|array $commitRange): string
-    {
-        if (\is_array($commitRange)) {
-            return \implode(', ', $commitRange);
-        }
-
-        // Special handling for empty or specific presets
-        if ($commitRange === '') {
-            return 'unstaged changes';
-        }
-        if ($commitRange === '--cached') {
-            return 'staged changes';
-        }
-
-        // Translate git expressions to more human-readable forms where possible
-        $humanReadable = [
-            'HEAD~1..HEAD' => 'last commit',
-            'HEAD~5..HEAD' => 'last 5 commits',
-            'HEAD~10..HEAD' => 'last 10 commits',
-            'HEAD@{1.week.ago}..HEAD' => 'changes from last week',
-            'HEAD@{1.month.ago}..HEAD' => 'changes from last month',
-            'main..HEAD' => 'changes since diverging from main',
-            'master..HEAD' => 'changes since diverging from master',
-            'stash@{0}' => 'latest stash',
-            'stash@{1}' => 'second most recent stash',
-            'stash@{2}' => 'third most recent stash',
-            'stash@{0}..stash@{1}' => 'latest 2 stashes',
-            'stash@{0}..stash@{2}' => 'latest 3 stashes',
-            'stash@{0}..stash@{4}' => 'latest 5 stashes',
-            'stash@{0}..stash@{100}' => 'all stashes',
-        ];
-
-        return $humanReadable[$commitRange] ?? $commitRange;
-    }
-
-    /**
-     * Get a list of all available preset aliases
-     *
-     * @return array<string, string> Array of preset aliases and their corresponding git expressions
-     */
-    public function getAvailablePresets(): array
-    {
-        return self::COMMIT_RANGE_PRESETS;
     }
 }

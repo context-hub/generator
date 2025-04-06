@@ -4,52 +4,35 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\GitDiff\Fetcher\Source;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
+
 /**
  * Git source for unstaged changes (not yet added to the index)
  */
-final class UnstagedGitSource extends AbstractGitSource
+#[LoggerPrefix(prefix: 'git.unstaged')]
+final readonly class UnstagedGitSource extends AbstractGitSource
 {
-    /**
-     * Check if this source supports the given commit reference
-     */
     public function supports(string $commitReference): bool
     {
         return $commitReference === '' || $commitReference === 'unstaged';
     }
 
-    /**
-     * Get a list of files with unstaged changes
-     *
-     * @param string $repository Path to the Git repository
-     * @param string $commitReference The commit reference (ignored)
-     * @return array<string> List of changed file paths
-     */
     public function getChangedFiles(string $repository, string $commitReference): array
     {
-        $command = 'git diff --name-only';
-        return $this->executeGitCommand($repository, $command);
+        return $this->executeGitCommand(
+            repository: $repository,
+            command: 'diff --name-only',
+        );
     }
 
-    /**
-     * Get the diff for a specific unstaged file
-     *
-     * @param string $repository Path to the Git repository
-     * @param string $commitReference The commit reference (ignored)
-     * @param string $file Path to the file
-     * @return string Diff content
-     */
     public function getFileDiff(string $repository, string $commitReference, string $file): string
     {
-        $command = \sprintf('git diff -- %s', \escapeshellarg($file));
-        return $this->executeGitCommandString($repository, $command);
+        return $this->executeGitCommandString(
+            repository: $repository,
+            command: \sprintf('diff -- %s', $file),
+        );
     }
 
-    /**
-     * Format the reference for display in the tree view
-     *
-     * @param string $commitReference The commit reference
-     * @return string Formatted reference for display
-     */
     public function formatReferenceForDisplay(string $commitReference): string
     {
         return "Unstaged changes";
