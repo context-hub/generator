@@ -7,6 +7,7 @@ namespace Butschster\ContextGenerator\Console;
 use Butschster\ContextGenerator\Application\AppScope;
 use Butschster\ContextGenerator\Config\ConfigurationProvider;
 use Butschster\ContextGenerator\Config\Exception\ConfigLoaderException;
+use Butschster\ContextGenerator\Console\Renderer\GenerateCommandRenderer;
 use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
 use Spiral\Console\Attribute\Option;
@@ -64,13 +65,13 @@ final class GenerateCommand extends BaseCommand
                 try {
                     // Get the appropriate loader based on options provided
                     if ($this->inlineJson !== null) {
-                        $this->output->info('Using inline JSON configuration...');
+                        $this->logger->info('Using inline JSON configuration...');
                         $loader = $configProvider->fromString($this->inlineJson);
                     } elseif ($this->configPath !== null) {
-                        $this->output->info(\sprintf('Loading configuration from %s...', $this->configPath));
+                        $this->logger->info(\sprintf('Loading configuration from %s...', $this->configPath));
                         $loader = $configProvider->fromPath($this->configPath);
                     } else {
-                        $this->output->info('Loading configuration from default location...');
+                        $this->logger->info('Loading configuration from default location...');
                         $loader = $configProvider->fromDefaultLocation();
                     }
                 } catch (ConfigLoaderException $e) {
@@ -83,19 +84,20 @@ final class GenerateCommand extends BaseCommand
                     return Command::FAILURE;
                 }
 
+                // Create the renderer for consistent output formatting
+                $renderer = new GenerateCommandRenderer($this->output);
+
+                // Display summary header
+                $this->output->writeln('');
+
                 foreach ($loader->load()->getItems() as $document) {
-                    $this->output->info(\sprintf('Compiling %s...', $document->description));
+                    $this->logger->info(\sprintf('Compiling %s...', $document->description));
 
                     $compiledDocument = $compiler->compile($document);
-                    if (!$compiledDocument->errors->hasErrors()) {
-                        $this->output->success(\sprintf('Document compiled into %s', $document->outputPath));
-                        continue;
-                    }
-
-                    $this->output->warning(\sprintf('Document compiled into %s with errors', $document->outputPath));
-                    $this->output->listing(\iterator_to_array($compiledDocument->errors));
+                    $renderer->renderCompilationResult($document, $compiledDocument);
                 }
 
+                $this->output->writeln('');
                 return Command::SUCCESS;
             },
         );
