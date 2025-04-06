@@ -5,10 +5,18 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Lib\Git;
 
 use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
+use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\Lib\Git\Exception\GitClientException;
+use Butschster\ContextGenerator\Lib\Git\Exception\GitCommandException;
 use Psr\Log\LoggerInterface;
+use Spiral\Files\Exception\FilesException;
+use Spiral\Files\FilesInterface;
+use Symfony\Component\Process\Process;
 
-final class GitClient implements GitClientInterface
+/**
+ * Executes git commands and handles their results.
+ */
+final class CommandsExecutor implements CommandsExecutorInterface
 {
     /**
      * Static cache of validated repositories
@@ -17,13 +25,22 @@ final class GitClient implements GitClientInterface
     private static array $validatedRepositories = [];
 
     public function __construct(
-        #[LoggerPrefix(prefix: 'git-client')]
+        private readonly FilesInterface $files,
+        private readonly DirectoriesInterface $dirs,
+        #[LoggerPrefix(prefix: 'git-commands-executor')]
         private readonly ?LoggerInterface $logger = null,
     ) {}
 
+    /**
+     * Execute a Git command and return the output as an array of lines.
+     *
+     * @inheritDoc
+     */
     public function execute(string $repository, string $command): array
     {
-        $this->validateRepository($repository);
+        $repoPath = (string) $this->dirs->getRootPath()->join($repository);
+
+        $this->validateRepository($repoPath);
 
         $currentDir = \getcwd();
         $output = [];
@@ -31,14 +48,14 @@ final class GitClient implements GitClientInterface
 
         try {
             // Change to the repository directory
-            \chdir($repository);
+            \chdir($repoPath);
 
             // Add 'git' prefix to the command if not already present
             $fullCommand = $this->prepareCommand($command);
 
             $this->logger?->debug('Executing Git command', [
                 'command' => $fullCommand,
-                'repository' => $repository,
+                'repository' => $repoPath,
             ]);
 
             // Execute the command with error output capture
@@ -69,12 +86,47 @@ final class GitClient implements GitClientInterface
         }
     }
 
+    /**
+     * Execute a Git command and return the output as a string.
+     *
+     * @inheritDoc
+     */
     public function executeString(string $repository, string $command): string
     {
         $output = $this->execute($repository, $command);
+
         return \implode(PHP_EOL, $output);
     }
 
+    /**
+     * Execute a Git command using an array of command parts.
+     *
+     * @inheritDoc
+     */
+    public function executeCommand(array $command): string
+    {
+        // Prepend 'git' to the command array
+        $gitCommand = ['git'];
+        $fullCommand = \array_merge($gitCommand, $command);
+
+        $process = new Process($fullCommand, (string) $this->dirs->getRootPath());
+        $process->run();
+
+        if (!$process->isSuccessful()) {
+            throw new GitCommandException(
+                \sprintf('Git command failed: %s', $process->getErrorOutput()),
+                $process->getExitCode(),
+            );
+        }
+
+        return $process->getOutput();
+    }
+
+    /**
+     * Check if a directory is a valid Git repository.
+     *
+     * @inheritDoc
+     */
     public function isValidRepository(string $repository): bool
     {
         // Return cached result if available
@@ -130,6 +182,76 @@ final class GitClient implements GitClientInterface
     }
 
     /**
+     * Applies a git patch to a file.
+     *
+     * @inheritDoc
+     */
+    public function applyPatch(string $filePath, string $patchContent): string
+    {
+        $rootPath = $this->dirs->getRootPath();
+        $file = $rootPath->join($filePath);
+
+        // Ensure the file exists
+        if (!$file->exists()) {
+            throw new GitCommandException(\sprintf('File "%s" does not exist', $filePath));
+        }
+
+        // Create a temporary file for the patch
+        try {
+            $patchFile = $this->files->tempFilename();
+        } catch (FilesException $e) {
+            $this->logger?->error('Failed to create temporary file for patch', [
+                'error' => $e->getMessage(),
+            ]);
+
+            throw new GitCommandException('Failed to create temporary file for patch', 0, $e);
+        }
+
+        try {
+            // Write the patch content to a temporary file
+            $this->files->write($patchFile, $patchContent, FilesInterface::READONLY);
+
+            // Apply the patch using git apply command
+            $process = new Process(
+                ['git', 'apply', '--whitespace=nowarn', $patchFile],
+                (string) $rootPath,
+            );
+
+            $process->run();
+
+            // Check if the command was successful
+            if (!$process->isSuccessful()) {
+                throw new GitCommandException(
+                    \sprintf('Failed to apply patch: %s', $process->getErrorOutput()),
+                    $process->getExitCode(),
+                );
+            }
+
+            return \sprintf('Successfully applied patch to %s', $filePath);
+        } finally {
+            if ($this->files->exists($patchFile)) {
+                $this->files->delete($patchFile);
+            }
+        }
+    }
+
+    /**
+     * Checks if the given directory is a git repository.
+     *
+     * @return bool True if the directory is a git repository, false otherwise
+     * @internal This method is kept for backward compatibility
+     */
+    public function isGitRepository(): bool
+    {
+        try {
+            $this->executeCommand(['rev-parse', '--is-inside-work-tree']);
+            return true;
+        } catch (GitCommandException) {
+            return false;
+        }
+    }
+
+    /**
      * Validate that the repository directory exists and is a valid Git repository
      * Uses cached results when available
      *
@@ -138,13 +260,6 @@ final class GitClient implements GitClientInterface
      */
     private function validateRepository(string $repository): void
     {
-        if (!\is_dir($repository)) {
-            $this->logger?->error('Repository directory does not exist', [
-                'repository' => $repository,
-            ]);
-            throw new \InvalidArgumentException(\sprintf('Git repository "%s" does not exist', $repository));
-        }
-
         if (!$this->isValidRepository($repository)) {
             $this->logger?->error('Not a valid Git repository', [
                 'repository' => $repository,

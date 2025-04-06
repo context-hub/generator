@@ -4,32 +4,21 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\GitDiff\Fetcher\Source;
 
-use Butschster\ContextGenerator\Lib\Git\Exception\GitCommandException;
-use Butschster\ContextGenerator\Lib\Git\GitClientInterface;
+use Butschster\ContextGenerator\Lib\Git\Exception\GitClientException;
+use Butschster\ContextGenerator\Lib\Git\CommandsExecutorInterface;
 use Butschster\ContextGenerator\Source\GitDiff\Fetcher\GitSourceInterface;
 use Psr\Log\LoggerInterface;
+use Spiral\Files\FilesInterface;
 use Symfony\Component\Finder\SplFileInfo;
 
-/**
- * Abstract base class for Git sources
- *
- * Provides common functionality for all Git source types
- */
-abstract class AbstractGitSource implements GitSourceInterface
+abstract readonly class AbstractGitSource implements GitSourceInterface
 {
     public function __construct(
-        protected readonly GitClientInterface $gitClient,
-        protected readonly ?LoggerInterface $logger = null,
+        protected CommandsExecutorInterface $git,
+        private FilesInterface $files,
+        protected ?LoggerInterface $logger = null,
     ) {}
 
-    /**
-     * Create file info objects for the diffs
-     *
-     * @param string $repository Path to the Git repository
-     * @param string $commitReference The commit reference
-     * @param string $tempDir Temporary directory to write diffs to
-     * @return array<SplFileInfo> List of file info objects
-     */
     public function createFileInfos(string $repository, string $commitReference, string $tempDir): array
     {
         $changedFiles = $this->getChangedFiles($repository, $commitReference);
@@ -38,10 +27,7 @@ abstract class AbstractGitSource implements GitSourceInterface
             return [];
         }
 
-        // Create directory if it doesn't exist
-        if (!\is_dir($tempDir)) {
-            \mkdir($tempDir, 0777, true);
-        }
+        $this->files->ensureDirectory($tempDir, 0777);
 
         // Write each diff to a temporary file
         $fileInfos = [];
@@ -58,11 +44,8 @@ abstract class AbstractGitSource implements GitSourceInterface
             $tempFile = $tempDir . '/' . $file;
             $tempDirname = \dirname($tempFile);
 
-            if (!\is_dir($tempDirname)) {
-                \mkdir($tempDirname, 0777, true);
-            }
-
-            \file_put_contents($tempFile, $diff);
+            $this->files->ensureDirectory($tempDirname, 0777);
+            $this->files->write($tempFile, $diff);
 
             // Create a file info object with additional metadata
             $fileInfos[] = new class($tempFile, $file, $diff) extends SplFileInfo {
@@ -107,9 +90,9 @@ abstract class AbstractGitSource implements GitSourceInterface
     protected function executeGitCommand(string $repository, string $command): array
     {
         try {
-            return $this->gitClient->execute($repository, $command);
-        } catch (GitCommandException $e) {
-            $this->logger->warning('Git command failed, returning empty result', [
+            return $this->git->execute($repository, $command);
+        } catch (GitClientException $e) {
+            $this->logger?->warning('Git command failed, returning empty result', [
                 'command' => $e->getCommand(),
                 'exitCode' => $e->getExitCode(),
                 'error' => $e->getMessage(),
@@ -128,9 +111,9 @@ abstract class AbstractGitSource implements GitSourceInterface
     protected function executeGitCommandString(string $repository, string $command): string
     {
         try {
-            return $this->gitClient->executeString($repository, $command);
-        } catch (GitCommandException $e) {
-            $this->logger->warning('Git command failed, returning empty result', [
+            return $this->git->executeString($repository, $command);
+        } catch (GitClientException $e) {
+            $this->logger?->warning('Git command failed, returning empty result', [
                 'command' => $e->getCommand(),
                 'exitCode' => $e->getExitCode(),
                 'error' => $e->getMessage(),

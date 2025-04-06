@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Application\Bootloader;
 
-use Butschster\ContextGenerator\Lib\Git\GitClient;
-use Butschster\ContextGenerator\Lib\Git\GitClientInterface;
+use Butschster\ContextGenerator\Lib\Git\CommandsExecutor;
+use Butschster\ContextGenerator\Lib\Git\CommandsExecutorInterface;
 use Spiral\Boot\Bootloader\Bootloader;
 
 final class GitClientBootloader extends Bootloader
@@ -14,7 +14,7 @@ final class GitClientBootloader extends Bootloader
     public function defineSingletons(): array
     {
         return [
-            GitClientInterface::class => GitClient::class,
+            CommandsExecutorInterface::class => CommandsExecutor::class,
         ];
     }
 }

@@ -10,7 +10,7 @@ use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
  * Git source for specific files at a commit
  */
 #[LoggerPrefix(prefix: 'git.file_at_commit')]
-final class FileAtCommitGitSource extends AbstractGitSource
+final readonly class FileAtCommitGitSource extends AbstractGitSource
 {
     public function supports(string $commitReference): bool
     {
@@ -47,13 +47,14 @@ final class FileAtCommitGitSource extends AbstractGitSource
             return '';
         }
 
-        $command = \sprintf(
-            'git show %s:%s',
-            \escapeshellarg($commit),
-            \escapeshellarg($file),
+        return $this->executeGitCommandString(
+            repository: $repository,
+            command: \sprintf(
+                'git show %s:%s',
+                \escapeshellarg($commit),
+                \escapeshellarg($file),
+            ),
         );
-
-        return $this->executeGitCommandString($repository, $command);
     }
 
     public function formatReferenceForDisplay(string $commitReference): string

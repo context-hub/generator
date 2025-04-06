@@ -10,7 +10,7 @@ use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
  * Git source for stash references
  */
 #[LoggerPrefix(prefix: 'git.stash')]
-final class StashGitSource extends AbstractGitSource
+final readonly class StashGitSource extends AbstractGitSource
 {
     public function supports(string $commitReference): bool
     {
@@ -36,8 +36,10 @@ final class StashGitSource extends AbstractGitSource
     {
         // Handle single stash reference: stash@{0}
         if (\preg_match('/^stash@\{\d+\}$/', $commitReference)) {
-            $command = 'git stash show --name-only ' . $commitReference;
-            return $this->executeGitCommand($repository, $command);
+            return $this->executeGitCommand(
+                repository: $repository,
+                command: 'git stash show --name-only ' . $commitReference,
+            );
         }
 
         // Handle stash range: stash@{0}..stash@{2}
@@ -59,10 +61,11 @@ final class StashGitSource extends AbstractGitSource
             // Get files from each stash in the range
             $allFiles = [];
             for ($i = $startIndex; $i <= $endIndex; $i++) {
-                $stashRef = 'stash@{' . $i . '}';
-                $stashCommand = 'git stash show --name-only ' . $stashRef;
+                $stashOutput = $this->executeGitCommand(
+                    repository: $repository,
+                    command: 'git stash show --name-only stash@{' . $i . '}',
+                );
 
-                $stashOutput = $this->executeGitCommand($repository, $stashCommand);
                 if (!empty($stashOutput)) {
                     $allFiles = \array_merge($allFiles, $stashOutput);
                 }
@@ -80,8 +83,11 @@ final class StashGitSource extends AbstractGitSource
             }
 
             // First, get the stash index that matches the message
-            $listCommand = 'git stash list';
-            $listOutput = $this->executeGitCommand($repository, $listCommand);
+            $listOutput = $this->executeGitCommand(
+                repository: $repository,
+                command: 'git stash list',
+            );
+
             if (empty($listOutput)) {
                 return [];
             }
@@ -99,8 +105,10 @@ final class StashGitSource extends AbstractGitSource
                 return [];
             }
 
-            $command = 'git stash show --name-only stash@{' . $matchingStashIndex . '}';
-            return $this->executeGitCommand($repository, $command);
+            return $this->executeGitCommand(
+                repository: $repository,
+                command: 'git stash show --name-only stash@{' . $matchingStashIndex . '}',
+            );
         }
 
         return [];
@@ -116,8 +124,10 @@ final class StashGitSource extends AbstractGitSource
             $stashIndex = $matches[1] ?? 0;
 
             // Build the command with the stash index
-            $command = 'git diff stash@{' . $stashIndex . '} -- ' . \escapeshellarg($file);
-            return $this->executeGitCommandString($repository, $command);
+            return $this->executeGitCommandString(
+                repository: $repository,
+                command: 'git diff stash@{' . $stashIndex . '} -- ' . \escapeshellarg($file),
+            );
         }
 
         // Handle stash range (just use the first stash in the range for showing diff)
@@ -128,8 +138,10 @@ final class StashGitSource extends AbstractGitSource
             $stashIndex = $matches[1] ?? 0;
 
             // Build the command
-            $command = 'git diff stash@{' . $stashIndex . '} -- ' . \escapeshellarg($file);
-            return $this->executeGitCommandString($repository, $command);
+            return $this->executeGitCommandString(
+                repository: $repository,
+                command: 'git diff stash@{' . $stashIndex . '} -- ' . \escapeshellarg($file),
+            );
         }
 
         // Handle stash with message search: stash@{/message}
@@ -141,8 +153,11 @@ final class StashGitSource extends AbstractGitSource
             }
 
             // First, get the stash index that matches the message
-            $listCommand = 'git stash list';
-            $listOutput = $this->executeGitCommand($repository, $listCommand);
+            $listOutput = $this->executeGitCommand(
+                repository: $repository,
+                command: 'git stash list',
+            );
+
             if (empty($listOutput)) {
                 return '';
             }
@@ -161,8 +176,10 @@ final class StashGitSource extends AbstractGitSource
             }
 
             // Use the correct diff command format
-            $command = 'git diff stash@{' . $matchingStashIndex . '} -- ' . \escapeshellarg($file);
-            return $this->executeGitCommandString($repository, $command);
+            return $this->executeGitCommandString(
+                repository: $repository,
+                command: 'git diff stash@{' . $matchingStashIndex . '} -- ' . \escapeshellarg($file),
+            );
         }
 
         return '';

@@ -7,13 +7,13 @@ namespace Butschster\ContextGenerator\Source\GitDiff;
 use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Lib\Finder\FinderInterface;
 use Butschster\ContextGenerator\Lib\Finder\FinderResult;
-use Butschster\ContextGenerator\Lib\Git\GitClientInterface;
 use Butschster\ContextGenerator\Lib\TreeBuilder\FileTreeBuilder;
 use Butschster\ContextGenerator\Source\Fetcher\FilterableSourceInterface;
 use Butschster\ContextGenerator\Source\GitDiff\Fetcher\CommitRangeParser;
 use Butschster\ContextGenerator\Source\GitDiff\Fetcher\GitSourceFactory;
 use Butschster\ContextGenerator\Source\GitDiff\Fetcher\GitSourceInterface;
 use Psr\Log\LoggerInterface;
+use Spiral\Files\FilesInterface;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 
@@ -23,8 +23,8 @@ use Symfony\Component\Finder\SplFileInfo;
 final readonly class GitDiffFinder implements FinderInterface
 {
     public function __construct(
+        private FilesInterface $files,
         private GitSourceFactory $sourceFactory,
-        private GitClientInterface $gitClient,
         private FileTreeBuilder $fileTreeBuilder,
         private CommitRangeParser $rangeParser,
         #[LoggerPrefix(prefix: 'git-diff-finder')]
@@ -44,11 +44,6 @@ final readonly class GitDiffFinder implements FinderInterface
             throw new \InvalidArgumentException('Source must be an instance of CommitDiffSource');
         }
 
-        // Validate repository
-        if (!$this->gitClient->isValidRepository($source->repository)) {
-            throw new \RuntimeException(\sprintf('"%s" is not a valid Git repository', $source->repository));
-        }
-
         // Get the commit range from the source
         $commitRange = $this->rangeParser->resolve($source->commit);
 
@@ -66,7 +61,7 @@ final readonly class GitDiffFinder implements FinderInterface
 
         // Create a temporary directory for the diffs
         $tempDir = \sys_get_temp_dir() . '/git-diff-' . \uniqid();
-        \mkdir($tempDir, 0777, true);
+        $this->files->ensureDirectory($tempDir);
 
         try {
             // Get file infos from the Git source
@@ -110,8 +105,7 @@ final readonly class GitDiffFinder implements FinderInterface
             ]);
             throw $e;
         } finally {
-            // Clean up the temporary directory
-            $this->removeDirectory($tempDir);
+            $this->files->deleteDirectory($tempDir);
         }
     }
 
@@ -210,24 +204,5 @@ final readonly class GitDiffFinder implements FinderInterface
         $tree = $this->fileTreeBuilder->buildTree($files, '', $options);
 
         return $treeHeader . $tree;
-    }
-
-    /**
-     * Recursively remove a directory
-     */
-    private function removeDirectory(string $dir): void
-    {
-        if (!\is_dir($dir)) {
-            return;
-        }
-
-        $files = \array_diff(\scandir($dir), ['.', '..']);
-
-        foreach ($files as $file) {
-            $path = $dir . '/' . $file;
-            \is_dir($path) ? $this->removeDirectory($path) : \unlink($path);
-        }
-
-        \rmdir($dir);
     }
 }

@@ -7,7 +7,6 @@ namespace Butschster\ContextGenerator\Source\GitDiff;
 use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Lib\Finder\FinderResult;
-use Butschster\ContextGenerator\Lib\Git\GitClientInterface;
 use Butschster\ContextGenerator\Modifier\ModifiersApplierInterface;
 use Butschster\ContextGenerator\Source\Fetcher\SourceFetcherInterface;
 use Butschster\ContextGenerator\Source\GitDiff\RenderStrategy\Enum\RenderStrategyEnum;
@@ -25,7 +24,6 @@ final readonly class GitDiffSourceFetcher implements SourceFetcherInterface
 {
     public function __construct(
         private GitDiffFinder $finder,
-        private GitClientInterface $gitClient,
         private ContentBuilderFactory $builderFactory = new ContentBuilderFactory(),
         private RenderStrategyFactory $renderStrategyFactory = new RenderStrategyFactory(),
         #[LoggerPrefix(prefix: 'commit-diff-source')]
@@ -58,13 +56,6 @@ final readonly class GitDiffSourceFetcher implements SourceFetcherInterface
             'commit' => $source->commit,
             'hasModifiers' => !empty($source->modifiers),
         ]);
-
-        // Validate repository
-        if (!$this->gitClient->isValidRepository($source->repository)) {
-            $errorMessage = \sprintf('"%s" is not a valid Git repository', $source->repository);
-            $this->logger?->error($errorMessage);
-            throw new \RuntimeException($errorMessage);
-        }
 
         // Use the finder to get the diffs
         $this->logger?->debug('Finding git diffs', [

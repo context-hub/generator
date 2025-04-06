@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem;
 
+use Butschster\ContextGenerator\Lib\Git\CommandsExecutorInterface;
 use Butschster\ContextGenerator\Lib\Git\Exception\GitCommandException;
-use Butschster\ContextGenerator\Lib\Git\GitCommandsExecutor;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
@@ -34,7 +34,7 @@ final readonly class FileApplyPatchAction
 {
     public function __construct(
         private LoggerInterface $logger,
-        private GitCommandsExecutor $commandsExecutor,
+        private CommandsExecutorInterface $commandsExecutor,
     ) {}
 
     #[Post(path: '/tools/call/file-apply-patch', name: 'tools.file-apply-patch')]

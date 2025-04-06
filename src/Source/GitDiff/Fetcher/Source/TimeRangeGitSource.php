@@ -10,7 +10,7 @@ use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
  * Git source for time-based ranges
  */
 #[LoggerPrefix(prefix: 'git.time_range')]
-final class TimeRangeGitSource extends AbstractGitSource
+final readonly class TimeRangeGitSource extends AbstractGitSource
 {
     public function supports(string $commitReference): bool
     {
@@ -42,36 +42,35 @@ final class TimeRangeGitSource extends AbstractGitSource
     public function getChangedFiles(string $repository, string $commitReference): array
     {
         if (\str_contains($commitReference, '--since=')) {
-            $command = 'git log ' . $commitReference . ' --name-only --pretty=format:""';
-            $output = $this->executeGitCommand($repository, $command);
+            $output = $this->executeGitCommand(
+                repository: $repository,
+                command: 'git log ' . $commitReference . ' --name-only --pretty=format:""',
+            );
 
             // Remove empty lines and duplicates
             return \array_unique(\array_filter($output));
         }
 
-        $command = \sprintf('git diff --name-only %s', \escapeshellarg($commitReference));
-        return $this->executeGitCommand($repository, $command);
+        return $this->executeGitCommand(
+            repository: $repository,
+            command: \sprintf('git diff --name-only %s', \escapeshellarg($commitReference)),
+        );
     }
 
     public function getFileDiff(string $repository, string $commitReference, string $file): string
     {
         if (\str_contains($commitReference, '--since=')) {
-            $command = \sprintf(
-                'git log %s -p -- %s',
-                \escapeshellarg($commitReference),
-                \escapeshellarg($file),
+            return $this->executeGitCommandString(
+                repository: $repository,
+                command: \sprintf('git log %s -p -- %s', \escapeshellarg($commitReference), \escapeshellarg($file)),
             );
-
-            return $this->executeGitCommandString($repository, $command);
         }
 
-        $command = \sprintf(
-            'git diff %s -- %s',
-            \escapeshellarg($commitReference),
-            \escapeshellarg($file),
-        );
 
-        return $this->executeGitCommandString($repository, $command);
+        return $this->executeGitCommandString(
+            repository: $repository,
+            command: \sprintf('git diff %s -- %s', \escapeshellarg($commitReference), \escapeshellarg($file)),
+        );
     }
 
     public function formatReferenceForDisplay(string $commitReference): string

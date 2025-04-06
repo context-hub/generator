@@ -10,7 +10,7 @@ use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
  * Git source for commit references
  */
 #[LoggerPrefix(prefix: 'git.commit')]
-final class CommitGitSource extends AbstractGitSource
+final readonly class CommitGitSource extends AbstractGitSource
 {
     public function supports(string $commitReference): bool
     {
@@ -45,19 +45,22 @@ final class CommitGitSource extends AbstractGitSource
 
     public function getChangedFiles(string $repository, string $commitReference): array
     {
-        $command = \sprintf('git diff --name-only %s', \escapeshellarg($commitReference));
-        return $this->executeGitCommand($repository, $command);
+        return $this->executeGitCommand(
+            repository: $repository,
+            command: \sprintf('git diff --name-only %s', \escapeshellarg($commitReference)),
+        );
     }
 
     public function getFileDiff(string $repository, string $commitReference, string $file): string
     {
-        $command = \sprintf(
-            'git diff %s -- %s',
-            \escapeshellarg($commitReference),
-            \escapeshellarg($file),
+        return $this->executeGitCommandString(
+            repository: $repository,
+            command: \sprintf(
+                'git diff %s -- %s',
+                \escapeshellarg($commitReference),
+                \escapeshellarg($file),
+            ),
         );
-
-        return $this->executeGitCommandString($repository, $command);
     }
 
     public function formatReferenceForDisplay(string $commitReference): string

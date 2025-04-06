@@ -10,7 +10,7 @@ use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
  * Git source for unstaged changes (not yet added to the index)
  */
 #[LoggerPrefix(prefix: 'git.unstaged')]
-final class UnstagedGitSource extends AbstractGitSource
+final readonly class UnstagedGitSource extends AbstractGitSource
 {
     public function supports(string $commitReference): bool
     {
@@ -19,14 +19,18 @@ final class UnstagedGitSource extends AbstractGitSource
 
     public function getChangedFiles(string $repository, string $commitReference): array
     {
-        $command = 'git diff --name-only';
-        return $this->executeGitCommand($repository, $command);
+        return $this->executeGitCommand(
+            repository: $repository,
+            command: 'git diff --name-only',
+        );
     }
 
     public function getFileDiff(string $repository, string $commitReference, string $file): string
     {
-        $command = \sprintf('git diff -- %s', \escapeshellarg($file));
-        return $this->executeGitCommandString($repository, $command);
+        return $this->executeGitCommandString(
+            repository: $repository,
+            command: \sprintf('git diff -- %s', \escapeshellarg($file)),
+        );
     }
 
     public function formatReferenceForDisplay(string $commitReference): string
