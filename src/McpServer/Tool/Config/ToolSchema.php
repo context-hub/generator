@@ -25,12 +25,12 @@ final readonly class ToolSchema implements \JsonSerializable
     public static function fromArray(array $config): ?self
     {
         if (empty($config)) {
-            return new self([]);
+            $config = ['properties' => []];
         }
 
         // Validate basic schema structure
-        if (!isset($config['type']) || $config['type'] !== 'object') {
-            throw new \InvalidArgumentException('Schema must have a "type" property set to "object"');
+        if (!isset($config['type'])) {
+            $config['type'] = 'object';
         }
 
         return new self($config);

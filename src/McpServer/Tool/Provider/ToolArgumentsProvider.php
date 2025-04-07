@@ -70,11 +70,11 @@ final readonly class ToolArgumentsProvider implements VariableProviderInterface
      * @param mixed $value The value to cast
      * @return mixed The cast value
      */
-    private function castValueFromSchema(string $name, mixed $value): mixed
+    private function castValueFromSchema(string $name, mixed $value): string
     {
         // Return null directly if value is null
         if ($value === null) {
-            return null;
+            return 'null';
         }
 
         $properties = $this->schema->getProperties();
@@ -86,7 +86,7 @@ final readonly class ToolArgumentsProvider implements VariableProviderInterface
         $type = $propertyDef['type'] ?? null;
 
         if ($type === null) {
-            return $value;
+            return 'null';
         }
 
         return match ($type) {
@@ -94,9 +94,9 @@ final readonly class ToolArgumentsProvider implements VariableProviderInterface
             'number' => $this->castToFloat($value),
             'integer' => $this->castToInt($value),
             'boolean' => $this->castToBool($value),
-            'array' => $this->castToArray($value),
-            'object' => $this->castToObject($value),
-            default => $value,
+            'array' => \json_encode($this->castToArray($value)),
+            'object' => \json_encode($this->castToObject($value)),
+            default => (string) $value,
         };
     }
 
@@ -115,38 +115,38 @@ final readonly class ToolArgumentsProvider implements VariableProviderInterface
     /**
      * Cast a value to integer
      */
-    private function castToInt(mixed $value): int
+    private function castToInt(mixed $value): string
     {
         if (\is_string($value) && \trim($value) === '') {
-            return 0;
+            return '0';
         }
 
-        return (int) $value;
+        return (string) $value;
     }
 
     /**
      * Cast a value to float
      */
-    private function castToFloat(mixed $value): float
+    private function castToFloat(mixed $value): string
     {
         if (\is_string($value) && \trim($value) === '') {
-            return 0.0;
+            return '0.0';
         }
 
-        return (float) $value;
+        return \number_format((float) $value, 2, '.', '');
     }
 
     /**
      * Cast a value to boolean
      */
-    private function castToBool(mixed $value): bool
+    private function castToBool(mixed $value): string
     {
         if (\is_string($value)) {
             $value = \strtolower(\trim($value));
-            return $value === 'true' || $value === '1' || $value === 'yes' || $value === 'y';
+            return ($value === 'true' || $value === '1' || $value === 'yes' || $value === 'y') ? 'true' : 'false';
         }
 
-        return (bool) $value;
+        return $value ? 'true' : 'false';
     }
 
     /**
