@@ -34,7 +34,7 @@ final class UrlSourceBootloader extends Bootloader
                 HasPrefixLoggerInterface $logger,
             ): UrlSourceFetcher => $factory->make(UrlSourceFetcher::class, [
                 'defaultHeaders' => [
-                    'User-Agent' => 'Context Generator Bot',
+                    'User-Agent' => 'CTX Bot',
                     'Accept' => 'text/html,application/xhtml+xml',
                     'Accept-Language' => 'en-US,en;q=0.9',
                 ],

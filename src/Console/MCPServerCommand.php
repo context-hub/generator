@@ -24,7 +24,7 @@ use Symfony\Component\Console\Command\Command;
 
 #[AsCommand(
     name: 'server',
-    description: 'Start the context generator MCP server',
+    description: 'Start MCP server',
 )]
 final class MCPServerCommand extends BaseCommand
 {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Console;
 
 use Butschster\ContextGenerator\Application\Application;
+use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\Lib\BinaryUpdater\BinaryUpdater;
 use Butschster\ContextGenerator\Lib\BinaryUpdater\UpdaterFactory;
 use Butschster\ContextGenerator\Lib\GithubClient\BinaryNameBuilder;
@@ -20,7 +21,7 @@ use Symfony\Component\Console\Command\Command;
 
 #[AsCommand(
     name: 'self-update',
-    description: 'Update the Context Generator to the latest version',
+    description: 'Update app to the latest version',
     aliases: ['update'],
 )]
 final class SelfUpdateCommand extends BaseCommand
@@ -62,25 +63,27 @@ final class SelfUpdateCommand extends BaseCommand
         parent::__construct();
     }
 
-    public function __invoke(Application $app, EnvironmentInterface $env): int
+    public function __invoke(Application $app, EnvironmentInterface $env, DirectoriesInterface $dirs): int
     {
-        $this->output->title('Context Generator Self Update');
-
-        $storeLocation = \trim($this->storeLocation ?: $env->get('CTX_BINARY_PATH', '/usr/local/bin'));
+        $this->output->title('CTX Self Update');
+        $storeLocation = \trim($this->storeLocation ?: $env->get('CTX_BINARY_PATH', (string) $dirs->getRootPath()));
         $type = \trim($this->type ?: ($app->isBinary ? 'bin' : 'phar'));
+
 
         // Check if we have a valid store location
         if (empty($storeLocation)) {
             $this->output->error(
-                'Self-update is only available when running the PHAR version of Context Generator.',
+                'Self-update is only available for the binary version of CTX.',
             );
             return Command::FAILURE;
         }
 
-        $binaryPath = \rtrim($storeLocation, '/') . '/' . $this->binaryName;
+        $binaryPath = (string) $dirs->getRootPath()->join($this->binaryName);
 
         $this->output->title($app->name);
         $this->output->text('Current version: ' . $app->version);
+        $this->output->text('Binary will be stored at: ' . $binaryPath);
+
         $this->output->section('Checking for updates...');
 
         // Create repository and get standard release manager
