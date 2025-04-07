@@ -13,11 +13,14 @@ final readonly class ToolDefinition implements \JsonSerializable
      * @param string $id Unique identifier for the tool
      * @param string $description Human-readable description
      * @param array<ToolCommand> $commands List of commands to execute
+     * @param ToolSchema|null $schema JSON schema for tool arguments
+     * @param array<string, string> $env Environment variables for all commands
      */
     public function __construct(
         public string $id,
         public string $description,
         public array $commands,
+        public ?ToolSchema $schema = null,
         public array $env = [],
     ) {}
 
@@ -75,6 +78,7 @@ final readonly class ToolDefinition implements \JsonSerializable
             id: $config['id'],
             description: $config['description'],
             commands: $commands,
+            schema: ToolSchema::fromArray($config['schema'] ?? []),
             env: $env,
         );
     }
@@ -88,6 +92,7 @@ final readonly class ToolDefinition implements \JsonSerializable
             'id' => $this->id,
             'description' => $this->description,
             'commands' => $this->commands,
+            'schema' => $this->schema,
             'env' => $this->env,
         ], static fn($value) => $value !== null && $value !== []);
     }

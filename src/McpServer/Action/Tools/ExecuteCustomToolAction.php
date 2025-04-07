@@ -27,6 +27,9 @@ final readonly class ExecuteCustomToolAction
         $this->logger->info('Executing custom tool');
         $toolId = $request->getAttribute('id');
 
+        // Get params from the parsed body for POST requests
+        $parsedBody = (array) $request->getParsedBody();
+
         if (empty($toolId) || !\is_string($toolId)) {
             $this->logger->warning('No tool ID provided');
             return new CallToolResult(
@@ -60,7 +63,7 @@ final readonly class ExecuteCustomToolAction
             }
 
             // Execute the tool
-            $result = $this->toolHandler->execute($tool);
+            $result = $this->toolHandler->execute($tool, $parsedBody);
 
             // Format the result
             $output = \sprintf(

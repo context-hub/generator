@@ -27,7 +27,7 @@ use Psr\Log\LoggerInterface;
 #[InputSchema(
     name: 'patch',
     type: 'string',
-    description: 'Content of the git patch to apply. It must be a valid git diff format.',
+    description: 'Content of the git patch to apply. It must start with "diff --git a/b.txt b/b.txt ...". In other words, it must be a valid git patch format.',
     required: true,
 )]
 final readonly class FileApplyPatchAction
@@ -46,6 +46,15 @@ final readonly class FileApplyPatchAction
         $parsedBody = $request->getParsedBody();
         $path = $parsedBody['path'] ?? '';
         $patch = $parsedBody['patch'] ?? '';
+
+        // Validate patch format
+        if (!\str_starts_with($patch, 'diff --git a/')) {
+            return new CallToolResult([
+                new TextContent(
+                    text: 'Error: Invalid patch format. The patch must start with "diff --git a/".',
+                ),
+            ], isError: true);
+        }
 
         if (empty($path)) {
             return new CallToolResult([

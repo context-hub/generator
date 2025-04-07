@@ -22,5 +22,5 @@ interface ToolHandlerInterface
      * @return array<string, mixed> Execution result
      * @throws \Throwable If execution fails
      */
-    public function execute(ToolDefinition $tool): array;
+    public function execute(ToolDefinition $tool, array $arguments = []): array;
 }

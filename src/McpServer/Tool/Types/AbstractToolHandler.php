@@ -16,14 +16,14 @@ abstract readonly class AbstractToolHandler implements ToolHandlerInterface
         protected ?LoggerInterface $logger = null,
     ) {}
 
-    public function execute(ToolDefinition $tool): array
+    public function execute(ToolDefinition $tool, array $arguments = []): array
     {
         $this->logger?->info('Executing tool', [
             'id' => $tool->id,
         ]);
 
         try {
-            $result = $this->doExecute($tool);
+            $result = $this->doExecute($tool, $arguments);
 
             $this->logger?->info('Tool execution completed', [
                 'id' => $tool->id,
@@ -49,5 +49,5 @@ abstract readonly class AbstractToolHandler implements ToolHandlerInterface
      * @return array<string, mixed> Execution result
      * @throws \Throwable If execution fails
      */
-    abstract protected function doExecute(ToolDefinition $tool): array;
+    abstract protected function doExecute(ToolDefinition $tool, array $arguments = []): array;
 }
