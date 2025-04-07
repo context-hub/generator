@@ -11,7 +11,7 @@ final readonly class ToolCommand implements \JsonSerializable
 {
     /**
      * @param string $cmd The command to execute
-     * @param array<string> $args Command arguments
+     * @param array<ToolArg> $args Command arguments
      * @param string|null $workingDir Optional working directory (relative to project root)
      * @param array<string, string> $env Optional environment variables
      */
@@ -40,11 +40,15 @@ final readonly class ToolCommand implements \JsonSerializable
                 throw new \InvalidArgumentException('Command "args" must be an array');
             }
 
-            foreach ($config['args'] as $arg) {
-                if (!\is_string($arg)) {
-                    throw new \InvalidArgumentException('Command arguments must be strings');
+            foreach ($config['args'] as $argConfig) {
+                try {
+                    $args[] = ToolArg::fromMixed($argConfig);
+                } catch (\InvalidArgumentException $e) {
+                    throw new \InvalidArgumentException(
+                        'Invalid argument configuration: ' . $e->getMessage(),
+                        previous: $e,
+                    );
                 }
-                $args[] = $arg;
             }
         }
 
@@ -79,9 +83,21 @@ final readonly class ToolCommand implements \JsonSerializable
      */
     public function jsonSerialize(): array
     {
+        $argsArray = [];
+
+        foreach ($this->args as $arg) {
+            if ($arg->when === null) {
+                // Simple argument
+                $argsArray[] = $arg->name;
+            } else {
+                // Conditional argument
+                $argsArray[] = $arg->toArray();
+            }
+        }
+
         return \array_filter([
             'cmd' => $this->cmd,
-            'args' => $this->args,
+            'args' => $argsArray,
             'workingDir' => $this->workingDir,
             'env' => $this->env,
         ], static fn($value) => $value !== null && $value !== []);

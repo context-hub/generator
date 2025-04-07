@@ -8,6 +8,7 @@ use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\McpServer\Tool\Command\CommandExecutorInterface;
 use Butschster\ContextGenerator\McpServer\Tool\Config\ToolDefinition;
 use Butschster\ContextGenerator\McpServer\Tool\Config\ToolCommand;
+use Butschster\ContextGenerator\McpServer\Tool\Config\ToolArg;
 use Butschster\ContextGenerator\McpServer\Tool\Exception\ToolExecutionException;
 use Butschster\ContextGenerator\McpServer\Tool\Provider\ToolArgumentsProvider;
 use Butschster\ContextGenerator\Lib\Variable\VariableReplacementProcessor;
@@ -66,7 +67,7 @@ final readonly class RunToolHandler extends AbstractToolHandler
             $this->logger?->info('Executing command', [
                 'index' => $index,
                 'command' => $command->cmd,
-                'args' => $command->args,
+                'args' => \array_map(static fn(ToolArg $arg) => (string) $arg, $command->args),
             ]);
 
             try {
@@ -75,8 +76,11 @@ final readonly class RunToolHandler extends AbstractToolHandler
                 $result = $this->commandExecutor->execute($processedCommand, $tool->env);
                 $allOutput .= $result['output'] . PHP_EOL;
 
+                // Create a readable command string for reporting
+                $commandStr = $command->cmd . ' ' . $this->formatArgsForDisplay($command->args);
+
                 $results[] = [
-                    'command' => $command->cmd . ' ' . \implode(' ', $command->args),
+                    'command' => $commandStr,
                     'output' => $result['output'],
                     'exitCode' => $result['exitCode'],
                     'success' => $result['exitCode'] === 0,
@@ -92,8 +96,11 @@ final readonly class RunToolHandler extends AbstractToolHandler
                     'error' => $e->getMessage(),
                 ]);
 
+                // Create a readable command string for reporting
+                $commandStr = $command->cmd . ' ' . $this->formatArgsForDisplay($command->args);
+
                 $results[] = [
-                    'command' => $command->cmd . ' ' . \implode(' ', $command->args),
+                    'command' => $commandStr,
                     'output' => $e->getMessage(),
                     'exitCode' => -1,
                     'success' => false,
@@ -124,15 +131,32 @@ final readonly class RunToolHandler extends AbstractToolHandler
         ToolCommand $command,
         array $arguments,
     ): ToolCommand {
-        // Create a processor for the command with arguments, including schema for type casting
-        $processor = new VariableReplacementProcessor(
-            new ToolArgumentsProvider($arguments, $tool->schema),
-        );
+        // Create arguments provider
+        $argsProvider = new ToolArgumentsProvider($arguments, $tool->schema);
 
-        // Process each argument
+        // Create a processor for variable replacement
+        $processor = new VariableReplacementProcessor($argsProvider);
+
+        // Process each argument, evaluating conditions
         $processedArgs = [];
         foreach ($command->args as $arg) {
-            $processedArgs[] = $processor->process($arg);
+            // If there's a condition, evaluate it
+            if ($arg->when !== null) {
+                $condition = $processor->process($arg->when);
+                // Skip the argument if the condition evaluates to false
+                if (!$this->evaluateCondition($condition)) {
+                    $this->logger?->debug('Skipping conditional argument', [
+                        'argument' => $arg->name,
+                        'condition' => $arg->when,
+                    ]);
+                    continue;
+                }
+            }
+
+            // Process the argument name (replacing variables)
+            $processedArgs[] = new ToolArg(
+                name: $processor->process($arg->name),
+            );
         }
 
         // Return a new command with processed values
@@ -142,5 +166,42 @@ final readonly class RunToolHandler extends AbstractToolHandler
             $command->workingDir,
             $command->env,
         );
+    }
+
+    /**
+     * Formats an array of arguments for display in logs and results.
+     *
+     * @param array<ToolArg> $args The arguments to format
+     * @return string The formatted arguments string
+     */
+    private function formatArgsForDisplay(array $args): string
+    {
+        return \implode(' ', \array_map(static fn(ToolArg $arg) => $arg->name, $args));
+    }
+
+    /**
+     * Evaluates a condition string to determine if an argument should be included.
+     *
+     * @param string $condition The condition string to evaluate
+     * @return bool Whether the condition evaluates to true
+     */
+    private function evaluateCondition(string $condition): bool
+    {
+        // Normalize the condition string to evaluate as boolean
+        $normalizedCondition = \strtolower(\trim($condition));
+
+        // Common boolean string representations
+        if ($normalizedCondition === '' ||
+            $normalizedCondition === 'false' ||
+            $normalizedCondition === '0' ||
+            $normalizedCondition === 'no' ||
+            $normalizedCondition === 'n' ||
+            $normalizedCondition === 'null' ||
+            $normalizedCondition === 'undefined') {
+            return false;
+        }
+
+        // Everything else is considered true
+        return true;
     }
 }

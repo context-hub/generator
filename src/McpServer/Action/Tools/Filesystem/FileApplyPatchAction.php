@@ -48,7 +48,7 @@ final readonly class FileApplyPatchAction
         $patch = $parsedBody['patch'] ?? '';
 
         // Validate patch format
-        if (!str_starts_with($patch, 'diff --git a/')) {
+        if (!\str_starts_with($patch, 'diff --git a/')) {
             return new CallToolResult([
                 new TextContent(
                     text: 'Error: Invalid patch format. The patch must start with "diff --git a/".',

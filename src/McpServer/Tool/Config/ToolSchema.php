@@ -65,11 +65,11 @@ final readonly class ToolSchema implements \JsonSerializable
     public function getDefaultValue(string $propertyName): mixed
     {
         $properties = $this->getProperties();
-        
+
         if (!isset($properties[$propertyName])) {
             return null;
         }
-        
+
         // Return the default value if it exists, otherwise null
         return $properties[$propertyName]['default'] ?? null;
     }
