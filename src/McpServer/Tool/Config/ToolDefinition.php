@@ -55,7 +55,7 @@ final readonly class ToolDefinition implements \JsonSerializable
             }
 
             try {
-                $commands[] = ToolCommand::fromArray($commandConfig);
+                $commands[] = ToolCommand::fromArray($commandConfig, $config['workingDir'] ?? null);
             } catch (\InvalidArgumentException $e) {
                 throw new \InvalidArgumentException(
                     \sprintf('Invalid command at index %d: %s', $index, $e->getMessage()),

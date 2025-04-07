@@ -11,6 +11,7 @@ use Butschster\ContextGenerator\Config\Import\PathPrefixer\SourcePathPrefixer;
 use Butschster\ContextGenerator\Config\Import\Source\Config\SourceConfigInterface;
 use Butschster\ContextGenerator\Config\Import\Source\Config\SourceConfigFactory;
 use Butschster\ContextGenerator\Config\Import\Source\Exception\ImportSourceException;
+use Butschster\ContextGenerator\Config\Import\Source\ImportedConfig;
 use Butschster\ContextGenerator\Config\Import\Source\ImportSourceProvider;
 use Butschster\ContextGenerator\Config\Import\Source\Local\LocalSourceConfig;
 use Butschster\ContextGenerator\Config\Import\Source\Url\UrlSourceConfig;
@@ -56,6 +57,7 @@ final readonly class ImportResolver
         }
 
         // Process each import
+        /** @var ImportedConfig[] $importedConfigs */
         $importedConfigs = [];
         foreach ($imports as $importConfig) {
             // Create source configuration from the raw import config
@@ -99,7 +101,7 @@ final readonly class ImportResolver
         unset($config['import']);
 
         // Merge all configurations
-        return $this->mergeConfigurations([$config, ...$importedConfigs]);
+        return $this->mergeConfigurations($config, ...$importedConfigs);
     }
 
     /**
@@ -232,7 +234,11 @@ final readonly class ImportResolver
             }
 
             // Store for later merging
-            $importedConfigs[] = $importedConfig;
+            $importedConfigs[] = new ImportedConfig(
+                config: $importedConfig,
+                path: $sourceConfig->getPath(),
+                isLocal: $sourceConfig instanceof LocalSourceConfig,
+            );
 
             $this->logger?->debug('Successfully processed import', [
                 'type' => $sourceConfig->getType(),
@@ -242,6 +248,7 @@ final readonly class ImportResolver
                 'type' => $sourceConfig->getType(),
                 'error' => $e->getMessage(),
             ]);
+
             throw $e;
         } finally {
             // Always end processing to maintain stack integrity
@@ -254,30 +261,50 @@ final readonly class ImportResolver
      *
      * todo: move to a parsers??
      */
-    private function mergeConfigurations(array $configs): array
+    private function mergeConfigurations(array $mainConfig, ImportedConfig ...$configs): array
     {
-        $result = [];
+        $result = $mainConfig;
 
         foreach ($configs as $config) {
             // Special handling for documents array - append instead of replace
             if (isset($config['documents']) && \is_array($config['documents'])) {
-                $result['documents'] = \array_merge(
-                    $result['documents'] ?? [],
-                    $config['documents'],
-                );
-                unset($config['documents']);
+                foreach ($config['documents'] as $document) {
+                    if (!isset($document['outputPath'])) {
+                        continue;
+                    }
+                    $result['documents'][$document['outputPath']] = $document;
+                }
+                $result['documents'] = \array_values($result['documents']);
             }
 
             if (isset($config['prompts']) && \is_array($config['prompts'])) {
-                $result['prompts'] = \array_merge(
-                    $result['prompts'] ?? [],
-                    $config['prompts'],
-                );
-                unset($config['prompts']);
+                foreach ($config['prompts'] as $prompt) {
+                    if (!isset($prompt['id'])) {
+                        continue;
+                    }
+
+                    $result['prompts'][$prompt['id']] = $prompt;
+                }
+
+                $result['prompts'] = \array_values($result['prompts']);
             }
 
-            // Merge the rest of the configuration
-            $result = \array_merge($result, $config);
+            if (isset($config['tools']) && \is_array($config['tools'])) {
+                foreach ($config['tools'] as $tool) {
+                    if (!isset($tool['id'])) {
+                        continue;
+                    }
+
+                    $workingDir = $tool['workingDir'] ?? '.';
+                    if ($config->isLocal && $workingDir === '.') {
+                        $tool['workingDir'] = \dirname($config->path);
+                    }
+
+                    $result['tools'][$tool['id']] = $tool;
+                }
+
+                $result['tools'] = \array_values($result['tools']);
+            }
         }
 
         return $result;
