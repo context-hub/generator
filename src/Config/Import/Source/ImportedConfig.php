@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Config\Import\Source;
 
+/**
+ * @implements \ArrayAccess<non-empty-string, mixed>
+ */
 final readonly class ImportedConfig implements \ArrayAccess
 {
     public function __construct(
