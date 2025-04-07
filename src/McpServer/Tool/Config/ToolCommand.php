@@ -28,7 +28,7 @@ final readonly class ToolCommand implements \JsonSerializable
      * @param array<string, mixed> $config The command configuration
      * @throws \InvalidArgumentException If the configuration is invalid
      */
-    public static function fromArray(array $config): self
+    public static function fromArray(array $config, ?string $workingDir = null): self
     {
         if (!isset($config['cmd']) || !\is_string($config['cmd'])) {
             throw new \InvalidArgumentException('Command must have a non-empty "cmd" property');
@@ -52,8 +52,12 @@ final readonly class ToolCommand implements \JsonSerializable
             }
         }
 
-        $workingDir = null;
-        if (isset($config['workingDir'])) {
+        if (
+            isset($config['workingDir'])
+            && $config['workingDir'] !== '.'
+            && $config['workingDir'] !== ''
+            && $config['workingDir'] !== null
+        ) {
             if (!\is_string($config['workingDir'])) {
                 throw new \InvalidArgumentException('Command "workingDir" must be a string');
             }
