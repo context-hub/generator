@@ -31,15 +31,6 @@ tools:
         args:
           - psalm
 
-prompts:
-  - id: my-local-prompt
-    description: My local prompt
-    messages:
-      - role: user
-        content: |
-          You are an expert in generating {{name}}. You love your work and always aim for clean, efficient, and 
-          well-structured PHP code, focusing on detail and best practices.
-
 documents:
   - description: 'Project structure overview'
     outputPath: project-structure.md
