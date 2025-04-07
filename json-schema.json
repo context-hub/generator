@@ -184,6 +184,57 @@
     }
   },
   "definitions": {
+    "inputSchema": {
+      "type": "object",
+      "description": "JSON Schema defining arguments that can be provided to tools or other components",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "object"
+          ],
+          "description": "Schema type (must be 'object')"
+        },
+        "properties": {
+          "type": "object",
+          "description": "Properties that define the available arguments",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "array",
+                  "object"
+                ],
+                "description": "Data type of the argument"
+              },
+              "description": {
+                "type": "string",
+                "description": "Human-readable description of the argument"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          }
+        },
+        "required": {
+          "type": "array",
+          "description": "List of arguments that must be provided",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "type",
+        "properties"
+      ]
+    },
     "tool": {
       "type": "object",
       "required": [
@@ -199,6 +250,10 @@
         "description": {
           "type": "string",
           "description": "Human-readable description of the tool"
+        },
+        "schema": {
+          "$ref": "#/definitions/inputSchema",
+          "description": "Schema defining arguments that can be provided to the tool"
         },
         "env": {
           "type": "object",
@@ -229,21 +284,25 @@
         },
         "args": {
           "type": "array",
-          "description": "Command arguments",
+          "description": "Command arguments, may contain {{argument}} placeholders",
           "items": {
             "type": "string"
           }
         },
         "workingDir": {
           "type": "string",
-          "description": "Working directory for command execution (relative to project root)"
+          "description": "Working directory for command execution (relative to project root), may contain {{argument}} placeholders"
         },
         "env": {
           "type": "object",
-          "description": "Environment variables for command execution",
+          "description": "Environment variables for command execution, values may contain {{argument}} placeholders",
           "additionalProperties": {
             "type": "string"
           }
+        },
+        "when": {
+          "type": "string",
+          "description": "Conditional expression that determines if the command should be executed, typically using {{argument}} syntax"
         }
       }
     },
@@ -263,30 +322,8 @@
           "description": "Human-readable description of the prompt"
         },
         "schema": {
-          "type": "object",
-          "description": "Defines input parameters for this prompt",
-          "properties": {
-            "properties": {
-              "type": "object",
-              "description": "Property definitions for input parameters",
-              "additionalProperties": {
-                "type": "object",
-                "properties": {
-                  "description": {
-                    "type": "string",
-                    "description": "Description of this parameter"
-                  }
-                }
-              }
-            },
-            "required": {
-              "type": "array",
-              "description": "List of required parameters",
-              "items": {
-                "type": "string"
-              }
-            }
-          }
+          "$ref": "#/definitions/inputSchema",
+          "description": "Defines input parameters for this prompt"
         },
         "messages": {
           "type": "array",

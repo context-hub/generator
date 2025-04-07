@@ -24,13 +24,6 @@ final class McpToolBootloader extends Bootloader
         ];
     }
 
-    public function init(
-        ConfigLoaderBootloader $configLoader,
-        ToolParserPlugin $parserPlugin,
-    ): void {
-        $configLoader->registerParserPlugin($parserPlugin);
-    }
-
     #[\Override]
     public function defineSingletons(): array
     {
@@ -46,14 +39,17 @@ final class McpToolBootloader extends Bootloader
                 'projectRoot' => (string) $dirs->getRootPath(),
                 'timeout' => (int) ($env->get('MCP_TOOL_MAX_RUNTIME') ?? 30),
             ]),
-            RunToolHandler::class => static fn(
+            ToolHandlerInterface::class => static fn(
                 FactoryInterface $factory,
-                CommandExecutorInterface $commandExecutor,
                 EnvironmentInterface $env,
             ) => $factory->make(RunToolHandler::class, [
                 'executionEnabled' => (bool) ($env->get('MCP_TOOL_COMMAND_EXECUTION') ?? true),
             ]),
-            ToolHandlerInterface::class => RunToolHandler::class,
         ];
+    }
+
+    public function init(ConfigLoaderBootloader $configLoader, ToolParserPlugin $parserPlugin): void
+    {
+        $configLoader->registerParserPlugin($parserPlugin);
     }
 }

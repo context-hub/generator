@@ -1,0 +1,93 @@
+# Example of a tool with argument schema
+tools:
+  # Example: Create a new user with custom name and email
+  - id: create-user
+    description: "Create a new user in the system"
+    schema:
+      type: object
+      properties:
+        name:
+          type: string
+          description: "The user's full name"
+        email:
+          type: string
+          description: "The user's email address"
+        role:
+          type: string
+          description: "The user's role (admin, editor, user)"
+          default: "user"
+      required:
+        - name
+        - email
+    commands:
+      - cmd: php
+        args:
+          - artisan
+          - user:create
+          - --name={{name}}
+          - --email={{email}}
+          - --role={{role}}
+
+  # Example: Generate code with custom parameters
+  - id: generate-component
+    description: "Generate a new front-end component"
+    schema:
+      type: object
+      properties:
+        name:
+          type: string
+          description: "Component name (PascalCase)"
+        type:
+          type: string
+          description: "Component type (functional, class)"
+          default: "functional"
+        withTests:
+          type: boolean
+          description: "Generate test files"
+          default: false
+      required:
+        - name
+    commands:
+      - cmd: node
+        args:
+          - scripts/generate-component.js
+          - --name={{name}}
+          - --type={{type}}
+          - "{{withTests}}"
+
+  # Example: Run database migrations with environment selection
+  - id: db-migrate
+    description: "Run database migrations"
+    schema:
+      type: object
+      properties:
+        env:
+          type: string
+          description: "Environment (local, dev, staging, prod)"
+          default: "local"
+        fresh:
+          type: boolean
+          description: "Reset the database before migration"
+          default: false
+        seed:
+          type: boolean
+          description: "Run seeders after migration"
+          default: false
+      required: [ ]
+    commands:
+      - cmd: php
+        args:
+          - artisan
+          - migrate{{fresh}}
+          - --env={{env}}
+        env:
+          APP_ENV: "{{env}}"
+      - cmd: php
+        args:
+          - artisan
+          - db:seed
+          - --env={{env}}
+        env:
+          APP_ENV: "{{env}}"
+        # Only run this command if seed is true
+        when: "{{seed}}"

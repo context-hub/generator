@@ -29,7 +29,7 @@ documents:
     sources:
       - type: file
         sourcePaths:
-          - ./Action/Tools
+          - ./Tool
 
   - description: "MCP Server routing"
     outputPath: "mcp/routing.md"
