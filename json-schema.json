@@ -193,7 +193,8 @@
           "enum": [
             "object"
           ],
-          "description": "Schema type (must be 'object')"
+          "default": "object",
+          "description": "Schema type"
         },
         "properties": {
           "type": "object",
@@ -231,7 +232,6 @@
         }
       },
       "required": [
-        "type",
         "properties"
       ]
     },
@@ -284,9 +284,29 @@
         },
         "args": {
           "type": "array",
-          "description": "Command arguments, may contain {{argument}} placeholders",
+          "description": "Command arguments, may contain {{argument}} placeholders or conditional arguments",
           "items": {
-            "type": "string"
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Argument name or value"
+                  },
+                  "when": {
+                    "type": "string",
+                    "description": "Conditional expression that determines if the argument should be included, typically using {{argument}} syntax"
+                  }
+                }
+              }
+            ]
           }
         },
         "workingDir": {
@@ -299,10 +319,6 @@
           "additionalProperties": {
             "type": "string"
           }
-        },
-        "when": {
-          "type": "string",
-          "description": "Conditional expression that determines if the command should be executed, typically using {{argument}} syntax"
         }
       }
     },

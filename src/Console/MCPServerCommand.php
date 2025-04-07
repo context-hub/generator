@@ -13,6 +13,8 @@ use Butschster\ContextGenerator\Config\Exception\ConfigLoaderException;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
 use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\McpServer\ServerRunnerInterface;
+use Butschster\ContextGenerator\McpServer\Tool\Command\CommandExecutor;
+use Butschster\ContextGenerator\McpServer\Tool\Command\CommandExecutorInterface;
 use Monolog\Level;
 use Spiral\Console\Attribute\Option;
 use Spiral\Core\Container;
@@ -105,6 +107,9 @@ final class MCPServerCommand extends BaseCommand
                         name: AppScope::Mcp,
                         bindings: [
                             ConfigLoaderInterface::class => $loader,
+                            CommandExecutorInterface::class => $container->make(CommandExecutor::class, [
+                                'projectRoot' => (string) $dirs->getRootPath(),
+                            ]),
                         ],
                     ),
                     scope: static function (ServerRunnerInterface $factory) use ($app): void {
