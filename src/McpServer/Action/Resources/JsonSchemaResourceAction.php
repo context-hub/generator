@@ -15,8 +15,8 @@ use Psr\Log\LoggerInterface;
 use Spiral\Files\FilesInterface;
 
 #[Resource(
-    name: 'Json Schema of context generator',
-    description: 'Returns a simplified JSON schema of the context generator',
+    name: 'CTX app Json Schema',
+    description: 'Returns a simplified JSON schema of CTX',
     uri: 'ctx://json-schema',
     mimeType: 'application/json',
 )]

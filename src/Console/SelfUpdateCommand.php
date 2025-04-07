@@ -21,7 +21,7 @@ use Symfony\Component\Console\Command\Command;
 
 #[AsCommand(
     name: 'self-update',
-    description: 'Update the Context Generator to the latest version',
+    description: 'Update app to the latest version',
     aliases: ['update'],
 )]
 final class SelfUpdateCommand extends BaseCommand
@@ -65,7 +65,7 @@ final class SelfUpdateCommand extends BaseCommand
 
     public function __invoke(Application $app, EnvironmentInterface $env, DirectoriesInterface $dirs): int
     {
-        $this->output->title('Context Generator Self Update');
+        $this->output->title('CTX Self Update');
         $storeLocation = \trim($this->storeLocation ?: $env->get('CTX_BINARY_PATH', (string) $dirs->getRootPath()));
         $type = \trim($this->type ?: ($app->isBinary ? 'bin' : 'phar'));
 

@@ -29,7 +29,7 @@ final readonly class UrlSourceFetcher implements SourceFetcherInterface
     public function __construct(
         private HttpClientInterface $httpClient,
         private array $defaultHeaders = [
-            'User-Agent' => 'Context Generator Bot',
+            'User-Agent' => 'CTX Bot',
             'Accept' => 'text/html,application/xhtml+xml',
             'Accept-Language' => 'en-US,en;q=0.9',
         ],
