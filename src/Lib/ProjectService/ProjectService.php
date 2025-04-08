@@ -79,11 +79,6 @@ readonly class ProjectService implements ProjectServiceInterface
 
         if ($params instanceof GetPromptRequestParams) {
             return $params;
-            //            return new GetPromptRequestParams(
-            //                name: $params->name,
-            //                arguments: $params->arguments,
-            //                _meta: $params->_meta,
-            //            );
         }
 
         if ($params instanceof ReadResourceRequestParams) {

@@ -45,9 +45,6 @@ final class MCPServerCommand extends BaseCommand
     )]
     protected ?string $envFileName = null;
 
-    /**
-     * @throws \Throwable
-     */
     public function __invoke(Container $container, DirectoriesInterface $dirs, Application $app): int
     {
         // Determine the effective root path based on config file path
