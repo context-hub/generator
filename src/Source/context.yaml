@@ -50,6 +50,14 @@ documents:
         filePattern: '*.php'
         showTreeView: true
 
+  - description: Source Implementations - MCP
+    outputPath: sources/mcp-source.md
+    sources:
+      - type: file
+        sourcePaths: ./MCP
+        filePattern: '*.php'
+        showTreeView: true
+
   - description: Source Implementations - Git Diff
     outputPath: sources/git-diff-source.md
     sources:

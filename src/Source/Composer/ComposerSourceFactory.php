@@ -38,7 +38,7 @@ final readonly class ComposerSourceFactory extends AbstractSourceFactory
         }
 
         return new ComposerSource(
-            composerPath: $composerPath,
+            composerPath: (string) $composerPath,
             description: $config['description'] ?? 'Composer Packages',
             packages: $config['packages'] ?? [],
             filePattern: $config['filePattern'] ?? '*.php',

@@ -26,6 +26,7 @@ use Butschster\ContextGenerator\Source\Composer\ComposerSourceBootloader;
 use Butschster\ContextGenerator\Source\File\FileSourceBootloader;
 use Butschster\ContextGenerator\Source\GitDiff\GitDiffSourceBootloader;
 use Butschster\ContextGenerator\Source\Github\GithubSourceBootloader;
+use Butschster\ContextGenerator\Source\MCP\McpSourceBootloader;
 use Butschster\ContextGenerator\Source\Registry\SourceRegistryBootloader;
 use Butschster\ContextGenerator\Source\Text\TextSourceBootloader;
 use Butschster\ContextGenerator\Source\Tree\TreeSourceBootloader;
@@ -68,6 +69,7 @@ class Kernel extends AbstractKernel
             GithubSourceBootloader::class,
             GitDiffSourceBootloader::class,
             TreeSourceBootloader::class,
+            McpSourceBootloader::class,
 
             // Modifiers
             PhpContentFilterBootloader::class,
