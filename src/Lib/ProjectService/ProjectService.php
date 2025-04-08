@@ -135,7 +135,7 @@ readonly class ProjectService implements ProjectServiceInterface
         return $name . '_from_' . $this->projectPrefix;
     }
 
-    private function removeToolPostfix(mixed $name)
+    private function removeToolPostfix(string $name): string
     {
         return \str_replace($this->addToolPostfix(''), '', $name);
     }
