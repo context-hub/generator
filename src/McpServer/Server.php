@@ -27,8 +27,8 @@ final readonly class Server
     private Mcp2PsrRequestAdapter $bridge;
 
     public function __construct(
-        private Router                  $router,
-        private LoggerInterface         $logger,
+        private Router $router,
+        private LoggerInterface $logger,
         private ProjectServiceInterface $projectService,
     ) {
         $this->bridge = new Mcp2PsrRequestAdapter();
