@@ -7,7 +7,6 @@ namespace Butschster\ContextGenerator\Source\MCP\Operations;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilder;
 use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
 use Mcp\Client\ClientSession;
-use Mcp\Types\CallToolResult;
 use Mcp\Types\TextContent;
 
 /**
