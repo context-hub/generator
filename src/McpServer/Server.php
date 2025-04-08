@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer;
 
+use Butschster\ContextGenerator\Lib\ProjectService\ProjectServiceInterface;
 use Butschster\ContextGenerator\McpServer\Routing\Mcp2PsrRequestAdapter;
 use Laminas\Diactoros\Response\JsonResponse;
 use League\Route\Router;
@@ -26,8 +27,9 @@ final readonly class Server
     private Mcp2PsrRequestAdapter $bridge;
 
     public function __construct(
-        private Router $router,
-        private LoggerInterface $logger,
+        private Router                  $router,
+        private LoggerInterface         $logger,
+        private ProjectServiceInterface $projectService,
     ) {
         $this->bridge = new Mcp2PsrRequestAdapter();
     }
@@ -100,7 +102,7 @@ final readonly class Server
             \assert($response instanceof JsonResponse);
 
             // Convert the response back to appropriate MCP type
-            return $response->getPayload();
+            return $this->projectService->processResponse($response->getPayload());
         } catch (\Throwable $e) {
             $this->logger->error('Route handling error', [
                 'method' => $method,
@@ -117,6 +119,8 @@ final readonly class Server
      */
     private function handleToolCall(CallToolRequestParams $params): CallToolResult
     {
+        $params = $this->projectService->processRequestParams($params);
+
         $method = 'tools/call/' . $params->name;
         $arguments = $params->arguments ?? [];
 
@@ -144,6 +148,8 @@ final readonly class Server
 
     private function handleResourceRead(ReadResourceRequestParams $params): ReadResourceResult
     {
+        $params = $this->projectService->processRequestParams($params);
+
         [$type, $path] = \explode('://', $params->uri, 2);
 
         $method = 'resource/' . $type . '/' . $path;
@@ -174,6 +180,8 @@ final readonly class Server
 
     private function handlePromptGetRoute(GetPromptRequestParams $params): GetPromptResult
     {
+        $params = $this->projectService->processRequestParams($params);
+
         $name = $params->name;
         $arguments = $params->arguments;
 

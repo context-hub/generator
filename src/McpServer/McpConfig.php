@@ -12,6 +12,9 @@ final class McpConfig extends InjectableConfig
 
     protected array $config = [
         'document_name_format' => '[{path}] {description}',
+        'common_prompts' => [
+            'enable' => true,
+        ],
         'file_operations' => [
             'enable' => true,
             'write' => true,
@@ -67,6 +70,11 @@ final class McpConfig extends InjectableConfig
     public function isPromptOperationsEnabled(): bool
     {
         return $this->config['prompt_operations']['enable'] ?? false;
+    }
+
+    public function commonPromptsEnabled(): bool
+    {
+        return $this->config['common_prompts']['enable'] ?? true;
     }
 
     public function isCustomToolsEnabled(): bool

@@ -12,10 +12,13 @@ use Butschster\ContextGenerator\Config\ConfigurationProvider;
 use Butschster\ContextGenerator\Config\Exception\ConfigLoaderException;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
 use Butschster\ContextGenerator\DirectoriesInterface;
+use Butschster\ContextGenerator\Lib\ProjectService\ProjectServiceFactory;
+use Butschster\ContextGenerator\Lib\ProjectService\ProjectServiceInterface;
 use Butschster\ContextGenerator\McpServer\ServerRunnerInterface;
 use Butschster\ContextGenerator\McpServer\Tool\Command\CommandExecutor;
 use Butschster\ContextGenerator\McpServer\Tool\Command\CommandExecutorInterface;
 use Monolog\Level;
+use Spiral\Boot\EnvironmentInterface;
 use Spiral\Console\Attribute\Option;
 use Spiral\Core\Container;
 use Spiral\Core\Scope;
@@ -42,6 +45,9 @@ final class MCPServerCommand extends BaseCommand
     )]
     protected ?string $envFileName = null;
 
+    /**
+     * @throws \Throwable
+     */
     public function __invoke(Container $container, DirectoriesInterface $dirs, Application $app): int
     {
         // Determine the effective root path based on config file path
@@ -106,7 +112,8 @@ final class MCPServerCommand extends BaseCommand
                     bindings: new Scope(
                         name: AppScope::Mcp,
                         bindings: [
-                            ConfigLoaderInterface::class => $loader,
+                            ProjectServiceInterface::class           => ProjectServiceFactory::create($container->get(EnvironmentInterface::class)),
+                            ConfigLoaderInterface::class    => $loader,
                             CommandExecutorInterface::class => $container->make(CommandExecutor::class, [
                                 'projectRoot' => (string) $dirs->getRootPath(),
                             ]),
