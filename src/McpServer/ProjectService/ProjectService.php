@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Lib\ProjectService;
+namespace Butschster\ContextGenerator\McpServer\ProjectService;
 
 use Mcp\Types\CallToolRequestParams;
 use Mcp\Types\GetPromptRequestParams;
@@ -14,7 +14,7 @@ use Mcp\Types\ReadResourceRequestParams;
 use Mcp\Types\Resource;
 use Mcp\Types\Tool;
 
-readonly class ProjectService implements ProjectServiceInterface
+final readonly class ProjectService implements ProjectServiceInterface
 {
     public function __construct(
         private ?string $projectName,
@@ -62,9 +62,9 @@ readonly class ProjectService implements ProjectServiceInterface
 
         if ($params instanceof CallToolRequestParams) {
             return new CallToolRequestParams(
-                name     : $this->removeToolPostfix($params->name),
+                name: $this->removeToolPostfix($params->name),
                 arguments: $params->arguments,
-                _meta    : $params->_meta,
+                _meta: $params->_meta,
             );
         }
 
@@ -74,7 +74,7 @@ readonly class ProjectService implements ProjectServiceInterface
 
         if ($params instanceof ReadResourceRequestParams) {
             return new ReadResourceRequestParams(
-                uri  : $this->removeResourceUriPrefix($params->uri),
+                uri: $this->removeResourceUriPrefix($params->uri),
                 _meta: $params->_meta,
             );
         }
@@ -90,7 +90,7 @@ readonly class ProjectService implements ProjectServiceInterface
     private function processTool(Tool $tool): Tool
     {
         return new Tool(
-            name       : $this->addToolPostfix($tool->name),
+            name: $this->addToolPostfix($tool->name),
             inputSchema: $tool->inputSchema,
             description: $this->addProjectSignature($tool->description),
         );
@@ -99,19 +99,19 @@ readonly class ProjectService implements ProjectServiceInterface
     private function processPrompt(Prompt $item): Prompt
     {
         return new Prompt(
-            name       : $item->name,
+            name: $item->name,
             description: $this->addProjectSignature($item->description),
-            arguments  : $item->arguments,
+            arguments: $item->arguments,
         );
     }
 
     private function processResource(Resource $item): Resource
     {
         return new Resource(
-            name       : $this->addResourcePrefix($item->name),
-            uri        : $this->addResourceUriPrefix($item->uri),
+            name: $this->addResourcePrefix($item->name),
+            uri: $this->addResourceUriPrefix($item->uri),
             description: $this->addProjectSignature($item->description),
-            mimeType   : $item->mimeType,
+            mimeType: $item->mimeType,
             annotations: $item->annotations,
         );
     }

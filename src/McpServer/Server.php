@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer;
 
-use Butschster\ContextGenerator\Lib\ProjectService\ProjectServiceInterface;
+use Butschster\ContextGenerator\McpServer\ProjectService\ProjectServiceInterface;
 use Butschster\ContextGenerator\McpServer\Routing\Mcp2PsrRequestAdapter;
 use Laminas\Diactoros\Response\JsonResponse;
 use League\Route\Router;
@@ -24,15 +24,12 @@ use Psr\Log\LoggerInterface;
 
 final readonly class Server
 {
-    private Mcp2PsrRequestAdapter $bridge;
-
     public function __construct(
         private Router $router,
         private LoggerInterface $logger,
         private ProjectServiceInterface $projectService,
-    ) {
-        $this->bridge = new Mcp2PsrRequestAdapter();
-    }
+        private Mcp2PsrRequestAdapter $requestFactory = new Mcp2PsrRequestAdapter(),
+    ) {}
 
     /**
      * Start the server
@@ -94,7 +91,7 @@ final readonly class Server
         $this->logger->debug("Handling route: $method", $params);
 
         // Create PSR request from MCP method and params
-        $request = $this->bridge->createPsrRequest($method, $params);
+        $request = $this->requestFactory->createPsrRequest($method, $params);
 
         // Dispatch the request through the router
         try {
@@ -131,7 +128,7 @@ final readonly class Server
         ]);
 
         // Create PSR request with the tool name in the path and arguments as POST body
-        $request = $this->bridge->createPsrRequest($method, $arguments);
+        $request = $this->requestFactory->createPsrRequest($method, $arguments);
 
         try {
             $response = $this->router->dispatch($request);
@@ -150,6 +147,7 @@ final readonly class Server
     {
         $params = $this->projectService->processRequestParams($params);
 
+        /*#* @psalm-suppress RedundantCast */
         [$type, $path] = \explode('://', (string) $params->uri, 2);
 
         $method = 'resource/' . $type . '/' . $path;
@@ -162,7 +160,7 @@ final readonly class Server
         ]);
 
         // Create PSR request with the tool name in the path and arguments as POST body
-        $request = $this->bridge->createPsrRequest($method);
+        $request = $this->requestFactory->createPsrRequest($method);
 
         try {
             $response = $this->router->dispatch($request);
@@ -194,7 +192,7 @@ final readonly class Server
         ]);
 
         // Create PSR request with the tool name in the path and arguments as POST body
-        $request = $this->bridge->createPsrRequest($method, (array) $arguments->jsonSerialize());
+        $request = $this->requestFactory->createPsrRequest($method, (array) $arguments->jsonSerialize());
 
         try {
             $response = $this->router->dispatch($request);

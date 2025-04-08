@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Lib\ProjectService;
+namespace Butschster\ContextGenerator\McpServer\ProjectService;
 
 use Spiral\Boot\EnvironmentInterface;
 
-readonly class ProjectServiceFactory
+final readonly class ProjectServiceFactory
 {
     public function __construct(
         private EnvironmentInterface $env,
@@ -14,7 +14,7 @@ readonly class ProjectServiceFactory
 
     public function create(): ProjectServiceInterface
     {
-        $projectName =   $this->env->get('MCP_PROJECT_NAME');
+        $projectName = $this->env->get('MCP_PROJECT_NAME');
         $projectPrefix = $this->env->get('MCP_PROJECT_PREFIX');
         if ($projectName !== null && $projectPrefix === null) {
             $projectPrefix = \preg_replace('#[^a-z0-9]+#i', '', (string) $projectName);
@@ -24,6 +24,5 @@ readonly class ProjectServiceFactory
             projectName: $projectName,
             projectPrefix: $projectPrefix,
         );
-
     }
 }

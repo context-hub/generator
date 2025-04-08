@@ -12,8 +12,8 @@ use Butschster\ContextGenerator\Config\ConfigurationProvider;
 use Butschster\ContextGenerator\Config\Exception\ConfigLoaderException;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
 use Butschster\ContextGenerator\DirectoriesInterface;
-use Butschster\ContextGenerator\Lib\ProjectService\ProjectServiceFactory;
-use Butschster\ContextGenerator\Lib\ProjectService\ProjectServiceInterface;
+use Butschster\ContextGenerator\McpServer\ProjectService\ProjectServiceFactory;
+use Butschster\ContextGenerator\McpServer\ProjectService\ProjectServiceInterface;
 use Butschster\ContextGenerator\McpServer\ServerRunnerInterface;
 use Butschster\ContextGenerator\McpServer\Tool\Command\CommandExecutor;
 use Butschster\ContextGenerator\McpServer\Tool\Command\CommandExecutorInterface;
@@ -109,8 +109,8 @@ final class MCPServerCommand extends BaseCommand
                     bindings: new Scope(
                         name: AppScope::Mcp,
                         bindings: [
-                            ProjectServiceInterface::class  => $projectServiceFactory->create(),
-                            ConfigLoaderInterface::class    => $loader,
+                            ProjectServiceInterface::class => $projectServiceFactory->create(),
+                            ConfigLoaderInterface::class => $loader,
                             CommandExecutorInterface::class => $container->make(CommandExecutor::class, [
                                 'projectRoot' => (string) $dirs->getRootPath(),
                             ]),

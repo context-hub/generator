@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Lib\ProjectService;
+namespace Butschster\ContextGenerator\McpServer\ProjectService;
 
 use Butschster\ContextGenerator\Application\AppScope;
 use Mcp\Types\CallToolRequestParams;

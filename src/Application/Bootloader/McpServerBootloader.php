@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Application\Bootloader;
 
 use Butschster\ContextGenerator\Console\MCPServerCommand;
-use Butschster\ContextGenerator\Lib\ProjectService\ProjectServiceInterface;
 use Butschster\ContextGenerator\McpServer\Action\Prompts\FilesystemOperationsAction;
 use Butschster\ContextGenerator\McpServer\Action\Prompts\GetPromptAction;
 use Butschster\ContextGenerator\McpServer\Action\Prompts\ListPromptsAction;
@@ -28,6 +27,7 @@ use Butschster\ContextGenerator\McpServer\Action\Tools\ListToolsAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Prompts\GetPromptToolAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Prompts\ListPromptsToolAction;
 use Butschster\ContextGenerator\McpServer\McpConfig;
+use Butschster\ContextGenerator\McpServer\ProjectService\ProjectServiceInterface;
 use Butschster\ContextGenerator\McpServer\Registry\McpItemsRegistry;
 use Butschster\ContextGenerator\McpServer\Routing\McpResponseStrategy;
 use Butschster\ContextGenerator\McpServer\Routing\RouteRegistrar;
@@ -41,8 +41,8 @@ use Spiral\Boot\Bootloader\Bootloader;
 use Spiral\Boot\EnvironmentInterface;
 use Spiral\Config\ConfiguratorInterface;
 use Spiral\Core\Attribute\Proxy;
-use Spiral\Core\Config\Proxy as ConfigProxy;
 use Spiral\Core\BinderInterface;
+use Spiral\Core\Config\Proxy as ConfigProxy;
 
 final class McpServerBootloader extends Bootloader
 {

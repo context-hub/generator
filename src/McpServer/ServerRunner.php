@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\McpServer;
 
 use Butschster\ContextGenerator\Application\AppScope;
-use Butschster\ContextGenerator\Lib\ProjectService\ProjectServiceInterface;
+use Butschster\ContextGenerator\McpServer\ProjectService\ProjectServiceInterface;
 use Butschster\ContextGenerator\McpServer\Registry\McpItemsRegistry;
 use Butschster\ContextGenerator\McpServer\Routing\RouteRegistrar;
 use Psr\Log\LoggerInterface;
@@ -56,8 +56,8 @@ final class ServerRunner implements ServerRunnerInterface
 
                 // Create the server
                 (new Server(
-                    router        : $registrar->router,
-                    logger        : $logger,
+                    router: $registrar->router,
+                    logger: $logger,
                     projectService: $this->projectService,
                 ))->run($name);
             },
