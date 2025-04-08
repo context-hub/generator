@@ -18,7 +18,6 @@ use Butschster\ContextGenerator\McpServer\ServerRunnerInterface;
 use Butschster\ContextGenerator\McpServer\Tool\Command\CommandExecutor;
 use Butschster\ContextGenerator\McpServer\Tool\Command\CommandExecutorInterface;
 use Monolog\Level;
-use Spiral\Boot\EnvironmentInterface;
 use Spiral\Console\Attribute\Option;
 use Spiral\Core\Container;
 use Spiral\Core\Scope;
@@ -79,6 +78,7 @@ final class MCPServerCommand extends BaseCommand
             scope: static function (
                 Container $container,
                 ConfigurationProvider $configProvider,
+                ProjectServiceFactory $projectServiceFactory,
             ) use ($logger, $dirs, $app) {
                 $rootPathStr = (string) $dirs->getRootPath();
                 $logger->info(\sprintf('Using root path: %s', $rootPathStr));
@@ -109,7 +109,7 @@ final class MCPServerCommand extends BaseCommand
                     bindings: new Scope(
                         name: AppScope::Mcp,
                         bindings: [
-                            ProjectServiceInterface::class           => ProjectServiceFactory::create($container->get(EnvironmentInterface::class)),
+                            ProjectServiceInterface::class  => $projectServiceFactory->create(),
                             ConfigLoaderInterface::class    => $loader,
                             CommandExecutorInterface::class => $container->make(CommandExecutor::class, [
                                 'projectRoot' => (string) $dirs->getRootPath(),

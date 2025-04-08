@@ -16,19 +16,10 @@ use Mcp\Types\Tool;
 
 readonly class ProjectService implements ProjectServiceInterface
 {
-    private ?string $projectPrefix;
-
     public function __construct(
         private ?string $projectName,
-        ?string         $projectPrefix,
-    ) {
-
-        if ($this->projectName !== null) {
-            $this->projectPrefix = $projectPrefix ?? \preg_replace('#[^a-z0-9]+#i', '', $this->projectName);
-        } else {
-            $this->projectPrefix = null;
-        }
-    }
+        private ?string $projectPrefix,
+    ) {}
 
     public function processResponse(mixed $payload): mixed
     {
