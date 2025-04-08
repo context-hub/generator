@@ -150,7 +150,7 @@ final readonly class Server
     {
         $params = $this->projectService->processRequestParams($params);
 
-        [$type, $path] = \explode('://', $params->uri, 2);
+        [$type, $path] = \explode('://', (string) $params->uri, 2);
 
         $method = 'resource/' . $type . '/' . $path;
 
