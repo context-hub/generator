@@ -48,14 +48,9 @@ final readonly class ProjectService implements ProjectServiceInterface
         return $payload;
     }
 
-    /**
-     * @template TParams of mixed
-     * @param TParams $params
-     * @return TParams
-     */
     public function processRequestParams(
         CallToolRequestParams|GetPromptRequestParams|ReadResourceRequestParams $params,
-    ): mixed {
+    ): CallToolRequestParams|GetPromptRequestParams|ReadResourceRequestParams {
         if (!$this->isEnable()) {
             return $params;
         }
@@ -66,10 +61,6 @@ final readonly class ProjectService implements ProjectServiceInterface
                 arguments: $params->arguments,
                 _meta: $params->_meta,
             );
-        }
-
-        if ($params instanceof GetPromptRequestParams) {
-            return $params;
         }
 
         if ($params instanceof ReadResourceRequestParams) {

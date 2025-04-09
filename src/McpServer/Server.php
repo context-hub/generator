@@ -147,7 +147,7 @@ final readonly class Server
     {
         $params = $this->projectService->processRequestParams($params);
 
-        /*#* @psalm-suppress RedundantCast */
+        /** @psalm-suppress RedundantCast */
         [$type, $path] = \explode('://', (string) $params->uri, 2);
 
         $method = 'resource/' . $type . '/' . $path;
