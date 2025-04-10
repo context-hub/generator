@@ -37,8 +37,7 @@ final readonly class GenerateCommandRenderer
 
     public function __construct(
         private OutputInterface $output,
-    ) {
-    }
+    ) {}
 
     public function renderImports(ImportRegistry $imports): void
     {
