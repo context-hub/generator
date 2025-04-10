@@ -69,4 +69,14 @@ final readonly class UrlSourceConfig implements SourceConfigInterface
     {
         return $this->url;
     }
+
+    public function jsonSerialize(): array
+    {
+        return [
+            'type' => $this->getType(),
+            'url' => $this->url,
+            'ttl' => $this->ttl,
+            'headers' => $this->headers,
+        ];
+    }
 }

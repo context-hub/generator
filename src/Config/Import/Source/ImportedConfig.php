@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Config\Import\Source;
 
+use Butschster\ContextGenerator\Config\Import\Source\Config\SourceConfigInterface;
+
 /**
  * @implements \ArrayAccess<non-empty-string, mixed>
  */
 final readonly class ImportedConfig implements \ArrayAccess
 {
     public function __construct(
+        public SourceConfigInterface $sourceConfig,
         public array $config,
         public string $path,
         public bool $isLocal,

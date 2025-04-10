@@ -72,4 +72,9 @@ final class ToolRegistry implements RegistryInterface, ToolProviderInterface, To
             'tools' => $this->getItems(),
         ];
     }
+
+    public function getIterator(): \Traversable
+    {
+        return new \ArrayIterator($this->getItems());
+    }
 }

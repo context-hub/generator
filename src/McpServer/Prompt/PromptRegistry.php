@@ -74,4 +74,9 @@ final class PromptRegistry implements RegistryInterface, PromptProviderInterface
             'prompts' => \array_values($this->prompts),
         ];
     }
+
+    public function getIterator(): \Traversable
+    {
+        return new \ArrayIterator($this->getItems());
+    }
 }

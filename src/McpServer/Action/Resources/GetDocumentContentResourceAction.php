@@ -6,6 +6,7 @@ namespace Butschster\ContextGenerator\McpServer\Action\Resources;
 
 use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
+use Butschster\ContextGenerator\Config\Registry\ConfigRegistryAccessor;
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
 use Butschster\ContextGenerator\Document\Compiler\Error\ErrorCollection;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Get;
@@ -29,10 +30,10 @@ final readonly class GetDocumentContentResourceAction
         $path = $request->getAttribute('path');
         $this->logger->info('Getting document content', ['path' => $path]);
 
-        $documents = $this->configLoader->load();
+        $config = new ConfigRegistryAccessor($this->configLoader->load());
         $contents = [];
 
-        foreach ($documents->getItems() as $document) {
+        foreach ($config->getDocuments() as $document) {
             if ($document->outputPath === $path) {
                 $contents[] = new TextResourceContents(
                     text: (string) $this->compiler->buildContent(new ErrorCollection(), $document)->content,
