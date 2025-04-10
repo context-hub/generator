@@ -26,6 +26,10 @@
     }
   ],
   "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "URL to the JSON schema for this configuration file"
+    },
     "tools": {
       "type": "array",
       "description": "List of custom tools to be registered for execution",

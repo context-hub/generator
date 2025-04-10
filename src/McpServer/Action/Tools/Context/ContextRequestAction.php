@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\McpServer\Action\Tools\Context;
 
 use Butschster\ContextGenerator\Config\ConfigurationProvider;
+use Butschster\ContextGenerator\Config\Registry\ConfigRegistryAccessor;
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
 use Butschster\ContextGenerator\Document\Compiler\Error\ErrorCollection;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
@@ -52,10 +53,10 @@ final readonly class ContextRequestAction
 
         try {
             $loader = $this->provider->fromString($json);
-            $documents = $loader->load()->getItems();
+            $config = new ConfigRegistryAccessor($loader->load());
             $compiledDocuments = [];
 
-            foreach ($documents as $document) {
+            foreach ($config->getDocuments() as $document) {
                 $compiledDocuments[] = new TextContent(
                     text: (string) $this->documentCompiler->buildContent(new ErrorCollection(), $document)->content,
                 );

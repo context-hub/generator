@@ -40,4 +40,9 @@ final class DocumentRegistry implements RegistryInterface
     {
         return $this->documents;
     }
+
+    public function getIterator(): \Traversable
+    {
+        return new \ArrayIterator($this->getItems());
+    }
 }

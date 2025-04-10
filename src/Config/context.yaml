@@ -10,6 +10,13 @@ documents:
           - ../Application/Bootloader/ConfigLoaderBootloader.php
           - ../Application/Bootloader/ImportBootloader.php
 
+  - description: Configuration Import
+    outputPath: core/config-import.md
+    sources:
+      - type: file
+        sourcePaths:
+          - ./Import
+
   - description: Configuration Parser
     outputPath: core/config-parser.md
     sources:

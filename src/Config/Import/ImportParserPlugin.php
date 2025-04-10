@@ -14,11 +14,15 @@ use Psr\Log\LoggerInterface;
  */
 final readonly class ImportParserPlugin implements ConfigParserPluginInterface
 {
+    private ImportRegistry $registry;
+
     public function __construct(
         private ImportResolver $importResolver,
         #[LoggerPrefix(prefix: 'import-parser')]
         private ?LoggerInterface $logger = null,
-    ) {}
+    ) {
+        $this->registry = new ImportRegistry();
+    }
 
     public function getConfigKey(): string
     {
@@ -27,20 +31,22 @@ final readonly class ImportParserPlugin implements ConfigParserPluginInterface
 
     public function parse(array $config, string $rootPath): ?RegistryInterface
     {
-        // We don't create a registry here, we just update the config
-        // via the updateConfig method
-        return null;
+        return $this->registry;
     }
 
     public function supports(array $config): bool
     {
-        return isset($config['import']) && \is_array($config['import']);
+        return true;
     }
 
     public function updateConfig(array $config, string $rootPath): array
     {
         // If no imports, return the original config
         if (!$this->supports($config)) {
+            return $config;
+        }
+
+        if (!isset($config['import'])) {
             return $config;
         }
 
@@ -52,8 +58,11 @@ final readonly class ImportParserPlugin implements ConfigParserPluginInterface
         // Process imports and return the merged configuration
         $processedConfig = $this->importResolver->resolveImports($config, $rootPath);
 
+        foreach ($processedConfig->imports as $import) {
+            $this->registry->register($import);
+        }
         $this->logger?->debug('Imports processed successfully');
 
-        return $processedConfig;
+        return $processedConfig->config;
     }
 }

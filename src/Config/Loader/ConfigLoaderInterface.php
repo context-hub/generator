@@ -6,7 +6,7 @@ namespace Butschster\ContextGenerator\Config\Loader;
 
 use Butschster\ContextGenerator\Application\AppScope;
 use Butschster\ContextGenerator\Config\Exception\ConfigLoaderException;
-use Butschster\ContextGenerator\Config\Registry\RegistryInterface;
+use Butschster\ContextGenerator\Config\Registry\ConfigRegistry;
 use Spiral\Core\Attribute\Scope;
 
 /**
@@ -16,11 +16,11 @@ use Spiral\Core\Attribute\Scope;
 interface ConfigLoaderInterface
 {
     /**
-     * Load configuration and return a document registry
+     * Load configuration and return a config registry
      *
      * @throws ConfigLoaderException If loading fails
      */
-    public function load(): RegistryInterface;
+    public function load(): ConfigRegistry;
 
     /**
      * Load raw configuration from the first supported loader

@@ -17,7 +17,7 @@ final readonly class UrlSourceConfig implements SourceConfigInterface
     public function __construct(
         public string $url,
         public int $ttl = 300,
-        public readonly array $headers = [],
+        public array $headers = [],
     ) {}
 
     /**
@@ -68,5 +68,15 @@ final readonly class UrlSourceConfig implements SourceConfigInterface
     public function getPath(): string
     {
         return $this->url;
+    }
+
+    public function jsonSerialize(): array
+    {
+        return [
+            'type' => $this->getType(),
+            'url' => $this->url,
+            'ttl' => $this->ttl,
+            'headers' => $this->headers,
+        ];
     }
 }
