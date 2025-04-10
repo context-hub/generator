@@ -13,10 +13,11 @@ use Spiral\Core\Attribute\Scope;
 #[Scope(name: AppScope::Mcp)]
 interface ProjectServiceInterface
 {
+    public function processToolRequestParams(CallToolRequestParams $params): CallToolRequestParams;
 
-    public function processRequestParams(
-        CallToolRequestParams|GetPromptRequestParams|ReadResourceRequestParams $params,
-    ): CallToolRequestParams|GetPromptRequestParams|ReadResourceRequestParams;
+    public function processPromptRequestParams(GetPromptRequestParams $params): GetPromptRequestParams;
+
+    public function processResourceRequestParams(ReadResourceRequestParams $params): ReadResourceRequestParams;
 
     public function processResponse(mixed $payload): mixed;
 }

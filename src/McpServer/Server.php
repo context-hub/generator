@@ -116,7 +116,7 @@ final readonly class Server
      */
     private function handleToolCall(CallToolRequestParams $params): CallToolResult
     {
-        $params = $this->projectService->processRequestParams($params);
+        $params = $this->projectService->processToolRequestParams($params);
 
         $method = 'tools/call/' . $params->name;
         $arguments = $params->arguments ?? [];
@@ -145,10 +145,9 @@ final readonly class Server
 
     private function handleResourceRead(ReadResourceRequestParams $params): ReadResourceResult
     {
-        $params = $this->projectService->processRequestParams($params);
+        $params = $this->projectService->processResourceRequestParams($params);
 
-        /** @psalm-suppress RedundantCast */
-        [$type, $path] = \explode('://', (string) $params->uri, 2);
+        [$type, $path] = \explode('://', $params->uri, 2);
 
         $method = 'resource/' . $type . '/' . $path;
 
@@ -178,7 +177,7 @@ final readonly class Server
 
     private function handlePromptGetRoute(GetPromptRequestParams $params): GetPromptResult
     {
-        $params = $this->projectService->processRequestParams($params);
+        $params = $this->projectService->processPromptRequestParams($params);
 
         $name = $params->name;
         $arguments = $params->arguments;

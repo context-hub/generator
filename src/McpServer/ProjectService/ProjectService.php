@@ -48,29 +48,34 @@ final readonly class ProjectService implements ProjectServiceInterface
         return $payload;
     }
 
-    public function processRequestParams(
-        CallToolRequestParams|GetPromptRequestParams|ReadResourceRequestParams $params,
-    ): CallToolRequestParams|GetPromptRequestParams|ReadResourceRequestParams {
+    public function processToolRequestParams(CallToolRequestParams $params): CallToolRequestParams
+    {
         if (!$this->isEnable()) {
             return $params;
         }
 
-        if ($params instanceof CallToolRequestParams) {
-            return new CallToolRequestParams(
-                name: $this->removeToolPostfix($params->name),
-                arguments: $params->arguments,
-                _meta: $params->_meta,
-            );
-        }
+        return new CallToolRequestParams(
+            name: $this->removeToolPostfix($params->name),
+            arguments: $params->arguments,
+            _meta: $params->_meta,
+        );
+    }
 
-        if ($params instanceof ReadResourceRequestParams) {
-            return new ReadResourceRequestParams(
-                uri: $this->removeResourceUriPrefix($params->uri),
-                _meta: $params->_meta,
-            );
-        }
-
+    public function processPromptRequestParams(GetPromptRequestParams $params): GetPromptRequestParams
+    {
         return $params;
+    }
+
+    public function processResourceRequestParams(ReadResourceRequestParams $params): ReadResourceRequestParams
+    {
+        if (!$this->isEnable()) {
+            return $params;
+        }
+
+        return new ReadResourceRequestParams(
+            uri: $this->removeResourceUriPrefix($params->uri),
+            _meta: $params->_meta,
+        );
     }
 
     private function addProjectSignature(string $description): string
