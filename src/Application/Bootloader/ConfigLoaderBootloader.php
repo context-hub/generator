@@ -18,7 +18,6 @@ use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
 use Butschster\ContextGenerator\Document\DocumentsParserPlugin;
 use Butschster\ContextGenerator\Modifier\Alias\AliasesRegistry;
-use Butschster\ContextGenerator\Modifier\Alias\ModifierAliasesParserPlugin;
 use Butschster\ContextGenerator\Modifier\Alias\ModifierResolver;
 use Spiral\Boot\Bootloader\Bootloader;
 use Spiral\Core\Attribute\Singleton;
@@ -57,22 +56,15 @@ final class ConfigLoaderBootloader extends Bootloader
         return [
             AliasesRegistry::class => AliasesRegistry::class,
             ModifierResolver::class => ModifierResolver::class,
-            ParserPluginRegistry::class => fn(ImportParserPlugin $importParserPlugin, DocumentsParserPlugin $documentsParserPlugin, ModifierAliasesParserPlugin $modifierAliasesParserPlugin) => new ParserPluginRegistry([
-                $modifierAliasesParserPlugin,
+            ParserPluginRegistry::class => fn(
+                ImportParserPlugin $importParserPlugin,
+                DocumentsParserPlugin $documentsParserPlugin,
+            ) => new ParserPluginRegistry([
+                // todo: think about priority when registering plugins
+                ...$this->parserPlugins,
                 $documentsParserPlugin,
                 $importParserPlugin,
-                ...$this->parserPlugins,
             ]),
-
-            //            ConfigurationProvider::class => static fn(
-            //                ConfigLoaderFactoryInterface $configLoaderFactory,
-            //                DirectoriesInterface $dirs,
-            //                HasPrefixLoggerInterface $logger,
-            //            ) => new ConfigurationProvider(
-            //                loaderFactory: $configLoaderFactory,
-            //                dirs: $dirs,
-            //                logger: $logger->withPrefix('config-provider'),
-            //            ),
 
             DocumentCompiler::class => static fn(
                 FactoryInterface $factory,
@@ -81,7 +73,12 @@ final class ConfigLoaderBootloader extends Bootloader
                 'basePath' => (string) $dirs->getOutputPath(),
             ]),
 
-            ConfigReaderRegistry::class => static fn(FilesInterface $files, JsonReader $jsonReader, YamlReader $yamlReader, PhpReader $phpReader) => new ConfigReaderRegistry(
+            ConfigReaderRegistry::class => static fn(
+                FilesInterface $files,
+                JsonReader $jsonReader,
+                YamlReader $yamlReader,
+                PhpReader $phpReader,
+            ) => new ConfigReaderRegistry(
                 readers: [
                     'json' => $jsonReader,
                     'yaml' => $yamlReader,
