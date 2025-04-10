@@ -17,7 +17,7 @@ final readonly class UrlSourceConfig implements SourceConfigInterface
     public function __construct(
         public string $url,
         public int $ttl = 300,
-        public readonly array $headers = [],
+        public array $headers = [],
     ) {}
 
     /**
