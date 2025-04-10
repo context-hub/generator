@@ -7,6 +7,7 @@ namespace Tests\Feature\Compiler;
 use Butschster\ContextGenerator\Application\AppScope;
 use Butschster\ContextGenerator\Application\FSPath;
 use Butschster\ContextGenerator\Config\ConfigurationProvider;
+use Butschster\ContextGenerator\Config\Registry\ConfigRegistryAccessor;
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
 use PHPUnit\Framework\Attributes\Test;
 use Spiral\Core\Scope;
@@ -54,7 +55,9 @@ abstract class AbstractCompilerTestCase extends AppTestCase
 
         $outputPaths = [];
         $results = [];
-        foreach ($loader->load()->getItems() as $document) {
+
+        $config = new ConfigRegistryAccessor($loader->load());
+        foreach ($config->getDocuments() as $document) {
             $outputPaths[] = $this->getContextsDir($document->outputPath);
             $compiledDocument = $compiler->compile($document);
 
