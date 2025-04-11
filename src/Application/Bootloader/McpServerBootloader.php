@@ -27,6 +27,7 @@ use Butschster\ContextGenerator\McpServer\Action\Tools\ListToolsAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Prompts\GetPromptToolAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Prompts\ListPromptsToolAction;
 use Butschster\ContextGenerator\McpServer\McpConfig;
+use Butschster\ContextGenerator\McpServer\ProjectService\ProjectServiceInterface;
 use Butschster\ContextGenerator\McpServer\Registry\McpItemsRegistry;
 use Butschster\ContextGenerator\McpServer\Routing\McpResponseStrategy;
 use Butschster\ContextGenerator\McpServer\Routing\RouteRegistrar;
@@ -41,6 +42,7 @@ use Spiral\Boot\EnvironmentInterface;
 use Spiral\Config\ConfiguratorInterface;
 use Spiral\Core\Attribute\Proxy;
 use Spiral\Core\BinderInterface;
+use Spiral\Core\Config\Proxy as ConfigProxy;
 
 final class McpServerBootloader extends Bootloader
 {
@@ -59,18 +61,20 @@ final class McpServerBootloader extends Bootloader
 
     public function init(EnvironmentInterface $env): void
     {
+        $isCommonProject = (bool) $env->get('MCP_PROJECT_COMMON', false);
+
         $this->config->setDefaults(
             McpConfig::CONFIG,
             [
                 'document_name_format' => $env->get('MCP_DOCUMENT_NAME_FORMAT', '[{path}] {description}'),
                 'file_operations' => [
-                    'enable' => (bool) $env->get('MCP_FILE_OPERATIONS', true),
+                    'enable' => (bool) $env->get('MCP_FILE_OPERATIONS', !$isCommonProject),
                     'write' => (bool) $env->get('MCP_FILE_WRITE', true),
                     'apply-patch' => (bool) $env->get('MCP_FILE_APPLY_PATCH', false),
                     'directories-list' => (bool) $env->get('MCP_FILE_DIRECTORIES_LIST', true),
                 ],
                 'context_operations' => [
-                    'enable' => (bool) $env->get('MCP_CONTEXT_OPERATIONS', true),
+                    'enable' => (bool) $env->get('MCP_CONTEXT_OPERATIONS', !$isCommonProject),
                 ],
                 'prompt_operations' => [
                     'enable' => (bool) $env->get('MCP_PROMPT_OPERATIONS', false),
@@ -78,6 +82,9 @@ final class McpServerBootloader extends Bootloader
                 'custom_tools' => [
                     'enable' => (bool) $env->get('MCP_CUSTOM_TOOLS_ENABLE', true),
                     'max_runtime' => (int) $env->get('MCP_TOOL_MAX_RUNTIME', 30),
+                ],
+                'common_prompts' => [
+                    'enable' =>  (bool) $env->get('MCP_COMMON_PROMPTS', true),
                 ],
             ],
         );
@@ -105,6 +112,9 @@ final class McpServerBootloader extends Bootloader
             RouteRegistrar::class => RouteRegistrar::class,
             McpItemsRegistry::class => McpItemsRegistry::class,
             StrategyInterface::class => McpResponseStrategy::class,
+            ProjectServiceInterface::class => new ConfigProxy(
+                interface: ProjectServiceInterface::class,
+            ),
             Router::class => static function (StrategyInterface $strategy, #[Proxy] ContainerInterface $container) {
                 $router = new Router();
                 \assert($strategy instanceof McpResponseStrategy);
@@ -118,21 +128,28 @@ final class McpServerBootloader extends Bootloader
 
     private function actions(McpConfig $config): array
     {
+
         $actions = [
             // Prompts controllers
-            ProjectStructurePromptAction::class,
-            FilesystemOperationsAction::class,
             GetPromptAction::class,
             ListPromptsAction::class,
 
             // Resources controllers
             ListResourcesAction::class,
-            JsonSchemaResourceAction::class,
             GetDocumentContentResourceAction::class,
 
             // Tools controllers
             ListToolsAction::class,
         ];
+
+        if ($config->commonPromptsEnabled()) {
+            $actions = [
+                ProjectStructurePromptAction::class,
+                FilesystemOperationsAction::class,
+                ...$actions,
+                JsonSchemaResourceAction::class,
+            ];
+        }
 
         if ($config->isPromptOperationsEnabled()) {
             $actions = [

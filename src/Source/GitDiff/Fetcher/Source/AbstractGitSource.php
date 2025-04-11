@@ -92,7 +92,7 @@ abstract readonly class AbstractGitSource implements GitSourceInterface
     {
         try {
             $result = $this->executeGitCommandString(repository: $repository, command: $command);
-            return \array_filter(\explode(PHP_EOL, $result));
+            return \array_map('trim', \array_filter(\explode(PHP_EOL, $result)));
         } catch (GitCommandException $e) {
             $this->logger?->warning('Git command failed, returning empty result', [
                 'command' => $command,
