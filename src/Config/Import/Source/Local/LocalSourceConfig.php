@@ -83,6 +83,15 @@ final class LocalSourceConfig extends AbstractSourceConfig
         return \dirname($this->absolutePath);
     }
 
+    public function jsonSerialize(): array
+    {
+        return [
+            'type' => $this->getType(),
+            'path' => $this->path,
+            'pathPrefix' => $this->pathPrefix,
+        ];
+    }
+
     /**
      * Resolve a relative path to an absolute path
      */

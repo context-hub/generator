@@ -32,6 +32,7 @@ final readonly class ImportResolver
         private DocumentOutputPathPrefixer $documentPrefixer = new DocumentOutputPathPrefixer(),
         private SourcePathPrefixer $sourcePrefixer = new SourcePathPrefixer(),
         private SourceConfigFactory $sourceConfigFactory = new SourceConfigFactory(),
+        private CircularImportDetectorInterface $detector = new CircularImportDetector(),
         #[LoggerPrefix(prefix: 'import-resolver')]
         private ?LoggerInterface $logger = null,
     ) {}
@@ -44,11 +45,10 @@ final readonly class ImportResolver
         array $config,
         string $basePath,
         array &$parsedImports = [],
-        CircularImportDetectorInterface $detector = new CircularImportDetector(),
-    ): array {
+    ): ResolvedConfig {
         // If no imports, return the original config
         if (empty($config['import'])) {
-            return $config;
+            return new ResolvedConfig(config: $config);
         }
 
         $imports = $config['import'];
@@ -69,7 +69,6 @@ final readonly class ImportResolver
                     $sourceConfig,
                     $basePath,
                     $parsedImports,
-                    $detector,
                     $importedConfigs,
                 );
                 continue;
@@ -92,16 +91,20 @@ final readonly class ImportResolver
                 $sourceConfig,
                 $basePath,
                 $parsedImports,
-                $detector,
                 $importedConfigs,
             );
         }
 
-        // Remove the import directive from the original config
         unset($config['import']);
 
         // Merge all configurations
-        return $this->mergeConfigurations($config, ...$importedConfigs);
+        return new ResolvedConfig(
+            config: $this->mergeConfigurations($config, ...$importedConfigs),
+            imports: \array_map(
+                static fn(ImportedConfig $config) => $config->sourceConfig,
+                $importedConfigs,
+            ),
+        );
     }
 
     /**
@@ -111,7 +114,6 @@ final readonly class ImportResolver
         LocalSourceConfig $sourceConfig,
         string $basePath,
         array &$parsedImports,
-        CircularImportDetectorInterface $detector,
         array &$importedConfigs,
     ): void {
         // Find all files that match the pattern
@@ -157,7 +159,6 @@ final readonly class ImportResolver
                 $localConfig,
                 \dirname($matchingPath), // Base path is the directory of the matched file
                 $parsedImports,
-                $detector,
                 $importedConfigs,
             );
         }
@@ -170,7 +171,6 @@ final readonly class ImportResolver
         SourceConfigInterface $sourceConfig,
         string $basePath,
         array &$parsedImports,
-        CircularImportDetectorInterface $detector,
         array &$importedConfigs,
     ): void {
         // For circular dependency detection
@@ -180,7 +180,7 @@ final readonly class ImportResolver
         };
 
         // Check for circular imports
-        $detector->beginProcessing($importId);
+        $this->detector->beginProcessing($importId);
 
         try {
             // Find an appropriate import source using the provider
@@ -211,22 +211,25 @@ final readonly class ImportResolver
                 $importedConfig,
                 $importBasePath,
                 $parsedImports,
-                $detector,
             );
-
 
             // Apply source path prefix for local imports
             if ($sourceConfig instanceof LocalSourceConfig) {
                 if ($sourceConfig->getPathPrefix() !== null) {
-                    $importedConfig = $this->documentPrefixer->applyPrefix(
-                        $importedConfig,
-                        $sourceConfig->getPathPrefix(),
+                    $importedConfig = new ResolvedConfig(
+                        config: $this->documentPrefixer->applyPrefix(
+                            $importedConfig->config,
+                            $sourceConfig->getPathPrefix(),
+                        ),
+                        imports: $importedConfig->imports,
                     );
                 }
-
-                $importedConfig = $this->sourcePrefixer->applyPrefix(
-                    $importedConfig,
-                    $sourceConfig->getConfigDirectory(),
+                $importedConfig = new ResolvedConfig(
+                    config: $this->sourcePrefixer->applyPrefix(
+                        $importedConfig->config,
+                        $sourceConfig->getConfigDirectory(),
+                    ),
+                    imports: $importedConfig->imports,
                 );
 
                 // Mark as processed for local sources
@@ -235,7 +238,8 @@ final readonly class ImportResolver
 
             // Store for later merging
             $importedConfigs[] = new ImportedConfig(
-                config: $importedConfig,
+                sourceConfig: $sourceConfig,
+                config: $importedConfig->config,
                 path: $sourceConfig->getPath(),
                 isLocal: $sourceConfig instanceof LocalSourceConfig,
             );
@@ -252,7 +256,7 @@ final readonly class ImportResolver
             throw $e;
         } finally {
             // Always end processing to maintain stack integrity
-            $detector->endProcessing($importId);
+            $this->detector->endProcessing($importId);
         }
     }
 

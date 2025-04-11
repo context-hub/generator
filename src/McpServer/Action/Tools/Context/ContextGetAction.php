@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\McpServer\Action\Tools\Context;
 
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
+use Butschster\ContextGenerator\Config\Registry\ConfigRegistryAccessor;
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
 use Butschster\ContextGenerator\Document\Compiler\Error\ErrorCollection;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
@@ -51,9 +52,9 @@ final readonly class ContextGetAction
         }
 
         try {
-            $documents = $this->configLoader->load();
+            $config = new ConfigRegistryAccessor($this->configLoader->load());
 
-            foreach ($documents->getItems() as $document) {
+            foreach ($config->getDocuments() as $document) {
                 if ($document->outputPath === $path) {
                     $content = new TextContent(
                         text: (string) $this->documentCompiler->buildContent(new ErrorCollection(), $document)->content,

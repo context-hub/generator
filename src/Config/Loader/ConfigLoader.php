@@ -7,7 +7,7 @@ namespace Butschster\ContextGenerator\Config\Loader;
 use Butschster\ContextGenerator\Config\Exception\ConfigLoaderException;
 use Butschster\ContextGenerator\Config\Parser\ConfigParserInterface;
 use Butschster\ContextGenerator\Config\Reader\ReaderInterface;
-use Butschster\ContextGenerator\Document\DocumentRegistry;
+use Butschster\ContextGenerator\Config\Registry\ConfigRegistry;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -22,9 +22,9 @@ final readonly class ConfigLoader implements ConfigLoaderInterface
         private ?LoggerInterface $logger = null,
     ) {}
 
-    public function load(): DocumentRegistry
+    public function load(): ConfigRegistry
     {
-        $this->logger?->info('Loading documents from config file', [
+        $this->logger?->info('Loading configuration from config file', [
             'configFile' => $this->configPath,
             'readerType' => $this->reader::class,
         ]);
@@ -37,21 +37,13 @@ final readonly class ConfigLoader implements ConfigLoaderInterface
             $this->logger?->debug('Parsing configuration with config parser');
             $configRegistry = $this->parser->parse($config);
 
-            // Get the DocumentRegistry from the ConfigRegistry
-            if (!$configRegistry->has('documents')) {
-                $errorMessage = 'No documents found in configuration';
-                $this->logger?->error($errorMessage);
-                throw new ConfigLoaderException($errorMessage);
-            }
-
-            $documentRegistry = $configRegistry->get('documents', DocumentRegistry::class);
-            $documentsCount = \count($documentRegistry->getItems());
-
-            $this->logger?->info('Documents loaded successfully', [
-                'documentsCount' => $documentsCount,
+            // Log the available registry types
+            $registryTypes = \array_keys($configRegistry->all());
+            $this->logger?->info('Configuration loaded successfully', [
+                'registryTypes' => $registryTypes,
             ]);
 
-            return $documentRegistry;
+            return $configRegistry;
         } catch (\Throwable $e) {
             // Wrap exceptions in a ConfigLoaderException
             throw new ConfigLoaderException(

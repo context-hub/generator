@@ -7,7 +7,7 @@ namespace Butschster\ContextGenerator\Config\Import\Source\Config;
 /**
  * Interface for all import source configurations
  */
-interface SourceConfigInterface
+interface SourceConfigInterface extends \JsonSerializable
 {
     /**
      * Get the source path

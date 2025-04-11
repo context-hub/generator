@@ -40,7 +40,7 @@ final readonly class Server
         $this->configureServer($server);
 
         $initOptions = $server->createInitializationOptions();
-        $runner = new ServerRunner($server, $initOptions);
+        $runner = new ServerRunner(server: $server, initOptions: $initOptions, logger: $this->logger);
         $runner->run();
     }
 

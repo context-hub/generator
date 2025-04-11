@@ -6,6 +6,7 @@ namespace Butschster\ContextGenerator\McpServer\Action\Resources;
 
 use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
+use Butschster\ContextGenerator\Config\Registry\ConfigRegistryAccessor;
 use Butschster\ContextGenerator\McpServer\McpConfig;
 use Butschster\ContextGenerator\McpServer\Registry\McpItemsRegistry;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Get;
@@ -37,9 +38,9 @@ final readonly class ListResourcesAction
         }
 
         // Add document resources from config loader
-        $documents = $this->configLoader->load();
+        $config = new ConfigRegistryAccessor($this->configLoader->load());
 
-        foreach ($documents->getItems() as $document) {
+        foreach ($config->getDocuments() as $document) {
             $tags = \implode(', ', $document->getTags());
 
             $resources[] = new Resource(

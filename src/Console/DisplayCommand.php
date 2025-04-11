@@ -7,6 +7,7 @@ namespace Butschster\ContextGenerator\Console;
 use Butschster\ContextGenerator\Application\AppScope;
 use Butschster\ContextGenerator\Config\ConfigurationProvider;
 use Butschster\ContextGenerator\Config\Exception\ConfigLoaderException;
+use Butschster\ContextGenerator\Config\Registry\ConfigRegistryAccessor;
 use Butschster\ContextGenerator\Console\Renderer\DocumentRenderer;
 use Butschster\ContextGenerator\Console\Renderer\Style;
 use Butschster\ContextGenerator\DirectoriesInterface;
@@ -76,13 +77,13 @@ final class DisplayCommand extends BaseCommand
 
                 try {
                     // Load the document registry
-                    $registry = $loader->load();
+                    $registry = new ConfigRegistryAccessor($loader->load());
 
                     $title = "Context: " . (string) $dirs->getRootPath();
 
                     $this->output->writeln("\n" . Style::header($title));
                     $this->output->writeln(Style::separator('=', \strlen($title)) . "\n");
-                    $documents = $registry->getItems();
+                    $documents = $registry->getDocuments()->getItems();
                     $this->output->writeln(
                         Style::property("Total documents") . ": " . Style::count(\count($documents)) . "\n\n",
                     );

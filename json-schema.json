@@ -26,6 +26,10 @@
     }
   ],
   "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "URL to the JSON schema for this configuration file"
+    },
     "tools": {
       "type": "array",
       "description": "List of custom tools to be registered for execution",
@@ -171,6 +175,19 @@
         "modifiers": {
           "type": "object",
           "description": "Named modifier configurations that can be referenced by alias"
+        },
+        "mcp": {
+          "type": "object",
+          "description": "Settings for MCP (Model Context Protocol) integration",
+          "properties": {
+            "servers": {
+              "type": "object",
+              "description": "Pre-defined MCP server configurations",
+              "additionalProperties": {
+                "$ref": "#/definitions/mcpServerConfig"
+              }
+            }
+          }
         }
       }
     },
@@ -425,6 +442,7 @@
             "github",
             "git_diff",
             "tree",
+            "mcp",
             "composer"
           ],
           "description": "Type of content source"
@@ -515,6 +533,18 @@
           },
           "then": {
             "$ref": "#/definitions/composerSource"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "mcp"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/mcpSource"
           }
         },
         {
@@ -1198,6 +1228,92 @@
         }
       }
     },
+    "mcpSource": {
+      "required": [
+        "server",
+        "operation"
+      ],
+      "properties": {
+        "server": {
+          "oneOf": [
+            {
+              "type": "string",
+              "description": "Reference to a pre-defined server in settings.mcp.servers"
+            },
+            {
+              "$ref": "#/definitions/mcpServerConfig"
+            }
+          ]
+        },
+        "operation": {
+          "type": "object",
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "resource.read",
+                "tool.call"
+              ],
+              "description": "Type of operation to execute on the MCP server"
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "type": {
+                    "const": "resource.read"
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "resources"
+                ],
+                "properties": {
+                  "resources": {
+                    "type": "array",
+                    "description": "List of resource URIs to read",
+                    "items": {
+                      "type": "string"
+                    },
+                    "minItems": 1
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "type": {
+                    "const": "tool.call"
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Name of the tool to call"
+                  },
+                  "arguments": {
+                    "type": "object",
+                    "description": "Arguments to pass to the tool",
+                    "additionalProperties": true
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
     "php-content-filter": {
       "type": "object",
       "properties": {
@@ -1577,6 +1693,54 @@
           "private"
         ]
       }
+    },
+    "mcpServerConfig": {
+      "oneOf": [
+        {
+          "required": [
+            "command"
+          ],
+          "properties": {
+            "command": {
+              "type": "string",
+              "description": "Command to execute to start the MCP server"
+            },
+            "args": {
+              "type": "array",
+              "description": "Command arguments",
+              "items": {
+                "type": "string"
+              }
+            },
+            "env": {
+              "type": "object",
+              "description": "Environment variables for the command",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "URL of the MCP server",
+              "format": "uri"
+            },
+            "headers": {
+              "type": "object",
+              "description": "HTTP headers to send with requests",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ]
     }
   }
 }
