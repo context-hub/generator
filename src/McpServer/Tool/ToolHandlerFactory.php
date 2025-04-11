@@ -18,7 +18,6 @@ use Spiral\Core\Attribute\Singleton;
 final readonly class ToolHandlerFactory
 {
     /**
-     * @param ContainerInterface $container
      * @param array<string, class-string<ToolHandlerInterface>> $handlers Mapping of tool types to handler classes
      */
     public function __construct(
