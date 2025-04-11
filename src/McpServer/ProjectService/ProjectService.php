@@ -16,9 +16,11 @@ use Mcp\Types\Tool;
 
 final readonly class ProjectService implements ProjectServiceInterface
 {
+    private const string URI_CTX_PREFIX = 'ctx://';
+
     public function __construct(
         private ?string $projectName,
-        private ?string $projectPrefix,
+        private ?string $projectSlug,
     ) {}
 
     public function processResponse(mixed $payload): mixed
@@ -104,7 +106,7 @@ final readonly class ProjectService implements ProjectServiceInterface
     private function processResource(Resource $item): Resource
     {
         return new Resource(
-            name: $this->addResourcePrefix($item->name),
+            name: $this->addResourceNamePrefix($item->name),
             uri: $this->addResourceUriPrefix($item->uri),
             description: $this->addProjectSignature($item->description),
             mimeType: $item->mimeType,
@@ -117,28 +119,38 @@ final readonly class ProjectService implements ProjectServiceInterface
         return $this->projectName !== null;
     }
 
-    private function addToolPostfix(string $name): string
+    private function postfix(): string
     {
-        return $name . '_from_' . $this->projectPrefix;
+        return '_from_' . $this->projectSlug;
+    }
+
+    private function addToolPostfix(string $name = ''): string
+    {
+        return $name . $this->postfix();
     }
 
     private function removeToolPostfix(string $name): string
     {
-        return \str_replace($this->addToolPostfix(''), '', $name);
+        return \str_replace($this->postfix(), '', $name);
     }
 
-    private function addResourcePrefix(string $name): string
+    private function addResourceNamePrefix(string $name): string
     {
         return "[{$this->projectName}] " . $name;
     }
 
+    private function uriPrefix(): string
+    {
+        return $this->projectSlug . '://';
+    }
+
     private function addResourceUriPrefix(string $uri): string
     {
-        return \str_replace('ctx://', $this->projectPrefix . '://', $uri);
+        return \str_replace(self::URI_CTX_PREFIX, $this->uriPrefix(), $uri);
     }
 
     private function removeResourceUriPrefix(string $uri): string
     {
-        return \str_replace($this->projectPrefix . '://', 'ctx://', $uri);
+        return \str_replace($this->uriPrefix(), self::URI_CTX_PREFIX, $uri);
     }
 }
