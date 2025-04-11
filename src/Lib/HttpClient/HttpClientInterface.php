@@ -29,7 +29,7 @@ interface HttpClientInterface
      *
      * @throws HttpException If the request fails
      */
-    public function post(string $url, array $headers = [], string $body = null): HttpResponse;
+    public function post(string $url, array $headers = [], ?string $body = null): HttpResponse;
 
     /**
      * Send a request to the specified URL and follow redirects if needed

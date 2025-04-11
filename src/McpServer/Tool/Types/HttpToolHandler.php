@@ -159,20 +159,15 @@ final readonly class HttpToolHandler extends AbstractToolHandler
             }
         }
 
-        switch ($request->method) {
-            case 'GET':
-                return $this->httpClient->get($request->getFullUrl(), $headers);
-
-            case 'POST':
-                return $this->httpClient->post(
-                    $request->getFullUrl(),
-                    $headers,
-                    $request->getBodyAsString(),
-                );
-
-            default:
-                throw new ToolExecutionException("HTTP method {$request->method} not supported yet");
-        }
+        return match ($request->method) {
+            'GET' => $this->httpClient->get($request->getFullUrl(), $headers),
+            'POST' => $this->httpClient->post(
+                $request->getFullUrl(),
+                $headers,
+                $request->getBodyAsString(),
+            ),
+            default => throw new ToolExecutionException("HTTP method {$request->method} not supported yet"),
+        };
     }
 
     /**

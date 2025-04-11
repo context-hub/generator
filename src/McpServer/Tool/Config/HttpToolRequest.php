@@ -110,7 +110,7 @@ final readonly class HttpToolRequest implements \JsonSerializable
         }
 
         // Convert array to JSON
-        return \json_encode($this->body);
+        return \json_encode($this->body) ?: null;
     }
 
     /**
