@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Application\Bootloader;
 
-use Butschster\ContextGenerator\Lib\HttpClient\HttpClientFactory;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
+use Butschster\ContextGenerator\Lib\HttpClient\Psr18Client;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\HttpFactory;
 use Spiral\Boot\Bootloader\Bootloader;
@@ -19,10 +19,7 @@ final class HttpClientBootloader extends Bootloader
             HttpClientInterface::class => static fn(
                 Client $httpClient,
                 HttpFactory $httpMessageFactory,
-            ) => HttpClientFactory::create(
-                $httpClient,
-                $httpMessageFactory,
-            ),
+            ) => new Psr18Client($httpClient, $httpMessageFactory, $httpMessageFactory),
         ];
     }
 }

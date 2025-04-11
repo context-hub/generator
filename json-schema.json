@@ -256,8 +256,7 @@
       "type": "object",
       "required": [
         "id",
-        "description",
-        "commands"
+        "description"
       ],
       "properties": {
         "id": {
@@ -267,6 +266,12 @@
         "description": {
           "type": "string",
           "description": "Human-readable description of the tool"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["run", "http"],
+          "description": "Type of tool (run = command execution, http = HTTP requests)",
+          "default": "run"
         },
         "schema": {
           "$ref": "#/definitions/inputSchema",
@@ -281,11 +286,87 @@
         },
         "commands": {
           "type": "array",
-          "description": "List of commands to execute",
+          "description": "List of commands to execute (for 'run' type tools)",
           "items": {
             "$ref": "#/definitions/toolCommand"
+          }
+        },
+        "requests": {
+          "type": "array",
+          "description": "List of HTTP requests to execute (for 'http' type tools)",
+          "items": {
+            "$ref": "#/definitions/httpRequest"
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "run"
+              }
+            }
           },
-          "minItems": 1
+          "then": {
+            "required": ["commands"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "http"
+              }
+            }
+          },
+          "then": {
+            "required": ["requests"]
+          }
+        }
+      ]
+    },
+    "httpRequest": {
+      "type": "object",
+      "required": ["url"],
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "URL to send the request to, may contain {{argument}} placeholders"
+        },
+        "method": {
+          "type": "string",
+          "enum": ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"],
+          "description": "HTTP method to use",
+          "default": "GET"
+        },
+        "headers": {
+          "type": "object",
+          "description": "HTTP headers to send with the request, values may contain {{argument}} placeholders",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "query": {
+          "type": "object",
+          "description": "Query parameters to append to the URL, values may contain {{argument}} placeholders",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "body": {
+          "oneOf": [
+            {
+              "type": "string",
+              "description": "Request body as string, may contain {{argument}} placeholders"
+            },
+            {
+              "type": "object",
+              "description": "Request body as JSON object, values may contain {{argument}} placeholders",
+              "additionalProperties": true
+            }
+          ],
+          "description": "Request body for POST, PUT, etc."
         }
       }
     },

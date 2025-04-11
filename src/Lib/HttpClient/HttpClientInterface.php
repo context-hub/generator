@@ -20,6 +20,18 @@ interface HttpClientInterface
     public function get(string $url, array $headers = []): HttpResponse;
 
     /**
+     * Send a POST request to the specified URL
+     *
+     * @param string $url The URL to request
+     * @param array<string, string> $headers Optional request headers
+     * @param string|null $body Optional request body
+     * @return HttpResponse The response object
+     *
+     * @throws HttpException If the request fails
+     */
+    public function post(string $url, array $headers = [], ?string $body = null): HttpResponse;
+
+    /**
      * Send a request to the specified URL and follow redirects if needed
      *
      * @param string $url The URL to request

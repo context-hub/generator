@@ -27,7 +27,7 @@ final readonly class RunToolHandler extends AbstractToolHandler
 
     public function supports(string $type): bool
     {
-        return true; // Default handler for all tool types
+        return $type === 'run'; // Only supports 'run' type tools
     }
 
     protected function doExecute(ToolDefinition $tool, array $arguments = []): array

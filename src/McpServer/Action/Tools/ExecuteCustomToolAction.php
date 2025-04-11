@@ -6,8 +6,8 @@ namespace Butschster\ContextGenerator\McpServer\Action\Tools;
 
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Butschster\ContextGenerator\McpServer\Tool\Exception\ToolExecutionException;
+use Butschster\ContextGenerator\McpServer\Tool\ToolHandlerFactory;
 use Butschster\ContextGenerator\McpServer\Tool\ToolProviderInterface;
-use Butschster\ContextGenerator\McpServer\Tool\Types\ToolHandlerInterface;
 use Mcp\Types\CallToolResult;
 use Mcp\Types\TextContent;
 use Psr\Http\Message\ServerRequestInterface;
@@ -18,7 +18,7 @@ final readonly class ExecuteCustomToolAction
     public function __construct(
         private LoggerInterface $logger,
         private ToolProviderInterface $toolProvider,
-        private ToolHandlerInterface $toolHandler,
+        private ToolHandlerFactory $toolHandler,
     ) {}
 
     #[Post(path: '/tools/call/{id}', name: 'tools.execute')]
@@ -51,19 +51,8 @@ final readonly class ExecuteCustomToolAction
             // Get the tool definition
             $tool = $this->toolProvider->get($toolId);
 
-            // Check if the tool type is supported
-            if (!$this->toolHandler->supports('run')) {
-                $this->logger->warning('Unsupported tool type', [
-                    'id' => $toolId,
-                ]);
-                return new CallToolResult(
-                    content: [new TextContent(text: \sprintf('Unsupported tool type: %s', 'run'))],
-                    isError: true,
-                );
-            }
-
             // Execute the tool
-            $result = $this->toolHandler->execute($tool, $parsedBody);
+            $result = $this->toolHandler->createHandlerForTool($tool)->execute($tool, $parsedBody);
 
             // Format the result
             $output = \sprintf(
