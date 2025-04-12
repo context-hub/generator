@@ -140,6 +140,13 @@ final readonly class HttpToolHandler extends AbstractToolHandler
             }
         }
 
+        // Process query parameters
+        if (isset($requestConfig['body']) && \is_array($requestConfig['body'])) {
+            foreach ($requestConfig['body'] as $key => $value) {
+                $data[$key] = $processor->process($value);
+            }
+        }
+
         return HttpToolRequest::fromArray($requestConfig, $data);
     }
 

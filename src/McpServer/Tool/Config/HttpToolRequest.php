@@ -44,7 +44,7 @@ final readonly class HttpToolRequest implements \JsonSerializable
             $method = \strtoupper($config['method']);
 
             // Validate method
-            if (!\in_array($method, ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'], true)) {
+            if (!\in_array($method, ['GET', 'POST'], true)) {
                 throw new \InvalidArgumentException("Invalid HTTP method: {$method}");
             }
         }
