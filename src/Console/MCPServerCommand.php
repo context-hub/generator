@@ -109,6 +109,7 @@ final class MCPServerCommand extends BaseCommand
                     bindings: new Scope(
                         name: AppScope::Mcp,
                         bindings: [
+                            DirectoriesInterface::class => $dirs,
                             ProjectServiceInterface::class => $projectServiceFactory->create(),
                             HasPrefixLoggerInterface::class => $logger,
                             ConfigLoaderInterface::class => $loader,
