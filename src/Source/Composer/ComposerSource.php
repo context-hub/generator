@@ -95,6 +95,11 @@ final class ComposerSource extends SourceWithModifiers implements FilterableSour
         return true;
     }
 
+    public function maxFiles(): int
+    {
+        return 0; //todo Add support for max files
+    }
+
     #[\Override]
     public function jsonSerialize(): array
     {

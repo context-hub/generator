@@ -25,6 +25,7 @@ final class FileSource extends SourceWithModifiers implements FilterableSourceIn
      * @param string|array<string> $size Size constraints for files (e.g., '> 10K', '< 1M')
      * @param string|array<string> $date Date constraints for files (e.g., 'since yesterday', '> 2023-01-01')
      * @param bool $ignoreUnreadableDirs Whether to ignore unreadable directories
+     * @param non-negative-int $maxFiles Maximum number of files to include (0 for no limit)
      * @param array<Modifier> $modifiers Identifiers for content modifiers to apply
      * @param array<non-empty-string> $tags
      */
@@ -40,6 +41,7 @@ final class FileSource extends SourceWithModifiers implements FilterableSourceIn
         public readonly string|array $date = [],
         public readonly bool $ignoreUnreadableDirs = false,
         public readonly TreeViewConfig $treeView = new TreeViewConfig(),
+        public readonly int $maxFiles = 0,
         array $modifiers = [],
         array $tags = [],
     ) {
@@ -114,6 +116,11 @@ final class FileSource extends SourceWithModifiers implements FilterableSourceIn
         return $this->ignoreUnreadableDirs;
     }
 
+    public function maxFiles(): int
+    {
+        return $this->maxFiles;
+    }
+
     #[\Override]
     public function jsonSerialize(): array
     {
@@ -149,6 +156,11 @@ final class FileSource extends SourceWithModifiers implements FilterableSourceIn
 
         if ($this->ignoreUnreadableDirs) {
             $result['ignoreUnreadableDirs'] = true;
+        }
+
+        // Add maxFiles only if it's set and not zero
+        if ($this->maxFiles !== null && $this->maxFiles > 0) {
+            $result['maxFiles'] = $this->maxFiles;
         }
 
         return \array_filter($result);

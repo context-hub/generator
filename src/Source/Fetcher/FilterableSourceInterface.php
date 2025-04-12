@@ -69,4 +69,10 @@ interface FilterableSourceInterface
      * Check if unreadable directories should be ignored
      */
     public function ignoreUnreadableDirs(): bool;
+
+    /**
+     * Get maximum number of files to return
+     * @return non-negative-int Maximum number of files (0 for no limit)
+     */
+    public function maxFiles(): int;
 }

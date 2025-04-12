@@ -98,6 +98,11 @@ final class GitDiffSource extends SourceWithModifiers implements FilterableSourc
         return false;
     }
 
+    public function maxFiles(): int
+    {
+        return 0; //todo Add support for max files
+    }
+
     #[\Override]
     public function jsonSerialize(): array
     {

@@ -62,6 +62,17 @@ final readonly class FileSourceFactory extends AbstractSourceFactory
             }
         }
 
+        // Validate maxFiles if present
+        if (isset($config['maxFiles']) && $config['maxFiles'] !== null) {
+            if (!\is_int($config['maxFiles'])) {
+                throw new \RuntimeException('maxFiles must be an integer or null');
+            }
+
+            if ($config['maxFiles'] < 0) {
+                throw new \RuntimeException('maxFiles cannot be negative');
+            }
+        }
+
         // Handle filePattern parameter, allowing both string and array formats
         $filePattern = $config['filePattern'] ?? '*.*';
 
@@ -81,6 +92,7 @@ final readonly class FileSourceFactory extends AbstractSourceFactory
             date: $config['date'] ?? [],
             ignoreUnreadableDirs: $config['ignoreUnreadableDirs'] ?? false,
             treeView: TreeViewConfig::fromArray($config),
+            maxFiles: $config['maxFiles'] ?? 0,
             modifiers: $config['modifiers'] ?? [],
             tags: $config['tags'] ?? [],
         );
