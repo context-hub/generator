@@ -1175,6 +1175,12 @@
           ],
           "description": "Patterns to include only specific paths"
         },
+        "maxFiles": {
+          "type": ["integer"],
+          "description": "Maximum number of files to include (0 for no limit)",
+          "minimum": 0,
+          "default": 0
+        },
         "contains": {
           "oneOf": [
             {

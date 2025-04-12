@@ -92,6 +92,11 @@ final class GithubSource extends SourceWithModifiers implements FilterableSource
         return false; // Not applicable for GitHub sources
     }
 
+    public function maxFiles(): int
+    {
+        return 0; //todo Add support for max files
+    }
+
     #[\Override]
     public function jsonSerialize(): array
     {

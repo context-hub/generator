@@ -106,6 +106,11 @@ final class TreeSource extends BaseSource implements FilterableSourceInterface
         return true;
     }
 
+    public function maxFiles(): int
+    {
+        return 0;
+    }
+
     #[\Override]
     public function jsonSerialize(): array
     {

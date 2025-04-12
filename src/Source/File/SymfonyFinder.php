@@ -97,9 +97,37 @@ final readonly class SymfonyFinder implements FinderInterface
 
         $finder->sortByName();
 
+        // Check for maxFiles limit
+        $maxFiles = $source->maxFiles();
+        $hasLimit = $maxFiles !== null && $maxFiles > 0;
+
+        // Generate tree view (always on all files for consistency)
+        $treeView = $this->generateTreeView($finder, $basePath, $options);
+
+        // Get files with limit if needed
+        if ($hasLimit) {
+            $limitedFiles = [];
+            $count = 0;
+
+            foreach ($finder as $file) {
+                $limitedFiles[] = $file;
+                $count++;
+
+                if ($count >= $maxFiles) {
+                    break;
+                }
+            }
+
+            return new FinderResult(
+                files: $limitedFiles,
+                treeView: $treeView,
+            );
+        }
+
+        // No limit, return all files
         return new FinderResult(
             files: \array_values(\iterator_to_array($finder->getIterator())),
-            treeView: $this->generateTreeView($finder, $basePath, $options),
+            treeView: $treeView,
         );
     }
 
