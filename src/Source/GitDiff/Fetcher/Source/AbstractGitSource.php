@@ -50,7 +50,7 @@ abstract readonly class AbstractGitSource implements GitSourceInterface
             $this->files->write((string) $tempFile, $diff);
 
             // Create a file info object with additional metadata
-            $fileInfos[] = new class($tempFile, $file, $diff) extends SplFileInfo {
+            $fileInfos[] = new class((string) $tempFile, $file, $diff) extends SplFileInfo {
                 private readonly string $originalPath;
 
                 public function __construct(
