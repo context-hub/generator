@@ -10,7 +10,7 @@ final readonly class CompositeProcessor implements VariableReplacementProcessorI
      * @param VariableReplacementProcessor[] $processors
      */
     public function __construct(
-        public array $processors,
+        public array $processors = [],
     ) {}
 
     public function process(string $text): string

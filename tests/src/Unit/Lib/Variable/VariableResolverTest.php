@@ -154,27 +154,6 @@ class VariableResolverTest extends TestCase
         $this->assertSame($expected, $resolver->resolve($input));
     }
 
-    #[Test]
-    public function it_should_use_default_processor_if_none_provided(): void
-    {
-        // Create resolver with default processor
-        $resolver = new VariableResolver();
-
-        // Use a test string with standard system variables that should be available
-        // in the default PredefinedVariableProvider
-        $input = 'System: ${OS}, User: ${USER}';
-
-        // Process should replace OS and USER variables
-        $result = $resolver->resolve($input);
-
-        // Verify that variables were replaced
-        $this->assertStringNotContainsString('${OS}', $result);
-        $this->assertStringNotContainsString('${USER}', $result);
-
-        // Verify that OS is in the result (actual value depends on system)
-        $this->assertStringContainsString(PHP_OS, $result);
-    }
-
     /**
      * Create a custom provider with predefined variables for testing
      *

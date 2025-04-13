@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer\Prompt;
 
+use Butschster\ContextGenerator\McpServer\Prompt\Extension\PromptDefinition;
+
 interface PromptProviderInterface
 {
     /**
@@ -27,4 +29,11 @@ interface PromptProviderInterface
      * @return array<string, PromptDefinition>
      */
     public function all(): array;
+
+    /**
+     * Gets all non-template prompts.
+     *
+     * @return array<string, PromptDefinition>
+     */
+    public function allTemplates(): array;
 }
