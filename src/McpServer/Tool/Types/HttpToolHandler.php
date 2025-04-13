@@ -9,6 +9,7 @@ use Butschster\ContextGenerator\Lib\HttpClient\Exception\HttpException;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpResponse;
 use Butschster\ContextGenerator\Lib\Variable\VariableReplacementProcessor;
+use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
 use Butschster\ContextGenerator\McpServer\Tool\Config\HttpToolRequest;
 use Butschster\ContextGenerator\McpServer\Tool\Config\ToolDefinition;
 use Butschster\ContextGenerator\McpServer\Tool\Exception\ToolExecutionException;
@@ -20,6 +21,7 @@ final readonly class HttpToolHandler extends AbstractToolHandler
 {
     public function __construct(
         private HttpClientInterface $httpClient,
+        private VariableResolver $variables,
         ?LoggerInterface $logger = null,
     ) {
         parent::__construct($logger);
@@ -113,17 +115,17 @@ final readonly class HttpToolHandler extends AbstractToolHandler
         $argsProvider = new ToolArgumentsProvider($arguments, $tool->schema);
 
         // Create a processor for variable replacement
-        $processor = new VariableReplacementProcessor($argsProvider);
+        $variables = $this->variables->with(new VariableReplacementProcessor($argsProvider));
 
         // Process URL
         if (isset($requestConfig['url'])) {
-            $requestConfig['url'] = $processor->process($requestConfig['url']);
+            $requestConfig['url'] = $variables->resolve($requestConfig['url']);
         }
 
         // Process headers
         if (isset($requestConfig['headers']) && \is_array($requestConfig['headers'])) {
             foreach ($requestConfig['headers'] as $key => $value) {
-                $requestConfig['headers'][$key] = $processor->process($value);
+                $requestConfig['headers'][$key] = $variables->resolve($value);
             }
         }
 
@@ -136,14 +138,14 @@ final readonly class HttpToolHandler extends AbstractToolHandler
         // Process query parameters
         if (isset($requestConfig['query']) && \is_array($requestConfig['query'])) {
             foreach ($requestConfig['query'] as $key => $value) {
-                $data[$key] = $processor->process($value);
+                $data[$key] = $variables->resolve($value);
             }
         }
 
         // Process query parameters
         if (isset($requestConfig['body']) && \is_array($requestConfig['body'])) {
             foreach ($requestConfig['body'] as $key => $value) {
-                $data[$key] = $processor->process($value);
+                $data[$key] = $variables->resolve($value);
             }
         }
 

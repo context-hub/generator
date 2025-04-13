@@ -12,7 +12,7 @@ use Psr\Log\LoggerInterface;
 /**
  * Processor that replaces variable references in text
  */
-final readonly class VariableReplacementProcessor
+final readonly class VariableReplacementProcessor implements VariableReplacementProcessorInterface
 {
     public function __construct(
         private VariableProviderInterface $provider = new PredefinedVariableProvider(),
