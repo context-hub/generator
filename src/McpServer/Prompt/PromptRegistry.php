@@ -27,23 +27,23 @@ final class PromptRegistry implements RegistryInterface, PromptProviderInterface
         $this->prompts[$prompt->id] = $prompt;
     }
 
-    public function get(string $id): PromptDefinition
+    public function get(string $name): PromptDefinition
     {
-        if (!$this->has($id)) {
+        if (!$this->has($name)) {
             throw new \InvalidArgumentException(
                 \sprintf(
                     'No prompt with the name "%s" exists',
-                    $id,
+                    $name,
                 ),
             );
         }
 
-        return $this->prompts[$id];
+        return $this->prompts[$name];
     }
 
-    public function has(string $id): bool
+    public function has(string $name): bool
     {
-        return isset($this->prompts[$id]);
+        return isset($this->prompts[$name]);
     }
 
     public function all(): array

@@ -131,6 +131,7 @@ final readonly class TemplateResolver
         $resolver = $this->variableResolver->with(new VariableReplacementProcessor($variableProvider, $this->logger));
 
         foreach ($messages as $message) {
+            \assert($message->content instanceof TextContent);
             $content = $message->content->text;
             $substitutedContent = $resolver->resolve($content);
 
