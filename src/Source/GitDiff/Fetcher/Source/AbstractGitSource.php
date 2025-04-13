@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\GitDiff\Fetcher\Source;
 
+use Butschster\ContextGenerator\Application\FSPath;
 use Butschster\ContextGenerator\Lib\Git\Command;
 use Butschster\ContextGenerator\Lib\Git\CommandsExecutorInterface;
 use Butschster\ContextGenerator\Lib\Git\Exception\GitCommandException;
@@ -42,14 +43,14 @@ abstract readonly class AbstractGitSource implements GitSourceInterface
             }
 
             // Create the temporary file
-            $tempFile = $tempDir . '/' . $file;
-            $tempDirname = \dirname($tempFile);
+            $tempFile = FSPath::create($tempDir)->join($file);
+            $tempDirname = (string) $tempFile->parent();
 
             $this->files->ensureDirectory($tempDirname, 0777);
-            $this->files->write($tempFile, $diff);
+            $this->files->write((string) $tempFile, $diff);
 
             // Create a file info object with additional metadata
-            $fileInfos[] = new class($tempFile, $file, $diff) extends SplFileInfo {
+            $fileInfos[] = new class((string) $tempFile, $file, $diff) extends SplFileInfo {
                 private readonly string $originalPath;
 
                 public function __construct(

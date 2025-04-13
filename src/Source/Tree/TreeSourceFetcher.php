@@ -49,6 +49,7 @@ final readonly class TreeSourceFetcher implements SourceFetcherInterface
         $this->logger?->info('Fetching tree source content', [
             'description' => $source->getDescription(),
             'basePath' => $this->basePath,
+            'sourcePaths' => $source->sourcePaths,
             'renderFormat' => $source->renderFormat,
             'hasModifiers' => !empty($source->modifiers),
         ]);
