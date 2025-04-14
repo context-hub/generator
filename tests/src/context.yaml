@@ -1,0 +1,13 @@
+$schema: 'https://raw.githubusercontent.com/context-hub/generator/refs/heads/main/json-schema.json'
+
+documents:
+  - description: Prompts tests
+    outputPath: tests/prompts.md
+    sources:
+      - type: file
+        sourcePaths:
+          - Feature/McpServer/Prompt/DefaultPromptTest.php
+          - Feature/FeatureTestCases.php
+          - TestApp.php
+          - TestCase.php
+        showTreeView: true

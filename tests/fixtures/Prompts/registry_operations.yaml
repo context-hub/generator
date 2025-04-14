@@ -1,0 +1,41 @@
+$schema: 'https://raw.githubusercontent.com/context-hub/generator/refs/heads/main/json-schema.json'
+
+variables:
+  name: Registry Operations Test
+
+prompts:
+  # Regular prompts
+  - id: prompt-one
+    description: First regular prompt
+    messages:
+      - role: user
+        content: First prompt content
+
+  - id: prompt-two
+    description: Second regular prompt
+    messages:
+      - role: user
+        content: Second prompt content
+
+  # Templates
+  - id: template-one
+    type: template
+    description: First template
+    messages:
+      - role: user
+        content: First template content
+
+  - id: template-two
+    type: template
+    description: Second template
+    messages:
+      - role: user
+        content: Second template content
+
+  # Extended prompt
+  - id: extended-prompt
+    description: Prompt that extends a template
+    extend:
+      - id: template-one
+        arguments:
+          key: value

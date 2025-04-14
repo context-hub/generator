@@ -16,6 +16,10 @@ use Spiral\Core\Attribute\Singleton;
 #[Singleton]
 final class PromptRegistry implements RegistryInterface, PromptProviderInterface, PromptRegistryInterface
 {
+    public function __construct(
+        private readonly PromptMessageProcessor $promptMessageProcessor,
+    ) {}
+
     /** @var array<non-empty-string, TPrompt> */
     private array $prompts = [];
 
@@ -27,7 +31,7 @@ final class PromptRegistry implements RegistryInterface, PromptProviderInterface
         $this->prompts[$prompt->id] = $prompt;
     }
 
-    public function get(string $name): PromptDefinition
+    public function get(string $name, array $arguments = []): PromptDefinition
     {
         if (!$this->has($name)) {
             throw new \InvalidArgumentException(
@@ -38,7 +42,7 @@ final class PromptRegistry implements RegistryInterface, PromptProviderInterface
             );
         }
 
-        return $this->prompts[$name];
+        return $this->promptMessageProcessor->process($this->prompts[$name], $arguments);
     }
 
     public function has(string $name): bool

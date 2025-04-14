@@ -1,0 +1,41 @@
+$schema: 'https://raw.githubusercontent.com/context-hub/generator/refs/heads/main/json-schema.json'
+
+variables:
+  name: Serialization Test
+
+prompts:
+  # Test serialization of a complete prompt with all fields
+  - id: complete-prompt
+    description: A complete prompt with all possible fields
+    type: prompt
+    schema:
+      properties:
+        language:
+          description: Programming language
+          type: string
+        framework:
+          description: Framework to use
+          type: string
+      required:
+        - language
+    messages:
+      - role: user
+        content: You are a helpful assistant for {{language}} programming.
+      - role: assistant
+        content: I'll help with {{language}} and {{framework}} development.
+
+  # Template with minimal fields
+  - id: minimal-template
+    type: template
+    description: A minimal template
+    messages:
+      - role: user
+        content: This is a minimal template.
+
+  # Prompt with extensions but no messages
+  - id: extension-only-prompt
+    description: A prompt with extensions but no messages
+    extend:
+      - id: minimal-template
+        arguments:
+          key: value

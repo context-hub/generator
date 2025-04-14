@@ -1,0 +1,32 @@
+$schema: 'https://raw.githubusercontent.com/context-hub/generator/refs/heads/main/json-schema.json'
+
+variables:
+  name: Basic Prompt Test
+
+prompts:
+  # Simple prompt with minimal configuration
+  - id: minimal-prompt
+    description: A minimal prompt with just the required fields
+    messages:
+      - role: user
+        content: You are a helpful assistant.
+
+  # Prompt with multiple messages
+  - id: multi-message-prompt
+    description: A prompt with multiple messages
+    messages:
+      - role: user
+        content: You are a helpful assistant.
+      - role: assistant
+        content: I'm here to help you with your tasks.
+      - role: user
+        content: Tell me about context generation.
+
+  # Prompt with variable substitution
+  - id: variable-prompt
+    description: A prompt with variable substitution
+    messages:
+      - role: user
+        content: You are a helpful assistant for {{name}}.
+      - role: assistant
+        content: I'm here to help with {{name}} tasks.

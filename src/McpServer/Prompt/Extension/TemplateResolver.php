@@ -47,9 +47,7 @@ final readonly class TemplateResolver
         foreach ($prompt->extensions as $extension) {
             // Prevent circular dependencies
             if (\in_array($extension->templateId, $processedExtensions, true)) {
-                throw new TemplateResolutionException(
-                    \sprintf('Circular dependency detected for template "%s"', $extension->templateId),
-                );
+                continue;
             }
 
             $processedExtensions[] = $extension->templateId;
@@ -61,13 +59,6 @@ final readonly class TemplateResolver
                 throw new TemplateResolutionException(
                     \sprintf('Template "%s" not found', $extension->templateId),
                     previous: $e,
-                );
-            }
-
-            // Ensure it's a template
-            if ($template->type !== PromptType::Template) {
-                throw new TemplateResolutionException(
-                    \sprintf('Prompt "%s" is not a template', $extension->templateId),
                 );
             }
 
@@ -107,6 +98,10 @@ final readonly class TemplateResolver
         // If the prompt has no messages, use the template's messages with substitution
         if (empty($promptMessages)) {
             return $this->substituteMessages($templateMessages, $arguments);
+        }
+
+        foreach ($this->substituteMessages($templateMessages, $arguments) as $templateMessage) {
+            $promptMessages[] = $templateMessage;
         }
 
         // Otherwise, keep the prompt's messages (extensions just provide structure)

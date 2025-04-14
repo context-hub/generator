@@ -21,7 +21,7 @@ interface PromptProviderInterface
      * @param string $name The name of the prompt
      * @throws \InvalidArgumentException If no prompt with the given name exists
      */
-    public function get(string $name): PromptDefinition;
+    public function get(string $name, array $arguments = []): PromptDefinition;
 
     /**
      * Gets all prompts.

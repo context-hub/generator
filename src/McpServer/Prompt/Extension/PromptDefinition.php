@@ -20,6 +20,17 @@ final readonly class PromptDefinition implements \JsonSerializable
         public array $extensions = [],
     ) {}
 
+    public function withMessages(array $messages): self
+    {
+        return new self(
+            id: $this->id,
+            prompt: $this->prompt,
+            messages: $messages,
+            type: $this->type,
+            extensions: $this->extensions,
+        );
+    }
+
     public function jsonSerialize(): array
     {
         $schema = [

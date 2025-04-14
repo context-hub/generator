@@ -1,0 +1,44 @@
+$schema: 'https://raw.githubusercontent.com/context-hub/generator/refs/heads/main/json-schema.json'
+
+variables:
+  name: Template Test
+
+prompts:
+  # Define a template
+  - id: base-template
+    type: template
+    description: A base template for other prompts
+    messages:
+      - role: user
+        content: You are a helpful assistant for {{context}}.
+      - role: assistant
+        content: I'm here to help with {{context}} tasks.
+
+  # Another template
+  - id: greeting-template
+    type: template
+    description: A template with greeting
+    messages:
+      - role: user
+        content: Hello, I'm {{name}}. X
+      - role: assistant
+        content: Nice to meet you, {{name}}! How can I help you today?
+
+  # Prompt extending a single template
+  - id: extended-prompt
+    description: A prompt extending a template
+    extend:
+      - id: base-template
+        arguments:
+          context: PHP development
+
+  # Prompt extending multiple templates
+  - id: multi-extended-prompt
+    description: A prompt extending multiple templates
+    extend:
+      - id: base-template
+        arguments:
+          context: PHP development
+      - id: greeting-template
+        arguments:
+          name: Developer
