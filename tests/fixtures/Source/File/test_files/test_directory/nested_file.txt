@@ -1,0 +1,1 @@
+This is nested file content for testing directory traversal.

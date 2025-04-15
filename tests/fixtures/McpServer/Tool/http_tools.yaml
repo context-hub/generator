@@ -1,0 +1,36 @@
+$schema: 'https://raw.githubusercontent.com/context-hub/generator/refs/heads/main/json-schema.json'
+
+tools:
+  - id: http-get-tool
+    description: A HTTP GET tool
+    type: http
+    requests:
+      - url: 'https://example.com/api/{{endpoint}}'
+        method: GET
+        headers:
+          Content-Type: application/json
+          Authorization: 'Bearer {{token}}'
+    schema:
+      properties:
+        endpoint:
+          type: string
+          description: API endpoint
+        token:
+          type: string
+          description: Auth token
+          
+  - id: http-post-tool
+    description: A HTTP POST tool
+    type: http
+    requests:
+      - url: 'https://example.com/api/submit'
+        method: POST
+        headers:
+          Content-Type: application/json
+        body:
+          data: '{{data}}'
+    schema:
+      properties:
+        data:
+          type: string
+          description: Data to submit

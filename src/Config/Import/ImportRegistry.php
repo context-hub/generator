@@ -9,16 +9,18 @@ use Butschster\ContextGenerator\Config\Registry\RegistryInterface;
 use Spiral\Core\Attribute\Singleton;
 
 /**
- * @implements RegistryInterface<SourceConfigInterface>
+ * @template TImport of SourceConfigInterface
+ * @implements RegistryInterface<TImport>
  */
 #[Singleton]
 final class ImportRegistry implements RegistryInterface
 {
-    /** @var array<SourceConfigInterface> */
+    /** @var list<TImport> */
     private array $imports = [];
 
     /**
      * Register an import in the registry
+     * @param TImport $import
      */
     public function register(SourceConfigInterface $import): self
     {
@@ -27,19 +29,11 @@ final class ImportRegistry implements RegistryInterface
         return $this;
     }
 
-    /**
-     * Gets the type of the registry.
-     */
     public function getType(): string
     {
         return 'import';
     }
 
-    /**
-     * Gets all items in the registry.
-     *
-     * @return array<SourceConfigInterface>
-     */
     public function getItems(): array
     {
         return $this->imports;

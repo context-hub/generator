@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer\Prompt;
 
+use Butschster\ContextGenerator\McpServer\Prompt\Extension\PromptDefinition;
+
 interface PromptProviderInterface
 {
     /**
@@ -19,7 +21,7 @@ interface PromptProviderInterface
      * @param string $name The name of the prompt
      * @throws \InvalidArgumentException If no prompt with the given name exists
      */
-    public function get(string $name): PromptDefinition;
+    public function get(string $name, array $arguments = []): PromptDefinition;
 
     /**
      * Gets all prompts.
@@ -27,4 +29,11 @@ interface PromptProviderInterface
      * @return array<string, PromptDefinition>
      */
     public function all(): array;
+
+    /**
+     * Gets all non-template prompts.
+     *
+     * @return array<string, PromptDefinition>
+     */
+    public function allTemplates(): array;
 }

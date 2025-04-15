@@ -4,59 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Compiler;
 
-use Butschster\ContextGenerator\Application\AppScope;
-use Butschster\ContextGenerator\Application\FSPath;
-use Butschster\ContextGenerator\Config\ConfigurationProvider;
 use Butschster\ContextGenerator\Config\Registry\ConfigRegistryAccessor;
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
-use PHPUnit\Framework\Attributes\Test;
-use Spiral\Core\Scope;
-use Spiral\Files\Files;
-use Tests\AppTestCase;
+use Tests\Feature\FeatureTestCases;
 
-abstract class AbstractCompilerTestCase extends AppTestCase
+abstract class AbstractCompilerTestCase extends FeatureTestCases
 {
-    #[\Override]
-    public function rootDirectory(): string
+    protected function assertConfigItems(DocumentCompiler $compiler, ConfigRegistryAccessor $config): void
     {
-        return $this->getFixturesDir('Compiler');
-    }
-
-    #[Test]
-    public function compile(): void
-    {
-        $this->getContainer()->runScope(
-            bindings: new Scope(
-                name: AppScope::Compiler,
-            ),
-            scope: $this->compileDocuments(...),
-        );
-    }
-
-    #[\Override]
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        $files = new Files();
-        $files->deleteDirectory($this->getContextsDir());
-    }
-
-    protected function getContextsDir(string $path = ''): string
-    {
-        return (string) FSPath::create($this->getFixturesDir('Compiler/.context'))->join($path);
-    }
-
-    abstract protected function getConfigPath(): string;
-
-    private function compileDocuments(DocumentCompiler $compiler, ConfigurationProvider $configProvider): void
-    {
-        $loader = $configProvider->fromPath($this->getConfigPath());
-
         $outputPaths = [];
         $results = [];
 
-        $config = new ConfigRegistryAccessor($loader->load());
         foreach ($config->getDocuments() as $document) {
             $outputPaths[] = $this->getContextsDir($document->outputPath);
             $compiledDocument = $compiler->compile($document);

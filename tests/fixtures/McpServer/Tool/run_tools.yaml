@@ -1,0 +1,21 @@
+$schema: 'https://raw.githubusercontent.com/context-hub/generator/refs/heads/main/json-schema.json'
+
+tools:
+  - id: variable-command-tool
+    description: A tool with variable arguments
+    type: run
+    commands:
+      - cmd: echo
+        args:
+          - '{{message}}'
+          - name: '--optional-arg'
+            when: '{{use_optional}}'
+    schema:
+      properties:
+        message:
+          type: string
+          description: Message to echo
+        use_optional:
+          type: boolean
+          description: Whether to use the optional argument
+          default: false

@@ -1,0 +1,48 @@
+$schema: 'https://raw.githubusercontent.com/context-hub/generator/refs/heads/main/json-schema.json'
+
+variables:
+  name: Schema Test
+
+prompts:
+  # Simple prompt with schema
+  - id: schema-prompt
+    description: A prompt with schema definition
+    schema:
+      properties:
+        language:
+          description: Programming language to use
+          type: string
+        experience:
+          description: User experience level
+          type: string
+      required:
+        - language
+    messages:
+      - role: user
+        content: You are a helpful assistant for {{language}} programming.
+      - role: assistant
+        content: I'll help you with {{language}} based on your {{experience}} level.
+
+  # More complex schema
+  - id: complex-schema-prompt
+    description: A prompt with complex schema definition
+    schema:
+      properties:
+        project_name:
+          description: Name of the project
+          type: string
+        framework:
+          description: Framework to use
+          type: string
+        features:
+          description: Features to include
+          type: array
+        database:
+          description: Database configuration
+          type: object
+      required:
+        - project_name
+        - framework
+    messages:
+      - role: user
+        content: Create a new project named {{project_name}} using {{framework}}.

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\McpServer\Prompt;
 
 use Butschster\ContextGenerator\Config\Registry\RegistryInterface;
+use Butschster\ContextGenerator\McpServer\Prompt\Extension\PromptDefinition;
 use Spiral\Core\Attribute\Singleton;
 
 /**
@@ -18,6 +19,10 @@ final class PromptRegistry implements RegistryInterface, PromptProviderInterface
     /** @var array<non-empty-string, TPrompt> */
     private array $prompts = [];
 
+    public function __construct(
+        private readonly PromptMessageProcessor $promptMessageProcessor,
+    ) {}
+
     public function register(PromptDefinition $prompt): void
     {
         /**
@@ -26,7 +31,7 @@ final class PromptRegistry implements RegistryInterface, PromptProviderInterface
         $this->prompts[$prompt->id] = $prompt;
     }
 
-    public function get(string $name): PromptDefinition
+    public function get(string $name, array $arguments = []): PromptDefinition
     {
         if (!$this->has($name)) {
             throw new \InvalidArgumentException(
@@ -37,7 +42,7 @@ final class PromptRegistry implements RegistryInterface, PromptProviderInterface
             );
         }
 
-        return $this->prompts[$name];
+        return $this->promptMessageProcessor->process($this->prompts[$name], $arguments);
     }
 
     public function has(string $name): bool
@@ -50,28 +55,34 @@ final class PromptRegistry implements RegistryInterface, PromptProviderInterface
         return $this->prompts;
     }
 
-    /**
-     * Gets the type of the registry.
-     */
+    public function allTemplates(): array
+    {
+        return \array_filter(
+            $this->prompts,
+            static fn(PromptDefinition $prompt) => $prompt->type === PromptType::Template,
+        );
+    }
+
     public function getType(): string
     {
         return 'prompts';
     }
 
-    /**
-     * Gets all items in the registry.
-     *
-     * @return array<TPrompt>
-     */
     public function getItems(): array
     {
-        return \array_values($this->prompts);
+        return \array_values(
+            \array_filter(
+                $this->prompts,
+                static fn(PromptDefinition $prompt) => $prompt->type === PromptType::Prompt,
+            ),
+        );
     }
 
     public function jsonSerialize(): array
     {
+        // Only serialize regular prompts, not templates
         return [
-            'prompts' => \array_values($this->prompts),
+            'prompts' => $this->getItems(),
         ];
     }
 

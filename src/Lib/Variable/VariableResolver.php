@@ -10,8 +10,16 @@ namespace Butschster\ContextGenerator\Lib\Variable;
 final readonly class VariableResolver
 {
     public function __construct(
-        private VariableReplacementProcessor $processor = new VariableReplacementProcessor(),
+        private VariableReplacementProcessorInterface $processor = new CompositeProcessor(),
     ) {}
+
+    public function with(VariableReplacementProcessorInterface $processor): self
+    {
+        return new self(new CompositeProcessor([
+            $this->processor,
+            $processor,
+        ]));
+    }
 
     /**
      * Resolve variables in the given text

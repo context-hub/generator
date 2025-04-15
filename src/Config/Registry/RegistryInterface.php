@@ -19,7 +19,7 @@ interface RegistryInterface extends \JsonSerializable, \IteratorAggregate
     /**
      * Get all items in the registry
      *
-     * @return array<TItem>
+     * @return list<TItem>
      */
     public function getItems(): array;
 }

@@ -93,7 +93,10 @@ final class GenerateCommand extends BaseCommand
 
                 $config = new ConfigRegistryAccessor($loader->load());
 
-                $renderer->renderImports($config->getImports());
+                $imports = $config->getImports();
+                if ($imports !== null) {
+                    $renderer->renderImports($imports);
+                }
 
                 foreach ($config->getDocuments() as $document) {
                     $this->logger->info(\sprintf('Compiling %s...', $document->description));

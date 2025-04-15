@@ -7,7 +7,7 @@ namespace Butschster\ContextGenerator\McpServer\Prompt\Exception;
 /**
  * Exception thrown when a prompt configuration cannot be parsed.
  */
-final class PromptParsingException extends \RuntimeException
+class PromptParsingException extends \RuntimeException
 {
     // No additional methods needed, this is just a specialized exception type
 }

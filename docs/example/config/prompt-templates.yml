@@ -1,0 +1,75 @@
+prompts:
+  # Template for issues
+  - id: template-issue
+    description: Template for creating issues
+    type: template
+    messages:
+      - role: user
+        content: "Create a new issue with the following title and description: {{title}} {{description}}"
+
+  # Template for bug issues, extending the base issue template
+  - id: bug-issue
+    description: Create a new bug issue
+    type: prompt
+    extend:
+      - id: template-issue
+        arguments:
+          title: 'Bug: {{title}}'
+          description: '{{description}}'
+    schema:
+      properties:
+        title:
+          description: The title of the bug
+        description:
+          description: The description of the bug
+      required:
+        - title
+        - description
+
+  # Template for feature issues, extending the base issue template
+  - id: feature-issue
+    description: Create a new feature issue
+    type: prompt
+    extend:
+      - id: template-issue
+        arguments:
+          title: 'Feature: {{title}}'
+          description: '{{description}}'
+    schema:
+      properties:
+        title:
+          description: The title of the feature
+        description:
+          description: The description of the feature
+      required:
+        - title
+        - description
+
+  # More complex template example, extending another template
+  - id: template-complex-issue
+    type: template
+    description: Template for complex issues with priority
+    extend:
+      - id: template-issue
+        arguments:
+          title: '{{type}}: {{title}}'
+          description: '{{description}} \n\n**Priority**: {{priority}}'
+
+  # Priority bug issue using the complex template
+  - id: priority-bug-issue
+    description: Create a new priority bug issue
+    type: prompt
+    extend:
+      - id: template-complex-issue
+        arguments:
+          type: 'Bug'
+          priority: 'High'
+    schema:
+      properties:
+        title:
+          description: The title of the bug
+        description:
+          description: The description of the bug
+      required:
+        - title
+        - description
