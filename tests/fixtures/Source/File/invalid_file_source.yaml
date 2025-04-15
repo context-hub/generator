@@ -1,0 +1,11 @@
+$schema: 'https://raw.githubusercontent.com/context-hub/generator/refs/heads/main/json-schema.json'
+
+documents:
+  - description: Invalid File Source Test
+    outputPath: invalid_file_source_test.md
+    overwrite: true
+    sources:
+      - type: file
+        description: File source with invalid paths
+        sourcePaths: non_existent_directory
+        filePattern: '*.txt'

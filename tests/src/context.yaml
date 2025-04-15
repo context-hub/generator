@@ -11,3 +11,30 @@ documents:
           - TestApp.php
           - TestCase.php
         showTreeView: true
+
+  - description: Tools tests
+    outputPath: tests/tools.md
+    sources:
+      - type: file
+        sourcePaths:
+          - Feature/McpServer/Tool
+          - Feature/FeatureTestCases.php
+          - TestApp.php
+          - TestCase.php
+        showTreeView: true
+
+  - description: Compiler tests
+    outputPath: tests/compiler.md
+    sources:
+      - type: file
+        sourcePaths:
+          - Feature/Compiler
+          - Feature/FeatureTestCases.php
+          - TestApp.php
+          - TestCase.php
+        showTreeView: true
+
+      - type: file
+        sourcePaths:
+          - ../../../fixtures/Compiler
+        showTreeView: true

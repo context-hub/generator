@@ -1,0 +1,18 @@
+$schema: 'https://raw.githubusercontent.com/context-hub/generator/refs/heads/main/json-schema.json'
+
+documents:
+  - description: Tree View File Source Test
+    outputPath: tree_view_file_source_test.md
+    overwrite: true
+    sources:
+      - type: file
+        description: File source with custom tree view options
+        sourcePaths: test_files
+        filePattern: '*.txt'
+        treeView:
+          enabled: true
+          showSize: true
+          showLastModified: true
+          showCharCount: true
+          includeFiles: true
+          maxDepth: 2

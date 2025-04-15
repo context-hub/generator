@@ -1,0 +1,16 @@
+$schema: 'https://raw.githubusercontent.com/context-hub/generator/refs/heads/main/json-schema.json'
+
+documents:
+  - description: Filtered File Source Test
+    outputPath: filtered_file_source_test.md
+    overwrite: true
+    sources:
+      - type: file
+        description: File source with filters
+        sourcePaths: test_files
+        filePattern: '*.txt'
+        path: 'test_directory'
+        notPath: ['**/unwanted*.txt']
+        contains: 'nested file'
+        treeView:
+          enabled: true
