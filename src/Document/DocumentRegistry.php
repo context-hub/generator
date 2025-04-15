@@ -7,12 +7,14 @@ namespace Butschster\ContextGenerator\Document;
 use Butschster\ContextGenerator\Config\Registry\RegistryInterface;
 
 /**
- * @implements RegistryInterface<Document>
+ * @template TDocument of Document
+ * @implements RegistryInterface<TDocument>
+ * @implements \ArrayAccess<array-key, TDocument>
  */
 final class DocumentRegistry implements RegistryInterface, \ArrayAccess
 {
     public function __construct(
-        /** @var array<Document> */
+        /** @var list<TDocument> */
         private array $documents = [],
     ) {}
 
@@ -23,6 +25,7 @@ final class DocumentRegistry implements RegistryInterface, \ArrayAccess
 
     /**
      * Register a document in the registry
+     * @param TDocument $document
      */
     public function register(Document $document): self
     {

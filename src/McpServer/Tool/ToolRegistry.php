@@ -48,19 +48,11 @@ final class ToolRegistry implements RegistryInterface, ToolProviderInterface, To
         return $this->getItems();
     }
 
-    /**
-     * Gets the type of the registry.
-     */
     public function getType(): string
     {
         return 'tools';
     }
 
-    /**
-     * Gets all items in the registry.
-     *
-     * @return array<TTool>
-     */
     public function getItems(): array
     {
         return \array_values($this->tools);

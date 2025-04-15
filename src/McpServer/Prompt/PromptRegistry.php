@@ -63,19 +63,11 @@ final class PromptRegistry implements RegistryInterface, PromptProviderInterface
         );
     }
 
-    /**
-     * Gets the type of the registry.
-     */
     public function getType(): string
     {
         return 'prompts';
     }
 
-    /**
-     * Gets all items in the registry.
-     *
-     * @return array<TPrompt>
-     */
     public function getItems(): array
     {
         return \array_values(

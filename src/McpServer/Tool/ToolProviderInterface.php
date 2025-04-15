@@ -23,7 +23,7 @@ interface ToolProviderInterface
     /**
      * Gets all tools.
      *
-     * @return array<string, ToolDefinition>
+     * @return list<ToolDefinition>
      */
     public function all(): array;
 }
