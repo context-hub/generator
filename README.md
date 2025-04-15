@@ -14,7 +14,7 @@
 **ctx** is a tool made to solve a big problem when chatting with LLMs like ChatGPT or Claude: **giving them enough context about your project**.
 
 > There is an article about Context Generator
-> on [Medium](https://medium.com/@butschster/context-not-prompts-2-0-the-evolution-9c4a84214784) that explains the
+> on [Medium](https://medium.com/p/ef72df0f83d1) that explains the
 > motivation behind the project and the problem it solves.
 
 Instead of manually copying or explaining your entire codebase each time, ctx automatically builds neat, organized context files from:
