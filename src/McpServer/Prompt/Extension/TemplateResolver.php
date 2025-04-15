@@ -9,7 +9,6 @@ use Butschster\ContextGenerator\Lib\Variable\VariableReplacementProcessor;
 use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
 use Butschster\ContextGenerator\McpServer\Prompt\Exception\TemplateResolutionException;
 use Butschster\ContextGenerator\McpServer\Prompt\PromptProviderInterface;
-use Butschster\ContextGenerator\McpServer\Prompt\PromptType;
 use Mcp\Types\PromptMessage;
 use Mcp\Types\TextContent;
 use Psr\Log\LoggerInterface;

@@ -17,7 +17,7 @@ final class TemplatePromptTest extends FeatureTestCases
 {
     protected function getConfigPath(): string
     {
-        return $this->getFixturesDir('Prompts/templates.yaml');
+        return $this->getFixturesDir('McpServer/Prompts/templates.yaml');
     }
 
     protected function assertConfigItems(DocumentCompiler $compiler, ConfigRegistryAccessor $config): void

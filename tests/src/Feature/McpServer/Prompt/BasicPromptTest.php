@@ -6,7 +6,6 @@ namespace Tests\Feature\McpServer\Prompt;
 
 use Butschster\ContextGenerator\Config\Registry\ConfigRegistryAccessor;
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
-use Butschster\ContextGenerator\McpServer\Action\Prompts\GetPromptAction;
 use Butschster\ContextGenerator\McpServer\Prompt\Extension\PromptDefinition;
 use Mcp\Types\Role;
 use Mcp\Types\TextContent;
@@ -19,7 +18,7 @@ final class BasicPromptTest extends FeatureTestCases
 {
     protected function getConfigPath(): string
     {
-        return $this->getFixturesDir('Prompts/basic_prompts.yaml');
+        return $this->getFixturesDir('McpServer/Prompts/basic_prompts.yaml');
     }
 
     protected function assertConfigItems(DocumentCompiler $compiler, ConfigRegistryAccessor $config): void

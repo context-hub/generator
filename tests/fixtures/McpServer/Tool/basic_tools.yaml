@@ -1,0 +1,15 @@
+$schema: 'https://raw.githubusercontent.com/context-hub/generator/refs/heads/main/json-schema.json'
+
+tools:
+  - id: test-command-tool
+    description: A test command tool
+    type: run
+    commands:
+      - cmd: echo
+        args:
+          - Hello, World!
+    schema:
+      properties:
+        message:
+          type: string
+          description: Message to echo

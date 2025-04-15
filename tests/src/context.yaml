@@ -6,7 +6,7 @@ documents:
     sources:
       - type: file
         sourcePaths:
-          - Feature/McpServer/Prompt/DefaultPromptTest.php
+          - Feature/McpServer/Prompt
           - Feature/FeatureTestCases.php
           - TestApp.php
           - TestCase.php

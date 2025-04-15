@@ -1,0 +1,28 @@
+$schema: 'https://raw.githubusercontent.com/context-hub/generator/refs/heads/main/json-schema.json'
+
+tools:
+  - id: missing-required-field
+    # Missing description field (required)
+    type: run
+    commands:
+      - cmd: echo
+        args:
+          - Hello, World!
+          
+  - id: invalid-type-tool
+    description: A tool with invalid type
+    type: invalid-type
+    commands:
+      - cmd: echo
+        args:
+          - Test
+          
+  - id: run-tool-without-commands
+    description: A run-type tool without commands
+    type: run
+    # Missing commands array
+    
+  - id: http-tool-without-requests
+    description: A HTTP tool without requests
+    type: http
+    # Missing requests array

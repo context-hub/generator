@@ -18,7 +18,7 @@ final class RegistryOperationsTest extends FeatureTestCases
 {
     protected function getConfigPath(): string
     {
-        return $this->getFixturesDir('Prompts/registry_operations.yaml');
+        return $this->getFixturesDir('McpServer/Prompts/registry_operations.yaml');
     }
 
     protected function assertConfigItems(DocumentCompiler $compiler, ConfigRegistryAccessor $config): void

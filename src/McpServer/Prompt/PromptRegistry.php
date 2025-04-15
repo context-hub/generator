@@ -16,12 +16,12 @@ use Spiral\Core\Attribute\Singleton;
 #[Singleton]
 final class PromptRegistry implements RegistryInterface, PromptProviderInterface, PromptRegistryInterface
 {
+    /** @var array<non-empty-string, TPrompt> */
+    private array $prompts = [];
+
     public function __construct(
         private readonly PromptMessageProcessor $promptMessageProcessor,
     ) {}
-
-    /** @var array<non-empty-string, TPrompt> */
-    private array $prompts = [];
 
     public function register(PromptDefinition $prompt): void
     {
