@@ -30,7 +30,7 @@ context about your codebase.**
 
 ## Why you need this
 
-When you're using AI in development, contextt isn't just helpful — it's everything.
+When you're using AI in development, context isn't just helpful — it's everything.
 
 - **Code Refactoring Help**: Need AI assistance refactoring messy code? **ctx** creates clean, structured documents with all necessary code files.
 
