@@ -1,0 +1,128 @@
+########################################
+# GitLab Source Configuration Examples
+########################################
+
+# Global GitLab server configurations
+# These can be referenced in individual source configurations
+settings:
+  gitlab:
+    servers:
+      # Default configuration for gitlab.com
+      default:
+        url: https://gitlab.com
+        token: ${GITLAB_TOKEN}
+
+      # Company self-hosted GitLab instance
+      company:
+        url: https://gitlab.example.com
+        token: ${COMPANY_GITLAB_TOKEN}
+        headers:
+          X-Custom-Header: "custom-value"
+      
+      # Another GitLab instance with custom headers
+      internal:
+        url: https://gitlab.internal.org
+        token: ${INTERNAL_GITLAB_TOKEN}
+        headers:
+          X-Api-Version: "2"
+          X-Organization-ID: "org123"
+
+# Document configurations
+documents:
+  # Example 1: Basic GitLab source with direct configuration
+  - description: Basic GitLab Source Example
+    outputPath: docs/generated/basic-gitlab-example.md
+    sources:
+      - type: gitlab
+        description: Public GitLab Repository
+        repository: namespace/project-name
+        branch: main
+        sourcePaths:
+          - src
+        gitlabToken: ${GITLAB_TOKEN}
+        showTreeView: true
+
+  # Example 2: Using a reference to a pre-configured server
+  - description: Using GitLab Server Configuration
+    outputPath: docs/generated/company-gitlab-example.md
+    sources:
+      - type: gitlab
+        description: Internal Company GitLab Repository
+        server: company              # References the 'company' server in settings
+        repository: internal/project
+        branch: develop
+        sourcePaths:
+          - src/core
+          - src/modules
+        filePattern: "*.php"
+        showTreeView: true
+
+  # Example 3: Multiple GitLab sources with different filtering
+  - description: Multiple GitLab Sources with Filtering
+    outputPath: docs/generated/filtered-gitlab-example.md
+    sources:
+      # Source 1: Controllers only
+      - type: gitlab
+        description: Controllers
+        server: internal
+        repository: app/backend
+        branch: feature/api-refactor
+        sourcePaths:
+          - src/Controllers
+        filePattern: "*Controller.php"
+
+      # Source 2: Models from the same repository
+      - type: gitlab
+        description: Models
+        server: internal
+        repository: app/backend
+        branch: feature/api-refactor
+        sourcePaths:
+          - src/Models
+        filePattern: "*.php"
+        notPath:
+          - "*Test.php"
+          - "*Factory.php"
+
+  # Example 4: Advanced filtering with content matching
+  - description: Advanced GitLab Content Filtering
+    outputPath: docs/generated/advanced-gitlab-filtering.md
+    sources:
+      - type: gitlab
+        description: Service Classes
+        repository: app/services
+        server: internal
+        sourcePaths:
+          - src
+        filePattern: "*.php"
+        path:
+          - "src/Services/**"
+        contains:
+          - "implements ServiceInterface"
+          - "@Service"
+        notContains:
+          - "@deprecated"
+        modifiers:
+          - trim-php-comments
+        showTreeView: true
+
+  # Example 5: Self-hosted GitLab with direct server configuration
+  - description: Self-hosted GitLab Example
+    outputPath: docs/generated/self-hosted-gitlab.md
+    sources:
+      - type: gitlab
+        description: Self-hosted Project
+        repository: group/project
+        branch: main
+        # Direct server configuration instead of referencing a pre-configured server
+        server:
+          url: https://gitlab.example.com
+          token: ${COMPANY_GITLAB_TOKEN}
+          headers:
+            X-Custom-Header: "custom-value"
+        sourcePaths:
+          - docs
+        filePattern:
+          - "*.md"
+          - "*.txt"
+        showTreeView: true

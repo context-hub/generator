@@ -11,6 +11,7 @@ use Butschster\ContextGenerator\Application\Bootloader\ConsoleBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\ContentRendererBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\CoreBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\GithubClientBootloader;
+use Butschster\ContextGenerator\Application\Bootloader\GitlabClientBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\HttpClientBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\LoggerBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\McpServerBootloader;
@@ -26,6 +27,7 @@ use Butschster\ContextGenerator\Source\Composer\ComposerSourceBootloader;
 use Butschster\ContextGenerator\Source\File\FileSourceBootloader;
 use Butschster\ContextGenerator\Source\GitDiff\GitDiffSourceBootloader;
 use Butschster\ContextGenerator\Source\Github\GithubSourceBootloader;
+use Butschster\ContextGenerator\Source\Gitlab\GitlabSourceBootloader;
 use Butschster\ContextGenerator\Source\MCP\McpSourceBootloader;
 use Butschster\ContextGenerator\Source\Registry\SourceRegistryBootloader;
 use Butschster\ContextGenerator\Source\Text\TextSourceBootloader;
@@ -52,6 +54,7 @@ class Kernel extends AbstractKernel
         return [
             CoreBootloader::class,
             HttpClientBootloader::class,
+            GitlabClientBootloader::class,
             GithubClientBootloader::class,
             ComposerClientBootloader::class,
             ConfigLoaderBootloader::class,
@@ -67,6 +70,7 @@ class Kernel extends AbstractKernel
             ComposerSourceBootloader::class,
             UrlSourceBootloader::class,
             GithubSourceBootloader::class,
+            GitlabSourceBootloader::class,
             GitDiffSourceBootloader::class,
             TreeSourceBootloader::class,
             McpSourceBootloader::class,
