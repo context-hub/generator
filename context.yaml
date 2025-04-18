@@ -2,34 +2,7 @@ $schema: 'https://raw.githubusercontent.com/context-hub/generator/refs/heads/mai
 
 import:
   - path: src/**/context.yaml
-
-variables:
-  name: Context Generator
-
-tools:
-  - id: run-tests
-    description: Run unit tests
-    env:
-      COMPOSER_ALLOW_SUPERUSER: 'true'
-    commands:
-      - cmd: composer
-        args:
-          - test
-
-  - id: code-quality
-    description: Run code quality checks
-    env:
-      COMPOSER_ALLOW_SUPERUSER: 'true'
-    commands:
-      - cmd: composer
-        args:
-          - cs-fix
-      - cmd: composer
-        args:
-          - refactor
-      - cmd: composer
-        args:
-          - psalm
+  - path: prompts.yaml
 
 documents:
   - description: 'Project structure overview'

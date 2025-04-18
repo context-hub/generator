@@ -31,6 +31,17 @@ documents:
         filePattern: '*.php'
         showTreeView: true
 
+  - description: Source Implementations - Gitlab
+    outputPath: sources/gitlab-source.md
+    sources:
+      - type: file
+        sourcePaths:
+          - ./Gitlab
+          - ../Lib/GitlabClient/GitlabClientInterface.php
+          - ../Lib/PathFilter
+        filePattern: '*.php'
+        showTreeView: true
+
   - description: Source Implementations - URL
     outputPath: sources/url-source.md
     sources:

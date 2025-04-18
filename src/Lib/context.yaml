@@ -30,6 +30,13 @@ documents:
         sourcePaths:
           - ./GithubClient
 
+  - description: Gitlab Client
+    outputPath: utilities/gitlab-client.md
+    sources:
+      - type: file
+        sourcePaths:
+          - ./GitlabClient
+
   - description: Git Client
     outputPath: utilities/git-client.md
     sources:

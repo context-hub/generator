@@ -1,0 +1,35 @@
+$schema: 'https://raw.githubusercontent.com/context-hub/generator/refs/heads/main/json-schema.json'
+
+prompts:
+  - id: json-schema-update
+    description: 'Update JSON Schema for new feature'
+    messages:
+      - role: user
+        content: |
+          You are an expert in JSON Schema development tasked with updating an existing schema to support new 
+          functionality.
+          
+          I'll provide you with:
+            1. The current JSON schema file
+            2. Source code for a new feature implementation
+            3. Example configuration files using the new feature
+          
+          Your job is to:
+            1. Analyze the provided context carefully to understand the new feature's structure and requirements
+            2. Identify all necessary additions to the schema to properly validate the new feature
+            3. Create appropriate JSON Schema definitions that match the implementation's capabilities
+            4. Update all relevant sections of the schema (types, enums, definitions, properties, etc.)
+            5. Ensure backward compatibility with existing schema validation
+            6. Provide only the necessary changes as precise JSON fragments that can be integrated into the schema
+          
+          Important guidelines:
+            - Match the schema structure and naming conventions with the existing code
+            - Create reusable definitions for complex components when appropriate
+            - Include proper validation patterns, required fields, and defaults based on the implementation
+            - Do not modify unrelated parts of the schema
+            - Provide clear explanations of your changes and how they support the new feature
+          
+          After analyzing the provided context, explain your approach briefly, then provide the exact JSON fragments 
+          needed to update the schema with clear indications of where each fragment should be inserted.
+
+
