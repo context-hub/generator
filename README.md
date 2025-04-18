@@ -10,43 +10,37 @@
 
 ![Good morning, LLM](https://github.com/user-attachments/assets/8129f227-dc3f-4671-bc0e-0ecd2f3a1888)
 
+## Table of Contents
 
-**ctx** is a tool made to solve a big problem when chatting with LLMs like ChatGPT or Claude: **giving them enough context about your project**.
+- [How it works](#how-it-works)
+- [Quick Start](#quick-start)
+- [Full Documentation](#full-documentation)
+- [License](#license)
+
+**CTX** is a tool made to solve a big problem when chatting with LLMs like ChatGPT or Claude: **giving them enough
+context about your project**.
 
 > There is an article about Context Generator
 > on [Medium](https://medium.com/p/ef72df0f83d1) that explains the
 > motivation behind the project and the problem it solves.
 
-Instead of manually copying or explaining your entire codebase each time, ctx automatically builds neat, organized context files from:
+When you're using AI in development, context isn't just helpful — it's everything.
+Instead of manually copying or explaining your entire codebase each time, ctx automatically builds neat, organized
+context files from:
 
 - Code files,
-- GitHub repositories,
+- GitHub and Gitlab repositories,
 - Git commits and diffs
 - Web pages (URLs) with CSS selectors,
+- MCP servers
 - and plain text.
 
-It was created to solve a common problem: **efficiently providing AI language models like ChatGPT, Claude with necessary
+It was created to solve a common problem: **efficiently providing AI language models like Claude with necessary
 context about your codebase.**
-
-## Why you need this
-
-When you're using AI in development, contextt isn't just helpful — it's everything.
-
-- **Code Refactoring Help**: Need AI assistance refactoring messy code? **ctx** creates clean, structured documents with all necessary code files.
-
-- **Multiple Iteration Development**: Working through several iterations with an AI helper requires constantly updating
-  the context. **ctx** automates this process.
-
-- **Documentation Generation**: Transform your codebase into comprehensive documentation by combining source code with
-  custom explanations. Use AI to generate user guides, API references, or developer documentation based on your actual
-  code.
-
-- **Seamless AI Integration**: hanks to built-in MCP support, you can [connect](https://docs.ctxgithub.com/mcp-server.html) Claude AI directly to your codebase, allowing
-  for real-time, context-aware assistance without manual context sharing.
 
 ## How it works
 
-1. Gathers code from files, directories, GitHub repositories, web pages, or plain text.
+1. Gathers code from files, directories, GitHub or Gitlab repositories, web pages, or plain text.
 2. Targets specific files through pattern matching, content search, size, or date filters
 3. Applies optional modifiers (like extracting PHP signatures without implementation details)
 4. Organizes content into well-structured markdown documents
@@ -54,14 +48,11 @@ When you're using AI in development, contextt isn't just helpful — it's everyt
 6. Optionally serves context through an MCP server, allowing AI assistants like Claude to directly access project
    information
 
-**With ctx, your AI conversations just got a whole lot smarter—and easier.**
-
 # Quick Start
 
-Getting started with Context Generator is straightforward. Follow these simple steps to create your first context file
-for LLMs.
+Getting started with CTX is straightforward. Follow these simple steps to create your first context file.
 
-## 1. Install Context Generator
+## 1. Install CTX
 
 Download and install the tool using our installation script:
 
@@ -71,7 +62,8 @@ curl -sSL https://raw.githubusercontent.com/context-hub/generator/main/download-
 
 This installs the `ctx` command to your system (typically in `/usr/local/bin`).
 
-> **Want more options?** See the complete [Installation Guide](https://docs.ctxgithub.com/getting-started.html) for alternative installation methods.
+> **Want more options?** See the complete [Installation Guide](https://docs.ctxgithub.com/getting-started.html) for
+> alternative installation methods.
 
 ## 2. Initialize a Configuration File
 
@@ -84,13 +76,18 @@ ctx init
 This generates a `context.yaml` file with a basic structure to get you started.
 
 > **Pro tip:** Run `ctx init --type=json` if you prefer JSON configuration format.
-> Check the [Command Reference](https://docs.ctxgithub.com/getting-started/command-reference.html) for all available commands and options.
+> Check the [Command Reference](https://docs.ctxgithub.com/getting-started/command-reference.html) for all available
+> commands and options.
 
 ## 3. Describe Your Project Structure
 
-Edit the generated `context.yaml` file to specify what code or content you want to include. For example:
+Edit the generated `context.yaml` file to specify what code or content you want to include.
+
+**For example:**
 
 ```yaml
+$schema: 'https://raw.githubusercontent.com/context-hub/generator/refs/heads/main/json-schema.json'
+
 documents:
   - description: "User Authentication System"
     outputPath: "auth-context.md"
@@ -114,11 +111,14 @@ name from the `src/Models` directory.
 #### Need more advanced configuration?
 
 - Learn about [Document Structure](https://docs.ctxgithub.com/documents.html) and properties
-- Explore different source types like [GitHub](https://docs.ctxgithub.com/sources/github-source.html), [Git Diff](https://docs.ctxgithub.com/sources/git-diff-source.html),
+- Explore different source types
+  like [GitHub](https://docs.ctxgithub.com/sources/github-source.html), [Git Diff](https://docs.ctxgithub.com/sources/git-diff-source.html),
   or [URL](https://docs.ctxgithub.com/sources/url-source.html)
-- Apply [Modifiers](https://docs.ctxgithub.com/modifiers.html) to transform your content (like extracting PHP signatures)
+- Apply [Modifiers](https://docs.ctxgithub.com/modifiers.html) to transform your content (like extracting PHP
+  signatures)
 - Discover how to use [Environment Variables](https://docs.ctxgithub.com/environment-variables.html) in your config
-- Use [IDE Integration](https://docs.ctxgithub.com/getting-started/ide-integration.html) for autocompletion and validation
+- Use [IDE Integration](https://docs.ctxgithub.com/getting-started/ide-integration.html) for autocompletion and
+  validation
 
 ## 4. Build the Context
 
@@ -128,9 +128,10 @@ Generate your context file by running:
 ctx
 ```
 
-The tool will process your configuration and create the specified output file (`auth-context.md` in our example).
+CTX will process your configuration and create the specified output file (`auth-context.md` in our example).
 
-> **Tip**: Configure [Logging](https://docs.ctxgithub.com/advanced/logging.html) with `-v`, `-vv`, or `-vvv` for detailed output
+> **Tip**: Configure [Logging](https://docs.ctxgithub.com/advanced/logging.html) with `-v`, `-vv`, or `-vvv` for
+> detailed output
 
 ## 5. Share with an LLM
 
@@ -142,8 +143,9 @@ Example prompt:
 > I've shared my authentication system code with you. Can you help me identify potential security vulnerabilities in the
 > user registration process?
 
-> **Next steps:** Check out [Development with Context Generator](https://docs.ctxgithub.com/advanced/development-process.html) for best practices on
-> integrating context generation into your AI-powered development workflow.
+> **Next steps:** Check
+> out [Development with Context Generator](https://docs.ctxgithub.com/advanced/development-process.html) for best
+> practices on integrating context generation into your AI-powered development workflow.
 
 That's it! You're now ready to leverage LLMs with proper context about your codebase.
 
@@ -165,24 +167,10 @@ Point the MCP client to the Context Generator server:
 }
 ```
 
-> **Note:** Read more about [MCP Server](https://docs.ctxgithub.com/mcp-server.html) for detailed setup instructions.
+> **Note:** Read more about [MCP Server](https://docs.ctxgithub.com/mcp-server.html#setting-up) for detailed setup
+> instructions.
 
 Now you can ask Claude questions about your codebase without manually uploading context files!
-
-## JSON Schema
-
-For better editing experience, Context Generator provides a JSON schema for autocompletion and validation in your IDE:
-
-```bash
-# Show schema URL
-ctx schema
-
-# Download schema to current directory
-ctx schema --download
-```
-
-> **Learn more:** See [IDE Integration](https://docs.ctxgithub.com/getting-started/ide-integration.html) for detailed setup instructions for VSCode,
-> PhpStorm, and other editors.
 
 ## Full Documentation
 
