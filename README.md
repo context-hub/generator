@@ -75,7 +75,6 @@ ctx init
 
 This generates a `context.yaml` file with a basic structure to get you started.
 
-> **Pro tip:** Run `ctx init --type=json` if you prefer JSON configuration format.
 > Check the [Command Reference](https://docs.ctxgithub.com/getting-started/command-reference.html) for all available
 > commands and options.
 
