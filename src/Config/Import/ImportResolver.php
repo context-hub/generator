@@ -6,6 +6,7 @@ namespace Butschster\ContextGenerator\Config\Import;
 
 use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Config\Exception\ConfigLoaderException;
+use Butschster\ContextGenerator\Config\Import\Merger\ConfigMergerProviderInterface;
 use Butschster\ContextGenerator\Config\Import\PathPrefixer\DocumentOutputPathPrefixer;
 use Butschster\ContextGenerator\Config\Import\PathPrefixer\SourcePathPrefixer;
 use Butschster\ContextGenerator\Config\Import\Source\Config\SourceConfigInterface;
@@ -29,6 +30,7 @@ final readonly class ImportResolver
         FilesInterface $files,
         private ImportSourceProvider $sourceProvider,
         private WildcardPathFinder $pathFinder,
+        private ConfigMergerProviderInterface $configMergerProvider,
         private DocumentOutputPathPrefixer $documentPrefixer = new DocumentOutputPathPrefixer(),
         private SourcePathPrefixer $sourcePrefixer = new SourcePathPrefixer(),
         private SourceConfigFactory $sourceConfigFactory = new SourceConfigFactory(),
@@ -41,11 +43,8 @@ final readonly class ImportResolver
      * Process imports in a configuration
      * @throws \Throwable
      */
-    public function resolveImports(
-        array $config,
-        string $basePath,
-        array &$parsedImports = [],
-    ): ResolvedConfig {
+    public function resolveImports(array $config, string $basePath, array &$parsedImports = []): ResolvedConfig
+    {
         // If no imports, return the original config
         if (empty($config['import'])) {
             return new ResolvedConfig(config: $config);
@@ -97,9 +96,9 @@ final readonly class ImportResolver
 
         unset($config['import']);
 
-        // Merge all configurations
+        // Merge all configurations using the merger provider
         return new ResolvedConfig(
-            config: $this->mergeConfigurations($config, ...$importedConfigs),
+            config: $this->configMergerProvider->mergeConfigurations($config, ...$importedConfigs),
             imports: \array_map(
                 static fn(ImportedConfig $config) => $config->sourceConfig,
                 $importedConfigs,
@@ -258,59 +257,5 @@ final readonly class ImportResolver
             // Always end processing to maintain stack integrity
             $this->detector->endProcessing($importId);
         }
-    }
-
-    /**
-     * Merge multiple configurations
-     *
-     * todo: move to a parsers??
-     */
-    private function mergeConfigurations(array $mainConfig, ImportedConfig ...$configs): array
-    {
-        $result = $mainConfig;
-
-        foreach ($configs as $config) {
-            // Special handling for documents array - append instead of replace
-            if (isset($config['documents']) && \is_array($config['documents'])) {
-                foreach ($config['documents'] as $document) {
-                    if (!isset($document['outputPath'])) {
-                        continue;
-                    }
-                    $result['documents'][$document['outputPath']] = $document;
-                }
-                $result['documents'] = \array_values($result['documents']);
-            }
-
-            if (isset($config['prompts']) && \is_array($config['prompts'])) {
-                foreach ($config['prompts'] as $prompt) {
-                    if (!isset($prompt['id'])) {
-                        continue;
-                    }
-
-                    $result['prompts'][$prompt['id']] = $prompt;
-                }
-
-                $result['prompts'] = \array_values($result['prompts']);
-            }
-
-            if (isset($config['tools']) && \is_array($config['tools'])) {
-                foreach ($config['tools'] as $tool) {
-                    if (!isset($tool['id'])) {
-                        continue;
-                    }
-
-                    $workingDir = $tool['workingDir'] ?? '.';
-                    if ($config->isLocal && $workingDir === '.') {
-                        $tool['workingDir'] = \dirname($config->path);
-                    }
-
-                    $result['tools'][$tool['id']] = $tool;
-                }
-
-                $result['tools'] = \array_values($result['tools']);
-            }
-        }
-
-        return $result;
     }
 }

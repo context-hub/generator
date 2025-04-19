@@ -39,7 +39,8 @@
     "spiral/files": "^3.15",
     "logiscape/mcp-sdk-php": "^1.0",
     "league/route": "^6.2",
-    "laminas/laminas-diactoros": "^3.5"
+    "laminas/laminas-diactoros": "^3.5",
+    "monolog/monolog": "^3.9"
   },
   "require-dev": {
     "buggregator/trap": "^1.13",
