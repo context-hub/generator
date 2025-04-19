@@ -18,11 +18,6 @@ final readonly class PromptConfigMerger extends AbstractConfigMerger
 
     protected function performMerge(array $mainSection, array $importedSection, ImportedConfig $importedConfig): array
     {
-        // Initialize prompts array if not exists
-        if (!isset($mainSection)) {
-            $mainSection = [];
-        }
-
         // Index main prompts by ID for efficient lookups
         $indexedPrompts = [];
         foreach ($mainSection as $prompt) {

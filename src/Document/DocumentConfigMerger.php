@@ -18,11 +18,6 @@ final readonly class DocumentConfigMerger extends AbstractConfigMerger
 
     protected function performMerge(array $mainSection, array $importedSection, ImportedConfig $importedConfig): array
     {
-        // Initialize documents array if not exists
-        if (!isset($mainSection)) {
-            $mainSection = [];
-        }
-
         // Index main documents by output path for efficient lookups
         $indexedDocuments = [];
         foreach ($mainSection as $document) {

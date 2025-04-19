@@ -45,19 +45,12 @@ abstract readonly class AbstractConfigMerger implements ConfigMergerInterface
     public function supports(ImportedConfig $config): bool
     {
         $configKey = $this->getConfigKey();
-
-        trap($configKey, $config[$configKey]);
         return isset($config[$configKey]) && \is_array($config[$configKey]);
     }
 
     /**
      * Perform the actual merge of configurations.
      * This method should be implemented by specific merger implementations.
-     *
-     * @param array<string, mixed> $mainSection The section from the main configuration
-     * @param array<string, mixed> $importedSection The section from the imported configuration
-     * @param ImportedConfig $importedConfig The complete imported configuration for context
-     * @return array<string, mixed> The merged section
      */
     abstract protected function performMerge(
         array $mainSection,

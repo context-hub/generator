@@ -18,11 +18,6 @@ final readonly class ToolConfigMerger extends AbstractConfigMerger
 
     protected function performMerge(array $mainSection, array $importedSection, ImportedConfig $importedConfig): array
     {
-        // Initialize tools array if not exists
-        if (!isset($mainSection)) {
-            $mainSection = [];
-        }
-
         // Index main tools by ID for efficient lookups
         $indexedTools = [];
         foreach ($mainSection as $tool) {
