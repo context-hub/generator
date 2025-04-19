@@ -65,7 +65,7 @@ jobs:
         run: composer test:cc
 
       - name: 📤 Upload code coverage report to Codecov
-        uses: codecov/codecov-action@v4.3.0
+        uses: codecov/codecov-action@v5
         with:
           files: .build/phpunit/logs/clover.xml
           token: ${{ secrets.CODECOV_TOKEN }}
