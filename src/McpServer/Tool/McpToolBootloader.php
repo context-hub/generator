@@ -42,8 +42,12 @@ final class McpToolBootloader extends Bootloader
         ];
     }
 
-    public function init(ConfigLoaderBootloader $configLoader, ToolParserPlugin $parserPlugin): void
-    {
+    public function init(
+        ConfigLoaderBootloader $configLoader,
+        ToolParserPlugin $parserPlugin,
+        ToolConfigMerger $toolConfigMerger,
+    ): void {
         $configLoader->registerParserPlugin($parserPlugin);
+        $configLoader->registerMerger($toolConfigMerger);
     }
 }

@@ -19,8 +19,12 @@ final class McpPromptBootloader extends Bootloader
         ];
     }
 
-    public function init(ConfigLoaderBootloader $configLoader, PromptParserPlugin $parserPlugin): void
-    {
+    public function init(
+        ConfigLoaderBootloader $configLoader,
+        PromptParserPlugin $parserPlugin,
+        PromptConfigMerger $promptConfigMerger,
+    ): void {
         $configLoader->registerParserPlugin($parserPlugin);
+        $configLoader->registerMerger($promptConfigMerger);
     }
 }

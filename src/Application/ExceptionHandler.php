@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Application;
 
-use Monolog\ErrorHandler;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Spiral\Core\Attribute\Proxy;
@@ -31,7 +30,7 @@ final class ExceptionHandler implements ExceptionHandlerInterface, LoggerAwareIn
     protected array $nonReportableExceptions = [];
 
     protected mixed $output = null;
-    private ErrorHandler $handler;
+    private ExceptionHandlerInterface $handler;
 
     public function __construct(
         #[Proxy] LoggerInterface $logger,
@@ -54,14 +53,12 @@ final class ExceptionHandler implements ExceptionHandlerInterface, LoggerAwareIn
 
     public function setLogger(LoggerInterface $logger): void
     {
-        $this->handler = new ErrorHandler($logger);
+        $this->handler = new \Spiral\Exceptions\ExceptionHandler();
     }
 
     public function register(): void
     {
-        $this->handler->registerExceptionHandler();
-        $this->handler->registerErrorHandler();
-        $this->handler->registerFatalHandler();
+        $this->handler->register();
     }
 
     public function render(

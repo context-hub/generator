@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Application\Bootloader;
 
 use Butschster\ContextGenerator\Config\Import\ImportParserPlugin;
+use Butschster\ContextGenerator\Config\Import\Merger\ConfigMergerInterface;
+use Butschster\ContextGenerator\Config\Import\Merger\ConfigMergerProviderInterface;
+use Butschster\ContextGenerator\Config\Import\Merger\ConfigMergerRegistry;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderFactory;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderFactoryInterface;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
@@ -16,6 +19,7 @@ use Butschster\ContextGenerator\Config\Reader\PhpReader;
 use Butschster\ContextGenerator\Config\Reader\YamlReader;
 use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
+use Butschster\ContextGenerator\Document\DocumentConfigMerger;
 use Butschster\ContextGenerator\Document\DocumentsParserPlugin;
 use Butschster\ContextGenerator\Modifier\Alias\AliasesRegistry;
 use Butschster\ContextGenerator\Modifier\Alias\ModifierResolver;
@@ -34,6 +38,9 @@ final class ConfigLoaderBootloader extends Bootloader
     /** @var ConfigParserPluginInterface[] */
     private array $parserPlugins = [];
 
+    /** @var ConfigMergerInterface[] */
+    private array $mergers = [];
+
     #[\Override]
     public function defineDependencies(): array
     {
@@ -48,6 +55,14 @@ final class ConfigLoaderBootloader extends Bootloader
     public function registerParserPlugin(ConfigParserPluginInterface $plugin): void
     {
         $this->parserPlugins[] = $plugin;
+    }
+
+    /**
+     * Register additional config merger
+     */
+    public function registerMerger(ConfigMergerInterface $merger): void
+    {
+        $this->mergers[] = $merger;
     }
 
     #[\Override]
@@ -88,10 +103,24 @@ final class ConfigLoaderBootloader extends Bootloader
             ),
 
             ConfigLoaderFactoryInterface::class => ConfigLoaderFactory::class,
-
             ConfigLoaderInterface::class => new Proxy(
                 interface: ConfigLoaderInterface::class,
             ),
+
+            ConfigMergerProviderInterface::class => function (
+                ConfigMergerRegistry $registry,
+            ) {
+                foreach ($this->mergers as $merger) {
+                    $registry->register($merger);
+                }
+
+                return $registry;
+            },
         ];
+    }
+
+    public function init(DocumentConfigMerger $documentConfigMerger): void
+    {
+        $this->registerMerger($documentConfigMerger);
     }
 }
