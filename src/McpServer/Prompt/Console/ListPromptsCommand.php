@@ -71,8 +71,7 @@ final class ListPromptsCommand extends BaseCommand
 
     public function __invoke(Container $container, DirectoriesInterface $dirs): int
     {
-        $dirs = $dirs
-            ->determineRootPath($this->configPath, $this->inlineJson);
+        $dirs = $dirs->determineRootPath($this->configPath);
 
         return $container->runScope(
             bindings: new Scope(
