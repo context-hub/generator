@@ -99,6 +99,9 @@
               "pathPrefix": {
                 "type": "string",
                 "description": "Path prefix to apply to all source paths in the imported configuration"
+              },
+              "filter": {
+                "$ref": "#/definitions/importFilter"
               }
             },
             "allOf": [
@@ -214,6 +217,57 @@
     }
   },
   "definitions": {
+    "importFilter": {
+      "type": "object",
+      "description": "Filter configuration for selective import of prompts",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "description": "List of prompt IDs to import",
+          "items": {
+            "type": "string"
+          }
+        },
+        "tags": {
+          "type": "object",
+          "description": "Tag-based filtering configuration",
+          "properties": {
+            "include": {
+              "type": "array",
+              "description": "Tags that prompts must have (based on match strategy)",
+              "items": {
+                "type": "string"
+              }
+            },
+            "exclude": {
+              "type": "array",
+              "description": "Tags that prompts must not have",
+              "items": {
+                "type": "string"
+              }
+            },
+            "match": {
+              "type": "string",
+              "enum": [
+                "any",
+                "all"
+              ],
+              "description": "Match strategy: 'any' = OR logic (default), 'all' = AND logic",
+              "default": "any"
+            }
+          }
+        },
+        "match": {
+          "type": "string",
+          "enum": [
+            "any",
+            "all"
+          ],
+          "description": "Overall match strategy between different filter types: 'any' = OR logic (default), 'all' = AND logic",
+          "default": "any"
+        }
+      }
+    },
     "inputSchema": {
       "type": "object",
       "description": "JSON Schema defining arguments that can be provided to tools or other components",
@@ -459,6 +513,13 @@
         "id": {
           "type": "string",
           "description": "Unique identifier for the prompt"
+        },
+        "tags": {
+          "type": "array",
+          "description": "List of tags for this prompt",
+          "items": {
+            "type": "string"
+          }
         },
         "description": {
           "type": "string",

@@ -6,6 +6,7 @@ namespace Butschster\ContextGenerator\Config\Import\Source\Local;
 
 use Butschster\ContextGenerator\Config\Import\PathMatcher;
 use Butschster\ContextGenerator\Config\Import\Source\Config\AbstractSourceConfig;
+use Butschster\ContextGenerator\Config\Import\Source\Config\FilterConfig;
 
 /**
  * Configuration for local filesystem imports
@@ -21,8 +22,9 @@ final class LocalSourceConfig extends AbstractSourceConfig
         private readonly bool $hasWildcard = false,
         ?string $pathPrefix = null,
         ?array $selectiveDocuments = null,
+        ?FilterConfig $filter = null,
     ) {
-        parent::__construct($path, $pathPrefix, $selectiveDocuments);
+        parent::__construct($path, $pathPrefix, $selectiveDocuments, $filter);
     }
 
     /**
@@ -40,6 +42,7 @@ final class LocalSourceConfig extends AbstractSourceConfig
         $path = $config['path'];
         $pathPrefix = $config['pathPrefix'] ?? null;
         $selectiveDocuments = $config['docs'] ?? null;
+        $filter = FilterConfig::fromArray($config['filter'] ?? null);
 
         // Check if the path contains wildcards
         $hasWildcard = PathMatcher::containsWildcard($path);
@@ -53,6 +56,7 @@ final class LocalSourceConfig extends AbstractSourceConfig
             hasWildcard: $hasWildcard,
             pathPrefix: $pathPrefix,
             selectiveDocuments: $selectiveDocuments,
+            filter: $filter,
         );
     }
 
@@ -85,11 +89,17 @@ final class LocalSourceConfig extends AbstractSourceConfig
 
     public function jsonSerialize(): array
     {
-        return [
+        $result = [
             'type' => $this->getType(),
             'path' => $this->path,
             'pathPrefix' => $this->pathPrefix,
         ];
+
+        if ($this->filter !== null && !$this->filter->isEmpty()) {
+            $result['filter'] = $this->filter;
+        }
+
+        return $result;
     }
 
     /**
