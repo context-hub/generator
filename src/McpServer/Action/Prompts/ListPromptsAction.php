@@ -34,7 +34,7 @@ final readonly class ListPromptsAction
             $prompts[] = $prompt;
         }
 
-        foreach ($this->prompts->all() as $prompt) {
+        foreach ($this->prompts->getItems() as $prompt) {
             $prompts[] = $prompt->prompt;
         }
 
