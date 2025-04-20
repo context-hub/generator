@@ -71,20 +71,18 @@ final class ListPromptsCommand extends BaseCommand
 
     public function __invoke(Container $container, DirectoriesInterface $dirs): int
     {
-        $dirs = $dirs->determineRootPath($this->configPath);
-
         return $container->runScope(
             bindings: new Scope(
                 name: AppScope::Compiler,
                 bindings: [
-                    DirectoriesInterface::class => $dirs,
+                    DirectoriesInterface::class => $dirs->determineRootPath($this->configPath),
                 ],
             ),
             scope: function (
                 ConfigurationProvider $configProvider,
                 PromptProviderInterface $promptProvider,
                 PromptFilterFactory $filterFactory,
-            ) use ($dirs) {
+            ) {
                 try {
                     // Get the appropriate loader based on options provided
                     if ($this->configPath !== null) {
