@@ -13,7 +13,7 @@ final readonly class ToolDefinition implements \JsonSerializable
      * @param string $id Unique identifier for the tool
      * @param string $description Human-readable description
      * @param string $type Tool type (default: 'run')
-     * @param array<ToolCommand> $commands List of commands to execute (for 'run' type)
+     * @param list<ToolCommand> $commands List of commands to execute (for 'run' type)
      * @param ToolSchema|null $schema JSON schema for tool arguments
      * @param array<string, string> $env Environment variables for all commands
      * @param array<string, mixed> $extra Additional type-specific configuration data
