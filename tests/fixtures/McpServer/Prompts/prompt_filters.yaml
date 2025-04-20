@@ -1,0 +1,66 @@
+prompts:
+  # Basic prompt with tags
+  - id: basic-prompt
+    description: Basic prompt for filter testing
+    type: prompt
+    tags:
+      - test
+      - basic
+    messages:
+      - role: user
+        content: This is a basic prompt for testing filters.
+
+  # Another prompt with different tags
+  - id: advanced-prompt
+    description: Advanced prompt for filter testing
+    type: prompt
+    tags:
+      - test
+      - advanced
+    messages:
+      - role: user
+        content: This is an advanced prompt for testing filters.
+
+  # Template prompt with tags
+  - id: template-prompt
+    description: Template prompt for filter testing
+    type: template
+    tags:
+      - template
+      - test
+    messages:
+      - role: user
+        content: This is a template prompt for testing filters.
+
+# Test importing with different filter configurations
+
+import:
+  # Import with ID filter
+  - type: local
+    path: prompt_filters_imported.yaml
+    filter:
+      ids:
+        - imported-prompt1
+        - imported-prompt3
+
+  # Import with tag filter
+  - type: local
+    path: prompt_filters_imported.yaml
+    filter:
+      tags:
+        include:
+          - include-tag
+        exclude:
+          - exclude-tag
+        match: any
+
+  # Import with composite filter
+  - type: local
+    path: prompt_filters_imported.yaml
+    filter:
+      ids:
+        - imported-prompt1
+      tags:
+        include:
+          - special-tag
+      match: all  # Requires both ID and tag match

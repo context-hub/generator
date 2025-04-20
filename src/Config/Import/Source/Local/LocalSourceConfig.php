@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Config\Import\Source\Local;
 
+use Butschster\ContextGenerator\Application\FSPath;
 use Butschster\ContextGenerator\Config\Import\PathMatcher;
 use Butschster\ContextGenerator\Config\Import\Source\Config\AbstractSourceConfig;
 use Butschster\ContextGenerator\Config\Import\Source\Config\FilterConfig;
@@ -48,7 +49,7 @@ final class LocalSourceConfig extends AbstractSourceConfig
         $hasWildcard = PathMatcher::containsWildcard($path);
 
         // Resolve relative path to absolute path
-        $absolutePath = self::resolvePath($path, $basePath);
+        $absolutePath = (string) FSPath::create($basePath)->join($path);
 
         return new self(
             path: $path,
@@ -100,19 +101,5 @@ final class LocalSourceConfig extends AbstractSourceConfig
         }
 
         return $result;
-    }
-
-    /**
-     * Resolve a relative path to an absolute path
-     */
-    private static function resolvePath(string $path, string $basePath): string
-    {
-        // If it's an absolute path, use it directly
-        if (\str_starts_with($path, '/')) {
-            return $path;
-        }
-
-        // Otherwise, resolve it relative to the base path
-        return \rtrim($basePath, '/') . '/' . $path;
     }
 }
