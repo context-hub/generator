@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Application\Bootloader;
+namespace Butschster\ContextGenerator\McpServer;
 
-use Butschster\ContextGenerator\Console\MCPServerCommand;
+use Butschster\ContextGenerator\Application\Bootloader\ConsoleBootloader;
+use Butschster\ContextGenerator\Application\Bootloader\HttpClientBootloader;
 use Butschster\ContextGenerator\McpServer\Action\Prompts\FilesystemOperationsAction;
 use Butschster\ContextGenerator\McpServer\Action\Prompts\GetPromptAction;
 use Butschster\ContextGenerator\McpServer\Action\Prompts\ListPromptsAction;
@@ -26,13 +27,11 @@ use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileWriteActio
 use Butschster\ContextGenerator\McpServer\Action\Tools\ListToolsAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Prompts\GetPromptToolAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Prompts\ListPromptsToolAction;
-use Butschster\ContextGenerator\McpServer\McpConfig;
+use Butschster\ContextGenerator\McpServer\Console\MCPServerCommand;
 use Butschster\ContextGenerator\McpServer\ProjectService\ProjectServiceInterface;
 use Butschster\ContextGenerator\McpServer\Registry\McpItemsRegistry;
 use Butschster\ContextGenerator\McpServer\Routing\McpResponseStrategy;
 use Butschster\ContextGenerator\McpServer\Routing\RouteRegistrar;
-use Butschster\ContextGenerator\McpServer\ServerRunner;
-use Butschster\ContextGenerator\McpServer\ServerRunnerInterface;
 use Butschster\ContextGenerator\McpServer\Tool\McpToolBootloader;
 use League\Route\Router;
 use League\Route\Strategy\StrategyInterface;
