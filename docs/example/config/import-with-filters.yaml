@@ -1,0 +1,80 @@
+$schema: 'https://raw.githubusercontent.com/context-hub/generator/refs/heads/main/json-schema.json'
+
+# Import prompts with filtering
+import:
+  # 1. Import specific prompts by ID from a URL
+  - type: url
+    url: https://example.com/prompts-repository/all-prompts.yaml
+    filter:
+      ids:
+        - python-helper
+        - php-debug
+        - js-refactor
+
+  # 2. Import prompts by tags with ANY logic
+  - type: url
+    url: https://example.com/prompts-repository/dev-prompts.yaml
+    filter:
+      tags:
+        include:
+          - coding
+          - debugging
+        exclude:
+          - advanced
+      match: any  # ANY logic means any tag in include list should match
+
+  # 3. Import prompts by tags with ALL logic
+  - path: ./local-prompts.yaml
+    type: local
+    filter:
+      tags:
+        include:
+          - writing
+          - creative
+        match: all  # ALL logic means all tags in include list must match
+
+  # 4. Combined filter with IDs and tags
+  - path: ./another-collection.yaml
+    type: local
+    filter:
+      ids:
+        - creative-writing
+        - summarization-prompt
+      tags:
+        include:
+          - content
+        exclude:
+          - technical
+      match: any  # This applies to the overall filter strategy
+
+# Define prompts with tags
+prompts:
+  - id: markdown-formatter
+    description: "Formats text into well-structured markdown"
+    tags:
+      - markdown
+      - formatting
+      - writing
+    messages:
+      - role: user
+        content: "You are a markdown formatting assistant..."
+
+  - id: code-reviewer
+    description: "Reviews code for best practices and improvements"
+    tags:
+      - code-review
+      - programming
+      - best-practices
+    messages:
+      - role: user
+        content: "You are a code review assistant..."
+
+  - id: data-analyzer
+    description: "Helps analyze and interpret data sets"
+    tags:
+      - data
+      - analysis
+      - statistics
+    messages:
+      - role: user
+        content: "You are a data analysis assistant..."

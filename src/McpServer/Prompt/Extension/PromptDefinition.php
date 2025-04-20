@@ -18,6 +18,8 @@ final readonly class PromptDefinition implements \JsonSerializable
         public PromptType $type = PromptType::Prompt,
         /** @var PromptExtension[] */
         public array $extensions = [],
+        /** @var string[] */
+        public array $tags = [],
     ) {}
 
     public function withMessages(array $messages): self
@@ -28,6 +30,7 @@ final readonly class PromptDefinition implements \JsonSerializable
             messages: $messages,
             type: $this->type,
             extensions: $this->extensions,
+            tags: $this->tags,
         );
     }
 
@@ -55,6 +58,7 @@ final readonly class PromptDefinition implements \JsonSerializable
             'schema' => $schema,
             'messages' => $this->messages,
             'extend' => $this->serializeExtensions(),
+            'tags' => $this->tags,
         ], static fn($value) => $value !== null && $value !== []);
     }
 

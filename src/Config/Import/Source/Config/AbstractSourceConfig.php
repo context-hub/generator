@@ -16,6 +16,7 @@ abstract class AbstractSourceConfig implements SourceConfigInterface
         protected string $path,
         protected ?string $pathPrefix = null,
         protected ?array $selectiveDocuments = null,
+        protected ?FilterConfig $filter = null,
     ) {}
 
     public function getPath(): string
@@ -31,6 +32,11 @@ abstract class AbstractSourceConfig implements SourceConfigInterface
     public function getSelectiveDocuments(): ?array
     {
         return $this->selectiveDocuments;
+    }
+
+    public function getFilter(): ?FilterConfig
+    {
+        return $this->filter;
     }
 
     public function getConfigDirectory(): string

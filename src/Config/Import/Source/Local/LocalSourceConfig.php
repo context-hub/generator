@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Config\Import\Source\Local;
 
+use Butschster\ContextGenerator\Application\FSPath;
 use Butschster\ContextGenerator\Config\Import\PathMatcher;
 use Butschster\ContextGenerator\Config\Import\Source\Config\AbstractSourceConfig;
+use Butschster\ContextGenerator\Config\Import\Source\Config\FilterConfig;
 
 /**
  * Configuration for local filesystem imports
@@ -21,8 +23,9 @@ final class LocalSourceConfig extends AbstractSourceConfig
         private readonly bool $hasWildcard = false,
         ?string $pathPrefix = null,
         ?array $selectiveDocuments = null,
+        ?FilterConfig $filter = null,
     ) {
-        parent::__construct($path, $pathPrefix, $selectiveDocuments);
+        parent::__construct($path, $pathPrefix, $selectiveDocuments, $filter);
     }
 
     /**
@@ -40,12 +43,13 @@ final class LocalSourceConfig extends AbstractSourceConfig
         $path = $config['path'];
         $pathPrefix = $config['pathPrefix'] ?? null;
         $selectiveDocuments = $config['docs'] ?? null;
+        $filter = FilterConfig::fromArray($config['filter'] ?? null);
 
         // Check if the path contains wildcards
         $hasWildcard = PathMatcher::containsWildcard($path);
 
         // Resolve relative path to absolute path
-        $absolutePath = self::resolvePath($path, $basePath);
+        $absolutePath = (string) FSPath::create($basePath)->join($path);
 
         return new self(
             path: $path,
@@ -53,6 +57,7 @@ final class LocalSourceConfig extends AbstractSourceConfig
             hasWildcard: $hasWildcard,
             pathPrefix: $pathPrefix,
             selectiveDocuments: $selectiveDocuments,
+            filter: $filter,
         );
     }
 
@@ -85,24 +90,16 @@ final class LocalSourceConfig extends AbstractSourceConfig
 
     public function jsonSerialize(): array
     {
-        return [
+        $result = [
             'type' => $this->getType(),
             'path' => $this->path,
             'pathPrefix' => $this->pathPrefix,
         ];
-    }
 
-    /**
-     * Resolve a relative path to an absolute path
-     */
-    private static function resolvePath(string $path, string $basePath): string
-    {
-        // If it's an absolute path, use it directly
-        if (\str_starts_with($path, '/')) {
-            return $path;
+        if ($this->filter !== null && !$this->filter->isEmpty()) {
+            $result['filter'] = $this->filter;
         }
 
-        // Otherwise, resolve it relative to the base path
-        return \rtrim($basePath, '/') . '/' . $path;
+        return $result;
     }
 }

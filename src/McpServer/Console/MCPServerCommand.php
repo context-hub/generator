@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Console;
+namespace Butschster\ContextGenerator\McpServer\Console;
 
 use Butschster\ContextGenerator\Application\Application;
 use Butschster\ContextGenerator\Application\AppScope;
@@ -11,6 +11,7 @@ use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
 use Butschster\ContextGenerator\Config\ConfigurationProvider;
 use Butschster\ContextGenerator\Config\Exception\ConfigLoaderException;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
+use Butschster\ContextGenerator\Console\BaseCommand;
 use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\McpServer\ProjectService\ProjectServiceFactory;
 use Butschster\ContextGenerator\McpServer\ProjectService\ProjectServiceInterface;

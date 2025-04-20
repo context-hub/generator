@@ -55,7 +55,7 @@ final class FSPath implements \Stringable
      */
     public function join(string ...$paths): self
     {
-        $result = $this->path;
+        $result = !$this->isFile() ? $this->path : (string) $this->parent();
 
         foreach ($paths as $path) {
             if (empty($path)) {

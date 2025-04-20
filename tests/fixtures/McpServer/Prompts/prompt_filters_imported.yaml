@@ -1,0 +1,57 @@
+prompts:
+  # Simple prompt with ID for ID filter testing
+  - id: imported-prompt1
+    description: First imported prompt
+    type: prompt
+    tags:
+      - imported
+      - include-tag
+      - special-tag
+    messages:
+      - role: user
+        content: This is the first imported prompt.
+
+  # Prompt that should be excluded by ID filters
+  - id: imported-prompt2
+    description: Second imported prompt
+    type: prompt
+    tags:
+      - imported
+      - include-tag
+    messages:
+      - role: user
+        content: This is the second imported prompt.
+
+  # Prompt with an exclude tag
+  - id: imported-prompt3
+    description: Third imported prompt
+    type: prompt
+    tags:
+      - imported
+      - exclude-tag
+    messages:
+      - role: user
+        content: This is the third imported prompt.
+
+  # Prompt with both include and exclude tags
+  - id: imported-prompt4
+    description: Fourth imported prompt
+    type: prompt
+    tags:
+      - imported
+      - include-tag
+      - exclude-tag
+    messages:
+      - role: user
+        content: This is the fourth imported prompt.
+
+  # Prompt with special tag for composite filter testing
+  - id: imported-prompt5
+    description: Fifth imported prompt
+    type: prompt
+    tags:
+      - imported
+      - special-tag
+    messages:
+      - role: user
+        content: This is the fifth imported prompt.
