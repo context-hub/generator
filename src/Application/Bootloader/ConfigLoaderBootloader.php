@@ -8,6 +8,7 @@ use Butschster\ContextGenerator\Config\Import\ImportParserPlugin;
 use Butschster\ContextGenerator\Config\Import\Merger\ConfigMergerInterface;
 use Butschster\ContextGenerator\Config\Import\Merger\ConfigMergerProviderInterface;
 use Butschster\ContextGenerator\Config\Import\Merger\ConfigMergerRegistry;
+use Butschster\ContextGenerator\Config\Import\Merger\VariablesConfigMerger;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderFactory;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderFactoryInterface;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
@@ -119,8 +120,11 @@ final class ConfigLoaderBootloader extends Bootloader
         ];
     }
 
-    public function init(DocumentConfigMerger $documentConfigMerger): void
-    {
+    public function init(
+        DocumentConfigMerger $documentConfigMerger,
+        VariablesConfigMerger $variablesConfigMerger,
+    ): void {
         $this->registerMerger($documentConfigMerger);
+        $this->registerMerger($variablesConfigMerger);
     }
 }
