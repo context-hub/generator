@@ -4,29 +4,20 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer\Projects;
 
-use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\McpServer\Projects\DTO\CurrentProjectDTO;
 use Butschster\ContextGenerator\McpServer\Projects\DTO\ProjectDTO;
 use Butschster\ContextGenerator\McpServer\Projects\DTO\ProjectStateDTO;
-use Butschster\ContextGenerator\McpServer\Projects\Repository\ProjectStateRepository;
-use Psr\Log\LoggerInterface;
+use Butschster\ContextGenerator\McpServer\Projects\Repository\ProjectStateRepositoryInterface;
 use Spiral\Files\FilesInterface;
 
-/**
- * Service for managing project state
- */
-#[LoggerPrefix(prefix: 'projects')]
-final class ProjectService
+final class ProjectService implements ProjectServiceInterface
 {
-    /**
-     * Project state cache
-     */
+    /** Project state cache  */
     private ?ProjectStateDTO $state = null;
 
     public function __construct(
         private readonly FilesInterface $files,
-        private readonly LoggerInterface $logger,
-        private readonly ProjectStateRepository $repository,
+        private readonly ProjectStateRepositoryInterface $repository,
     ) {}
 
     public function getCurrentProject(): ?CurrentProjectDTO
@@ -93,13 +84,6 @@ final class ProjectService
         $this->saveState($state);
     }
 
-    /**
-     * Switch to an existing project without modifying its configuration
-     * Used for switching between projects without overriding their states
-     *
-     * @param string $projectPath Absolute path to the project directory
-     * @return bool True if the project was found and switched to, false otherwise
-     */
     public function switchToProject(string $projectPath): bool
     {
         $state = $this->getState();
@@ -163,39 +147,21 @@ final class ProjectService
         $this->saveState($state);
     }
 
-    /**
-     * Get a list of all projects
-     *
-     * @return array<string, ProjectDTO>
-     */
     public function getProjects(): array
     {
         return $this->getState()->projects;
     }
 
-    /**
-     * Get all project aliases
-     *
-     * @return array<string, string> Alias to path mapping
-     */
     public function getAliases(): array
     {
         return $this->getState()->aliases;
     }
 
-    /**
-     * Get aliases for a specific project path
-     *
-     * @return string[]
-     */
     public function getAliasesForPath(string $projectPath): array
     {
         return $this->getState()->getAliasesForPath($projectPath);
     }
 
-    /**
-     * Resolve a path or alias to the actual project path
-     */
     public function resolvePathOrAlias(string $pathOrAlias): string
     {
         return $this->getState()->resolvePathOrAlias($pathOrAlias);

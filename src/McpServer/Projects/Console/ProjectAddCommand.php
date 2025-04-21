@@ -10,7 +10,7 @@ use Butschster\ContextGenerator\Config\ConfigurationProvider;
 use Butschster\ContextGenerator\Config\Exception\ConfigLoaderException;
 use Butschster\ContextGenerator\Console\BaseCommand;
 use Butschster\ContextGenerator\DirectoriesInterface;
-use Butschster\ContextGenerator\McpServer\Projects\ProjectService;
+use Butschster\ContextGenerator\McpServer\Projects\ProjectServiceInterface;
 use Spiral\Console\Attribute\Argument;
 use Spiral\Console\Attribute\AsCommand;
 use Spiral\Console\Attribute\Option;
@@ -55,7 +55,7 @@ final class ProjectAddCommand extends BaseCommand
         Container $container,
         DirectoriesInterface $dirs,
         FilesInterface $files,
-        ProjectService $projectService,
+        ProjectServiceInterface $projectService,
         ConfigurationProvider $configProvider,
     ): int {
         // Handle using an alias as the path
@@ -79,11 +79,6 @@ final class ProjectAddCommand extends BaseCommand
             return Command::FAILURE;
         }
 
-        // Check if the path contains a valid config file
-        $configPath = $this->configFile ?
-            FSPath::create($projectPath)->join($this->configFile)->toString() :
-            null;
-
         // Validate env file path if provided
         if ($this->envFile !== null) {
             $envPath = FSPath::create($projectPath)->join($this->envFile)->toString();
@@ -94,25 +89,20 @@ final class ProjectAddCommand extends BaseCommand
         }
 
         try {
-            // Verify config can be loaded
-            if ($configPath !== null) {
-                $configLoader = $configProvider->fromPath($configPath);
-            } else {
-                // Create temporary directories to test config loading
-                $tempDirs = $dirs->determineRootPath(null, null)->withRootPath($projectPath);
+            // Create temporary directories to test config loading
+            $tempDirs = $dirs->determineRootPath(null, null)->withRootPath($projectPath);
 
-                $container->runScope(
-                    bindings: new Scope(
-                        name: AppScope::Compiler,
-                        bindings: [
-                            DirectoriesInterface::class => $tempDirs,
-                        ],
-                    ),
-                    scope: static function () use ($configProvider): void {
-                        $configProvider->fromDefaultLocation()->load();
-                    },
-                );
-            }
+            $container->runScope(
+                bindings: new Scope(
+                    name: AppScope::Compiler,
+                    bindings: [
+                        DirectoriesInterface::class => $tempDirs,
+                    ],
+                ),
+                scope: static function () use ($configProvider): void {
+                    $configProvider->fromDefaultLocation()->load();
+                },
+            );
         } catch (ConfigLoaderException $e) {
             $this->output->error(
                 \sprintf(

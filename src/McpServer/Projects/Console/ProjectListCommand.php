@@ -6,7 +6,7 @@ namespace Butschster\ContextGenerator\McpServer\Projects\Console;
 
 use Butschster\ContextGenerator\Console\BaseCommand;
 use Butschster\ContextGenerator\Console\Renderer\Style;
-use Butschster\ContextGenerator\McpServer\Projects\ProjectService;
+use Butschster\ContextGenerator\McpServer\Projects\ProjectServiceInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
@@ -18,7 +18,7 @@ use Symfony\Component\Console\Helper\Table;
 )]
 final class ProjectListCommand extends BaseCommand
 {
-    public function __invoke(ProjectService $projectService): int
+    public function __invoke(ProjectServiceInterface $projectService): int
     {
         $projects = $projectService->getProjects();
         $aliases = $projectService->getAliases();
@@ -48,7 +48,7 @@ final class ProjectListCommand extends BaseCommand
         foreach ($projects as $path => $info) {
             $isCurrent = $currentProject && $currentProject->path === $path ? '✓' : '';
 
-            $aliasesStr = isset($pathToAliases[$path]) && !empty($pathToAliases[$path])
+            $aliasesStr = !empty($pathToAliases[$path])
                 ? \implode(', ', $pathToAliases[$path])
                 : '';
 
@@ -57,7 +57,7 @@ final class ProjectListCommand extends BaseCommand
                 $info->configFile ?? '',
                 $info->envFile ?? '',
                 $aliasesStr,
-                $info->addedAt ?? '',
+                $info->addedAt,
                 $isCurrent ? Style::highlight($isCurrent) : '',
             ]);
         }

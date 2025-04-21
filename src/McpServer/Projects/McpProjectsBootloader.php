@@ -9,6 +9,7 @@ use Butschster\ContextGenerator\McpServer\Projects\Console\ProjectAddCommand;
 use Butschster\ContextGenerator\McpServer\Projects\Console\ProjectCommand;
 use Butschster\ContextGenerator\McpServer\Projects\Console\ProjectListCommand;
 use Butschster\ContextGenerator\McpServer\Projects\Repository\ProjectStateRepository;
+use Butschster\ContextGenerator\McpServer\Projects\Repository\ProjectStateRepositoryInterface;
 use Spiral\Boot\Bootloader\Bootloader;
 use Spiral\Boot\DirectoriesInterface;
 use Spiral\Core\FactoryInterface;
@@ -19,13 +20,13 @@ final class McpProjectsBootloader extends Bootloader
     public function defineSingletons(): array
     {
         return [
-            ProjectStateRepository::class => static fn(
+            ProjectStateRepositoryInterface::class => static fn(
                 FactoryInterface $factory,
                 DirectoriesInterface $dirs,
             ) => $factory->make(ProjectStateRepository::class, [
                 'stateDirectory' => $dirs->get('global-state'),
             ]),
-            ProjectService::class => ProjectService::class,
+            ProjectServiceInterface::class => ProjectService::class,
         ];
     }
 

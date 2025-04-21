@@ -13,7 +13,7 @@ use Butschster\ContextGenerator\Config\Exception\ConfigLoaderException;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
 use Butschster\ContextGenerator\Console\BaseCommand;
 use Butschster\ContextGenerator\DirectoriesInterface;
-use Butschster\ContextGenerator\McpServer\Projects\ProjectService;
+use Butschster\ContextGenerator\McpServer\Projects\ProjectServiceInterface as ProjectService;
 use Butschster\ContextGenerator\McpServer\ProjectService\ProjectServiceFactory;
 use Butschster\ContextGenerator\McpServer\ProjectService\ProjectServiceInterface;
 use Butschster\ContextGenerator\McpServer\ServerRunnerInterface;

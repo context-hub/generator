@@ -14,7 +14,7 @@ use Spiral\Files\FilesInterface;
  * Repository for managing project state persistence
  */
 #[LoggerPrefix(prefix: 'projects.repository')]
-final readonly class ProjectStateRepository
+final readonly class ProjectStateRepository implements ProjectStateRepositoryInterface
 {
     /**
      * File path for storing project state
@@ -27,9 +27,6 @@ final readonly class ProjectStateRepository
         private string $stateDirectory,
     ) {}
 
-    /**
-     * Load project state from storage
-     */
     public function load(): ProjectStateDTO
     {
         $stateFile = $this->getStateFilePath();
@@ -58,9 +55,6 @@ final readonly class ProjectStateRepository
         }
     }
 
-    /**
-     * Save project state to storage
-     */
     public function save(ProjectStateDTO $state): bool
     {
         $stateFile = $this->getStateFilePath();

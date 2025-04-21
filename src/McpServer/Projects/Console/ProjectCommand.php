@@ -7,10 +7,11 @@ namespace Butschster\ContextGenerator\McpServer\Projects\Console;
 use Butschster\ContextGenerator\Application\FSPath;
 use Butschster\ContextGenerator\Console\BaseCommand;
 use Butschster\ContextGenerator\DirectoriesInterface;
-use Butschster\ContextGenerator\McpServer\Projects\ProjectService;
+use Butschster\ContextGenerator\McpServer\Projects\ProjectServiceInterface;
 use Spiral\Console\Attribute\Argument;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 
 #[AsCommand(
@@ -25,7 +26,7 @@ final class ProjectCommand extends BaseCommand
     )]
     protected ?string $path = null;
 
-    public function __invoke(DirectoriesInterface $dirs, ProjectService $projectService): int
+    public function __invoke(DirectoriesInterface $dirs, ProjectServiceInterface $projectService): int
     {
         // If no path provided, show interactive selection or current project
         if ($this->path === null) {
@@ -56,7 +57,7 @@ final class ProjectCommand extends BaseCommand
     /**
      * Show interactive project selection
      */
-    private function selectProjectInteractively(ProjectService $projectService): int
+    private function selectProjectInteractively(ProjectServiceInterface $projectService): int
     {
         $projects = $projectService->getProjects();
         $currentProject = $projectService->getCurrentProject();
@@ -92,7 +93,7 @@ final class ProjectCommand extends BaseCommand
         $choiceMap = []; // Maps display strings back to project paths
         $i = 1;
 
-        foreach ($projects as $path => $info) {
+        foreach ($projects as $path => $_) {
             $aliases = $projectService->getAliasesForPath($path);
             $aliasString = !empty($aliases) ? ' [' . \implode(', ', $aliases) . ']' : '';
             $isCurrent = ($currentProject && $currentProject->path === $path) ? ' (CURRENT)' : '';
@@ -115,6 +116,7 @@ final class ProjectCommand extends BaseCommand
 
         // Create the question with all choices
         $helper = $this->getHelper('question');
+        \assert($helper instanceof QuestionHelper);
         $question = new ChoiceQuestion(
             'Select a project to switch to:',
             $choices,

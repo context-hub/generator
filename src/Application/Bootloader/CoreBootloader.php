@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Application\Bootloader;
 
-use Butschster\ContextGenerator\Console\DisplayCommand;
 use Butschster\ContextGenerator\Console\GenerateCommand;
 use Butschster\ContextGenerator\Console\InitCommand;
 use Butschster\ContextGenerator\Console\SchemaCommand;
@@ -58,7 +57,6 @@ final class CoreBootloader extends Bootloader
             SchemaCommand::class,
             SelfUpdateCommand::class,
             GenerateCommand::class,
-            DisplayCommand::class,
         );
     }
 
