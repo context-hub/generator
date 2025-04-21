@@ -92,11 +92,19 @@ $container->bindSingleton(
 //  Execute Application
 // -----------------------------------------------------------------------------
 
+// Determine appropriate location for global state based on OS
+$globalStateDir = match (PHP_OS_FAMILY) {
+    'Windows' => \getenv('APPDATA') . '/CTX',
+    'Darwin' => $_SERVER['HOME'] . '/Library/Application Support/CTX',
+    default => $_SERVER['HOME'] . '/.config/ctx',
+};
+
 $app = Kernel::create(
     directories: [
         'root' => $appPath,
         'output' => $appPath . '/.context',
         'config' => $appPath,
+        'global-state' => $globalStateDir,
         'json-schema' => __DIR__,
     ],
     exceptionHandler: ExceptionHandler::class,
