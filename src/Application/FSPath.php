@@ -155,8 +155,8 @@ final class FSPath implements \Stringable
     {
         return match (true) {
             $this->path === '.',
-                $this->path === '..',
-                $this->isAbsolute && \substr($this->path, -2) === self::DS . '.',
+            $this->path === '..',
+            $this->isAbsolute && \substr($this->path, -2) === self::DS . '.',
             \is_dir($this->path) => true,
             default => false,
         };
@@ -170,8 +170,8 @@ final class FSPath implements \Stringable
     {
         return match (true) {
             $this->path === '.',
-                $this->path === '..',
-                $this->isAbsolute && \substr($this->path, -2) === self::DS . '.' => false,
+            $this->path === '..',
+            $this->isAbsolute && \substr($this->path, -2) === self::DS . '.' => false,
             \is_file($this->path) => true,
             default => false,
         };
