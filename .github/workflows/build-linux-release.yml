@@ -85,6 +85,14 @@ jobs:
     needs: [ build-linux ]
     runs-on: ubuntu-latest
     name: 📦 Build Alpine Docker Container
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - os: linux
+            arch: amd64
+          - os: linux
+            arch: arm64
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -109,47 +117,24 @@ jobs:
           fi
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
-      - name: Download Linux AMD64 binary
-        uses: actions/download-artifact@v4
+      - name: Download Linux ${{ matrix.platform.arch }} binary
+        uses: actions/download-artifact@v3
         with:
-          name: ctx-${{ env.VERSION }}-linux-amd64
-          path: ./tmp/amd64
+          name: ctx-${{ env.VERSION }}-${{ matrix.platform.os }}-${{ matrix.platform.arch }}
+          path: ./tmp
 
-      - name: Download Linux ARM64 binary
-        uses: actions/download-artifact@v4
-        with:
-          name: ctx-${{ env.VERSION }}-linux-arm64
-          path: ./tmp/arm64
-
-      - name: Make binaries executable
+      - name: Make binary executable
         run: |
-          chmod +x ./tmp/amd64/ctx-${{ env.VERSION }}-linux-amd64
-          chmod +x ./tmp/arm64/ctx-${{ env.VERSION }}-linux-arm64
+          chmod +x ./tmp/ctx-${{ env.VERSION }}-${{ matrix.platform.os }}-${{ matrix.platform.arch }}
 
       - name: Create Docker context directory
         run: |
-          mkdir -p ./docker/amd64 ./docker/arm64
-          cp ./tmp/amd64/ctx-${{ env.VERSION }}-linux-amd64 ./docker/amd64/ctx
-          cp ./tmp/arm64/ctx-${{ env.VERSION }}-linux-arm64 ./docker/arm64/ctx
+          mkdir -p ./docker
+          cp ./tmp/ctx-${{ env.VERSION }}-${{ matrix.platform.os }}-${{ matrix.platform.arch }} ./docker/ctx
           
-          # Create Dockerfile for AMD64
-          cat > ./docker/amd64/Dockerfile << 'EOF'
-          FROM alpine:3.19
-          
-          RUN apk add --no-cache libstdc++ libgcc
-          
-          WORKDIR /app
-          
-          COPY ctx /usr/local/bin/ctx
-          
-          RUN chmod +x /usr/local/bin/ctx
-          
-          ENTRYPOINT ["ctx"]
-          EOF
-          
-          # Create Dockerfile for ARM64
-          cat > ./docker/arm64/Dockerfile << 'EOF'
-          FROM alpine:3.19
+          # Create Dockerfile for Alpine
+          cat > ./docker/Dockerfile << 'EOF'
+          FROM alpine:3.21
           
           RUN apk add --no-cache libstdc++ libgcc
           
@@ -180,20 +165,11 @@ jobs:
           username: ${{ secrets.GHCR_LOGIN }}
           password: ${{ secrets.GHCR_PASSWORD }}
 
-      - name: Build and push Docker image for ARM64
+      - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
-          context: ./docker/arm64
+          context: ./docker
           push: true
           tags: ${{ steps.docker-metadata.outputs.tags }}
           labels: ${{ steps.docker-metadata.outputs.labels }}
-          platforms: linux/arm64
-
-      - name: Build and push Docker image for AMD64
-        uses: docker/build-push-action@v4
-        with:
-          context: ./docker/amd64
-          push: true
-          tags: ${{ steps.docker-metadata.outputs.tags }}
-          labels: ${{ steps.docker-metadata.outputs.labels }}
-          platforms: linux/amd64
+          platforms: linux/${{ matrix.platform.arch }}
