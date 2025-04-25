@@ -68,6 +68,11 @@ final class PromptRegistry implements RegistryInterface, PromptProviderInterface
         return 'prompts';
     }
 
+    public function allPrompts(): array
+    {
+        return $this->getItems();
+    }
+
     public function getItems(): array
     {
         return \array_values(

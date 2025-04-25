@@ -63,6 +63,9 @@ final class RegistryOperationsTest extends FeatureTestCases
         $items = $registry->getItems();
         $this->assertCount(3, $items, 'Registry should have 3 regular prompts');
 
+        $items = $registry->allPrompts();
+        $this->assertCount(3, $items, 'Registry should have 3 regular prompts');
+
         foreach ($items as $item) {
             $this->assertSame(PromptType::Prompt, $item->type, 'Items should have Prompt type');
         }

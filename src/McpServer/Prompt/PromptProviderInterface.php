@@ -36,4 +36,11 @@ interface PromptProviderInterface
      * @return array<string, PromptDefinition>
      */
     public function allTemplates(): array;
+
+    /**
+     * Gets all prompts.
+     *
+     * @return list<PromptDefinition>
+     */
+    public function allPrompts(): array;
 }

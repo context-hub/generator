@@ -28,7 +28,9 @@ use Butschster\ContextGenerator\McpServer\Action\Tools\ListToolsAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Prompts\GetPromptToolAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Prompts\ListPromptsToolAction;
 use Butschster\ContextGenerator\McpServer\Console\MCPServerCommand;
+use Butschster\ContextGenerator\McpServer\Projects\McpProjectsBootloader;
 use Butschster\ContextGenerator\McpServer\ProjectService\ProjectServiceInterface;
+use Butschster\ContextGenerator\McpServer\Prompt\McpPromptBootloader;
 use Butschster\ContextGenerator\McpServer\Registry\McpItemsRegistry;
 use Butschster\ContextGenerator\McpServer\Routing\McpResponseStrategy;
 use Butschster\ContextGenerator\McpServer\Routing\RouteRegistrar;
@@ -55,6 +57,9 @@ final class McpServerBootloader extends Bootloader
         return [
             HttpClientBootloader::class,
             McpToolBootloader::class,
+            McpPromptBootloader::class,
+            McpProjectsBootloader::class,
+
         ];
     }
 

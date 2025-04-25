@@ -13,6 +13,7 @@ use Butschster\ContextGenerator\Config\Exception\ConfigLoaderException;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
 use Butschster\ContextGenerator\Console\BaseCommand;
 use Butschster\ContextGenerator\DirectoriesInterface;
+use Butschster\ContextGenerator\McpServer\Projects\ProjectServiceInterface as ProjectService;
 use Butschster\ContextGenerator\McpServer\ProjectService\ProjectServiceFactory;
 use Butschster\ContextGenerator\McpServer\ProjectService\ProjectServiceInterface;
 use Butschster\ContextGenerator\McpServer\ServerRunnerInterface;
@@ -45,8 +46,25 @@ final class MCPServerCommand extends BaseCommand
     )]
     protected ?string $envFileName = null;
 
-    public function __invoke(Container $container, DirectoriesInterface $dirs, Application $app): int
-    {
+    public function __invoke(
+        Container $container,
+        DirectoriesInterface $dirs,
+        Application $app,
+        ProjectService $projects,
+    ): int {
+        $currentProject = $projects->getCurrentProject();
+        if ($this->configPath === null && $currentProject) {
+            $this->configPath = $currentProject->hasConfigFile()
+                ? $currentProject->getConfigFile()
+                : $currentProject->path;
+
+            if ($this->envFileName === null) {
+                $this->envFileName = $currentProject->hasEnvFile()
+                    ? $currentProject->getEnvFile()
+                    : null;
+            }
+        }
+
         // Determine the effective root path based on config file path
         $dirs = $dirs
             ->determineRootPath($this->configPath)

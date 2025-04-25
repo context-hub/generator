@@ -30,7 +30,7 @@ final readonly class ConfigLoaderFactory implements ConfigLoaderFactoryInterface
     public function create(string $configPath): ConfigLoaderInterface
     {
         $dirs = $this->dirs->withConfigPath($configPath);
-        $configPathObj = $dirs->getConfigPath();
+        $configPathObj = $dirs->getRootPath();
 
         // Create composite parser using the injected plugin registry
         $compositeParser = new CompositeConfigParser(
