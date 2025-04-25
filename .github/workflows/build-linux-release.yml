@@ -1,0 +1,193 @@
+---
+
+name: 📦 Build Linux binary
+
+on: # yamllint disable-line rule:truthy
+  release:
+    types:
+      - published
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    name: 📦 Build Linux Executables
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - os: linux
+            arch: amd64
+          - os: linux
+            arch: arm64
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+        with:
+          platforms: arm64,amd64
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Extract version from tag
+        id: get_version
+        run: |
+          if [[ "$GITHUB_REF_NAME" == refs/pull/* ]]; then
+            # For pull requests, use "dev" as version
+            VERSION="dev"
+          else
+            # For releases, extract version from tag (remove 'v' prefix if present)
+            VERSION=${GITHUB_REF_NAME#v}
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "{\"version\": \"$VERSION\", \"type\":\"bin\"}" > version.json
+
+      - name: Build Docker image for ${{ matrix.platform.os }}-${{ matrix.platform.arch }}
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: false
+          load: true
+          tags: ctx-builder-${{ matrix.platform.os }}-${{ matrix.platform.arch }}:latest
+          platforms: linux/${{ matrix.platform.arch }}
+          build-args: |
+            TARGET_OS=${{ matrix.platform.os }}
+            TARGET_ARCH=${{ matrix.platform.arch }}
+            VERSION=${{ env.VERSION }}
+          cache-from: type=gha,scope=${{ matrix.platform.os }}-${{ matrix.platform.arch }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.platform.os }}-${{ matrix.platform.arch }}
+
+      - name: Extract executable
+        run: |
+          mkdir -p dist
+          container_id=$(docker create ctx-builder-${{ matrix.platform.os }}-${{ matrix.platform.arch }}:latest)
+          docker cp $container_id:/.output/ctx ./dist/ctx-${{ env.VERSION }}-${{ matrix.platform.os }}-${{ matrix.platform.arch }}
+          docker rm $container_id
+
+      - name: 📤 Upload release assets
+        uses: softprops/action-gh-release@v2.2.1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          token: "${{ secrets.RELEASE_TOKEN }}"
+          files: |
+            ./dist/ctx-${{ env.VERSION }}-${{ matrix.platform.os }}-${{ matrix.platform.arch }}
+
+  build-alpine-docker:
+    needs: [ build-linux ]
+    runs-on: ubuntu-latest
+    name: 📦 Build Alpine Docker Container
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+        with:
+          platforms: arm64,amd64
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Extract version from tag
+        id: get_version
+        run: |
+          if [[ "$GITHUB_REF_NAME" == refs/pull/* ]]; then
+            # For pull requests, use "dev" as version
+            VERSION="dev"
+          else
+            # For releases, extract version from tag (remove 'v' prefix if present)
+            VERSION=${GITHUB_REF_NAME#v}
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Download Linux AMD64 binary
+        uses: actions/download-artifact@v3
+        with:
+          name: ctx-${{ env.VERSION }}-linux-amd64
+          path: ./tmp/amd64
+
+      - name: Download Linux ARM64 binary
+        uses: actions/download-artifact@v3
+        with:
+          name: ctx-${{ env.VERSION }}-linux-arm64
+          path: ./tmp/arm64
+
+      - name: Make binaries executable
+        run: |
+          chmod +x ./tmp/amd64/ctx-${{ env.VERSION }}-linux-amd64
+          chmod +x ./tmp/arm64/ctx-${{ env.VERSION }}-linux-arm64
+
+      - name: Create Docker context directory
+        run: |
+          mkdir -p ./docker/amd64 ./docker/arm64
+          cp ./tmp/amd64/ctx-${{ env.VERSION }}-linux-amd64 ./docker/amd64/ctx
+          cp ./tmp/arm64/ctx-${{ env.VERSION }}-linux-arm64 ./docker/arm64/ctx
+          
+          # Create Dockerfile for AMD64
+          cat > ./docker/amd64/Dockerfile << 'EOF'
+          FROM alpine:3.19
+          
+          RUN apk add --no-cache libstdc++ libgcc
+          
+          WORKDIR /app
+          
+          COPY ctx /usr/local/bin/ctx
+          
+          RUN chmod +x /usr/local/bin/ctx
+          
+          ENTRYPOINT ["ctx"]
+          EOF
+          
+          # Create Dockerfile for ARM64
+          cat > ./docker/arm64/Dockerfile << 'EOF'
+          FROM alpine:3.19
+          
+          RUN apk add --no-cache libstdc++ libgcc
+          
+          WORKDIR /app
+          
+          COPY ctx /usr/local/bin/ctx
+          
+          RUN chmod +x /usr/local/bin/ctx
+          
+          ENTRYPOINT ["ctx"]
+          EOF
+
+      - name: Extract metadata for Docker Image
+        id: docker-metadata
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}/ctx
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=raw,value=latest,enable=${{ github.event_name == 'release' }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.GHCR_LOGIN }}
+          password: ${{ secrets.GHCR_PASSWORD }}
+
+      - name: Build and push Docker image for AMD64
+        uses: docker/build-push-action@v4
+        with:
+          context: ./docker/amd64
+          push: true
+          tags: ${{ steps.docker-metadata.outputs.tags }}
+          labels: ${{ steps.docker-metadata.outputs.labels }}
+          platforms: linux/amd64
+
+      - name: Build and push Docker image for ARM64
+        uses: docker/build-push-action@v4
+        with:
+          context: ./docker/arm64
+          push: true
+          tags: ${{ steps.docker-metadata.outputs.tags }}
+          labels: ${{ steps.docker-metadata.outputs.labels }}
+          platforms: linux/amd64
