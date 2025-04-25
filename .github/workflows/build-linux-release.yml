@@ -166,7 +166,7 @@ jobs:
         id: docker-metadata
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}/ctx
+          images: ghcr.io/context-hub/ctx
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -196,4 +196,4 @@ jobs:
           push: true
           tags: ${{ steps.docker-metadata.outputs.tags }}
           labels: ${{ steps.docker-metadata.outputs.labels }}
-          platforms: linux/amd64
+          platforms: linux/arm64
