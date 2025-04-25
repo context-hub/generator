@@ -110,13 +110,13 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Download Linux AMD64 binary
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ctx-${{ env.VERSION }}-linux-amd64
           path: ./tmp/amd64
 
       - name: Download Linux ARM64 binary
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ctx-${{ env.VERSION }}-linux-arm64
           path: ./tmp/arm64
