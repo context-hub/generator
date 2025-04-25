@@ -67,6 +67,12 @@ jobs:
           docker cp $container_id:/.output/ctx ./dist/ctx-${{ env.VERSION }}-${{ matrix.platform.os }}-${{ matrix.platform.arch }}
           docker rm $container_id
 
+      - name: 📤 Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ctx-${{ env.VERSION }}-${{ matrix.platform.os }}-${{ matrix.platform.arch }}
+          path: dist/ctx-${{ env.VERSION }}-${{ matrix.platform.os }}-${{ matrix.platform.arch }}
+
       - name: 📤 Upload release assets
         uses: softprops/action-gh-release@v2.2.1
         if: startsWith(github.ref, 'refs/tags/')
