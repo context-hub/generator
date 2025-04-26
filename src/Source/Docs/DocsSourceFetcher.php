@@ -40,7 +40,7 @@ final readonly class DocsSourceFetcher implements SourceFetcherInterface
     public function supports(SourceInterface $source): bool
     {
         $isSupported = $source instanceof DocsSource;
-        $this->logger?->debug('Checking if source is supported', [
+        $this->logger->debug('Checking if source is supported', [
             'sourceType' => $source::class,
             'isSupported' => $isSupported,
         ]);
@@ -51,13 +51,13 @@ final readonly class DocsSourceFetcher implements SourceFetcherInterface
     {
         if (!$source instanceof DocsSource) {
             $errorMessage = 'Source must be an instance of DocsSource';
-            $this->logger?->error($errorMessage, [
+            $this->logger->error($errorMessage, [
                 'sourceType' => $source::class,
             ]);
             throw new \InvalidArgumentException($errorMessage);
         }
 
-        $this->logger?->info('Fetching documentation from Context7', [
+        $this->logger->info('Fetching documentation from Context7', [
             'library' => $source->library,
             'topic' => $source->topic,
             'tokens' => $source->tokens,
@@ -82,9 +82,7 @@ final readonly class DocsSourceFetcher implements SourceFetcherInterface
                 $tokens,
             );
 
-            trap($url);
-
-            $this->logger?->debug('Sending HTTP request to Context7', [
+            $this->logger->debug('Sending HTTP request to Context7', [
                 'url' => $url,
                 'headers' => $this->defaultHeaders,
             ]);
@@ -95,7 +93,7 @@ final readonly class DocsSourceFetcher implements SourceFetcherInterface
             $statusCode = $response->getStatusCode();
 
             if (!$response->isSuccess()) {
-                $this->logger?->warning('Context7 request failed', [
+                $this->logger->warning('Context7 request failed', [
                     'url' => $url,
                     'statusCode' => $statusCode,
                 ]);
@@ -108,7 +106,7 @@ final readonly class DocsSourceFetcher implements SourceFetcherInterface
                 return $builder->build();
             }
 
-            $this->logger?->debug('Context7 request successful', [
+            $this->logger->debug('Context7 request successful', [
                 'url' => $url,
                 'statusCode' => $statusCode,
             ]);
@@ -117,7 +115,7 @@ final readonly class DocsSourceFetcher implements SourceFetcherInterface
             $content = $response->getBody();
             $contentLength = \strlen($content);
 
-            $this->logger?->debug('Received documentation content', [
+            $this->logger->debug('Received documentation content', [
                 'library' => $library,
                 'topic' => $topic,
                 'contentLength' => $contentLength,
@@ -136,7 +134,7 @@ final readonly class DocsSourceFetcher implements SourceFetcherInterface
             // Add the processed content to the builder
             $builder->addText($processedContent);
         } catch (\Throwable $e) {
-            $this->logger?->error('Error retrieving documentation from Context7', [
+            $this->logger->error('Error retrieving documentation from Context7', [
                 'library' => $source->library ?? 'unknown',
                 'topic' => $source->topic ?? 'unknown',
                 'error' => $e->getMessage(),
@@ -152,7 +150,7 @@ final readonly class DocsSourceFetcher implements SourceFetcherInterface
         }
 
         $content = $builder->build();
-        $this->logger?->info('Documentation content fetched successfully', [
+        $this->logger->info('Documentation content fetched successfully', [
             'contentLength' => \strlen($content),
         ]);
 

@@ -15,19 +15,19 @@ use Psr\Log\LoggerInterface;
 /**
  * @implements SourceFetcherInterface<GitlabSource>
  */
+#[LoggerPrefix(prefix: 'gitlab-source')]
 final readonly class GitlabSourceFetcher implements SourceFetcherInterface
 {
     public function __construct(
         private GitlabFinder $finder,
+        private LoggerInterface $logger,
         private ContentBuilderFactory $builderFactory = new ContentBuilderFactory(),
-        #[LoggerPrefix(prefix: 'gitlab-source')]
-        private ?LoggerInterface $logger = null,
     ) {}
 
     public function supports(SourceInterface $source): bool
     {
         $isSupported = $source instanceof GitlabSource;
-        $this->logger?->debug('Checking if source is supported', [
+        $this->logger->debug('Checking if source is supported', [
             'sourceType' => $source::class,
             'isSupported' => $isSupported,
         ]);
@@ -38,13 +38,13 @@ final readonly class GitlabSourceFetcher implements SourceFetcherInterface
     {
         if (!$source instanceof GitlabSource) {
             $errorMessage = 'Source must be an instance of GitlabSource';
-            $this->logger?->error($errorMessage, [
+            $this->logger->error($errorMessage, [
                 'sourceType' => $source::class,
             ]);
             throw new \InvalidArgumentException($errorMessage);
         }
 
-        $this->logger?->info('Fetching GitLab source content', [
+        $this->logger->info('Fetching GitLab source content', [
             'repository' => $source->repository,
             'branch' => $source->branch,
             'hasModifiers' => !empty($source->modifiers),
@@ -52,14 +52,14 @@ final readonly class GitlabSourceFetcher implements SourceFetcherInterface
         ]);
 
         // Parse repository from string
-        $this->logger?->debug('Parsing repository from string', [
+        $this->logger->debug('Parsing repository from string', [
             'repository' => $source->repository,
             'branch' => $source->branch,
         ]);
         $repository = new GitlabRepository($source->repository, $source->branch);
 
         // Create builder
-        $this->logger?->debug('Creating content builder');
+        $this->logger->debug('Creating content builder');
         $builder = $this->builderFactory
             ->create()
             ->addTitle($source->getDescription(), 2);
@@ -76,27 +76,27 @@ final readonly class GitlabSourceFetcher implements SourceFetcherInterface
         );
 
         // Find files using the finder and get the FinderResult
-        $this->logger?->debug('Finding files in repository', [
+        $this->logger->debug('Finding files in repository', [
             'repository' => $repository->getPath(),
             'branch' => $repository->branch,
         ]);
         $finderResult = $this->finder->find($source);
         $fileCount = $finderResult->count();
-        $this->logger?->debug('Files found in repository', [
+        $this->logger->debug('Files found in repository', [
             'fileCount' => $fileCount,
         ]);
 
         // Add tree view if requested
         if ($source->showTreeView) {
-            $this->logger?->debug('Adding tree view to output');
+            $this->logger->debug('Adding tree view to output');
             $builder->addTreeView($finderResult->treeView);
         }
 
         // Fetch and add the content of each file
-        $this->logger?->debug('Processing repository files');
+        $this->logger->debug('Processing repository files');
         foreach ($finderResult->files as $index => $file) {
             $path = $file->getRelativePathname();
-            $this->logger?->debug('Processing file', [
+            $this->logger->debug('Processing file', [
                 'file' => $path,
                 'index' => $index + 1,
                 'total' => $fileCount,
@@ -105,7 +105,7 @@ final readonly class GitlabSourceFetcher implements SourceFetcherInterface
             $fileContent = $modifiersApplier->apply($file->getContents(), $path);
 
             $language = $this->detectLanguage($path);
-            $this->logger?->debug('Adding file to content', [
+            $this->logger->debug('Adding file to content', [
                 'file' => $path,
                 'language' => $language,
                 'contentLength' => \strlen($fileContent),
@@ -120,7 +120,7 @@ final readonly class GitlabSourceFetcher implements SourceFetcherInterface
         }
 
         $content = $builder->build();
-        $this->logger?->info('GitLab source content fetched successfully', [
+        $this->logger->info('GitLab source content fetched successfully', [
             'repository' => $repository->getPath(),
             'branch' => $repository->branch,
             'fileCount' => $fileCount,
@@ -138,7 +138,7 @@ final readonly class GitlabSourceFetcher implements SourceFetcherInterface
     {
         $extension = \pathinfo($filePath, PATHINFO_EXTENSION);
 
-        $this->logger?->debug('Detecting language for file', [
+        $this->logger->debug('Detecting language for file', [
             'file' => $filePath,
             'extension' => $extension,
         ]);
