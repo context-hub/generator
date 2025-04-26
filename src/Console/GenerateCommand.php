@@ -120,7 +120,7 @@ final class GenerateCommand extends BaseCommand
                     $renderer->renderImports($imports);
                 }
 
-                if ($config->getDocuments() === null || $config->getDocuments() === []) {
+                if ($config->getDocuments() === null || $config->getDocuments()->getItems() === []) {
                     if ($this->asJson) {
                         $this->output->writeln(\json_encode([
                             'status' => 'success',

@@ -55,6 +55,7 @@ final class GenerateCommandTest extends ConsoleTestCase
         );
     }
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -62,6 +63,7 @@ final class GenerateCommandTest extends ConsoleTestCase
         $this->outputDir = $this->getFixturesDir('Console/GenerateCommand/.context');
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
         parent::tearDown();
