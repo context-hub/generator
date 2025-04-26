@@ -11,10 +11,12 @@ namespace Butschster\ContextGenerator\Document\Compiler\Error;
  */
 final class ErrorCollection implements \Countable, \IteratorAggregate
 {
-    /**
-     * @var array<TError>
-     */
-    private array $errors = [];
+    public function __construct(
+        /**
+         * @var array<TError>
+         */
+        private array $errors = [],
+    ) {}
 
     /**
      * Add a source error to the collection

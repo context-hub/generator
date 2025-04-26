@@ -140,6 +140,7 @@ final class GenerateCommand extends BaseCommand
                         } else {
                             $this->output->warning('No documents found in configuration.');
                         }
+
                         return Command::SUCCESS;
                     }
 
@@ -149,12 +150,14 @@ final class GenerateCommand extends BaseCommand
                         $this->logger->info(\sprintf('Compiling %s...', $document->description));
 
                         $compiledDocument = $compiler->compile($document);
+
                         if (!$this->asJson) {
                             $renderer->renderCompilationResult($document, $compiledDocument);
                         } else {
                             $result[] = [
                                 'output_path' => $compiledDocument->outputPath,
                                 'context_path' => $compiledDocument->contextPath,
+                                'errors' => \iterator_to_array($compiledDocument->errors->getIterator()),
                             ];
                         }
                     }

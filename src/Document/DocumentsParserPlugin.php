@@ -102,6 +102,7 @@ final readonly class DocumentsParserPlugin implements ConfigParserPluginInterfac
 
                         $document->addSource($this->sources->create($type, $sourceData));
                     } catch (\RuntimeException $e) {
+                        $document->addError($e->getMessage());
                         $this->logger?->error(
                             \sprintf('Failed to create source at index %d: %s', $sourceIndex, $e->getMessage()),
                             [

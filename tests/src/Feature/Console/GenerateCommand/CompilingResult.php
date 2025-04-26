@@ -50,7 +50,6 @@ final readonly class CompilingResult
                 );
 
                 $content = \file_get_contents($contextPath);
-                trap($content);
                 foreach ($contains as $string) {
                     TestCase::assertStringContainsString(
                         $string,
@@ -90,6 +89,30 @@ final readonly class CompilingResult
             $this->result['message'] ?? null,
             'Message should be error',
         );
+
+        return $this;
+    }
+
+    public function assertDocumentError(string $document, array $contains): self
+    {
+        foreach ($this->result['result'] as $documentData) {
+            if ($documentData['context_path'] === $document) {
+                trap($documentData['errors']);
+                foreach ($contains as $string) {
+                    TestCase::assertStringContainsString(
+                        $string,
+                        \implode("\n", $documentData['errors']),
+                        \sprintf(
+                            'Document [%s] does not contain error [%s]',
+                            $documentData['context_path'],
+                            $string,
+                        ),
+                    );
+                }
+
+                return $this;
+            }
+        }
 
         return $this;
     }

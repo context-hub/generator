@@ -56,6 +56,24 @@ final class UrlSourceTest extends ConsoleTestCase
 
     #[Test]
     #[DataProvider('commandsProvider')]
+    public function source_with_missed_urls_parameter(string $command): void
+    {
+        $this
+            ->buildContext(
+                workDir: $this->outputDir,
+                configPath: $this->getFixturesDir('Console/GenerateCommand/UrlSource/invalid.yaml'),
+                command: $command,
+            )
+            ->assertDocumentError(
+                document: 'url-source.md',
+                contains: [
+                    'URL source must have a "urls" array property',
+                ],
+            );
+    }
+
+    #[Test]
+    #[DataProvider('commandsProvider')]
     public function url_source_with_selector_should_extract_content(): void
     {
         // Setup mock response with content that has elements to select
