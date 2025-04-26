@@ -1,0 +1,9 @@
+documents:
+  - description: "Multiple File Patterns Test"
+    outputPath: "multiple-patterns.md"
+    sources:
+      - type: file
+        description: "Multiple File Types"
+        sourcePaths: "./"
+        filePattern: ["*.php", "*.js", "*.txt"]
+        notPath: ["nested"]

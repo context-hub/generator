@@ -1,0 +1,11 @@
+documents:
+  - description: "Content Filter Test"
+    outputPath: "content-filter.md"
+    sources:
+      - type: file
+        description: "Files Filtered by Content"
+        sourcePaths: "./"
+        filePattern: "*.php"
+        contains: "testMethod"
+        notContains: "This is a nested class"
+        notPath: ["nested"]

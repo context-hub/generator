@@ -1,0 +1,8 @@
+documents:
+  - description: "Failed Request Test"
+    outputPath: "failed-request.md"
+    sources:
+      - type: url
+        description: "Failed Request Source"
+        urls:
+          - "https://example.com/not-found"

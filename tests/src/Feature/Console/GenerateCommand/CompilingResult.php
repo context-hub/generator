@@ -41,7 +41,7 @@ final readonly class CompilingResult
         return $this;
     }
 
-    public function assertContextContains(string $document, array $strings): self
+    public function assertContext(string $document, array $contains, array $notContains = []): self
     {
         foreach ($this->result['result'] as $documentData) {
             if ($documentData['context_path'] === $document) {
@@ -50,12 +50,24 @@ final readonly class CompilingResult
                 );
 
                 $content = \file_get_contents($contextPath);
-                foreach ($strings as $string) {
+                foreach ($contains as $string) {
                     TestCase::assertStringContainsString(
                         $string,
                         $content,
                         \sprintf(
                             'Context file [%s] does not contain string [%s]',
+                            $documentData['context_path'],
+                            $string,
+                        ),
+                    );
+                }
+
+                foreach ($notContains as $string) {
+                    TestCase::assertStringNotContainsString(
+                        $string,
+                        $content,
+                        \sprintf(
+                            'Context file [%s] should not contain string [%s]',
                             $documentData['context_path'],
                             $string,
                         ),

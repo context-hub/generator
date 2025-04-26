@@ -1,0 +1,9 @@
+documents:
+  - description: "Path Filter Test"
+    outputPath: "path-filter.md"
+    sources:
+      - type: file
+        description: "Files Filtered by Path"
+        sourcePaths: "./"
+        filePattern: "*.php"
+        path: "nested"

@@ -30,9 +30,9 @@ final class GenerateCommandTest extends ConsoleTestCase
                 command: $command,
             )
             ->assertSuccessfulCompiled()
-            ->assertContextContains(
+            ->assertContext(
                 document: 'context.md',
-                strings: [
+                contains: [
                     '# Simple context document',
                     'Simple context',
                     '<simple>',
@@ -51,18 +51,18 @@ final class GenerateCommandTest extends ConsoleTestCase
                 configPath: $this->getFixturesDir('Console/GenerateCommand/multiple-documents.yaml'),
             )
             ->assertSuccessfulCompiled()
-            ->assertContextContains(
+            ->assertContext(
                 document: 'first.md',
-                strings: [
+                contains: [
                     '# First document',
                     'This is the first document content',
                     '<first>',
                     '</first>',
                 ],
             )
-            ->assertContextContains(
+            ->assertContext(
                 document: 'second.md',
-                strings: [
+                contains: [
                     '# Second document',
                     'This is the second document content',
                     '<second>',
@@ -81,9 +81,9 @@ final class GenerateCommandTest extends ConsoleTestCase
                 configPath: $this->getFixturesDir('Console/GenerateCommand/mixed-sources.yaml'),
             )
             ->assertSuccessfulCompiled()
-            ->assertContextContains(
+            ->assertContext(
                 document: 'mixed.md',
-                strings: [
+                contains: [
                     '# Mixed source types',
                     'This is a text source',
                     '<text_source>',
@@ -119,9 +119,9 @@ final class GenerateCommandTest extends ConsoleTestCase
                 configPath: $this->getFixturesDir('Console/GenerateCommand/config.json'),
             )
             ->assertSuccessfulCompiled()
-            ->assertContextContains(
+            ->assertContext(
                 document: 'json-test.md',
-                strings: [
+                contains: [
                     '# JSON configuration test',
                     'This content comes from a JSON configuration',
                     '<json_content>',
@@ -143,9 +143,9 @@ final class GenerateCommandTest extends ConsoleTestCase
                 inlineJson: $inlineJson,
             )
             ->assertSuccessfulCompiled()
-            ->assertContextContains(
+            ->assertContext(
                 document: 'inline.md',
-                strings: [
+                contains: [
                     '# Inline JSON test',
                     'This content comes from inline JSON',
                     '<inline_content>',
@@ -185,9 +185,9 @@ final class GenerateCommandTest extends ConsoleTestCase
                 configPath: $envConfig,
                 envFile: $envFile,
             )
-            ->assertContextContains(
+            ->assertContext(
                 document: 'env-test.md',
-                strings: [
+                contains: [
                     '# Env variable test',
                     'custom_value',
                     '<env_var>',
@@ -206,9 +206,9 @@ final class GenerateCommandTest extends ConsoleTestCase
                 configPath: $this->getFixturesDir('Console/GenerateCommand/variables.yaml'),
             )
             ->assertSuccessfulCompiled()
-            ->assertContextContains(
+            ->assertContext(
                 document: 'variables.md',
-                strings: [
+                contains: [
                     '# Test Project Documentation',
                     'Version: 1.0.0',
                     'This document demonstrates the use of variables in configuration',
@@ -227,18 +227,18 @@ final class GenerateCommandTest extends ConsoleTestCase
                 workDir: $this->outputDir,
                 configPath: $this->getFixturesDir('Console/GenerateCommand/import-config.yaml'),
             )
-            ->assertContextContains(
+            ->assertContext(
                 document: 'base.md',
-                strings: [
+                contains: [
                     '# Base Configuration',
                     'This content comes from the base configuration',
                     '<base>',
                     '</base>',
                 ],
             )
-            ->assertContextContains(
+            ->assertContext(
                 document: 'import.md',
-                strings: [
+                contains: [
                     '# Imported Configuration',
                     'This document imports another configuration',
                     '<import>',
@@ -272,41 +272,13 @@ final class GenerateCommandTest extends ConsoleTestCase
         string $command = 'generate',
         bool $asJson = true,
     ): CompilingResult {
-        $args = [];
-
-
-        if ($configPath !== null) {
-            $args['--config-file'] = $configPath;
-        }
-
-        if ($inlineJson !== null) {
-            $args['--inline'] = $inlineJson;
-        }
-
-        if ($workDir !== null) {
-            $args['--work-dir'] = $workDir;
-        }
-
-        if ($envFile !== null) {
-            $args['--env'] = $envFile;
-        }
-
-        if ($asJson) {
-            $args['--json'] = true;
-        }
-
-        $output = $this->runCommand(
+        return (new ContextBuilder($this->getConsole()))->build(
+            workDir: $workDir,
+            configPath: $configPath,
+            inlineJson: $inlineJson,
+            envFile: $envFile,
             command: $command,
-            args: $args,
+            asJson: $asJson,
         );
-
-        $output = \trim($output);
-        $data = \json_decode($output, true);
-
-        if (!$data) {
-            throw new \RuntimeException('Failed to decode JSON output: ' . \json_last_error_msg());
-        }
-
-        return new CompilingResult($data);
     }
 }

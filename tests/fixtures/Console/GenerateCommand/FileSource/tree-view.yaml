@@ -1,0 +1,12 @@
+documents:
+  - description: "Tree View File Source Test"
+    outputPath: "tree-view.md"
+    sources:
+      - type: file
+        description: "Files with Tree View"
+        sourcePaths: "./"
+        filePattern: "*.php"
+        treeView:
+          enabled: true
+          showSize: true
+          showLastModified: true

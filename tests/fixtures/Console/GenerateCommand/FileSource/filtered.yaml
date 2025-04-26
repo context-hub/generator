@@ -1,0 +1,10 @@
+documents:
+  - description: "Filtered File Source Test"
+    outputPath: "filtered-files.md"
+    sources:
+      - type: file
+        description: "Filtered PHP Files"
+        sourcePaths: "./"
+        filePattern: "*.php"
+        contains: "testMethod"
+        notPath: ["nested"]

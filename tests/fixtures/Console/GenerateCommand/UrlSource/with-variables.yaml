@@ -1,0 +1,11 @@
+documents:
+  - description: "URL Source with Variables"
+    outputPath: "variables-test.md"
+    sources:
+      - type: url
+        description: "URL Source with Variables"
+        urls:
+          - "https://api.${ENV_NAME}.example.com/data"
+        headers:
+          Authorization: "Bearer ${API_TOKEN}"
+          Accept: "application/json"

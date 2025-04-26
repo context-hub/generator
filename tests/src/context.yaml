@@ -39,12 +39,12 @@ documents:
           - ../../../fixtures/Compiler
         showTreeView: true
 
-  - description: '[tests]  Generate command'
+  - description: '[tests] Generate command'
     outputPath: tests/console/generate.md
     sources:
       - type: file
         sourcePaths:
-          - tests/src/Feature/Console
+          - Feature/Console
           - TestApp.php
           - TestCase.php
         showTreeView: true
