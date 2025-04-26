@@ -12,7 +12,7 @@ documents:
           - ../Fetcher
           - ../DocumentCompilerFactory.php
 
-  - description: Source Implementations - File
+  - description: '[source] File'
     outputPath: sources/file-source.md
     sources:
       - type: file
@@ -20,7 +20,7 @@ documents:
         filePattern: '*.php'
         showTreeView: true
 
-  - description: Source Implementations - GitHub
+  - description: '[source] GitHub'
     outputPath: sources/github-source.md
     sources:
       - type: file
@@ -31,7 +31,7 @@ documents:
         filePattern: '*.php'
         showTreeView: true
 
-  - description: Source Implementations - Gitlab
+  - description: '[source] Gitlab'
     outputPath: sources/gitlab-source.md
     sources:
       - type: file
@@ -42,7 +42,7 @@ documents:
         filePattern: '*.php'
         showTreeView: true
 
-  - description: Source Implementations - URL
+  - description: '[source] URL'
     outputPath: sources/url-source.md
     sources:
       - type: file
@@ -53,7 +53,17 @@ documents:
         filePattern: '*.php'
         showTreeView: true
 
-  - description: Source Implementations - Text
+  - description: '[source] Docs'
+    outputPath: sources/docs-source.md
+    sources:
+      - type: file
+        sourcePaths:
+          - ./Docs
+          - ../Lib/HttpClient/HttpClientInterface.php
+        filePattern: '*.php'
+        showTreeView: true
+
+  - description: '[source] Text'
     outputPath: sources/text-source.md
     sources:
       - type: file
@@ -61,7 +71,7 @@ documents:
         filePattern: '*.php'
         showTreeView: true
 
-  - description: Source Implementations - MCP
+  - description: '[source] MCP'
     outputPath: sources/mcp-source.md
     sources:
       - type: file
@@ -69,7 +79,7 @@ documents:
         filePattern: '*.php'
         showTreeView: true
 
-  - description: Source Implementations - Git Diff
+  - description: '[source] Git Diff'
     outputPath: sources/git-diff-source.md
     sources:
       - type: file
@@ -77,7 +87,7 @@ documents:
         filePattern: '*.php'
         showTreeView: true
 
-  - description: Source Implementations - Composer
+  - description: '[source] Composer'
     outputPath: sources/composer-source.md
     sources:
       - type: file
@@ -85,7 +95,7 @@ documents:
         filePattern: '*.php'
         showTreeView: true
 
-  - description: Source Implementations - Tree
+  - description: '[source] Tree'
     outputPath: sources/tree-source.md
     sources:
       - type: file
