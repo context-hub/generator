@@ -49,6 +49,11 @@ interface DirectoriesInterface
     public function withConfigPath(?string $configPath): self;
 
     /**
+     * Create a new instance with a different output path.
+     */
+    public function withOutputPath(?string $outputPath): self;
+
+    /**
      * Create a new instance with an environment file path.
      */
     public function withEnvFile(?string $envFileName): self;

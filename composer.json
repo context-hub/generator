@@ -45,7 +45,7 @@
   "require-dev": {
     "buggregator/trap": "^1.13",
     "spiral/code-style": "^2.2.2",
-    "phpunit/phpunit": "^10.2",
+    "spiral/testing": "^2.9",
     "rector/rector": "^2.0",
     "vimeo/psalm": "^6.0"
   },

@@ -140,6 +140,27 @@ final readonly class Directories implements DirectoriesInterface
     }
 
     /**
+     * Create a new instance with a different output path.
+     *
+     * @param string|null $outputPath The new output path or null to keep the current one
+     * @return self A new instance with the updated output path
+     */
+    public function withOutputPath(?string $outputPath): self
+    {
+        if ($outputPath === null) {
+            return $this;
+        }
+
+        return new self(
+            rootPath: $this->rootPath,
+            outputPath: $outputPath,
+            configPath: $this->configPath,
+            jsonSchemaPath: $this->jsonSchemaPath,
+            envFilePath: $this->envFilePath,
+        );
+    }
+
+    /**
      * Create a new instance with an environment file path derived from the given filename.
      *
      * @param string|null $envFileName The environment filename or null to keep the current one

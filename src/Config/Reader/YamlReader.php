@@ -29,13 +29,7 @@ final readonly class YamlReader extends AbstractReader
                 );
             }
 
-            $config = Yaml::parse($content);
-
-            if (!\is_array($config)) {
-                throw new ReaderException('YAML configuration must parse to an array');
-            }
-
-            return $config;
+            return (array) Yaml::parse($content);
         } catch (ParseException $e) {
             throw new ReaderException('Invalid YAML in configuration file', previous: $e);
         }

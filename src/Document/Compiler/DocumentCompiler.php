@@ -84,7 +84,7 @@ final readonly class DocumentCompiler
             ]);
         }
 
-        return $compiledDocument;
+        return $compiledDocument->withOutputPath($this->basePath, $outputPath);
     }
 
     /**
