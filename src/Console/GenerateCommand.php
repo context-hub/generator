@@ -98,6 +98,11 @@ final class GenerateCommand extends BaseCommand
                     $renderer->renderImports($imports);
                 }
 
+                if ($config->getDocuments() === null || $config->getDocuments() === []) {
+                    $this->output->writeln('No documents found in configuration.');
+                    return Command::SUCCESS;
+                }
+
                 foreach ($config->getDocuments() as $document) {
                     $this->logger->info(\sprintf('Compiling %s...', $document->description));
 
