@@ -1,0 +1,17 @@
+documents:
+  - description: "Filtered GitLab Source"
+    outputPath: "filtered-gitlab.md"
+    sources:
+      - type: gitlab
+        description: "Filtered GitLab Source"
+        repository: "group/project"
+        sourcePaths: "src"
+        filePattern: "*.php"
+        path: "Controller"
+        notPath:
+          - "Model"
+        branch: "main"
+        showTreeView: true
+        server:
+          url: "https://gitlab.com"
+          token: "your_gitlab_token"

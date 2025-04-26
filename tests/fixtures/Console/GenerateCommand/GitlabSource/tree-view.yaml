@@ -1,0 +1,19 @@
+documents:
+  - description: "GitLab Tree View Test"
+    outputPath: "tree-view-gitlab.md"
+    sources:
+      - type: gitlab
+        description: "GitLab Tree View Test"
+        repository: "group/project"
+        sourcePaths: "src"
+        filePattern: "*.php"
+        branch: "main"
+        showTreeView: true
+        treeView:
+          enabled: true
+          showSize: true
+          showLastModified: true
+          includeFiles: true
+        server:
+          url: "https://gitlab.com"
+          token: "your_gitlab_token"

@@ -64,6 +64,10 @@ final readonly class GitlabSourceFetcher implements SourceFetcherInterface
             ->create()
             ->addTitle($source->getDescription(), 2);
 
+        if (!$source->server) {
+            throw new \RuntimeException('GitLab server is not set');
+        }
+
         // Determine server URL from source or default
         $serverUrl = $source->server->url;
 

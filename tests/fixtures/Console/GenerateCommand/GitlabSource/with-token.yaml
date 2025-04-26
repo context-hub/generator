@@ -1,0 +1,14 @@
+documents:
+  - description: "Private GitLab Repository"
+    outputPath: "private-gitlab.md"
+    sources:
+      - type: gitlab
+        description: "Private GitLab Repository"
+        repository: "group/private-project"
+        sourcePaths: "src"
+        filePattern: "*.php"
+        branch: "main"
+        showTreeView: true
+        server:
+          url: "https://gitlab.com"
+          token: "${GITLAB_TOKEN}"

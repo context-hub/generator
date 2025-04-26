@@ -1,0 +1,16 @@
+documents:
+  - description: "Multiple Paths GitLab Source"
+    outputPath: "multiple-paths-gitlab.md"
+    sources:
+      - type: gitlab
+        description: "Multiple Paths GitLab Source"
+        repository: "group/project"
+        sourcePaths:
+          - "src/Controller"
+          - "tests"
+        filePattern: "*.php"
+        branch: "main"
+        showTreeView: true
+        server:
+          url: "https://gitlab.com"
+          token: "your_gitlab_token"

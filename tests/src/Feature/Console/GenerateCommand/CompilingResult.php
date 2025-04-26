@@ -97,7 +97,6 @@ final readonly class CompilingResult
     {
         foreach ($this->result['result'] as $documentData) {
             if ($documentData['context_path'] === $document) {
-                trap($documentData['errors']);
                 foreach ($contains as $string) {
                     TestCase::assertStringContainsString(
                         $string,

@@ -157,7 +157,7 @@ final class GenerateCommand extends BaseCommand
                             $result[] = [
                                 'output_path' => $compiledDocument->outputPath,
                                 'context_path' => $compiledDocument->contextPath,
-                                'errors' => \iterator_to_array($compiledDocument->errors->getIterator()),
+                                'errors' => $compiledDocument->errors,
                             ];
                         }
                     }

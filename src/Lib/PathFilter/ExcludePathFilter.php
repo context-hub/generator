@@ -53,6 +53,10 @@ final class ExcludePathFilter extends AbstractFilter
      */
     private function matchesPattern(string $string, string $pattern): bool
     {
+        if (\str_contains($string, $pattern)) {
+            return true;
+        }
+
         if (FileHelper::isRegex($pattern)) {
             return (bool) \preg_match($pattern, $string);
         }
