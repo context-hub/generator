@@ -1,0 +1,83 @@
+---
+
+name: 📦 Build Windows binary
+
+on: # yamllint disable-line rule:truthy
+  release:
+    types:
+      - published
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    name: 📦 Build Windows (x64)
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, curl, sockets
+          coverage: none
+
+      - name: Extract version from tag or set dev version
+        id: get_version
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF" == refs/pull/* ]]; then
+            # For pull requests, use "dev" as version
+            VERSION="dev"
+          else
+            # For releases, extract version from tag (remove 'v' prefix if present)
+            VERSION=${GITHUB_REF_NAME#v}
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "{\"version\": \"$VERSION\", \"type\":\"bin\"}" > version.json
+
+      - name: Install Composer dependencies
+        run: composer install --no-dev --prefer-dist --ignore-platform-reqs
+
+      - name: Create build directories
+        run: New-Item -Path ".build\phar", ".build\bin" -ItemType Directory -Force
+
+      - name: Download box tool
+        run: |
+          Invoke-WebRequest -Uri "https://github.com/box-project/box/releases/download/4.6.6/box.phar" -OutFile ".build/bin/box.phar"
+
+      - name: Download SPC for Windows
+        run: |
+          Invoke-WebRequest -Uri "https://dl.static-php.dev/static-php-cli/spc-bin/nightly/spc-windows-x64.exe" -OutFile ".build/bin/spc.exe"
+
+      - name: Download required PHP extensions
+        run: .build/bin/spc.exe download micro --for-extensions=ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl --with-php=8.3 --prefer-pre-built
+
+      #   todo: fix this
+      #      - name: Install UPX for compression
+      #        run: |
+      #          .build/bin/spc.exe install-pkg upx
+
+      - name: Verify environment is ready
+        run: |
+          .build/bin/spc.exe doctor --auto-fix
+
+      - name: Build the self-executable binary
+        run: .build/bin/spc.exe build "ctype,dom,filter,libxml,mbstring,phar,simplexml,sockets,tokenizer,xml,xmlwriter,curl" --build-micro # --with-upx-pack
+
+      - name: Build PHAR file
+        run: |
+          php .build/bin/box.phar compile -v
+
+      - name: Combine micro.sfx with the PHAR
+        run: |
+          New-Item -Path "dist" -ItemType Directory -Force
+          .build\bin\spc.exe micro:combine .build\phar\ctx.phar --output=dist\ctx-${{ env.VERSION }}-windows-amd64.exe
+
+      - name: 📤 Upload release assets
+        uses: softprops/action-gh-release@v2.2.1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          token: "${{ secrets.RELEASE_TOKEN }}"
+          files: |
+            ./dist/ctx-${{ env.VERSION }}-windows-amd64.exe
