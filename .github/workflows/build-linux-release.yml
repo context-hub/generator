@@ -154,7 +154,7 @@ jobs:
           COPY ctx /usr/local/bin/ctx
           RUN chmod +x /usr/local/bin/ctx
           
-          RUN /usr/local/bin/ctx completion  | sudo tee /etc/bash_completion.d/ctx
+          RUN /usr/local/bin/ctx completion  | tee /etc/bash_completion.d/ctx
           
           ENTRYPOINT ["ctx"]
           EOF
