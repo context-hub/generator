@@ -82,7 +82,7 @@ final class McpServerBootloader extends Bootloader
                     'enable' => (bool) $env->get('MCP_CONTEXT_OPERATIONS', !$isCommonProject),
                 ],
                 'docs_tools' => [
-                    'enable' => (bool) $env->get('MCP_DOCS_TOOLS_ENABLED', true),
+                    'enable' => (bool) $env->get('MCP_DOCS_TOOLS_ENABLED', false),
                 ],
                 'prompt_operations' => [
                     'enable' => (bool) $env->get('MCP_PROMPT_OPERATIONS', false),

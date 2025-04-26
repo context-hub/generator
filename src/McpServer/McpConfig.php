@@ -28,7 +28,7 @@ final class McpConfig extends InjectableConfig
             'enable' => true,
         ],
         'docs_tools' => [
-            'enable' => true,
+            'enable' => false,
         ],
         'custom_tools' => [
             'enable' => true,
