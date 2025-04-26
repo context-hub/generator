@@ -685,7 +685,8 @@
             "git_diff",
             "tree",
             "mcp",
-            "composer"
+            "composer",
+            "docs"
           ],
           "description": "Type of content source"
         },
@@ -811,6 +812,18 @@
           },
           "then": {
             "$ref": "#/definitions/treeSource"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "docs"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/docsSource"
           }
         }
       ]
@@ -1344,6 +1357,49 @@
         }
       ],
       "description": "Configuration for rendering diffs"
+    },
+    "docsSource": {
+      "type": "object",
+      "description": "Source for documentation content",
+      "required": [
+        "type",
+        "library",
+        "topic"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "docs"
+          ],
+          "description": "Source type - docs"
+        },
+        "library": {
+          "type": "string",
+          "description": "Library identifier (e.g., \"laravel/docs\")"
+        },
+        "topic": {
+          "type": "string",
+          "description": "Topic to search for within the library"
+        },
+        "tokens": {
+          "type": "integer",
+          "default": 500,
+          "description": "Maximum token count to retrieve"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of the source"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of tags for this source"
+        }
+      },
+      "additionalProperties": false
     },
     "treeSource": {
       "description": "Generates a hierarchical visualization of directory structures",

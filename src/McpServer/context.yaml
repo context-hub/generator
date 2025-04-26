@@ -30,6 +30,7 @@ documents:
       - type: file
         sourcePaths:
           - ./Tool
+          - ./Action/Tools
 
   - description: "MCP Server routing"
     outputPath: "mcp/routing.md"
