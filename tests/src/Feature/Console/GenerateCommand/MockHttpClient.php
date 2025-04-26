@@ -19,12 +19,8 @@ final class MockHttpClient implements HttpClientInterface
     {
         $this->requestHeaders[$url] = $headers;
 
-        if (isset($this->responses[$url])) {
-            return $this->responses[$url];
-        }
-
         // Default response
-        return new HttpResponse(
+        return $this->responses[$url] ?? new HttpResponse(
             statusCode: 200,
             body: "Mock content for {$url}",
             headers: [],
@@ -35,12 +31,8 @@ final class MockHttpClient implements HttpClientInterface
     {
         $this->requestHeaders[$url] = $headers;
 
-        if (isset($this->responses[$url])) {
-            return $this->responses[$url];
-        }
-
         // Default response
-        return new HttpResponse(
+        return $this->responses[$url] ?? new HttpResponse(
             statusCode: 200,
             body: "Mock POST response for {$url}",
             headers: [],

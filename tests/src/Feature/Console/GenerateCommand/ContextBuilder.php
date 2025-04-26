@@ -69,7 +69,7 @@ final readonly class ContextBuilder
     ): string {
         $input = new ArrayInput($args);
         $input->setInteractive(false);
-        $output = $output ?? new BufferedOutput();
+        $output ??= new BufferedOutput();
         /** @psalm-suppress ArgumentTypeCoercion */
         $output->setVerbosity($verbosityLevel ?? $this->defaultVerbosityLevel);
 
