@@ -50,6 +50,7 @@ final readonly class CompilingResult
                 );
 
                 $content = \file_get_contents($contextPath);
+                trap($content);
                 foreach ($contains as $string) {
                     TestCase::assertStringContainsString(
                         $string,

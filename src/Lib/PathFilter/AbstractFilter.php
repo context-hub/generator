@@ -25,9 +25,14 @@ abstract class AbstractFilter implements FilterInterface
         $patterns = \is_array($pattern) ? $pattern : [$pattern];
 
         foreach ($patterns as $p) {
+            if (\str_contains($value, $p)) {
+                return true;
+            }
+
             if (!FileHelper::isRegex($pattern)) {
                 $p = FileHelper::toRegex($p);
             }
+
             if ($this->matchGlob($value, $p)) {
                 return true;
             }

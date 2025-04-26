@@ -1,0 +1,12 @@
+documents:
+  - description: "Private GitHub Repository"
+    outputPath: "private-github.md"
+    sources:
+      - type: github
+        description: "Private GitHub Repository"
+        repository: "owner/private-repo"
+        sourcePaths: "src"
+        branch: "main"
+        filePattern: "*.php"
+        showTreeView: true
+        githubToken: "${GITHUB_TOKEN}"
