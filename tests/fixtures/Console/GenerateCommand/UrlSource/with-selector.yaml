@@ -1,0 +1,9 @@
+documents:
+  - description: "URL Source with Selector"
+    outputPath: "selector-test.md"
+    sources:
+      - type: url
+        description: "URL Source with Selector"
+        urls:
+          - "https://example.com/docs"
+        selector: ".content"

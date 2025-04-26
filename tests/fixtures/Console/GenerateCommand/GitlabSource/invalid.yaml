@@ -1,0 +1,11 @@
+documents:
+  - description: "Basic GitLab Source Test"
+    outputPath: "gitlab-source.md"
+    sources:
+      - type: gitlab
+        description: "Basic GitLab Source Test"
+        repository: "group/project"
+        sourcePaths: "src"
+        filePattern: "*.php"
+        branch: "main"
+        showTreeView: true

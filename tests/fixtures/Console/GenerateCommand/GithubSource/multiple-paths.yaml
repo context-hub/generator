@@ -1,0 +1,13 @@
+documents:
+  - description: "Multiple Paths GitHub Source"
+    outputPath: "multiple-paths-github.md"
+    sources:
+      - type: github
+        description: "Multiple Paths GitHub Source"
+        repository: "owner/repo"
+        sourcePaths:
+          - src/Controller
+          - tests
+        branch: "main"
+        filePattern: "*.php"
+        showTreeView: true

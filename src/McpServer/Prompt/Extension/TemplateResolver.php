@@ -12,6 +12,7 @@ use Butschster\ContextGenerator\McpServer\Prompt\PromptProviderInterface;
 use Mcp\Types\PromptMessage;
 use Mcp\Types\TextContent;
 use Psr\Log\LoggerInterface;
+use Spiral\Core\Container;
 
 /**
  * Resolves templates in the inheritance chain.
@@ -21,7 +22,7 @@ final readonly class TemplateResolver
 {
     public function __construct(
         private PromptProviderInterface $promptProvider,
-        private VariableResolver $variableResolver,
+        private Container $container,
         private ?LoggerInterface $logger = null,
     ) {}
 
@@ -122,7 +123,9 @@ final readonly class TemplateResolver
         $variableProvider = new PromptExtensionVariableProvider($arguments);
 
         // Create a resolver with the variable provider
-        $resolver = $this->variableResolver->with(new VariableReplacementProcessor($variableProvider, $this->logger));
+        $resolver = $this->container
+            ->get(VariableResolver::class)
+            ->with(new VariableReplacementProcessor($variableProvider, $this->logger));
 
         foreach ($messages as $message) {
             \assert($message->content instanceof TextContent);

@@ -1,0 +1,16 @@
+documents:
+  - description: "Custom Server GitLab Test"
+    outputPath: "custom-server-gitlab.md"
+    sources:
+      - type: gitlab
+        description: "Custom Server GitLab Test"
+        repository: "group/project"
+        sourcePaths: "src"
+        filePattern: "*.php"
+        branch: "main"
+        showTreeView: true
+        server:
+          url: "https://custom-gitlab.example.com"
+          token: "${GITLAB_TOKEN}"
+          headers:
+            X-Custom-Header: "custom-value"

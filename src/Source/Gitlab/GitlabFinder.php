@@ -16,7 +16,6 @@ use Butschster\ContextGenerator\Lib\PathFilter\PathFilter;
 use Butschster\ContextGenerator\Lib\TreeBuilder\FileTreeBuilder;
 use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
 use Butschster\ContextGenerator\Source\Fetcher\FilterableSourceInterface;
-use Butschster\ContextGenerator\Source\Gitlab\Config\ServerRegistry;
 
 final class GitlabFinder implements FinderInterface
 {
@@ -29,7 +28,6 @@ final class GitlabFinder implements FinderInterface
 
     public function __construct(
         private readonly GitlabClientInterface $gitlabClient,
-        private readonly ServerRegistry $serverRegistry,
         private readonly VariableResolver $variableResolver = new VariableResolver(),
         private readonly FileTreeBuilder $fileTreeBuilder = new FileTreeBuilder(),
     ) {}

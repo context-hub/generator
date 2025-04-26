@@ -1,7 +1,7 @@
 $schema: 'https://raw.githubusercontent.com/context-hub/generator/refs/heads/main/json-schema.json'
 
 documents:
-  - description: Prompts tests
+  - description: '[tests] Prompts'
     outputPath: tests/prompts.md
     sources:
       - type: file
@@ -12,7 +12,7 @@ documents:
           - TestCase.php
         showTreeView: true
 
-  - description: Tools tests
+  - description: '[tests] Tools'
     outputPath: tests/tools.md
     sources:
       - type: file
@@ -23,7 +23,7 @@ documents:
           - TestCase.php
         showTreeView: true
 
-  - description: Compiler tests
+  - description: '[tests] Compiler'
     outputPath: tests/compiler.md
     sources:
       - type: file
@@ -37,4 +37,19 @@ documents:
       - type: file
         sourcePaths:
           - ../../../fixtures/Compiler
+        showTreeView: true
+
+  - description: '[tests] Generate command'
+    outputPath: tests/console/generate.md
+    sources:
+      - type: file
+        sourcePaths:
+          - Feature/Console
+          - TestApp.php
+          - TestCase.php
+        showTreeView: true
+
+      - type: file
+        sourcePaths:
+          - ../../../fixtures/Console
         showTreeView: true

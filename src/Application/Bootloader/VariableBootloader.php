@@ -24,7 +24,7 @@ final class VariableBootloader extends Bootloader
     public function defineSingletons(): array
     {
         return [
-            ConfigVariableProvider::class => static fn() => new ConfigVariableProvider(),
+            ConfigVariableProvider::class => ConfigVariableProvider::class,
             VariablesParserPlugin::class => VariablesParserPlugin::class,
 
             VariableProviderInterface::class => static function (
@@ -35,9 +35,12 @@ final class VariableBootloader extends Bootloader
                 $envFileName = null;
 
                 if ($dirs->getEnvFilePath() !== null) {
-                    $envFilePath = (string) $dirs->getEnvFilePath();
+                    $envFilePath = (string) ($dirs->getEnvFilePath()->isFile() ?
+                        $dirs->getEnvFilePath()->parent() :
+                        $dirs->getEnvFilePath());
                     $envFileName = $dirs->getEnvFilePath()->name();
                 }
+
                 return new CompositeVariableProvider(
                     $configVariableProvider,
 

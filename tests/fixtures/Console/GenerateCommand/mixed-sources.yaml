@@ -1,0 +1,14 @@
+documents:
+  - description: "Mixed source types"
+    outputPath: "mixed.md"
+    sources:
+      - type: text
+        description: "Text content"
+        content: "This is a text source"
+        tag: "text_source"
+
+      - type: tree
+        description: "Directory structure"
+        sourcePaths:
+          - dir2
+        maxDepth: 1

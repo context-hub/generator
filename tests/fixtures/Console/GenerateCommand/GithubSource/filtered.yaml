@@ -1,0 +1,12 @@
+documents:
+  - description: "Filtered GitHub Source"
+    outputPath: "filtered-github.md"
+    sources:
+      - type: github
+        description: "Filtered GitHub Source"
+        repository: "owner/repo"
+        sourcePaths: "src"
+        branch: "main"
+        filePattern: "*.php"
+        path: "Controller"
+        showTreeView: true

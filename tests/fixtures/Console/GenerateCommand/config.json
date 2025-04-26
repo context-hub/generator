@@ -1,0 +1,16 @@
+{
+  "documents": [
+    {
+      "description": "JSON configuration test",
+      "outputPath": "json-test.md",
+      "sources": [
+        {
+          "type": "text",
+          "description": "JSON content",
+          "content": "This content comes from a JSON configuration",
+          "tag": "json_content"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+documents:
+  - description: "Multiple URLs Test"
+    outputPath: "multiple-urls.md"
+    sources:
+      - type: url
+        description: "Multiple URLs Source"
+        urls:
+          - "https://example.com/page1"
+          - "https://example.com/page2"

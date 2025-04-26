@@ -1,0 +1,18 @@
+import:
+  - path: "tests/fixtures/Console/GenerateCommand/base-config.yaml"
+    description: "Importing base configuration"
+
+variables:
+  imported_title: "Imported Configuration"
+
+documents:
+  - description: "Importing document"
+    outputPath: "import.md"
+    sources:
+      - type: text
+        description: "Import content"
+        content: |
+          # ${imported_title}
+          
+          This document imports another configuration.
+        tag: "import"

@@ -1,0 +1,11 @@
+documents:
+  - description: "URL Source with Headers"
+    outputPath: "headers-test.md"
+    sources:
+      - type: url
+        description: "URL Source with Headers"
+        urls:
+          - "https://api.example.com/data"
+        headers:
+          Authorization: "Bearer test-token"
+          Accept: "application/json"

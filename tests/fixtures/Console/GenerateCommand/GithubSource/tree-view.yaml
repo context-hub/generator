@@ -1,0 +1,11 @@
+documents:
+  - description: "GitHub Tree View Test"
+    outputPath: "tree-view-github.md"
+    sources:
+      - type: github
+        description: "GitHub Tree View Test"
+        repository: "owner/repo"
+        sourcePaths: "src"
+        branch: "main"
+        filePattern: "*.php"
+        showTreeView: true

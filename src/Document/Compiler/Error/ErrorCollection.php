@@ -9,12 +9,14 @@ namespace Butschster\ContextGenerator\Document\Compiler\Error;
  * @template TError of \Stringable|string
  * @implements \IteratorAggregate<TError>
  */
-final class ErrorCollection implements \Countable, \IteratorAggregate
+final class ErrorCollection implements \Countable, \IteratorAggregate, \JsonSerializable
 {
-    /**
-     * @var array<TError>
-     */
-    private array $errors = [];
+    public function __construct(
+        /**
+         * @var array<TError>
+         */
+        private array $errors = [],
+    ) {}
 
     /**
      * Add a source error to the collection
@@ -47,5 +49,13 @@ final class ErrorCollection implements \Countable, \IteratorAggregate
     public function getIterator(): \Traversable
     {
         return new \ArrayIterator($this->errors);
+    }
+
+    public function jsonSerialize(): array
+    {
+        return \array_map(
+            static fn(\Stringable|string $error): string => (string) $error,
+            $this->errors,
+        );
     }
 }

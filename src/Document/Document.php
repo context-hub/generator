@@ -12,6 +12,9 @@ final class Document implements \JsonSerializable
     /** @var array<SourceInterface> */
     private array $sources = [];
 
+    /** @var array<string> */
+    private array $errors = [];
+
     /**
      * @param string $description Human-readable description
      * @param string $outputPath Path where to write the output
@@ -48,6 +51,23 @@ final class Document implements \JsonSerializable
             modifiers: $modifiers,
             tags: $tags,
         );
+    }
+
+    /**
+     * Get all document errors
+     *
+     * @return array<string>
+     */
+    public function getErrors(): array
+    {
+        return \array_values($this->errors);
+    }
+
+    public function addError(string $error): self
+    {
+        $this->errors[] = $error;
+
+        return $this;
     }
 
     /**

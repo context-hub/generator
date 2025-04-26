@@ -1,0 +1,11 @@
+documents:
+  - description: "Basic GitHub Source Test"
+    outputPath: "github-source.md"
+    sources:
+      - type: github
+        description: "Basic GitHub Source"
+        repository: "owner/repo"
+        sourcePaths: "src"
+        branch: "main"
+        filePattern: "*.php"
+        showTreeView: true

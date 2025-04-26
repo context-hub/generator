@@ -50,7 +50,7 @@ final readonly class DocumentCompiler
             'outputPath' => $outputPath,
         ]);
 
-        $errors = new ErrorCollection();
+        $errors = new ErrorCollection($document->getErrors());
         $resultPath = (string) FSPath::create($this->basePath)->join($outputPath);
 
         if (!$document->overwrite && $this->files->exists($resultPath)) {
@@ -84,7 +84,7 @@ final readonly class DocumentCompiler
             ]);
         }
 
-        return $compiledDocument;
+        return $compiledDocument->withOutputPath($this->basePath, $outputPath);
     }
 
     /**

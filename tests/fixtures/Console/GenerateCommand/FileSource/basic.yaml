@@ -1,0 +1,9 @@
+documents:
+  - description: "Basic File Source Test"
+    outputPath: "file-source.md"
+    sources:
+      - type: file
+        description: "Basic PHP Files"
+        sourcePaths: "./"
+        filePattern: "*.php"
+        notPath: ["nested"]

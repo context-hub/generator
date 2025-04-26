@@ -1,0 +1,17 @@
+variables:
+  project_name: "Test Project"
+  version: "1.0.0"
+
+documents:
+  - description: "Variables test document"
+    outputPath: "variables.md"
+    sources:
+      - type: text
+        description: "Variables content"
+        content: |
+          # ${project_name} Documentation
+          
+          Version: ${version}
+          
+          This document demonstrates the use of variables in configuration.
+        tag: "variables"
