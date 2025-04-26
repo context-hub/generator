@@ -134,13 +134,27 @@ jobs:
           cat > ./docker/Dockerfile << 'EOF'
           FROM alpine:3.21
           
-          RUN apk add --no-cache libstdc++ libgcc
+          # Install dependencies
+          RUN apk add --no-cache libstdc++ libgcc bash ncurses
+          
+          # Set up bash as the default shell
+          SHELL ["/bin/bash", "-c"]
+          
+          # Enable color support
+          ENV TERM=xterm-256color
+          ENV COLORTERM=truecolor
+          
+          # Configure bash to use colors
+          RUN echo 'export PS1="\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ "' >> /etc/profile
+          RUN echo 'alias ls="ls --color=auto"' >> /etc/profile
+          RUN echo 'alias grep="grep --color=auto"' >> /etc/profile
           
           WORKDIR /app
           
           COPY ctx /usr/local/bin/ctx
-          
           RUN chmod +x /usr/local/bin/ctx
+          
+          RUN /usr/local/bin/ctx completion  | sudo tee /etc/bash_completion.d/ctx
           
           ENTRYPOINT ["ctx"]
           EOF
