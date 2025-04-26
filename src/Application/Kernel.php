@@ -23,6 +23,7 @@ use Butschster\ContextGenerator\Modifier\PhpDocs\PhpDocsModifierBootloader;
 use Butschster\ContextGenerator\Modifier\PhpSignature\PhpSignatureModifierBootloader;
 use Butschster\ContextGenerator\Modifier\Sanitizer\SanitizerModifierBootloader;
 use Butschster\ContextGenerator\Source\Composer\ComposerSourceBootloader;
+use Butschster\ContextGenerator\Source\Docs\DocsSourceBootloader;
 use Butschster\ContextGenerator\Source\File\FileSourceBootloader;
 use Butschster\ContextGenerator\Source\GitDiff\GitDiffSourceBootloader;
 use Butschster\ContextGenerator\Source\Github\GithubSourceBootloader;
@@ -73,6 +74,7 @@ class Kernel extends AbstractKernel
             GitDiffSourceBootloader::class,
             TreeSourceBootloader::class,
             McpSourceBootloader::class,
+            DocsSourceBootloader::class,
 
             // Modifiers
             PhpContentFilterBootloader::class,
