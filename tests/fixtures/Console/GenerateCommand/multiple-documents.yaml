@@ -1,0 +1,16 @@
+documents:
+  - description: "First document"
+    outputPath: "first.md"
+    sources:
+      - type: text
+        description: "First content"
+        content: "This is the first document content"
+        tag: "first"
+
+  - description: "Second document"
+    outputPath: "second.md"
+    sources:
+      - type: text
+        description: "Second content"
+        content: "This is the second document content"
+        tag: "second"

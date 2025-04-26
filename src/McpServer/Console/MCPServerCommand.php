@@ -81,9 +81,14 @@ final class MCPServerCommand extends BaseCommand
             },
         );
 
-        $container->getBinder('root')->bind(
+        $binder = $container->getBinder('root');
+        $binder->bind(
             HasPrefixLoggerInterface::class,
             $logger,
+        );
+        $binder->bind(
+            DirectoriesInterface::class,
+            $dirs,
         );
 
         $logger->info('Starting MCP server...');

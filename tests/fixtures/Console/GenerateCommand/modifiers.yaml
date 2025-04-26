@@ -1,0 +1,19 @@
+documents:
+  - description: "Text with modifiers"
+    outputPath: "modifiers.md"
+    sources:
+      - type: text
+        description: "Text with modifiers"
+        content: |
+          // Example PHP code
+          public function getUser(int $id): ?User {
+              return $this->repository->find($id);
+          }
+        tag: "code"
+        modifiers:
+          - name: "sanitizer"
+            options:
+              rules:
+                - type: "keyword"
+                  keywords: ["repository"]
+                  replacement: "service"

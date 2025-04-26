@@ -1,7 +1,8 @@
 documents:
-  - description: Simple context document
-    outputPath: context.md
+  - description: "Simple context document"
+    outputPath: "context.md"
     sources:
       - type: text
-        content: Simple context
-        tag: simple
+        description: "Simple context"
+        content: "Simple context"
+        tag: "simple"

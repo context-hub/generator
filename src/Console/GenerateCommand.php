@@ -66,100 +66,112 @@ final class GenerateCommand extends BaseCommand
             ->withOutputPath($this->workDir)
             ->withEnvFile($this->envFileName);
 
+        $container->getBinder('root')->bind(
+            DirectoriesInterface::class,
+            $dirs,
+        );
+
         return $container->runScope(
             bindings: new Scope(
-                name: AppScope::Compiler,
                 bindings: [
                     DirectoriesInterface::class => $dirs,
                 ],
             ),
-            scope: function (
-                DocumentCompiler $compiler,
-                ConfigurationProvider $configProvider,
-            ): int {
-                try {
-                    // Get the appropriate loader based on options provided
-                    if ($this->inlineJson !== null) {
-                        $this->logger->info('Using inline JSON configuration...');
-                        $loader = $configProvider->fromString($this->inlineJson);
-                    } elseif ($this->configPath !== null) {
-                        $this->logger->info(\sprintf('Loading configuration from %s...', $this->configPath));
-                        $loader = $configProvider->fromPath($this->configPath);
-                    } else {
-                        $this->logger->info('Loading configuration from default location...');
-                        $loader = $configProvider->fromDefaultLocation();
-                    }
-                } catch (ConfigLoaderException $e) {
-                    $this->logger->error('Failed to load configuration', [
-                        'error' => $e->getMessage(),
-                    ]);
-
-                    if ($this->asJson) {
-                        $this->output->writeln(\json_encode([
-                            'status' => 'error',
-                            'message' => 'Failed to load configuration',
+            scope: fn(Container $container): int => $container->runScope(
+                bindings: new Scope(
+                    name: AppScope::Compiler,
+                    bindings: [
+                        DirectoriesInterface::class => $dirs,
+                    ],
+                ),
+                scope: function (
+                    DocumentCompiler $compiler,
+                    ConfigurationProvider $configProvider,
+                ): int {
+                    try {
+                        // Get the appropriate loader based on options provided
+                        if ($this->inlineJson !== null) {
+                            $this->logger->info('Using inline JSON configuration...');
+                            $loader = $configProvider->fromString($this->inlineJson);
+                        } elseif ($this->configPath !== null) {
+                            $this->logger->info(\sprintf('Loading configuration from %s...', $this->configPath));
+                            $loader = $configProvider->fromPath($this->configPath);
+                        } else {
+                            $this->logger->info('Loading configuration from default location...');
+                            $loader = $configProvider->fromDefaultLocation();
+                        }
+                    } catch (ConfigLoaderException $e) {
+                        $this->logger->error('Failed to load configuration', [
                             'error' => $e->getMessage(),
-                        ]));
-                    } else {
-                        $this->output->error(\sprintf('Failed to load configuration: %s', $e->getMessage()));
+                        ]);
+
+                        if ($this->asJson) {
+                            $this->output->writeln(\json_encode([
+                                'status' => 'error',
+                                'message' => 'Failed to load configuration',
+                                'error' => $e->getMessage(),
+                            ]));
+                        } else {
+                            $this->output->error(\sprintf('Failed to load configuration: %s', $e->getMessage()));
+                        }
+
+                        return Command::FAILURE;
                     }
 
-                    return Command::FAILURE;
-                }
+                    // Create the renderer for consistent output formatting
+                    $renderer = new GenerateCommandRenderer($this->output);
 
-                // Create the renderer for consistent output formatting
-                $renderer = new GenerateCommandRenderer($this->output);
+                    // Display summary header
+                    $this->output->writeln('');
 
-                // Display summary header
-                $this->output->writeln('');
+                    $config = new ConfigRegistryAccessor($loader->load());
 
-                $config = new ConfigRegistryAccessor($loader->load());
+                    $imports = $config->getImports();
+                    if ($imports !== null) {
+                        $renderer->renderImports($imports);
+                    }
 
-                $imports = $config->getImports();
-                if ($imports !== null) {
-                    $renderer->renderImports($imports);
-                }
+                    if ($config->getDocuments() === null || $config->getDocuments()->getItems() === []) {
+                        if ($this->asJson) {
+                            $this->output->writeln(\json_encode([
+                                'status' => 'success',
+                                'message' => 'No documents found in configuration.',
+                            ]));
+                        } else {
+                            $this->output->warning('No documents found in configuration.');
+                        }
+                        return Command::SUCCESS;
+                    }
 
-                if ($config->getDocuments() === null || $config->getDocuments()->getItems() === []) {
+                    $result = [];
+
+                    foreach ($config->getDocuments() as $document) {
+                        $this->logger->info(\sprintf('Compiling %s...', $document->description));
+
+                        $compiledDocument = $compiler->compile($document);
+                        if (!$this->asJson) {
+                            $renderer->renderCompilationResult($document, $compiledDocument);
+                        } else {
+                            $result[] = [
+                                'output_path' => $compiledDocument->outputPath,
+                                'context_path' => $compiledDocument->contextPath,
+                            ];
+                        }
+                    }
+
                     if ($this->asJson) {
                         $this->output->writeln(\json_encode([
                             'status' => 'success',
-                            'message' => 'No documents found in configuration.',
+                            'message' => 'Documents compiled successfully',
+                            'result' => $result,
                         ]));
                     } else {
-                        $this->output->warning('No documents found in configuration.');
+                        $this->output->writeln('');
                     }
+
                     return Command::SUCCESS;
-                }
-
-                $result = [];
-
-                foreach ($config->getDocuments() as $document) {
-                    $this->logger->info(\sprintf('Compiling %s...', $document->description));
-
-                    $compiledDocument = $compiler->compile($document);
-                    if (!$this->asJson) {
-                        $renderer->renderCompilationResult($document, $compiledDocument);
-                    } else {
-                        $result[] = [
-                            'output_path' => $compiledDocument->outputPath,
-                            'context_path' => $compiledDocument->contextPath,
-                        ];
-                    }
-                }
-
-                if ($this->asJson) {
-                    $this->output->writeln(\json_encode([
-                        'status' => 'success',
-                        'message' => 'Documents compiled successfully',
-                        'result' => $result,
-                    ]));
-                } else {
-                    $this->output->writeln('');
-                }
-
-                return Command::SUCCESS;
-            },
+                },
+            ),
         );
     }
 }

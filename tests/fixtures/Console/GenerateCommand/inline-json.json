@@ -1,0 +1,16 @@
+{
+  "documents": [
+    {
+      "description": "Inline JSON test",
+      "outputPath": "inline.md",
+      "sources": [
+        {
+          "type": "text",
+          "description": "Inline content",
+          "content": "This content comes from inline JSON",
+          "tag": "inline_content"
+        }
+      ]
+    }
+  ]
+}

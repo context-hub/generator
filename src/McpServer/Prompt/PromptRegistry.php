@@ -7,6 +7,7 @@ namespace Butschster\ContextGenerator\McpServer\Prompt;
 use Butschster\ContextGenerator\Config\Registry\RegistryInterface;
 use Butschster\ContextGenerator\McpServer\Prompt\Extension\PromptDefinition;
 use Spiral\Core\Attribute\Singleton;
+use Spiral\Core\Container;
 
 /**
  * Registry for storing prompt configurations.
@@ -20,7 +21,7 @@ final class PromptRegistry implements RegistryInterface, PromptProviderInterface
     private array $prompts = [];
 
     public function __construct(
-        private readonly PromptMessageProcessor $promptMessageProcessor,
+        private readonly Container $container,
     ) {}
 
     public function register(PromptDefinition $prompt): void
@@ -42,7 +43,7 @@ final class PromptRegistry implements RegistryInterface, PromptProviderInterface
             );
         }
 
-        return $this->promptMessageProcessor->process($this->prompts[$name], $arguments);
+        return $this->container->get(PromptMessageProcessor::class)->process($this->prompts[$name], $arguments);
     }
 
     public function has(string $name): bool

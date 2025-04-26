@@ -12,6 +12,7 @@ use Butschster\ContextGenerator\Config\Reader\StringJsonReader;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
 use Psr\Log\LoggerInterface;
+use Spiral\Core\Container;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -24,7 +25,7 @@ final class UrlImportSource extends AbstractImportSource
 
     public function __construct(
         private readonly HttpClientInterface $httpClient,
-        private readonly VariableResolver $variables,
+        private readonly Container $container,
         ?LoggerInterface $logger = null,
     ) {
         parent::__construct($logger);
@@ -61,7 +62,7 @@ final class UrlImportSource extends AbstractImportSource
 
         try {
             $url = $config->url;
-            $headers = $this->variables->resolve($config->headers);
+            $headers = $this->container->get(VariableResolver::class)->resolve($config->headers);
 
             $this->logger->debug('Loading URL import', [
                 'url' => $url,

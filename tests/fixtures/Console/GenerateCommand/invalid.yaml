@@ -1,0 +1,8 @@
+documents:
+  - description: "Invalid configuration"
+    # Missing required outputPath field
+    sources:
+      - type: text
+        description: "Text content"
+        content: "This is a text source"
+        tag: "text_source"
