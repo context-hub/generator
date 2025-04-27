@@ -60,9 +60,7 @@ final class ToolRegistry implements RegistryInterface, ToolProviderInterface, To
 
     public function jsonSerialize(): array
     {
-        return [
-            'tools' => $this->getItems(),
-        ];
+        return $this->getItems();
     }
 
     public function getIterator(): \Traversable

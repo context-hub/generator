@@ -60,6 +60,44 @@ When using the `generate` command with the `--json` flag, it returns a JSON resp
       ]
     }
     // Additional prompts...
+  ],
+  "tools": [
+    {
+      "id": "tool-id",
+      "description": "Tool description",
+      "type": "run|http",
+      "schema": {
+        "properties": {
+          "paramName": {
+            "type": "string|number|boolean",
+            "description": "Parameter description"
+          }
+        },
+        "required": [
+          "paramName"
+        ]
+      },
+      "commands": [
+        {
+          "cmd": "command-name",
+          "args": [
+            "arg1",
+            "arg2"
+          ]
+        }
+      ],
+      "requests": [
+        {
+          "url": "https://api.example.com/endpoint",
+          "method": "GET|POST",
+          "headers": {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer {{TOKEN}}"
+          }
+        }
+      ]
+    }
+    // Additional tools...
   ]
 }
 ```
@@ -85,6 +123,7 @@ The test files should follow these naming conventions:
 - `LocalImportTest.php` - Tests for local imports
 - `UrlImportTest.php` - Tests for URL imports
 - `PromptsTest.php` - Tests for prompts functionality
+- `ToolsTest.php` - Tests for tools functionality
 
 Each test class should extend `Tests\Feature\Console\ConsoleTestCase` to access the common testing functionality.
 
@@ -115,6 +154,7 @@ tests/fixtures/Console/GenerateCommand/GithubSource/
 tests/fixtures/Console/GenerateCommand/GitlabSource/
 tests/fixtures/Console/GenerateCommand/UrlSource/
 tests/fixtures/Console/GenerateCommand/Prompts/
+tests/fixtures/Console/GenerateCommand/Tools/
 ```
 
 ### Creating Fixtures
@@ -205,6 +245,18 @@ $this
 | `assertPromptCount(count)`                                 | Check the number of prompts                      |
 | `assertNoPrompts()`                                        | Check that no prompts were found                 |
 
+### Tool Assertions
+
+| Method                                       | Description                                    |
+|----------------------------------------------|------------------------------------------------|
+| `assertToolExists(id)`                       | Check that a tool with the specified ID exists |
+| `assertTool(id, properties)`                 | Check tool properties                          |
+| `assertToolSchema(id, properties, required)` | Check tool schema structure                    |
+| `assertToolCommands(id, expectedCommands)`   | Check commands in a run-type tool              |
+| `assertToolRequests(id, expectedRequests)`   | Check requests in an http-type tool            |
+| `assertToolCount(count)`                     | Check the number of tools                      |
+| `assertNoTools()`                            | Check that no tools were found                 |
+
 ### Example Prompt Test
 
 ```php
@@ -230,6 +282,65 @@ public function basic_prompts_should_be_compiled(): void
             ],
             ['name'],
         );
+}
+```
+
+### Example Tool Test
+
+```php
+public function basic_tools_should_be_compiled(): void
+{
+    $this
+        ->buildContext(
+            workDir: $this->outputDir,
+            configPath: $this->getFixturesDir('Console/GenerateCommand/Tools/basic.yaml'),
+        )
+        ->assertSuccessfulCompiled()
+        ->assertToolExists('test-command')
+        ->assertTool('test-command', [
+            'type' => 'run',
+            'description' => 'A simple test command',
+        ])
+        ->assertToolSchema('test-command',
+            [
+                'param' => [
+                    'type' => 'string',
+                    'description' => 'Command parameter',
+                ],
+            ],
+            ['param'],
+        )
+        ->assertToolCommands('test-command', [
+            [
+                'cmd' => 'echo',
+                'args' => ['Hello', '{{param}}'],
+            ],
+        ]);
+}
+
+public function http_tools_should_be_compiled(): void
+{
+    $this
+        ->buildContext(
+            workDir: $this->outputDir,
+            configPath: $this->getFixturesDir('Console/GenerateCommand/Tools/http.yaml'),
+        )
+        ->assertSuccessfulCompiled()
+        ->assertToolExists('test-api')
+        ->assertTool('test-api', [
+            'type' => 'http',
+            'description' => 'A simple HTTP API tool',
+        ])
+        ->assertToolRequests('test-api', [
+            [
+                'method' => 'GET',
+                'url' => 'https://api.example.com/data',
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Authorization' => 'Bearer {{token}}',
+                ],
+            ],
+        ]);
 }
 ```
 
@@ -335,3 +446,15 @@ When testing imports:
 4. Test wildcard patterns
 5. Test variable substitution
 6. Test error handling (404, invalid configs)
+
+### Testing Tools
+
+When testing tools:
+
+1. Test basic 'run' type tools with simple commands
+2. Test tools with command arguments and conditional arguments
+3. Test 'http' type tools with different request methods
+4. Test tools with environment variables
+5. Test tools with complex schemas
+6. Test tool error handling (validation errors, execution errors)
+7. Test the interaction between tools and other config sections (like variables)

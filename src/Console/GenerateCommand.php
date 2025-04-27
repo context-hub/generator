@@ -138,6 +138,7 @@ final class GenerateCommand extends BaseCommand
                                 'message' => 'No documents found in configuration.',
                                 'imports' => $imports,
                                 'prompts' => $config->getPrompts(),
+                                'tools' => $config->getTools(),
                             ]));
                         } else {
                             $this->output->warning('No documents found in configuration.');
@@ -171,6 +172,7 @@ final class GenerateCommand extends BaseCommand
                             'result' => $result,
                             'imports' => $imports,
                             'prompts' => $config->getPrompts(),
+                            'tools' => $config->getTools(),
                         ]));
                     } else {
                         $this->output->writeln('');
