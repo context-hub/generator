@@ -63,7 +63,7 @@ final class LocalImportTest extends ConsoleTestCase
                 configPath: $mainConfig,
                 command: $command,
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertImported(path: $this->getRelativePath($baseConfig), type: 'local')
             ->assertContext(
                 document: 'base.md',
@@ -130,7 +130,7 @@ final class LocalImportTest extends ConsoleTestCase
                 configPath: $mainConfig,
                 command: $command,
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertImported(path: $this->getRelativePath($baseConfig), type: 'local')
             ->assertContext(
                 document: 'prefixed/original.md',
@@ -213,7 +213,7 @@ final class LocalImportTest extends ConsoleTestCase
                 configPath: $mainConfig,
                 command: $command,
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertImported(path: $this->getRelativePath($baseConfig), type: 'local')
             ->assertContext(
                 document: 'first.md',
@@ -311,7 +311,7 @@ final class LocalImportTest extends ConsoleTestCase
             command: $command,
         );
 
-        $result->assertSuccessfulCompiled();
+        $result->assertDocumentsCompiled();
 
         // All three documents should be rendered
         $result->assertContext(
@@ -403,7 +403,7 @@ final class LocalImportTest extends ConsoleTestCase
         );
 
         // Processing should continue and not enter an infinite loop
-        $result->assertSuccessfulCompiled();
+        $result->assertDocumentsCompiled();
     }
 
     #[Test]
@@ -467,7 +467,7 @@ final class LocalImportTest extends ConsoleTestCase
                 configPath: $mainConfig,
                 command: $command,
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'wildcard1.md',
                 contains: [
@@ -549,7 +549,7 @@ final class LocalImportTest extends ConsoleTestCase
             command: $command,
         );
 
-        $result->assertSuccessfulCompiled();
+        $result->assertDocumentsCompiled();
 
         // Base document should use base variables
         $result->assertContext(

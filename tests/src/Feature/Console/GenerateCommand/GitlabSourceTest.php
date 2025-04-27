@@ -53,7 +53,7 @@ final class GitlabSourceTest extends ConsoleTestCase
                 configPath: $this->getFixturesDir('Console/GenerateCommand/GitlabSource/basic.yaml'),
                 command: $command,
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'gitlab-source.md',
                 contains: [
@@ -149,7 +149,7 @@ final class GitlabSourceTest extends ConsoleTestCase
                 workDir: $this->outputDir,
                 configPath: $this->getFixturesDir('Console/GenerateCommand/GitlabSource/filtered.yaml'),
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'filtered-gitlab.md',
                 contains: [
@@ -246,7 +246,7 @@ final class GitlabSourceTest extends ConsoleTestCase
                 workDir: $this->outputDir,
                 configPath: $this->getFixturesDir('Console/GenerateCommand/GitlabSource/tree-view.yaml'),
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'tree-view-gitlab.md',
                 contains: [
@@ -302,7 +302,7 @@ final class GitlabSourceTest extends ConsoleTestCase
                 configPath: $this->getFixturesDir('Console/GenerateCommand/GitlabSource/with-token.yaml'),
                 envFile: $envFile,
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'private-gitlab.md',
                 contains: [
@@ -355,7 +355,7 @@ final class GitlabSourceTest extends ConsoleTestCase
                 configPath: $this->getFixturesDir('Console/GenerateCommand/GitlabSource/custom-server.yaml'),
                 envFile: $envFile,
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'custom-server-gitlab.md',
                 contains: [
@@ -437,7 +437,7 @@ final class GitlabSourceTest extends ConsoleTestCase
                 workDir: $this->outputDir,
                 configPath: $this->getFixturesDir('Console/GenerateCommand/GitlabSource/multiple-paths.yaml'),
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'multiple-paths-gitlab.md',
                 contains: [

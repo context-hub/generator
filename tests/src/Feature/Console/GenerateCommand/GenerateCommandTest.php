@@ -29,7 +29,7 @@ final class GenerateCommandTest extends ConsoleTestCase
                 configPath: $this->getFixturesDir('Console/GenerateCommand/simple.yaml'),
                 command: $command,
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'context.md',
                 contains: [
@@ -50,7 +50,7 @@ final class GenerateCommandTest extends ConsoleTestCase
                 workDir: $this->outputDir,
                 configPath: $this->getFixturesDir('Console/GenerateCommand/multiple-documents.yaml'),
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'first.md',
                 contains: [
@@ -80,7 +80,7 @@ final class GenerateCommandTest extends ConsoleTestCase
                 workDir: $this->outputDir,
                 configPath: $this->getFixturesDir('Console/GenerateCommand/mixed-sources.yaml'),
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'mixed.md',
                 contains: [
@@ -118,7 +118,7 @@ final class GenerateCommandTest extends ConsoleTestCase
                 workDir: $this->outputDir,
                 configPath: $this->getFixturesDir('Console/GenerateCommand/config.json'),
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'json-test.md',
                 contains: [
@@ -142,7 +142,7 @@ final class GenerateCommandTest extends ConsoleTestCase
                 configPath: $this->getFixturesDir('Console/GenerateCommand/simple.yaml'), // This should be ignored
                 inlineJson: $inlineJson,
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'inline.md',
                 contains: [
@@ -205,7 +205,7 @@ final class GenerateCommandTest extends ConsoleTestCase
                 workDir: $this->outputDir,
                 configPath: $this->getFixturesDir('Console/GenerateCommand/variables.yaml'),
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'variables.md',
                 contains: [

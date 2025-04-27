@@ -78,7 +78,7 @@ final class UrlImportTest extends ConsoleTestCase
                 configPath: $mainConfig,
                 command: $command,
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'url-imported.md',
                 contains: [
@@ -151,7 +151,7 @@ final class UrlImportTest extends ConsoleTestCase
                 workDir: $this->outputDir,
                 configPath: $mainConfig,
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'api-doc.md',
                 contains: [
@@ -175,7 +175,7 @@ final class UrlImportTest extends ConsoleTestCase
     public function url_import_with_variables_should_resolve_variables(): void
     {
         // Setup mock response
-        $jsonConfig = json_encode([
+        $jsonConfig = \json_encode([
             'documents' => [
                 [
                     'description' => 'Variable Test Document',
@@ -234,7 +234,7 @@ final class UrlImportTest extends ConsoleTestCase
                 configPath: $mainConfig,
                 envFile: $envFile,
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'variable-doc.md',
                 contains: [
@@ -326,7 +326,7 @@ final class UrlImportTest extends ConsoleTestCase
                 workDir: $this->outputDir,
                 configPath: $mainConfig,
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'first.md',
                 contains: [
@@ -400,7 +400,7 @@ final class UrlImportTest extends ConsoleTestCase
                 workDir: $this->outputDir,
                 configPath: $mainConfig,
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'main.md',
                 contains: [
@@ -417,7 +417,7 @@ final class UrlImportTest extends ConsoleTestCase
     public function url_import_with_multiple_urls_should_be_supported(): void
     {
         // Setup mock responses for multiple URLs
-        $jsonConfig1 = json_encode([
+        $jsonConfig1 = \json_encode([
             'documents' => [
                 [
                     'description' => 'First URL Document',
@@ -434,7 +434,7 @@ final class UrlImportTest extends ConsoleTestCase
             ],
         ]);
 
-        $jsonConfig2 = json_encode([
+        $jsonConfig2 = \json_encode([
             'documents' => [
                 [
                     'description' => 'Second URL Document',
@@ -495,7 +495,7 @@ final class UrlImportTest extends ConsoleTestCase
                 workDir: $this->outputDir,
                 configPath: $mainConfig,
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'url1.md',
                 contains: [
@@ -591,7 +591,7 @@ final class UrlImportTest extends ConsoleTestCase
                 workDir: $this->outputDir,
                 configPath: $mainConfig,
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'filtered-prompts.md',
                 contains: [

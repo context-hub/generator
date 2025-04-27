@@ -136,6 +136,8 @@ final class GenerateCommand extends BaseCommand
                             $this->output->writeln(\json_encode([
                                 'status' => 'success',
                                 'message' => 'No documents found in configuration.',
+                                'imports' => $imports,
+                                'prompts' => $config->getPrompts(),
                             ]));
                         } else {
                             $this->output->warning('No documents found in configuration.');
