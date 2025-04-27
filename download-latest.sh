@@ -30,14 +30,16 @@ GITHUB_API="https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/releases"
 # GitHub Release address
 GITHUB_REL="https://github.com/$REPO_OWNER/$REPO_NAME/releases/download"
 
-# Default install directory (will be adjusted for Windows)
-DEFAULT_BIN_DIR="/usr/local/bin"
+# Default install directories will be set based on OS
+DEFAULT_BIN_DIR=""
 
 # Default to empty (meaning get latest version)
 VERSION=""
 
 # Is this Windows?
 IS_WINDOWS=0
+# Is this macOS?
+IS_MACOS=0
 
 # FUNCTIONS
 
@@ -66,6 +68,63 @@ print_error() {
 # Print a warning message
 print_warning() {
   printf " ${YELLOW}[WARNING]${DEFAULT} $1\n"
+}
+
+# Check if ctx is already installed and get its location
+check_existing_installation() {
+  print_header "Checking for existing installation"
+
+  # Get the binary name based on OS
+  if [ "$IS_WINDOWS" -eq 1 ]; then
+    binary_to_find="${PNAME}.exe"
+  else
+    binary_to_find="$PNAME"
+  fi
+
+  # Try to find existing installation
+  if command -v "$PNAME" >/dev/null 2>&1; then
+    existing_path=$(command -v "$PNAME")
+    existing_dir=$(dirname "$existing_path")
+    print_success "Found existing installation at: $existing_path"
+
+    # Set default bin directory to the location of the existing installation
+    DEFAULT_BIN_DIR="$existing_dir"
+
+    # Get current version if possible
+    if "$existing_path" --version >/dev/null 2>&1; then
+      current_version=$("$existing_path" --version | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+' | head -1)
+      if [ -n "$current_version" ]; then
+        print_status "Current version: $current_version"
+      fi
+    fi
+
+    return 0
+  else
+    # Check common directories for the binary
+    for check_dir in /usr/local/bin /usr/bin "$HOME/.local/bin" "$HOME/bin" "$HOME/AppData/Local/bin"; do
+      if [ -f "$check_dir/$binary_to_find" ]; then
+        existing_path="$check_dir/$binary_to_find"
+        existing_dir="$check_dir"
+        print_success "Found existing installation at: $existing_path"
+
+        # Set default bin directory to the location of the existing installation
+        DEFAULT_BIN_DIR="$existing_dir"
+
+        # Get current version if possible
+        if "$existing_path" --version >/dev/null 2>&1; then
+          current_version=$("$existing_path" --version | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+' | head -1)
+          if [ -n "$current_version" ]; then
+            print_status "Current version: $current_version"
+          fi
+        fi
+
+        return 0
+      fi
+    done
+
+    print_status "No existing installation found"
+    return 1
+  fi
 }
 
 # Gets the version either from user input or latest from GitHub
@@ -107,6 +166,17 @@ get_latest() {
 
   if [ -n "$latest" ]; then
     print_success "Latest version found: $latestV"
+
+    # Compare versions if we have a current version
+    if [ -n "$current_version" ] && [ "$latest" = "$current_version" ]; then
+      print_warning "You already have the latest version installed"
+      if ! prompt_for_confirmation "Do you want to reinstall the same version?"; then
+        print_status "Installation cancelled by user."
+        exit 0
+      fi
+    elif [ -n "$current_version" ]; then
+      print_status "Upgrading from version $current_version to $latestV"
+    fi
   fi
 
   return 0
@@ -131,6 +201,7 @@ get_os() {
     # ---
   'Darwin')
     os='darwin'
+    IS_MACOS=1
     ;;
 
     # ---
@@ -138,7 +209,38 @@ get_os() {
     return 1
     ;;
   esac
+
+  # Set default bin directory based on OS
+  set_default_bin_dir
+
   return 0
+}
+
+# Sets the default bin directory based on detected OS
+set_default_bin_dir() {
+  if [ "$IS_WINDOWS" -eq 1 ]; then
+    # For Windows, we'll use AppData\Local\bin or HOME\bin
+    if [ -d "$HOME/AppData/Local/bin" ]; then
+      DEFAULT_BIN_DIR="$HOME/AppData/Local/bin"
+    else
+      DEFAULT_BIN_DIR="$HOME/bin"
+    fi
+  elif [ "$IS_MACOS" -eq 1 ]; then
+    # For macOS, check if user has write access to /usr/local/bin
+    if [ -w "/usr/local/bin" ]; then
+      DEFAULT_BIN_DIR="/usr/local/bin"
+    else
+      # Otherwise use ~/.local/bin for non-sudo installation
+      DEFAULT_BIN_DIR="$HOME/.local/bin"
+    fi
+  else
+    # For Linux and other systems
+    if [ -w "/usr/local/bin" ]; then
+      DEFAULT_BIN_DIR="/usr/local/bin"
+    else
+      DEFAULT_BIN_DIR="$HOME/.local/bin"
+    fi
+  fi
 }
 
 # Gets the architecture by setting the $arch variable.
@@ -193,12 +295,6 @@ detect_windows_dir() {
 }
 
 ensure_bin_dir() {
-  # Handle Windows-specific directories
-  if [ "$IS_WINDOWS" -eq 1 ] && [ "$bin_dir" = "$DEFAULT_BIN_DIR" ]; then
-    detect_windows_dir
-    print_status "Windows detected. Setting installation directory to: $bin_dir"
-  fi
-
   # Create bin directory if it doesn't exist
   if [ ! -d "$bin_dir" ]; then
     print_status "Creating directory $bin_dir..."
@@ -223,6 +319,9 @@ ensure_bin_dir() {
       printf "    ${GREEN}6. Click 'OK' on all dialogs${DEFAULT}\n\n"
       printf "    Or in PowerShell, run:${DEFAULT}\n"
       printf "    ${GREEN}\$env:Path += \";$bin_dir\"${DEFAULT}\n\n"
+    elif [ "$IS_MACOS" -eq 1 ]; then
+      printf "You might want to add the following line to your shell profile (~/.zshrc or ~/.bash_profile):\n"
+      printf "    ${GREEN}export PATH=\"\$PATH:$bin_dir\"${DEFAULT}\n\n"
     else
       printf "You might want to add the following line to your shell profile (.bashrc, .zshrc, etc.):\n"
       printf "    ${GREEN}export PATH=\"\$PATH:$bin_dir\"${DEFAULT}\n\n"
@@ -231,39 +330,6 @@ ensure_bin_dir() {
 }
 
 download_and_install() {
-  # Get the latest version
-  print_header "Checking for updates"
-
-  if ! get_latest; then
-    fetch_release_failure_usage
-    exit 1
-  fi
-
-  if [ "$latest" = '' ]; then
-    fetch_release_failure_usage
-    exit 1
-  fi
-
-  # Fill $os variable.
-  if ! get_os; then
-    not_available_failure_usage
-    exit 1
-  fi
-  # Fill $arch variable.
-  if ! get_arch; then
-    not_available_failure_usage
-    exit 1
-  fi
-
-  # Add .exe extension for Windows
-  binary_name="$PNAME"
-  if [ "$IS_WINDOWS" -eq 1 ]; then
-    binary_name="${PNAME}.exe"
-    release_file="$PNAME-$latest-$os-$arch.exe"
-  else
-    release_file="$PNAME-$latest-$os-$arch"
-  fi
-
   # Download the binary file
   print_header "Downloading the latest version"
   print_status "Preparing download from: $GITHUB_REL/$latestV/$release_file"
@@ -286,7 +352,7 @@ download_and_install() {
   # Use curl with progress bar but suppress most headers
   if ! curl --fail -L "$GITHUB_REL/$latestV/$release_file" -o "$temp_file" \
        --progress-bar --write-out "%{http_code}" | grep -q "^2"; then
-    printf "] ${RED}Failed!${DEFAULT}\n"
+    echo "] ${RED}Failed!${DEFAULT}"
     print_error "Failed to download $GITHUB_REL/$latestV/$release_file"
     rm -f "$temp_file"
     exit 1
@@ -316,22 +382,61 @@ download_and_install() {
   print_success "Successfully replaced the binary file"
   print_success "Successfully installed $latestV to $bin_dir/$binary_name\n"
 
-  printf "     You can now run it using:\n"
+  echo "     You can now run it using:"
   if [ "$IS_WINDOWS" -eq 1 ]; then
-    printf "         ${BOLD}$binary_name${DEFAULT}\n\n"
+    echo "         ${BOLD}$binary_name${DEFAULT}"
   else
-    printf "         ${BOLD}$PNAME${DEFAULT}\n\n"
+    echo "         ${BOLD}$PNAME${DEFAULT}"
   fi
-  printf "     📚 Documentation: https://docs.ctxgithub.com\n"
-  printf "     🚀 Happy AI coding!\n\n"
+  echo "     📚 Documentation: https://docs.ctxgithub.com"
+  echo "     🚀 Happy AI coding!"
+}
+
+# Prompt user for confirmation
+prompt_for_confirmation() {
+  echo "${YELLOW}${DEFAULT} $1 [Y/n] "
+  read -r response
+  case "$response" in
+    [nN])
+      return 1
+      ;;
+    *)
+      return 0
+      ;;
+  esac
+}
+
+# Ask user for installation directory
+prompt_for_directory() {
+  # If we found an existing installation, suggest that directory first
+  if [ -n "$existing_dir" ]; then
+    echo "${YELLOW}${DEFAULT} Install to the same location? [${GREEN}$existing_dir${DEFAULT}]: "
+    read -r user_bin_dir
+    if [ -z "$user_bin_dir" ]; then
+      bin_dir="$existing_dir"
+    else
+      bin_dir="$user_bin_dir"
+    fi
+  else
+    echo "${YELLOW}${DEFAULT} Enter installation directory [${GREEN}$DEFAULT_BIN_DIR${DEFAULT}]: "
+    read -r user_bin_dir
+    if [ -z "$user_bin_dir" ]; then
+      bin_dir="$DEFAULT_BIN_DIR"
+    else
+      bin_dir="$user_bin_dir"
+    fi
+  fi
 }
 
 # Main script execution
 printf "${BOLD}Context Generator Installer${DEFAULT}\n"
 printf "===========================\n\n"
 
+# First detect OS to set appropriate default bin directory
+get_os
+
 # Parse arguments
-bin_dir="$DEFAULT_BIN_DIR"
+bin_dir=""
 while [ $# -gt 0 ]; do
   case "$1" in
     -v=*|--version=*)
@@ -361,16 +466,70 @@ if [ "$IS_WINDOWS" -eq 1 ] && echo "$SHELL" | grep -q "powershell"; then
   print_status "Continuing with this script, but some features might not work as expected."
 fi
 
+# Check for existing installation before asking for directory
+check_existing_installation
+
+# If no bin_dir was specified as argument, ask user
+if [ -z "$bin_dir" ]; then
+  prompt_for_directory
+fi
+
 print_status "Installation directory: $bin_dir"
 if [ -n "$VERSION" ]; then
   print_status "Installing version: $VERSION"
 else
-  print_status "No version specified. Will install the latest version.\n"
-  printf "      ${MUTED}You can specify a different directory by running:${DEFAULT}\n"
-  printf "      ${MUTED}curl -sSL https://raw.githubusercontent.com/context-hub/generator/main/download-latest.sh | sh -s /path/to/bin${DEFAULT}\n"
-  printf "      ${MUTED}Specify a specific version with:${DEFAULT}\n"
-  printf "      ${MUTED}curl -sSL https://raw.githubusercontent.com/context-hub/generator/main/download-latest.sh | sh -s -- --version=v1.2.3 /path/to/bin${DEFAULT}\n\n"
+  print_status "No version specified. Will install the latest version."
 fi
+
+# Get the latest version information before showing summary
+if ! get_latest; then
+  fetch_release_failure_usage
+  exit 1
+fi
+
+if [ "$latest" = '' ]; then
+  fetch_release_failure_usage
+  exit 1
+fi
+
+# Fill $os and $arch variables
+if ! get_os; then
+  not_available_failure_usage
+  exit 1
+fi
+
+if ! get_arch; then
+  not_available_failure_usage
+  exit 1
+fi
+
+# Determine release file name
+if [ "$IS_WINDOWS" -eq 1 ]; then
+  binary_name="${PNAME}.exe"
+  release_file="$PNAME-$latest-$os-$arch.exe"
+else
+  binary_name="$PNAME"
+  release_file="$PNAME-$latest-$os-$arch"
+fi
+
+# Ask for confirmation before proceeding
+printf "\n"
+echo "${BLUE}Summary:${DEFAULT}"
+printf "\n"
+echo " - Install location: ${bin_dir}/${binary_name}"
+echo " - Version: ${latestV}"
+if [ -n "$current_version" ]; then
+  echo " - Current version: ${current_version}"
+fi
+echo " - Download file: ${release_file}"
+echo ""
+
+if ! prompt_for_confirmation "Do you want to proceed with the installation?"; then
+  print_status "Installation cancelled by user."
+  exit 0
+fi
+
+printf "\n"
 
 # Ensure bin directory exists and is in PATH
 ensure_bin_dir
