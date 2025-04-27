@@ -127,7 +127,7 @@ final class GenerateCommand extends BaseCommand
                     $config = new ConfigRegistryAccessor($loader->load());
 
                     $imports = $config->getImports();
-                    if ($imports !== null) {
+                    if ($imports !== null && !$this->asJson) {
                         $renderer->renderImports($imports);
                     }
 
@@ -167,6 +167,8 @@ final class GenerateCommand extends BaseCommand
                             'status' => 'success',
                             'message' => 'Documents compiled successfully',
                             'result' => $result,
+                            'imports' => $imports,
+                            'prompts' => $config->getPrompts(),
                         ]));
                     } else {
                         $this->output->writeln('');

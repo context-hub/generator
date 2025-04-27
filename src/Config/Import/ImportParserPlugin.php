@@ -50,6 +50,14 @@ final readonly class ImportParserPlugin implements ConfigParserPluginInterface
             return $config;
         }
 
+        if (!\is_array($config['import'])) {
+            $this->logger?->warning('Invalid import configuration', [
+                'config' => $config['import'],
+            ]);
+
+            return $config;
+        }
+
         $this->logger?->debug('Processing imports', [
             'rootPath' => $rootPath,
             'importCount' => \count($config['import']),
@@ -61,6 +69,7 @@ final readonly class ImportParserPlugin implements ConfigParserPluginInterface
         foreach ($processedConfig->imports as $import) {
             $this->registry->register($import);
         }
+
         $this->logger?->debug('Imports processed successfully');
 
         return $processedConfig->config;

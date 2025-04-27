@@ -41,6 +41,17 @@ final readonly class CompilingResult
         return $this;
     }
 
+    public function assertMissedContext(string $document): self
+    {
+        foreach ($this->result['result'] as $documentData) {
+            if ($documentData['context_path'] === $document) {
+                TestCase::fail(\sprintf('Context file [%s] found', $document));
+            }
+        }
+
+        return $this;
+    }
+
     public function assertContext(string $document, array $contains, array $notContains = []): self
     {
         foreach ($this->result['result'] as $documentData) {
@@ -77,6 +88,21 @@ final readonly class CompilingResult
                 return $this;
             }
         }
+
+        return $this;
+    }
+
+    public function assertImported(string $path, string $type): self
+    {
+        TestCase::assertEquals('success', $this->result['status'] ?? null, 'Status should be success');
+
+        foreach ($this->result['imports'] ?? [] as $import) {
+            if ($import['path'] === $path && $import['type'] === $type) {
+                return $this;
+            }
+        }
+
+        TestCase::fail(\sprintf('Import [%s] with type [%s] not found', $path, $type));
 
         return $this;
     }
