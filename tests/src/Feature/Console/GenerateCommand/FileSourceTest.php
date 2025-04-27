@@ -29,7 +29,7 @@ final class FileSourceTest extends ConsoleTestCase
                 configPath: $this->getFixturesDir('Console/GenerateCommand/FileSource/basic.yaml'),
                 command: $command,
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'file-source.md',
                 contains: [
@@ -49,7 +49,7 @@ final class FileSourceTest extends ConsoleTestCase
                 workDir: $this->outputDir,
                 configPath: $this->getFixturesDir('Console/GenerateCommand/FileSource/filtered.yaml'),
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'filtered-files.md',
                 contains: [
@@ -75,7 +75,7 @@ final class FileSourceTest extends ConsoleTestCase
                 workDir: $this->outputDir,
                 configPath: $this->getFixturesDir('Console/GenerateCommand/FileSource/tree-view.yaml'),
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'tree-view.md',
                 contains: [
@@ -95,7 +95,7 @@ final class FileSourceTest extends ConsoleTestCase
                 workDir: $this->outputDir,
                 configPath: $this->getFixturesDir('Console/GenerateCommand/FileSource/multiple-patterns.yaml'),
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'multiple-patterns.md',
                 contains: [
@@ -116,7 +116,7 @@ final class FileSourceTest extends ConsoleTestCase
                 workDir: $this->outputDir,
                 configPath: $this->getFixturesDir('Console/GenerateCommand/FileSource/content-filter.yaml'),
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'content-filter.md',
                 contains: [
@@ -136,7 +136,7 @@ final class FileSourceTest extends ConsoleTestCase
                 workDir: $this->outputDir,
                 configPath: $this->getFixturesDir('Console/GenerateCommand/FileSource/path-filter.yaml'),
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'path-filter.md',
                 contains: [

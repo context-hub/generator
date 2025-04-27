@@ -57,6 +57,21 @@ final readonly class PromptConfigFactory
             $tags = $this->parseTags($config['tags']);
         }
 
+        // Validate that prompts have instructions (messages or extensions)
+        // Templates can have empty messages as they may be just structural
+        if ($type === PromptType::Prompt && empty($messages) && empty($extensions)) {
+            throw new PromptParsingException(
+                \sprintf('Prompt "%s" must have either messages or extend a template', $config['id']),
+            );
+        }
+
+        // Templates should have messages to be useful for extension
+        if ($type === PromptType::Template && empty($messages)) {
+            throw new PromptParsingException(
+                \sprintf('Template "%s" must have messages to be extended by prompts', $config['id']),
+            );
+        }
+
         return new PromptDefinition(
             id: $config['id'],
             prompt: new Prompt(
@@ -110,6 +125,10 @@ final readonly class PromptConfigFactory
      */
     private function parseExtensions(array $extensionConfigs): array
     {
+        if (empty($extensionConfigs)) {
+            return [];
+        }
+
         $extensions = [];
 
         foreach ($extensionConfigs as $index => $extensionConfig) {
@@ -185,6 +204,10 @@ final readonly class PromptConfigFactory
      */
     private function parseMessages(array $messagesConfig): array
     {
+        if (empty($messagesConfig)) {
+            return [];
+        }
+
         $messages = [];
 
         foreach ($messagesConfig as $index => $messageConfig) {

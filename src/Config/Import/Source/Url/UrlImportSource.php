@@ -61,7 +61,7 @@ final class UrlImportSource extends AbstractImportSource
         }
 
         try {
-            $url = $config->url;
+            $url = $this->container->get(VariableResolver::class)->resolve($config->url);
             $headers = $this->container->get(VariableResolver::class)->resolve($config->headers);
 
             $this->logger->debug('Loading URL import', [

@@ -86,10 +86,7 @@ final class PromptRegistry implements RegistryInterface, PromptProviderInterface
 
     public function jsonSerialize(): array
     {
-        // Only serialize regular prompts, not templates
-        return [
-            'prompts' => $this->getItems(),
-        ];
+        return $this->getItems();
     }
 
     public function getIterator(): \Traversable

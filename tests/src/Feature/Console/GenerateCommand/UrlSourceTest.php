@@ -42,7 +42,7 @@ final class UrlSourceTest extends ConsoleTestCase
                 configPath: $this->getFixturesDir('Console/GenerateCommand/UrlSource/basic.yaml'),
                 command: $command,
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'url-source.md',
                 contains: [
@@ -91,7 +91,7 @@ final class UrlSourceTest extends ConsoleTestCase
                 workDir: $this->outputDir,
                 configPath: $this->getFixturesDir('Console/GenerateCommand/UrlSource/with-selector.yaml'),
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'selector-test.md',
                 contains: [
@@ -126,7 +126,7 @@ final class UrlSourceTest extends ConsoleTestCase
                 workDir: $this->outputDir,
                 configPath: $this->getFixturesDir('Console/GenerateCommand/UrlSource/with-headers.yaml'),
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'headers-test.md',
                 contains: [
@@ -173,7 +173,7 @@ final class UrlSourceTest extends ConsoleTestCase
                 workDir: $this->outputDir,
                 configPath: $this->getFixturesDir('Console/GenerateCommand/UrlSource/multiple-urls.yaml'),
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'multiple-urls.md',
                 contains: [
@@ -207,7 +207,7 @@ final class UrlSourceTest extends ConsoleTestCase
                 workDir: $this->outputDir,
                 configPath: $this->getFixturesDir('Console/GenerateCommand/UrlSource/failed-request.yaml'),
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'failed-request.md',
                 contains: [
@@ -244,7 +244,7 @@ final class UrlSourceTest extends ConsoleTestCase
                 configPath: $this->getFixturesDir('Console/GenerateCommand/UrlSource/with-variables.yaml'),
                 envFile: $envFile,
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'variables-test.md',
                 contains: [

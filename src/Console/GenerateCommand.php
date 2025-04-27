@@ -127,7 +127,7 @@ final class GenerateCommand extends BaseCommand
                     $config = new ConfigRegistryAccessor($loader->load());
 
                     $imports = $config->getImports();
-                    if ($imports !== null) {
+                    if ($imports !== null && !$this->asJson) {
                         $renderer->renderImports($imports);
                     }
 
@@ -136,6 +136,9 @@ final class GenerateCommand extends BaseCommand
                             $this->output->writeln(\json_encode([
                                 'status' => 'success',
                                 'message' => 'No documents found in configuration.',
+                                'imports' => $imports,
+                                'prompts' => $config->getPrompts(),
+                                'tools' => $config->getTools(),
                             ]));
                         } else {
                             $this->output->warning('No documents found in configuration.');
@@ -167,6 +170,9 @@ final class GenerateCommand extends BaseCommand
                             'status' => 'success',
                             'message' => 'Documents compiled successfully',
                             'result' => $result,
+                            'imports' => $imports,
+                            'prompts' => $config->getPrompts(),
+                            'tools' => $config->getTools(),
                         ]));
                     } else {
                         $this->output->writeln('');

@@ -251,8 +251,7 @@ final readonly class ImportResolver
                 'type' => $sourceConfig->getType(),
                 'error' => $e->getMessage(),
             ]);
-
-            throw $e;
+            // Ignore the error if the import is broken
         } finally {
             // Always end processing to maintain stack integrity
             $this->detector->endProcessing($importId);

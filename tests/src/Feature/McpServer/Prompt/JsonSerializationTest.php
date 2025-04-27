@@ -77,11 +77,9 @@ final class JsonSerializationTest extends FeatureTestCases
 
         $decodedRegistry = \json_decode($serializedRegistry, true);
         $this->assertIsArray($decodedRegistry);
-        $this->assertArrayHasKey('prompts', $decodedRegistry);
 
         // The registry should only serialize regular prompts, not templates
-        $promptsInSerialized = $decodedRegistry['prompts'];
-        foreach ($promptsInSerialized as $prompt) {
+        foreach ($decodedRegistry as $prompt) {
             $this->assertNotEquals('template', $prompt['type'] ?? 'prompt');
         }
     }

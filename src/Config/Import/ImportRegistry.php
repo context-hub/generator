@@ -41,9 +41,7 @@ final class ImportRegistry implements RegistryInterface
 
     public function jsonSerialize(): array
     {
-        return [
-            'imports' => $this->imports,
-        ];
+        return $this->imports;
     }
 
     public function getIterator(): \Traversable

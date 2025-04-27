@@ -52,7 +52,7 @@ final class GithubSourceTest extends ConsoleTestCase
                 configPath: $this->getFixturesDir('Console/GenerateCommand/GithubSource/basic.yaml'),
                 command: $command,
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'github-source.md',
                 contains: [
@@ -131,7 +131,7 @@ final class GithubSourceTest extends ConsoleTestCase
                 workDir: $this->outputDir,
                 configPath: $this->getFixturesDir('Console/GenerateCommand/GithubSource/filtered.yaml'),
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'filtered-github.md',
                 contains: [
@@ -228,7 +228,7 @@ final class GithubSourceTest extends ConsoleTestCase
                 workDir: $this->outputDir,
                 configPath: $this->getFixturesDir('Console/GenerateCommand/GithubSource/tree-view.yaml'),
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'tree-view-github.md',
                 contains: [
@@ -284,7 +284,7 @@ final class GithubSourceTest extends ConsoleTestCase
                 configPath: $this->getFixturesDir('Console/GenerateCommand/GithubSource/with-token.yaml'),
                 envFile: $envFile,
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'private-github.md',
                 contains: [
@@ -362,7 +362,7 @@ final class GithubSourceTest extends ConsoleTestCase
                 workDir: $this->outputDir,
                 configPath: $this->getFixturesDir('Console/GenerateCommand/GithubSource/multiple-paths.yaml'),
             )
-            ->assertSuccessfulCompiled()
+            ->assertDocumentsCompiled()
             ->assertContext(
                 document: 'multiple-paths-github.md',
                 contains: [
