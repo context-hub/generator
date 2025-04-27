@@ -175,7 +175,7 @@ final class UrlImportTest extends ConsoleTestCase
     public function url_import_with_variables_should_resolve_variables(): void
     {
         // Setup mock response
-        $jsonConfig = json_encode([
+        $jsonConfig = \json_encode([
             'documents' => [
                 [
                     'description' => 'Variable Test Document',
@@ -417,7 +417,7 @@ final class UrlImportTest extends ConsoleTestCase
     public function url_import_with_multiple_urls_should_be_supported(): void
     {
         // Setup mock responses for multiple URLs
-        $jsonConfig1 = json_encode([
+        $jsonConfig1 = \json_encode([
             'documents' => [
                 [
                     'description' => 'First URL Document',
@@ -434,7 +434,7 @@ final class UrlImportTest extends ConsoleTestCase
             ],
         ]);
 
-        $jsonConfig2 = json_encode([
+        $jsonConfig2 = \json_encode([
             'documents' => [
                 [
                     'description' => 'Second URL Document',

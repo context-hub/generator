@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Config\Import\Source;
 
-use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
 use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Config\Import\Source\Config\SourceConfigInterface;
 use Butschster\ContextGenerator\Config\Import\Source\Registry\ImportSourceRegistry;
 use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
 use Spiral\Core\Container;
 
 /**
