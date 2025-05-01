@@ -17,6 +17,13 @@ documents:
         sourcePaths:
           - ./Import
 
+  - description: Configuration Exclude
+    outputPath: core/config-exclude.md
+    sources:
+      - type: file
+        sourcePaths:
+          - ./Exclude
+
   - description: Configuration Parser
     outputPath: core/config-parser.md
     sources:

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\File;
 
+use Butschster\ContextGenerator\Config\Exclude\ExcludeRegistryInterface;
 use Butschster\ContextGenerator\Lib\Finder\FinderInterface;
 use Butschster\ContextGenerator\Lib\Finder\FinderResult;
 use Butschster\ContextGenerator\Lib\TreeBuilder\FileTreeBuilder;
@@ -16,6 +17,7 @@ use Symfony\Component\Finder\Finder;
 final readonly class SymfonyFinder implements FinderInterface
 {
     public function __construct(
+        private ExcludeRegistryInterface $excludeRegistry,
         private FileTreeBuilder $fileTreeBuilder = new FileTreeBuilder(),
     ) {}
 
@@ -24,6 +26,7 @@ final readonly class SymfonyFinder implements FinderInterface
      *
      * @param FilterableSourceInterface $source Source configuration with filter criteria
      * @param string $basePath Optional base path to normalize file paths in the tree view
+     * @param array $options Additional options for the finder
      * @return FinderResult The result containing found files and tree view
      */
     public function find(FilterableSourceInterface $source, string $basePath = '', array $options = []): FinderResult
@@ -110,6 +113,8 @@ final readonly class SymfonyFinder implements FinderInterface
             $count = 0;
 
             foreach ($finder as $file) {
+                trap($file);
+
                 $limitedFiles[] = $file;
                 $count++;
 
@@ -124,9 +129,20 @@ final readonly class SymfonyFinder implements FinderInterface
             );
         }
 
-        // No limit, return all files
+        // No limit, filter out excluded files
+        $files = [];
+        foreach ($finder as $file) {
+            // Skip files that would be excluded by path patterns
+            if ($this->shouldExcludeFile($file->getPathname())) {
+                continue;
+            }
+
+            $files[] = $file;
+        }
+
+        // Return filtered files
         return new FinderResult(
-            files: \array_values(\iterator_to_array($finder->getIterator())),
+            files: $files,
             treeView: $treeView,
         );
     }
@@ -136,6 +152,7 @@ final readonly class SymfonyFinder implements FinderInterface
      *
      * @param Finder $finder The Symfony Finder instance with results
      * @param string $basePath Optional base path to normalize file paths
+     * @param array $options Additional options for tree view generation
      * @return string Text representation of the file tree
      */
     private function generateTreeView(Finder $finder, string $basePath, array $options): string
@@ -143,6 +160,11 @@ final readonly class SymfonyFinder implements FinderInterface
         $filePaths = [];
 
         foreach ($finder as $file) {
+            // Skip excluded files in tree view
+            if ($this->shouldExcludeFile($file->getPathname())) {
+                continue;
+            }
+
             $filePaths[] = $file->getRealPath();
         }
 
@@ -151,5 +173,13 @@ final readonly class SymfonyFinder implements FinderInterface
         }
 
         return $this->fileTreeBuilder->buildTree($filePaths, $basePath, $options);
+    }
+
+    /**
+     * Check if a file should be excluded based on global exclusion patterns
+     */
+    private function shouldExcludeFile(string $filePath): bool
+    {
+        return $this->excludeRegistry->shouldExclude($filePath);
     }
 }

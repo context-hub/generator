@@ -1,0 +1,28 @@
+# Example configuration with exclusion patterns
+
+# Global exclusion patterns
+exclude:
+  # File patterns to exclude globally (glob patterns with wildcards)
+  patterns:
+    - "**/.env*"
+    - "**/config/secrets.yaml"
+    - "**/*.pem"
+    - "**/*.key"
+    - "**/id_rsa"
+    - "**/credentials.json"
+  
+  # Paths to exclude globally (exact directories or files)
+  paths:
+    - ".secrets/"
+    - "config/credentials/"
+    - "node_modules"
+    - "vendor"
+
+# Regular configuration continues
+documents:
+  - description: "Project Documentation"
+    outputPath: "docs/project.md"
+    sources:
+      - type: file
+        sourcePaths: 
+          - "src/"

@@ -25,6 +25,7 @@ final class FileSourceBootloader extends Bootloader
                 HasPrefixLoggerInterface $logger,
             ): FileSourceFetcher => $factory->make(FileSourceFetcher::class, [
                 'basePath' => (string) $dirs->getRootPath(),
+                'finder' => $factory->make(SymfonyFinder::class),
             ]),
         ];
     }

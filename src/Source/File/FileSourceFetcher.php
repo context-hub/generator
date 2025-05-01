@@ -21,7 +21,7 @@ final readonly class FileSourceFetcher implements SourceFetcherInterface
 {
     public function __construct(
         private string $basePath,
-        private FinderInterface $finder = new SymfonyFinder(),
+        private FinderInterface $finder,
         private ContentBuilderFactory $builderFactory = new ContentBuilderFactory(),
         #[LoggerPrefix(prefix: 'file-source')]
         private ?LoggerInterface $logger = null,

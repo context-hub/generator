@@ -16,7 +16,7 @@ final readonly class PathMatcher
      */
     public function __construct(private string $pattern)
     {
-        $this->regex = $this->globToRegex($this->pattern);
+        $this->regex = $this->isRegex($this->pattern) ? $this->pattern : $this->globToRegex($this->pattern);
     }
 
     /**
@@ -68,10 +68,9 @@ final readonly class PathMatcher
         $escaping = false;
         $inSquareBrackets = false;
         $inCurlyBraces = false;
-        $regex = '';
 
         // Start at the beginning of the string
-        $regex .= '~^';
+        $regex = '~^';
 
         $length = \strlen($pattern);
         for ($i = 0; $i < $length; $i++) {
@@ -168,5 +167,30 @@ final readonly class PathMatcher
         $regex .= '$~';
 
         return $regex;
+    }
+
+    /**
+     * Checks whether the string is a regex.
+     */
+    private function isRegex(string $str): bool
+    {
+        $availableModifiers = 'imsxuADUn';
+
+        if (preg_match('/^(.{3,}?)[' . $availableModifiers . ']*$/', $str, $m)) {
+            $start = substr($m[1], 0, 1);
+            $end = substr($m[1], -1);
+
+            if ($start === $end) {
+                return !preg_match('/[*?[:alnum:] \\\\]/', $start);
+            }
+
+            foreach ([['{', '}'], ['(', ')'], ['[', ']'], ['<', '>']] as $delimiters) {
+                if ($start === $delimiters[0] && $end === $delimiters[1]) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

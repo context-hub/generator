@@ -1,0 +1,22 @@
+# Test configuration for exclusion patterns
+
+# Global exclusion patterns
+exclude:
+  # File patterns to exclude globally (glob patterns with wildcards)
+  patterns:
+    - "*.js"      # Exclude all JavaScript files
+    - "*.txt"     # Exclude all text files
+  
+  # Paths to exclude globally (exact directories or files)
+  paths:
+    - "nested"       # Exclude the nested directory
+
+documents:
+  - description: "Exclusion Test"
+    outputPath: "exclude-test.md"
+    sources:
+      - type: file
+        description: "Files with Exclusions"
+        sourcePaths: "./"
+        # This would normally include all files, but exclusions should filter them
+        filePattern: [ "*.php", "*.js", "*.txt" ]
