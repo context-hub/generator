@@ -6,6 +6,7 @@ namespace Butschster\ContextGenerator\McpServer;
 
 use Butschster\ContextGenerator\Application\Bootloader\ConsoleBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\HttpClientBootloader;
+use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
 use Butschster\ContextGenerator\McpServer\Action\Prompts\FilesystemOperationsAction;
 use Butschster\ContextGenerator\McpServer\Action\Prompts\GetPromptAction;
 use Butschster\ContextGenerator\McpServer\Action\Prompts\ListPromptsAction;
@@ -43,7 +44,6 @@ use Spiral\Boot\Bootloader\Bootloader;
 use Spiral\Boot\EnvironmentInterface;
 use Spiral\Config\ConfiguratorInterface;
 use Spiral\Core\Attribute\Proxy;
-use Spiral\Core\BinderInterface;
 use Spiral\Core\Config\Proxy as ConfigProxy;
 
 final class McpServerBootloader extends Bootloader
@@ -60,7 +60,6 @@ final class McpServerBootloader extends Bootloader
             McpToolBootloader::class,
             McpPromptBootloader::class,
             McpProjectsBootloader::class,
-
         ];
     }
 
@@ -98,9 +97,9 @@ final class McpServerBootloader extends Bootloader
         );
     }
 
-    public function boot(ConsoleBootloader $bootloader, BinderInterface $binder, McpConfig $config): void
+    public function boot(ConsoleBootloader $console): void
     {
-        $bootloader->addCommand(MCPServerCommand::class);
+        $console->addCommand(MCPServerCommand::class);
     }
 
     #[\Override]
@@ -110,7 +109,10 @@ final class McpServerBootloader extends Bootloader
             ServerRunnerInterface::class => function (
                 McpConfig $config,
                 ServerRunner $factory,
+                ConfigLoaderInterface $loader,
             ) {
+                $loader->load();
+
                 foreach ($this->actions($config) as $action) {
                     $factory->registerAction($action);
                 }
