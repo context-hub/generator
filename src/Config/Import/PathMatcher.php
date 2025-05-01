@@ -176,12 +176,12 @@ final readonly class PathMatcher
     {
         $availableModifiers = 'imsxuADUn';
 
-        if (preg_match('/^(.{3,}?)[' . $availableModifiers . ']*$/', $str, $m)) {
-            $start = substr($m[1], 0, 1);
-            $end = substr($m[1], -1);
+        if (\preg_match('/^(.{3,}?)[' . $availableModifiers . ']*$/', $str, $m)) {
+            $start = \substr($m[1], 0, 1);
+            $end = \substr($m[1], -1);
 
             if ($start === $end) {
-                return !preg_match('/[*?[:alnum:] \\\\]/', $start);
+                return !\preg_match('/[*?[:alnum:] \\\\]/', $start);
             }
 
             foreach ([['{', '}'], ['(', ')'], ['[', ']'], ['<', '>']] as $delimiters) {

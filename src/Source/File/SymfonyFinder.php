@@ -10,6 +10,7 @@ use Butschster\ContextGenerator\Lib\Finder\FinderResult;
 use Butschster\ContextGenerator\Lib\TreeBuilder\FileTreeBuilder;
 use Butschster\ContextGenerator\Source\Fetcher\FilterableSourceInterface;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Finder\SplFileInfo;
 
 /**
  * Implementation of FinderInterface using Symfony's Finder component
@@ -113,8 +114,6 @@ final readonly class SymfonyFinder implements FinderInterface
             $count = 0;
 
             foreach ($finder as $file) {
-                trap($file);
-
                 $limitedFiles[] = $file;
                 $count++;
 
@@ -133,7 +132,7 @@ final readonly class SymfonyFinder implements FinderInterface
         $files = [];
         foreach ($finder as $file) {
             // Skip files that would be excluded by path patterns
-            if ($this->shouldExcludeFile($file->getPathname())) {
+            if ($this->shouldExcludeFile($this->getPath($file, $basePath))) {
                 continue;
             }
 
@@ -161,7 +160,7 @@ final readonly class SymfonyFinder implements FinderInterface
 
         foreach ($finder as $file) {
             // Skip excluded files in tree view
-            if ($this->shouldExcludeFile($file->getPathname())) {
+            if ($this->shouldExcludeFile($this->getPath($file, $basePath))) {
                 continue;
             }
 
@@ -181,5 +180,14 @@ final readonly class SymfonyFinder implements FinderInterface
     private function shouldExcludeFile(string $filePath): bool
     {
         return $this->excludeRegistry->shouldExclude($filePath);
+    }
+
+    private function getPath(SplFileInfo|\SplFileInfo $file, string $basePath)
+    {
+        if ($file instanceof SplFileInfo) {
+            return $file->getRelativePathname();
+        }
+
+        return \ltrim(\str_replace($basePath, '', $file->getRealPath()), '/');
     }
 }

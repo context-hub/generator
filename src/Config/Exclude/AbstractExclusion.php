@@ -25,6 +25,11 @@ abstract readonly class AbstractExclusion implements ExclusionPatternInterface
     }
 
     /**
+     * Abstract method to check if a path matches this pattern
+     */
+    abstract public function matches(string $path): bool;
+
+    /**
      * Normalize a pattern for consistent comparison
      */
     protected function normalizePattern(string $pattern): string
@@ -32,11 +37,6 @@ abstract readonly class AbstractExclusion implements ExclusionPatternInterface
         $pattern = \preg_replace('#^\./#', '', $pattern);
 
         // Remove trailing slash
-        return \rtrim($pattern, '/');
+        return \rtrim((string) $pattern, '/');
     }
-
-    /**
-     * Abstract method to check if a path matches this pattern
-     */
-    abstract public function matches(string $path): bool;
 }

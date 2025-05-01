@@ -6,7 +6,6 @@ namespace Butschster\ContextGenerator\Source\Composer;
 
 use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
-use Butschster\ContextGenerator\Lib\TreeBuilder\FileTreeBuilder;
 use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
 use Butschster\ContextGenerator\Modifier\ModifiersApplierInterface;
 use Butschster\ContextGenerator\Source\Composer\Provider\ComposerProviderInterface;

@@ -36,6 +36,7 @@ final readonly class ExcludeParserPlugin implements ConfigParserPluginInterface
             return null;
         }
 
+        \assert($this->registry instanceof RegistryInterface);
         $excludeConfig = $config['exclude'];
 
         // Parse patterns
