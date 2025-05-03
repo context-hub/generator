@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\Gitlab;
 
+use Butschster\ContextGenerator\Config\Exclude\ExcludeRegistryInterface;
 use Butschster\ContextGenerator\Lib\Finder\FinderInterface;
 use Butschster\ContextGenerator\Lib\Finder\FinderResult;
 use Butschster\ContextGenerator\Lib\GitlabClient\GitlabClientInterface;
@@ -16,6 +17,8 @@ use Butschster\ContextGenerator\Lib\PathFilter\PathFilter;
 use Butschster\ContextGenerator\Lib\TreeBuilder\FileTreeBuilder;
 use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
 use Butschster\ContextGenerator\Source\Fetcher\FilterableSourceInterface;
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
+use Psr\Log\LoggerInterface;
 
 final class GitlabFinder implements FinderInterface
 {
@@ -28,8 +31,11 @@ final class GitlabFinder implements FinderInterface
 
     public function __construct(
         private readonly GitlabClientInterface $gitlabClient,
+        private readonly ExcludeRegistryInterface $excludeRegistry,
         private readonly VariableResolver $variableResolver = new VariableResolver(),
         private readonly FileTreeBuilder $fileTreeBuilder = new FileTreeBuilder(),
+        #[LoggerPrefix(prefix: 'gitlab-finder')]
+        private readonly ?LoggerInterface $logger = null,
     ) {}
 
     public function find(FilterableSourceInterface $source, string $basePath = '', array $options = []): FinderResult
@@ -63,10 +69,14 @@ final class GitlabFinder implements FinderInterface
         $files = [];
         $this->buildResultStructure($filteredItems, $repository, $files);
 
+        // Apply content filters
         $files = (new ContentsFilter(
             contains: $source->contains(),
             notContains: $source->notContains(),
         ))->apply($files);
+
+        // Apply global exclusion registry
+        $files = $this->applyGlobalExclusions($files);
 
         /** @psalm-suppress InvalidArgument */
         $tree = \array_map(static fn(GitlabFileInfo $file): string => $file->getRelativePathname(), $files);
@@ -85,6 +95,25 @@ final class GitlabFinder implements FinderInterface
         }
 
         return $items;
+    }
+
+    /**
+     * Apply global exclusion patterns to filter files
+     */
+    private function applyGlobalExclusions(array $files): array
+    {
+        return \array_filter($files, function (GitlabFileInfo $file): bool {
+            $path = $file->getRelativePathname();
+
+            if ($this->excludeRegistry->shouldExclude($path)) {
+                $this->logger?->debug('File excluded by global exclusion pattern', [
+                    'path' => $path,
+                ]);
+                return false;
+            }
+
+            return true;
+        });
     }
 
     /**

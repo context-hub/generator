@@ -104,7 +104,7 @@ final readonly class CompilingResult
      * @param array $notContains Strings that should NOT be in the document
      * @return self For method chaining
      */
-    public function assertContext(string $document, array $contains, array $notContains = []): self
+    public function assertContext(string $document, array $contains = [], array $notContains = []): self
     {
         foreach ($this->result['result'] as $documentData) {
             if ($documentData['context_path'] === $document) {

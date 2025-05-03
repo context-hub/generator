@@ -6,7 +6,6 @@ namespace Butschster\ContextGenerator\Source\Composer;
 
 use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
-use Butschster\ContextGenerator\Lib\TreeBuilder\FileTreeBuilder;
 use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
 use Butschster\ContextGenerator\Modifier\ModifiersApplierInterface;
 use Butschster\ContextGenerator\Source\Composer\Provider\ComposerProviderInterface;
@@ -28,9 +27,9 @@ final readonly class ComposerSourceFetcher implements SourceFetcherInterface
 
     public function __construct(
         private ComposerProviderInterface $provider,
+        SymfonyFinder $finder,
         private string $basePath = '.',
         private ContentBuilderFactory $builderFactory = new ContentBuilderFactory(),
-        private FileTreeBuilder $treeBuilder = new FileTreeBuilder(),
         private VariableResolver $variableResolver = new VariableResolver(),
         #[LoggerPrefix(prefix: 'composer-source-fetcher')]
         private ?LoggerInterface $logger = null,
@@ -38,7 +37,7 @@ final readonly class ComposerSourceFetcher implements SourceFetcherInterface
         // Create a FileSourceFetcher to handle the actual file fetching
         $this->fileSourceFetcher = new FileSourceFetcher(
             basePath: $this->basePath,
-            finder: new SymfonyFinder($this->treeBuilder),
+            finder: $finder,
             builderFactory: $this->builderFactory,
             logger: $this->logger instanceof LoggerInterface ? $this->logger : new NullLogger(),
         );

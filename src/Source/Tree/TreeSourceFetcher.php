@@ -20,8 +20,8 @@ final readonly class TreeSourceFetcher implements SourceFetcherInterface
 {
     public function __construct(
         private string $basePath,
+        private SymfonyFinder $finder,
         private ContentBuilderFactory $builderFactory = new ContentBuilderFactory(),
-        private SymfonyFinder $finder = new SymfonyFinder(),
         #[LoggerPrefix(prefix: 'tree-source')]
         private ?LoggerInterface $logger = null,
     ) {}

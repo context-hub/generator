@@ -44,6 +44,26 @@
         "$ref": "#/definitions/prompt"
       }
     },
+    "exclude": {
+      "type": "object",
+      "description": "Global exclusion patterns for filtering files from being included in documents",
+      "properties": {
+        "patterns": {
+          "type": "array",
+          "description": "Glob patterns to exclude files globally (e.g., '**/.env*', '**/*.pem')",
+          "items": {
+            "type": "string"
+          }
+        },
+        "paths": {
+          "type": "array",
+          "description": "Specific paths to exclude globally (directories or files)",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "variables": {
       "type": "object",
       "description": "Custom variables to use throughout the configuration",
@@ -705,7 +725,7 @@
           }
         }
       },
-      "allOf": [
+      "anyOf": [
         {
           "if": {
             "properties": {
