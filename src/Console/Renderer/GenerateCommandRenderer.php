@@ -84,7 +84,7 @@ final readonly class GenerateCommandRenderer
             // Render warning line with document info
             $this->output->writeln(
                 \sprintf(
-                    ' <fg=yellow>%s</> %s <fg=yellow>[%s]</><fg=gray>%s</>',
+                    ' <fg=yellow>%s</> <fg=bright-blue;options=bold>%s</> <fg=yellow>[%s]</><fg=gray>%s</>',
                     $this->padRight(self::WARNING_SYMBOL, 1),
                     $description,
                     $outputPath,
@@ -102,7 +102,7 @@ final readonly class GenerateCommandRenderer
             // Render success line with document info
             $this->output->writeln(
                 \sprintf(
-                    ' <fg=green>%s</> %s <fg=cyan>[%s]</><fg=gray>%s</>',
+                    ' <fg=green>%s</> <fg=bright-blue>%s</> <fg=gray;options=bold>[%s]</><fg=gray>%s</>',
                     $this->padRight(self::SUCCESS_SYMBOL, 2),
                     $description,
                     $outputPath,

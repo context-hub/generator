@@ -6,6 +6,7 @@ namespace Butschster\ContextGenerator\McpServer\Projects\Console;
 
 use Butschster\ContextGenerator\Application\FSPath;
 use Butschster\ContextGenerator\Console\BaseCommand;
+use Butschster\ContextGenerator\Console\Renderer\Style;
 use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\McpServer\Projects\ProjectServiceInterface;
 use Spiral\Console\Attribute\Argument;
@@ -69,20 +70,21 @@ final class ProjectCommand extends BaseCommand
 
         // Show current project first
         if ($currentProject !== null) {
-            $this->output->title("Current Project");
-            $this->output->text(\sprintf("Path: %s", $currentProject->path));
+            $this->output->title('Current Project');
+
+            $this->output->writeln(Style::lineWithTitle('Path', $currentProject->path));
 
             if ($currentProject->hasConfigFile()) {
-                $this->output->text(\sprintf("Config File: %s", $currentProject->getConfigFile()));
+                $this->output->writeln(Style::lineWithTitle('Config File', $currentProject->getConfigFile()));
             }
 
             if ($currentProject->hasEnvFile()) {
-                $this->output->text(\sprintf("Env File: %s", $currentProject->getEnvFile()));
+                $this->output->writeln(Style::lineWithTitle('Env File', $currentProject->getEnvFile()));
             }
 
             $aliases = $projectService->getAliasesForPath($currentProject->path);
             if (!empty($aliases)) {
-                $this->output->text(\sprintf("Aliases: %s", \implode(', ', $aliases)));
+                $this->output->writeln(Style::lineWithTitle('Aliases', \implode(', ', $aliases)));
             }
 
             $this->output->newLine();
@@ -91,28 +93,21 @@ final class ProjectCommand extends BaseCommand
         // Build choice list with formatted options
         $choices = [];
         $choiceMap = []; // Maps display strings back to project paths
-        $i = 1;
 
         foreach ($projects as $path => $_) {
+            $isCurrent = $currentProject && $currentProject->path === $path;
             $aliases = $projectService->getAliasesForPath($path);
-            $aliasString = !empty($aliases) ? ' [' . \implode(', ', $aliases) . ']' : '';
-            $isCurrent = ($currentProject && $currentProject->path === $path) ? ' (CURRENT)' : '';
+            $aliasString = !empty($aliases) ? '[' . \implode(', ', $aliases) . ']' : '';
 
             $displayString = \sprintf(
-                "%d) %s%s%s",
-                $i++,
-                $path,
-                $aliasString,
-                $isCurrent,
+                '%s%s',
+                ($isCurrent && $aliasString !== '') ? Style::highlight($aliasString, bold: true) : $aliasString,
+                $isCurrent ? Style::highlight($path, color: 'bright-blue', bold: true) : $path,
             );
 
             $choices[] = $displayString;
             $choiceMap[$displayString] = $path;
         }
-
-        // Add option to cancel
-        $cancelOption = 'Cancel - keep current project';
-        $choices[] = $cancelOption;
 
         // Create the question with all choices
         $helper = $this->getHelper('question');
@@ -125,12 +120,6 @@ final class ProjectCommand extends BaseCommand
         $question->setErrorMessage('Invalid selection.');
 
         $selectedChoice = $helper->ask($this->input, $this->output, $question);
-
-        // Handle cancel option
-        if ($selectedChoice === $cancelOption) {
-            $this->output->info('Operation cancelled. Current project unchanged.');
-            return Command::SUCCESS;
-        }
 
         // Get the actual path from the selection
         $selectedPath = $choiceMap[$selectedChoice];

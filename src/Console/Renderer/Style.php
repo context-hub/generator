@@ -9,6 +9,12 @@ namespace Butschster\ContextGenerator\Console\Renderer;
  */
 final class Style
 {
+    public static function lineWithTitle(string $title, string $text, int $width = 90): string
+    {
+        $dots = \str_repeat('.', $width - \strlen($title) - \strlen($text) - 2);
+        return \sprintf('<fg=yellow;options=bold>%s:</><fg=gray>%s</>%s', $title, $dots, $text);
+    }
+
     /**
      * Create a header styled text
      */
@@ -93,8 +99,8 @@ final class Style
     /**
      * Create highlighted text
      */
-    public static function highlight(string $text): string
+    public static function highlight(string $text, string $color = 'bright-green', bool $bold = false): string
     {
-        return \sprintf('<fg=bright-green>%s</>', $text);
+        return \sprintf('<fg=%s%s>%s</>', $color, $bold ? ';options=bold' : '', $text);
     }
 }

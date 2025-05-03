@@ -46,7 +46,7 @@ final class ProjectListCommand extends BaseCommand
 
         // Add rows to table
         foreach ($projects as $path => $info) {
-            $isCurrent = $currentProject && $currentProject->path === $path ? '✓' : '';
+            $isCurrent = $currentProject && $currentProject->path === $path ? Style::highlight('✓') : '';
 
             $aliasesStr = !empty($pathToAliases[$path])
                 ? \implode(', ', $pathToAliases[$path])
@@ -58,7 +58,7 @@ final class ProjectListCommand extends BaseCommand
                 $info->envFile ?? '',
                 $aliasesStr,
                 $info->addedAt,
-                $isCurrent ? Style::highlight($isCurrent) : '',
+                $isCurrent,
             ]);
         }
 
