@@ -44,12 +44,12 @@ documents:
     sources:
       - type: file
         sourcePaths:
-          - Feature/Console/GenerateCommand/FileSourceTest.php
+          - Feature/Console
           - TestApp.php
           - TestCase.php
         showTreeView: true
 
       - type: file
         sourcePaths:
-          - ../fixtures/Console/GenerateCommand/FileSource
+          - ../fixtures/Console
         showTreeView: true
