@@ -6,6 +6,8 @@ namespace Butschster\ContextGenerator\Console;
 
 use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
 use Butschster\ContextGenerator\Application\Logger\LoggerFactory;
+use Butschster\ContextGenerator\Console\Output\OutputServiceFactory;
+use Butschster\ContextGenerator\Console\Output\OutputServiceInterface;
 use Psr\Log\LoggerInterface;
 use Spiral\Console\Command;
 use Spiral\Core\BinderInterface;
@@ -21,11 +23,16 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 abstract class BaseCommand extends Command
 {
     protected LoggerInterface $logger;
+    protected OutputServiceInterface $outputService;
 
     #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         \assert($output instanceof SymfonyStyle);
+
+
+        // Create the OutputService with all renderers
+        $this->outputService = OutputServiceFactory::createWithRenderers($output);
 
         $this->input = $input;
         $this->output = $output;

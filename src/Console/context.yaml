@@ -1,17 +1,11 @@
 documents:
-  - description: Console Commands
-    outputPath: console/commands.md
-    sources:
-      - type: file
-        sourcePaths: .
-        filePattern: '*Command.php'
-        showTreeView: true
-
   - description: Console Renderers
     outputPath: console/renderers.md
     sources:
       - type: file
-        sourcePaths: ./Renderer
+        sourcePaths: ../../docs/output-service.md
+        filePattern: '*.md'
+      - type: file
+        sourcePaths: ./Output
         filePattern: '*.php'
         showTreeView: true
-

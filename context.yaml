@@ -7,7 +7,6 @@ import:
 documents:
   - description: 'Project structure overview'
     outputPath: project-structure.md
-    overwrite: true
     sources:
       - type: tree
         sourcePaths:
@@ -22,7 +21,15 @@ documents:
         sourcePaths: src
         filePattern:
           - '*Interface.php'
-        showTreeView: true
+
+  - description: Console Commands
+    outputPath: console/commands.md
+    sources:
+      - type: file
+        sourcePaths: src
+        filePattern: '*Command.php'
+        contains:
+          - 'extends BaseCommand'
 
   - description: "Changes in the Project"
     outputPath: "changes.md"
