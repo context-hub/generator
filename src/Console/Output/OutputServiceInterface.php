@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Console\Output;
 
+use Butschster\ContextGenerator\Console\Output\Style\StyleInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -95,4 +96,6 @@ interface OutputServiceInterface
      * Get the underlying output interface
      */
     public function getOutput(): OutputInterface;
+
+    public function getStyle(): StyleInterface;
 }

@@ -42,16 +42,38 @@ final class SchemaCommand extends BaseCommand
         FilesInterface $files,
         DirectoriesInterface $dirs,
     ): int {
+        $startTime = \microtime(true);
+
+        // Display command title
+        $this->outputService->title('JSON Schema Management');
+
+        // Display command options using key-value format
+        $this->outputService->section('Schema Information');
+        $this->outputService->keyValue('Schema URL', JsonSchema::SCHEMA_URL);
+
         $outputPath = (string) $dirs->getRootPath()->join($this->outputPath);
 
-        // Always show the URL where the schema is hosted
-        $this->output->info('JSON schema URL: ' . JsonSchema::SCHEMA_URL);
+        if ($this->download) {
+            $this->outputService->keyValue('Output Path', $outputPath);
+        }
 
-        // If no download requested, exit early
+        // If no download requested, show info and exit early
         if (!$this->download) {
-            $this->output->note('Use --download option to download the schema to your current directory');
+            $this->outputService->info('Schema Download Not Requested');
+
+            // Provide note about available options
+            $this->outputService->note([
+                'Available options:',
+                '- Use --download (-d) to download the schema to the current directory',
+                '- Use --output=PATH (-o) to specify a custom output path',
+            ]);
+
             return Command::SUCCESS;
         }
+
+        // Show downloading status section
+        $this->outputService->section('Downloading Schema');
+        $this->outputService->info('Connecting to schema server...');
 
         // Download and save the schema
         try {
@@ -61,44 +83,102 @@ final class SchemaCommand extends BaseCommand
             ]);
 
             if (!$response->isSuccess()) {
-                $this->output->error(
+                $statusCode = $response->getStatusCode();
+                $statusCodeFormatted = $this->outputService->highlight((string) $statusCode, 'red', true);
+
+                $this->outputService->error(
                     \sprintf(
-                        'Failed to download schema. Server returned status code %d',
-                        $response->getStatusCode(),
+                        'Failed to download schema. Server returned status code %s',
+                        $statusCodeFormatted,
                     ),
                 );
                 return Command::FAILURE;
             }
 
             $schemaContent = $response->getBody();
+            $contentSize = \strlen($schemaContent);
+            $this->outputService->keyValue(
+                'Content Size',
+                $this->outputService->formatCount(\round($contentSize / 1024, 2)) . ' KB',
+            );
 
-            // Validate that the schema is proper JSON
+            // Validate JSON and show schema validation section
+            $this->outputService->section('Validating Schema');
+
             try {
                 // This will throw an exception if the content is not valid JSON
-                $response->getJson();
+                $jsonData = $response->getJson();
+                $schemaProperties = \count((array) $jsonData->properties ?? []);
+
+                $this->outputService->keyValue(
+                    'Schema Version',
+                    $jsonData->{'$schema'} ?? 'Unknown',
+                );
+                $this->outputService->keyValue(
+                    'Root Properties',
+                    $this->outputService->formatCount($schemaProperties),
+                );
+
+                $this->outputService->success('Schema validation successful');
             } catch (HttpException $e) {
-                $this->output->error('Downloaded schema is not valid JSON: ' . $e->getMessage());
+                $this->outputService->error('Downloaded content is not valid JSON: ' . $e->getMessage());
                 return Command::FAILURE;
             }
 
-            // Save schema to file
-            if (!$files->write($this->outputPath, $schemaContent)) {
-                $this->output->error(\sprintf('Failed to write schema to %s', $outputPath));
+            // Save schema to file section
+            $this->outputService->section('Saving Schema');
+
+            try {
+                // Ensure directory exists
+                $directory = \dirname($outputPath);
+                $files->ensureDirectory($directory);
+
+                if (!$files->write($this->outputPath, $schemaContent)) {
+                    $this->outputService->error(\sprintf('Failed to write schema to %s', $outputPath));
+                    return Command::FAILURE;
+                }
+
+                // Status list of completed actions
+                $statusList = [
+                    'Download' => ['status' => 'success', 'message' => 'Complete'],
+                    'Validation' => ['status' => 'success', 'message' => 'JSON is valid'],
+                    'File creation' => ['status' => 'success', 'message' => $outputPath],
+                ];
+
+                $this->outputService->statusList($statusList);
+
+                // Display execution time using SummaryRenderer
+                $elapsedTime = \microtime(true) - $startTime;
+                $summaryRenderer = $this->outputService->getSummaryRenderer();
+                $summaryRenderer->renderTimeSummary($elapsedTime, 'Download time');
+
+                // Show success and usage instructions
+                $this->outputService->success(
+                    \sprintf(
+                        'Schema successfully downloaded to %s',
+                        $this->outputService->highlight($outputPath, 'bright-cyan'),
+                    ),
+                );
+
+                // Provide IDE usage tips
+                $listRenderer = $this->outputService->getListRenderer();
+                $this->outputService->section('IDE Integration');
+
+                $ideUsage = [
+                    'PhpStorm/IntelliJ IDEA' => 'Add the json-schema.json file to your project and associate it with your context.json file',
+                    'VS Code' => 'Add the schema to your settings.json in the "json.schemas" section',
+                    'Other IDEs' => 'Refer to your IDE documentation for JSON schema integration',
+                ];
+
+                $listRenderer->renderDefinitionList($ideUsage);
+            } catch (\Throwable $e) {
+                $this->outputService->error(\sprintf('Failed to save schema: %s', $e->getMessage()));
                 return Command::FAILURE;
             }
-
-            $this->output->success(\sprintf('Schema successfully downloaded to %s', $outputPath));
-
-            // Provide a hint about how to use the schema
-            $this->output->note([
-                'To use this schema in your IDE:',
-                '- For PhpStorm/IntelliJ IDEA: Add the json-schema.json file to your project and associate it with your context.json file',
-                '- For VS Code: Add the schema to your settings.json in the "json.schemas" section',
-            ]);
 
             return Command::SUCCESS;
         } catch (\Throwable $e) {
-            $this->output->error(\sprintf('Error downloading schema: %s', $e->getMessage()));
+            $this->outputService->error(\sprintf('Error downloading schema: %s', $e->getMessage()));
             return Command::FAILURE;
         }
     }

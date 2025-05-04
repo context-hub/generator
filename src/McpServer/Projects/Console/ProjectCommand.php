@@ -29,28 +29,88 @@ final class ProjectCommand extends BaseCommand
 
     public function __invoke(DirectoriesInterface $dirs, ProjectServiceInterface $projectService): int
     {
+        $this->outputService->title('Project Management');
+        
         // If no path provided, show interactive selection or current project
         if ($this->path === null) {
+            $this->outputService->info('No project path specified, entering interactive mode');
             return $this->selectProjectInteractively($projectService);
         }
 
+        // Path specified, display info
+        $this->outputService->section('Project Selection');
+        $this->outputService->keyValue('Requested Path/Alias', $this->path);
+        
         // Handle using an alias as the path
         $resolvedPath = $projectService->resolvePathOrAlias($this->path);
         if ($resolvedPath !== $this->path) {
             $this->logger->info(\sprintf("Resolved alias '%s' to path: %s", $this->path, $resolvedPath));
+            $this->outputService->info(\sprintf(
+                "Resolved alias %s to path: %s",
+                $this->outputService->highlight($this->path, 'bright-cyan'),
+                $this->outputService->highlight($resolvedPath, 'bright-green')
+            ));
             $this->path = $resolvedPath;
         }
 
         // Normalize path to absolute path
         $projectPath = $this->normalizePath($this->path, $dirs);
+        $this->outputService->keyValue('Absolute Path', $projectPath);
 
-        // First, try to switch to this project if it exists
+        // Try to switch to this project if it exists
+        $this->outputService->section('Project Switch');
+        
         if ($projectService->switchToProject($projectPath)) {
-            $this->output->success(\sprintf("Switched to project: %s", $projectPath));
+            $statusRenderer = $this->outputService->getStatusRenderer();
+            $statusRenderer->renderSuccess('Project Switch', 'Successful');
+            
+            // Display project details
+            $project = $projectService->getCurrentProject();
+            if ($project !== null) {
+                $this->outputService->section('Active Project Details');
+                
+                $this->outputService->keyValue('Path', $project->path);
+                
+                if ($project->hasConfigFile()) {
+                    $this->outputService->keyValue('Config File', $project->getConfigFile());
+                }
+                
+                if ($project->hasEnvFile()) {
+                    $this->outputService->keyValue('Env File', $project->getEnvFile());
+                }
+                
+                $aliases = $projectService->getAliasesForPath($project->path);
+                if (!empty($aliases)) {
+                    $this->outputService->keyValue('Aliases', \implode(', ', $aliases));
+                }
+            }
+            
+            $this->outputService->success(\sprintf(
+                "Successfully switched to project: %s",
+                $this->outputService->highlight($projectPath, 'bright-cyan')
+            ));
+            
+            // Add helpful tips
+            $this->outputService->note([
+                'Available commands for this project:',
+                '- Use "ctx generate" to generate context files',
+                '- Use "ctx project:list" to see all registered projects'
+            ]);
+            
             return Command::SUCCESS;
         }
 
-        $this->output->error(\sprintf("Project path does not exist: %s", $projectPath));
+        $this->outputService->error(\sprintf(
+            "Project path does not exist: %s",
+            $this->outputService->highlight($projectPath, 'red')
+        ));
+        
+        // Add helpful information about adding projects
+        $this->outputService->note([
+            'To add a new project:',
+            '- Use "ctx project:add <path>" to register a new project',
+            '- Use "ctx project:list" to see all registered projects'
+        ]);
 
         return Command::FAILURE;
     }
@@ -64,37 +124,64 @@ final class ProjectCommand extends BaseCommand
         $currentProject = $projectService->getCurrentProject();
 
         if (empty($projects)) {
-            $this->output->info("No projects registered. Use 'ctx project <path>' to add a project.");
+            $this->outputService->info("No projects registered.");
+            
+            // Show help for adding projects
+            $this->outputService->section('Getting Started');
+            $listRenderer = $this->outputService->getListRenderer();
+            $listRenderer->renderNumberedList([
+                'Navigate to your project directory',
+                \sprintf('Use %s to add your project', $this->outputService->highlight('ctx project:add .', 'bright-cyan')),
+                'Optionally provide an alias with --name=<alias>'
+            ]);
+            
             return Command::SUCCESS;
         }
 
         // Show current project first
         if ($currentProject !== null) {
-            $this->output->title('Current Project');
-
-            $this->output->writeln(Style::lineWithTitle('Path', $currentProject->path));
-
+            $this->outputService->section('Current Active Project');
+            
+            // Use key-value for project details
+            $this->outputService->keyValue('Path', $currentProject->path);
+            
             if ($currentProject->hasConfigFile()) {
-                $this->output->writeln(Style::lineWithTitle('Config File', $currentProject->getConfigFile()));
+                $this->outputService->keyValue('Config File', $currentProject->getConfigFile());
             }
-
+            
             if ($currentProject->hasEnvFile()) {
-                $this->output->writeln(Style::lineWithTitle('Env File', $currentProject->getEnvFile()));
+                $this->outputService->keyValue('Env File', $currentProject->getEnvFile());
             }
-
+            
             $aliases = $projectService->getAliasesForPath($currentProject->path);
             if (!empty($aliases)) {
-                $this->output->writeln(Style::lineWithTitle('Aliases', \implode(', ', $aliases)));
+                $this->outputService->keyValue('Aliases', \implode(', ', $aliases));
             }
-
-            $this->output->newLine();
         }
 
+        // Project selection section
+        $this->outputService->section('Available Projects');
+        
         // Build choice list with formatted options
         $choices = [];
         $choiceMap = []; // Maps display strings back to project paths
+        
+        // Display available projects as a status list before selection
+        $statusList = [];
+        foreach ($projects as $path => $projectInfo) {
+            $isCurrent = $currentProject && $currentProject->path === $path;
+            $aliases = $projectService->getAliasesForPath($path);
+            $aliasesText = !empty($aliases) ? '[' . \implode(', ', $aliases) . ']' : '';
+            
+            $statusList[$path] = [
+                'status' => $isCurrent ? 'success' : 'info',
+                'message' => $aliasesText . ($isCurrent ? ' (current)' : ''),
+            ];
+        }
+        
+        $this->outputService->statusList($statusList);
 
-        foreach ($projects as $path => $_) {
+        foreach ($projects as $path => $projectInfo) {
             $isCurrent = $currentProject && $currentProject->path === $path;
             $aliases = $projectService->getAliasesForPath($path);
             $aliasString = !empty($aliases) ? '[' . \implode(', ', $aliases) . ']' : '';
@@ -125,13 +212,23 @@ final class ProjectCommand extends BaseCommand
         $selectedPath = $choiceMap[$selectedChoice];
 
         // Switch to the selected project
+        $this->outputService->section('Switching Project');
+        
         if ($projectService->switchToProject($selectedPath)) {
-            $this->output->success(\sprintf("Switched to project: %s", $selectedPath));
+            // Display status and success message
+            $statusRenderer = $this->outputService->getStatusRenderer();
+            $statusRenderer->renderSuccess('Project Switch', 'Successful');
+            
+            $this->outputService->success(\sprintf(
+                "Successfully switched to project: %s",
+                $this->outputService->highlight($selectedPath, 'bright-cyan')
+            ));
+            
             return Command::SUCCESS;
         }
 
         // This should not happen as we're selecting from existing projects
-        $this->output->error('Failed to switch to selected project.');
+        $this->outputService->error('Failed to switch to selected project.');
         return Command::FAILURE;
     }
 

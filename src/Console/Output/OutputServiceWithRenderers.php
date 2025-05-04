@@ -8,6 +8,7 @@ use Butschster\ContextGenerator\Console\Output\Renderers\ListRenderer;
 use Butschster\ContextGenerator\Console\Output\Renderers\StatusRenderer;
 use Butschster\ContextGenerator\Console\Output\Renderers\SummaryRenderer;
 use Butschster\ContextGenerator\Console\Output\Renderers\TableRenderer;
+use Butschster\ContextGenerator\Console\Output\Style\StyleInterface;
 use Symfony\Component\Console\Formatter\OutputFormatterInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -135,5 +136,10 @@ final readonly class OutputServiceWithRenderers implements OutputServiceInterfac
     public function getSummaryRenderer(): SummaryRenderer
     {
         return $this->summaryRenderer;
+    }
+
+    public function getStyle(): StyleInterface
+    {
+        return $this->outputService->getStyle();
     }
 }

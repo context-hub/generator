@@ -8,7 +8,6 @@ use Butschster\ContextGenerator\Application\AppScope;
 use Butschster\ContextGenerator\Config\ConfigurationProvider;
 use Butschster\ContextGenerator\Config\Exception\ConfigLoaderException;
 use Butschster\ContextGenerator\Console\BaseCommand;
-use Butschster\ContextGenerator\Console\Renderer\Style;
 use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\McpServer\Prompt\Extension\PromptDefinition;
 use Butschster\ContextGenerator\McpServer\Prompt\Filter\FilterStrategy;
@@ -22,10 +21,6 @@ use Spiral\Core\Container;
 use Spiral\Core\Scope;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Helper\Table;
-use Symfony\Component\Console\Helper\TableCell;
-use Symfony\Component\Console\Helper\TableCellStyle;
-use Symfony\Component\Console\Helper\TableSeparator;
 
 #[AsCommand(
     name: 'prompts:list',
@@ -71,6 +66,55 @@ final class ListPromptsCommand extends BaseCommand
 
     public function __invoke(Container $container, DirectoriesInterface $dirs): int
     {
+        // Display command title
+        $this->outputService->title('Available Prompts');
+        
+        // Display filter criteria if any are set
+        if (!empty($this->tags) || !empty($this->excludeTags) || !empty($this->promptIds)) {
+            $this->outputService->section('Active Filters');
+            
+            if (!empty($this->promptIds)) {
+                $this->outputService->keyValue(
+                    'Prompt IDs', 
+                    \implode(', ', \array_map(
+                        fn($id) => $this->outputService->highlight($id, 'bright-cyan'),
+                        $this->promptIds
+                    ))
+                );
+            }
+            
+            if (!empty($this->tags)) {
+                $this->outputService->keyValue(
+                    'Include Tags', 
+                    \implode(', ', \array_map(
+                        fn($tag) => $this->outputService->highlight($tag, 'bright-green'),
+                        $this->tags
+                    ))
+                );
+            }
+            
+            if (!empty($this->excludeTags)) {
+                $this->outputService->keyValue(
+                    'Exclude Tags', 
+                    \implode(', ', \array_map(
+                        fn($tag) => $this->outputService->highlight($tag, 'red'),
+                        $this->excludeTags
+                    ))
+                );
+            }
+        }
+        
+        // Configuration section
+        $this->outputService->section('Configuration');
+        $configSource = $this->configPath !== null ? 
+            $this->configPath : 
+            'Default location';
+        $this->outputService->keyValue('Config Source', $configSource);
+        
+        if ($this->detailed) {
+            $this->outputService->info('Detailed mode is enabled, showing argument information');
+        }
+
         return $container->runScope(
             bindings: new Scope(
                 name: AppScope::Compiler,
@@ -85,6 +129,8 @@ final class ListPromptsCommand extends BaseCommand
             ) {
                 try {
                     // Get the appropriate loader based on options provided
+                    $this->outputService->info('Loading configuration...');
+                    
                     if ($this->configPath !== null) {
                         $this->logger->info(\sprintf('Loading configuration from %s...', $this->configPath));
                         $loader = $configProvider->fromPath($this->configPath);
@@ -97,22 +143,36 @@ final class ListPromptsCommand extends BaseCommand
                         'error' => $e->getMessage(),
                     ]);
 
-                    $this->output->error(\sprintf('Failed to load configuration: %s', $e->getMessage()));
+                    $this->outputService->error('Failed to load configuration: ' . $e->getMessage());
+                    
+                    // Add helpful tips for configuration issues
+                    $this->outputService->note([
+                        'Possible solutions:',
+                        '- Check if the configuration file exists and is accessible',
+                        '- Ensure the configuration file contains valid YAML or JSON',
+                        '- Use --config-file to specify a different configuration file'
+                    ]);
 
                     return Command::FAILURE;
                 }
 
                 // Load configuration to make sure all prompts are properly registered
                 $loader->load();
+                $this->outputService->success('Configuration loaded successfully');
 
                 // Get all prompts
                 $prompts = $promptProvider->all();
+                $totalPrompts = \count($prompts);
+                $this->outputService->keyValue('Total Prompts Found', 
+                    $this->outputService->formatCount($totalPrompts));
 
                 // Create filter based on command options
                 $filter = $this->createFilter($filterFactory);
 
                 // Apply filter if needed
                 if ($filter !== null) {
+                    $this->outputService->info('Applying filters to prompts...');
+                    
                     $filteredPrompts = [];
                     foreach ($prompts as $id => $promptDef) {
                         $promptConfig = [
@@ -125,15 +185,28 @@ final class ListPromptsCommand extends BaseCommand
                         }
                     }
                     $prompts = $filteredPrompts;
+                    
+                    $filteredCount = \count($prompts);
+                    $this->outputService->keyValue('Prompts After Filtering', 
+                        $this->outputService->formatCount($filteredCount));
                 }
 
                 if (empty($prompts)) {
-                    $this->output->warning('No prompts found matching the specified criteria.');
+                    $this->outputService->warning('No prompts found matching the specified criteria.');
+                    
+                    // Show helpful information about available tags
+                    $this->outputService->note([
+                        'Troubleshooting:',
+                        '- Try removing some filters or using different tags',
+                        '- Check your configuration file for properly defined prompts',
+                        '- Use the command without filters to see all available prompts'
+                    ]);
+                    
                     return Command::SUCCESS;
                 }
 
-                // Display prompts based on the selected format
-                return $this->displayAsTable($prompts);
+                // Display prompts using table renderer
+                return $this->displayPrompts($prompts);
             },
         );
     }
@@ -164,39 +237,45 @@ final class ListPromptsCommand extends BaseCommand
             }
         }
 
-        return $filterFactory->createFromConfig($filterConfig);
+        return !empty($filterConfig) ? $filterFactory->createFromConfig($filterConfig) : null;
     }
 
     /**
-     * Displays prompts as a table.
+     * Displays prompts using the TableRenderer.
      * @param array<PromptDefinition> $prompts
      */
-    private function displayAsTable(array $prompts): int
+    private function displayPrompts(array $prompts): int
     {
-        $title = 'Available Prompts';
-        $this->output->title($title);
-
-        $table = new Table($this->output);
-
+        $this->outputService->section('Prompt List');
+        
+        // Use TableRenderer for better styled output
+        $tableRenderer = $this->outputService->getTableRenderer();
+        
         if ($this->detailed) {
-            $table->setHeaders(['ID', 'Type', 'Description', 'Tags', 'Arguments']);
+            $headers = ['ID', 'Type', 'Description', 'Tags', 'Arguments'];
         } else {
-            $table->setHeaders(['ID', 'Type', 'Description', 'Tags']);
+            $headers = ['ID', 'Type', 'Description', 'Tags'];
         }
-
+        
+        // Create styled headers
+        $styledHeaders = $tableRenderer->createStyledHeaderRow($headers);
+        
+        // Build rows with proper styling
+        $rows = [];
         foreach ($prompts as $promptDef) {
             $row = [
-                new TableCell($promptDef->id, ['style' => new TableCellStyle(['fg' => 'cyan'])]),
-                new TableCell(
+                $tableRenderer->createPropertyCell($promptDef->id),
+                $tableRenderer->createStyledCell(
                     $promptDef->type->value,
-                    [
-                        'style' => new TableCellStyle(
-                            ['fg' => $promptDef->type === PromptType::Prompt ? 'green' : 'blue'],
-                        ),
-                    ],
+                    $promptDef->type === PromptType::Prompt ? 'green' : 'blue'
                 ),
                 $promptDef->prompt->description ?? '-',
-                \implode(', ', $promptDef->tags),
+                !empty($promptDef->tags) ? 
+                    \implode(', ', \array_map(
+                        fn($tag) => $this->outputService->highlight($tag, 'bright-cyan'),
+                        $promptDef->tags
+                    )) : 
+                    '-',
             ];
 
             if ($this->detailed) {
@@ -204,16 +283,42 @@ final class ListPromptsCommand extends BaseCommand
                 $row[] = $args;
             }
 
-            $table->addRow($row);
-            if ($this->detailed) {
-                $table->addRow(new TableSeparator());
-            }
+            $rows[] = $row;
         }
 
-        $table->render();
-
-        $this->output->writeln('');
-        $this->output->writeln(\sprintf('%s: %s', Style::property('Total prompts'), Style::count(\count($prompts))));
+        // Render the table with separators between rows if detailed
+        $tableRenderer->render($styledHeaders, $rows, null, $this->detailed);
+        
+        // Display summary information
+        $this->outputService->section('Summary');
+        
+        // Group prompts by type for summary
+        $typeCount = [];
+        foreach ($prompts as $promptDef) {
+            $type = $promptDef->type->value;
+            if (!isset($typeCount[$type])) {
+                $typeCount[$type] = 0;
+            }
+            $typeCount[$type]++;
+        }
+        
+        // Display statistics
+        $summaryRenderer = $this->outputService->getSummaryRenderer();
+        $summaryRenderer->renderStatsSummary('Prompt Statistics', [
+            'Total Prompts' => \count($prompts),
+            'Prompt Types' => \implode(', ', \array_keys($typeCount)),
+        ]);
+        
+        // Display counts by type
+        $summaryRenderer->renderCompletionSummary($typeCount);
+        
+        // Display helpful tips for usage
+        $this->outputService->note([
+            'Usage tips:',
+            '- Use --detailed (-d) for more information about each prompt',
+            '- Filter by tag with --tag=<tag> (can be used multiple times)',
+            '- Filter by prompt ID with --id=<id> (can be used multiple times)'
+        ]);
 
         return Command::SUCCESS;
     }
@@ -231,7 +336,9 @@ final class ListPromptsCommand extends BaseCommand
         foreach ($prompt->arguments as $arg) {
             $name = $arg->name;
             if ($arg->required) {
-                $name .= '*';
+                $name = $this->outputService->highlight($name . '*', 'bright-red');
+            } else {
+                $name = $this->outputService->highlight($name, 'cyan');
             }
 
             if ($arg->description) {

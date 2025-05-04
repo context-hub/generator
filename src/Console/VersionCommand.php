@@ -37,38 +37,128 @@ final class VersionCommand extends BaseCommand
 
     public function __invoke(Application $app): int
     {
-        $this->output->title($app->name);
-        $this->output->text('Current version: ' . $app->version);
+        // Display application title and version information
+        $this->outputService->title($app->name);
+        
+        // Use key-value format for version info
+        $this->outputService->keyValue(
+            'Current Version',
+            $this->outputService->highlight($app->version, 'bright-cyan')
+        );
+        
+        $this->outputService->keyValue(
+            'Binary Status',
+            $app->isBinary ? 
+                $this->outputService->highlight('Binary Install', 'bright-green') : 
+                $this->outputService->highlight('Development Mode', 'bright-blue')
+        );
 
         if ($this->checkUpdates) {
-            $this->output->newLine();
-            $this->output->section('Checking for updates...');
+            // Section for update checking
+            $this->outputService->section('Checking for Updates');
+            $this->outputService->info('Connecting to GitHub to check for newer versions...');
 
             try {
                 $latestVersion = $this->fetchLatestVersion();
                 $isUpdateAvailable = $this->isUpdateAvailable($app->version, $latestVersion);
+                
+                // Display latest version info
+                $this->outputService->keyValue(
+                    'Latest Available Version',
+                    $this->outputService->highlight($latestVersion, 'bright-green')
+                );
 
                 if ($isUpdateAvailable) {
-                    $this->output->success("A new version is available: {$latestVersion}");
-                    $this->output->text([
-                        'You can update by running:',
-                        'ctx self-update',
-                        '',
-                        'Or with these alternative methods:',
-                        '- curl -sSL https://raw.githubusercontent.com/context-hub/generator/main/download-latest.sh | sh',
-                        '- Download from: https://github.com/context-hub/generator/releases/download/' . $latestVersion . '/context-generator.phar',
+                    // Display update status with successful check
+                    $statusRenderer = $this->outputService->getStatusRenderer();
+                    $statusRenderer->renderSuccess(
+                        'Version Check',
+                        'New version available'
+                    );
+                    
+                    // Display update message with version comparison
+                    $this->outputService->success(\sprintf(
+                        "A new version is available: %s → %s",
+                        $this->outputService->highlight($app->version, 'bright-cyan'),
+                        $this->outputService->highlight($latestVersion, 'bright-green')
+                    ));
+                    
+                    // Display update methods section
+                    $this->outputService->section('Update Methods');
+                    
+                    // Use list renderer for update options
+                    $listRenderer = $this->outputService->getListRenderer();
+                    $listRenderer->renderBulletList([
+                        \sprintf(
+                            'Run %s to update automatically',
+                            $this->outputService->highlight('ctx self-update', 'bright-cyan')
+                        ),
+                        \sprintf(
+                            'Use curl: %s',
+                            $this->outputService->highlight(
+                                'curl -sSL https://raw.githubusercontent.com/context-hub/generator/main/download-latest.sh | sh',
+                                'bright-cyan'
+                            )
+                        ),
+                        \sprintf(
+                            'Download from GitHub: %s',
+                            $this->outputService->highlight(
+                                'https://github.com/context-hub/generator/releases/download/' . $latestVersion . '/context-generator.phar',
+                                'bright-cyan'
+                            )
+                        ),
                     ]);
                 } else {
-                    $this->output->success("You're using the latest version ({$app->version})");
+                    // Display status for up-to-date system
+                    $statusRenderer = $this->outputService->getStatusRenderer();
+                    $statusRenderer->renderSuccess(
+                        'Version Check',
+                        'You are using the latest version'
+                    );
+                    
+                    $this->outputService->success(\sprintf(
+                        "You're using the latest version (%s)",
+                        $this->outputService->highlight($app->version, 'bright-cyan')
+                    ));
                 }
             } catch (HttpException $e) {
-                $this->output->error("Failed to check for updates: {$e->getMessage()}");
+                // Handle HTTP errors
+                $this->outputService->error("Failed to check for updates: " . $e->getMessage());
+                
+                $this->outputService->keyValue(
+                    'Error Type',
+                    'HTTP Communication Error'
+                );
+                
+                // Add troubleshooting tips
+                $this->outputService->note([
+                    'Troubleshooting:',
+                    '- Check your internet connection',
+                    '- Verify GitHub is accessible from your network',
+                    '- GitHub rate limits might apply for frequent requests'
+                ]);
             } catch (\Throwable $e) {
-                $this->output->error("Error checking for updates: {$e->getMessage()}");
+                // Handle general errors
+                $this->outputService->error("Error checking for updates: " . $e->getMessage());
+                
+                $this->logger->error('Version check failed', [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
             }
         } else {
-            $this->output->newLine();
-            $this->output->text("Run with --check-updates or -c to check for new versions");
+            // Show hint for update checking
+            $this->outputService->info(\sprintf(
+                "Run with %s to check for new versions",
+                $this->outputService->highlight('--check-updates', 'bright-cyan')
+            ));
+            
+            // Add additional usage information
+            $this->outputService->note([
+                'Available options:',
+                '- Use --check-updates (-c) to check for newer versions',
+                '- Use self-update command to automatically update to the latest version'
+            ]);
         }
 
         return Command::SUCCESS;
@@ -81,6 +171,8 @@ final class VersionCommand extends BaseCommand
      */
     private function fetchLatestVersion(): string
     {
+        $this->outputService->info("Fetching latest version information from GitHub...");
+        
         $response = $this->httpClient->get(
             self::GITHUB_API_LATEST_RELEASE,
             [
@@ -90,8 +182,12 @@ final class VersionCommand extends BaseCommand
         );
 
         if (!$response->isSuccess()) {
+            $statusCode = $response->getStatusCode();
             throw new HttpException(
-                \sprintf('Failed to fetch latest version. Server returned status code %d', $response->getStatusCode()),
+                \sprintf(
+                    'Failed to fetch latest version. Server returned status code %s',
+                    $this->outputService->highlight((string) $statusCode, 'red', true)
+                ),
             );
         }
 
@@ -112,6 +208,9 @@ final class VersionCommand extends BaseCommand
     {
         // If current version is 'dev', always suggest update
         if ($currentVersion === 'dev') {
+            $this->outputService->info(
+                "Development version detected, update is recommended"
+            );
             return true;
         }
 

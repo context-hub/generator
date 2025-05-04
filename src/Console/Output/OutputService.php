@@ -9,8 +9,6 @@ use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-use function PHPUnit\Framework\isTrue;
-
 /**
  * Service for standardized console output generation
  * @method bool isSilent()
@@ -158,15 +156,21 @@ final readonly class OutputService implements OutputServiceInterface
     {
         $label = ' ' . $label . ' ';
 
+        $this->output->newLine();
         if (\is_string($message)) {
             $this->output->writeln(' ' . $this->style->bgColorize($label, $color, true) . ' ' . $message);
         } else {
             $this->output->writeln(' ' . $this->style->bgColorize($label, $color, true));
             foreach ($message as $line) {
-                $this->output->writeln($this->style->colorize('  - ', $color) . $line);
+                $this->output->writeln(' ' . $line);
             }
         }
         $this->output->newLine();
+    }
+
+    public function getStyle(): StyleInterface
+    {
+        return $this->style;
     }
 
     /**

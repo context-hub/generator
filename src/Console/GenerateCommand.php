@@ -8,7 +8,6 @@ use Butschster\ContextGenerator\Application\AppScope;
 use Butschster\ContextGenerator\Config\ConfigurationProvider;
 use Butschster\ContextGenerator\Config\Exception\ConfigLoaderException;
 use Butschster\ContextGenerator\Config\Registry\ConfigRegistryAccessor;
-use Butschster\ContextGenerator\Console\Renderer\GenerateCommandRenderer;
 use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
 use Spiral\Console\Attribute\Option;
@@ -60,6 +59,8 @@ final class GenerateCommand extends BaseCommand
 
     public function __invoke(Container $container, DirectoriesInterface $dirs): int
     {
+        $startTime = \microtime(true);
+
         // Determine the effective root path based on config file path
         $dirs = $dirs
             ->determineRootPath($this->configPath, $this->inlineJson)
@@ -87,9 +88,9 @@ final class GenerateCommand extends BaseCommand
                 scope: function (
                     DocumentCompiler $compiler,
                     ConfigurationProvider $configProvider,
-                ): int {
+                ) use ($startTime): int {
                     try {
-                        // Get the appropriate loader based on options provided
+                        // Display configuration type using key-value
                         if ($this->inlineJson !== null) {
                             $this->logger->info('Using inline JSON configuration...');
                             $loader = $configProvider->fromString($this->inlineJson);
@@ -112,23 +113,30 @@ final class GenerateCommand extends BaseCommand
                                 'error' => $e->getMessage(),
                             ]));
                         } else {
-                            $this->output->error(\sprintf('Failed to load configuration: %s', $e->getMessage()));
+                            $this->outputService->error('Failed to load configuration: ' . $e->getMessage());
                         }
 
                         return Command::FAILURE;
                     }
 
-                    // Create the renderer for consistent output formatting
-                    $renderer = new GenerateCommandRenderer($this->output);
-
-                    // Display summary header
-                    $this->output->writeln('');
-
                     $config = new ConfigRegistryAccessor($loader->load());
-
                     $imports = $config->getImports();
+
+                    // Imports section using StatusRenderer
                     if ($imports !== null && !$this->asJson) {
-                        $renderer->renderImports($imports);
+                        $this->outputService->section('Imported Resources');
+                        $statusRenderer = $this->outputService->getStatusRenderer();
+
+                        foreach ($imports as $item) {
+                            $statusRenderer->renderSuccess(
+                                \sprintf('Import %s', $item->getType()),
+                                \strlen($item->getPath()) > 60 ? \substr(
+                                        $item->getPath(),
+                                        0,
+                                        60,
+                                    ) . '...' : $item->getPath(),
+                            );
+                        }
                     }
 
                     if ($config->getDocuments() === null || $config->getDocuments()->getItems() === []) {
@@ -141,21 +149,52 @@ final class GenerateCommand extends BaseCommand
                                 'tools' => $config->getTools(),
                             ]));
                         } else {
-                            $this->output->warning('No documents found in configuration.');
+                            $this->outputService->warning('No documents found in configuration.');
                         }
 
                         return Command::SUCCESS;
                     }
 
+                    // Document compilation section
+                    if (!$this->asJson) {
+                        $this->outputService->section('Document Compilation');
+                    }
+
                     $result = [];
+                    $documentStats = [
+                        'success' => 0,
+                        'warning' => 0,
+                        'error' => 0,
+                    ];
+
+                    $statusRenderer = $this->outputService->getStatusRenderer();
 
                     foreach ($config->getDocuments() as $document) {
                         $this->logger->info(\sprintf('Compiling %s...', $document->description));
 
                         $compiledDocument = $compiler->compile($document);
+                        $hasErrors = $compiledDocument->errors->hasErrors();
 
                         if (!$this->asJson) {
-                            $renderer->renderCompilationResult($document, $compiledDocument);
+                            if ($hasErrors) {
+                                $statusRenderer->renderWarning(
+                                    $document->description,
+                                    $document->outputPath,
+                                );
+
+                                // Render errors with indentation
+                                foreach ($compiledDocument->errors as $error) {
+                                    $statusRenderer->renderError('  ' . $error, '');
+                                }
+
+                                $documentStats['warning']++;
+                            } else {
+                                $statusRenderer->renderSuccess(
+                                    $document->description,
+                                    $document->outputPath,
+                                );
+                                $documentStats['success']++;
+                            }
                         } else {
                             $result[] = [
                                 'output_path' => $compiledDocument->outputPath,
@@ -175,7 +214,17 @@ final class GenerateCommand extends BaseCommand
                             'tools' => $config->getTools(),
                         ]));
                     } else {
-                        $this->output->writeln('');
+                        // Summary section
+                        $this->outputService->section('Compilation Summary');
+
+                        $summaryRenderer = $this->outputService->getSummaryRenderer();
+                        $total = \array_sum($documentStats);
+
+                        $summaryRenderer->renderCompletionSummary([
+                            'Successful' => $documentStats['success'],
+                            'With Warnings' => $documentStats['warning'],
+                            'Failed' => $documentStats['error'],
+                        ], $total);
                     }
 
                     return Command::SUCCESS;
