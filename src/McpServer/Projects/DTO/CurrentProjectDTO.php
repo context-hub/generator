@@ -31,10 +31,13 @@ final readonly class CurrentProjectDTO implements \JsonSerializable
             return null;
         }
 
+        $configFile = $data['config_file'] ?? null;
+        $envFile = $data['env_file'] ?? null;
+
         return new self(
             path: (string) FSPath::create($data['path']),
-            configFile: (string) FSPath::create($data['config_file'] ?? null),
-            envFile: (string) FSPath::create($data['env_file'] ?? null),
+            configFile: $configFile ? (string) FSPath::create($configFile) : null,
+            envFile: $envFile ? (string) FSPath::create($envFile) : null,
         );
     }
 
@@ -79,8 +82,8 @@ final readonly class CurrentProjectDTO implements \JsonSerializable
     {
         return [
             'path' => (string) FSPath::create($this->path),
-            'config_file' => (string) FSPath::create($this->configFile),
-            'env_file' => (string) FSPath::create($this->envFile),
+            'config_file' => $this->configFile ? (string) FSPath::create($this->configFile) : null,
+            'env_file' => $this->envFile ? (string) FSPath::create($this->envFile) : null,
         ];
     }
 }
