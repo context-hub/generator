@@ -32,9 +32,9 @@ final readonly class CurrentProjectDTO implements \JsonSerializable
         }
 
         return new self(
-            path: $data['path'],
-            configFile: $data['config_file'] ?? null,
-            envFile: $data['env_file'] ?? null,
+            path: (string) FSPath::create($data['path']),
+            configFile: (string) FSPath::create($data['config_file'] ?? null),
+            envFile: (string) FSPath::create($data['env_file'] ?? null),
         );
     }
 
@@ -78,9 +78,9 @@ final readonly class CurrentProjectDTO implements \JsonSerializable
     public function jsonSerialize(): array
     {
         return [
-            'path' => $this->path,
-            'config_file' => $this->configFile,
-            'env_file' => $this->envFile,
+            'path' => (string) FSPath::create($this->path),
+            'config_file' => (string) FSPath::create($this->configFile),
+            'env_file' => (string) FSPath::create($this->envFile),
         ];
     }
 }

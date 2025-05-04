@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer\Projects\DTO;
 
+use Butschster\ContextGenerator\Application\FSPath;
+
 /**
  * Contains the complete project state
  */
@@ -31,6 +33,7 @@ final class ProjectStateDTO implements \JsonSerializable
         // Process projects
         $projects = [];
         foreach ($data['projects'] ?? [] as $path => $projectData) {
+            $path = FSPath::create($path)->toString();
             $projects[$path] = ProjectDTO::fromArray($path, $projectData);
         }
 
@@ -51,6 +54,8 @@ final class ProjectStateDTO implements \JsonSerializable
      */
     public function getAliasesForPath(string $projectPath): array
     {
+        $projectPath = FSPath::create($projectPath)->toString();
+
         $result = [];
 
         foreach ($this->aliases as $alias => $path) {
@@ -67,7 +72,7 @@ final class ProjectStateDTO implements \JsonSerializable
      */
     public function resolvePathOrAlias(string $pathOrAlias): string
     {
-        return $this->aliases[$pathOrAlias] ?? $pathOrAlias;
+        return $this->aliases[$pathOrAlias] ?? FSPath::create($pathOrAlias)->toString();
     }
 
     public function jsonSerialize(): array

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer\Projects\DTO;
 
+use Butschster\ContextGenerator\Application\FSPath;
+
 /**
  * Represents a single project configuration
  */
@@ -28,7 +30,7 @@ final readonly class ProjectDTO implements \JsonSerializable
     public static function fromArray(string $path, array $data): self
     {
         return new self(
-            path: $path,
+            path: FSPath::create($path)->toString(),
             addedAt: $data['added_at'] ?? \date('Y-m-d H:i:s'),
             configFile: $data['config_file'] ?? null,
             envFile: $data['env_file'] ?? null,
