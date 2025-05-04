@@ -6,6 +6,7 @@ namespace Butschster\ContextGenerator;
 
 use Butschster\ContextGenerator\Application\Application;
 use Butschster\ContextGenerator\Application\ExceptionHandler;
+use Butschster\ContextGenerator\Application\FSPath;
 use Butschster\ContextGenerator\Application\Kernel;
 use Spiral\Core\Container;
 use Spiral\Core\Options;
@@ -93,11 +94,31 @@ $container->bindSingleton(
 // -----------------------------------------------------------------------------
 
 // Determine appropriate location for global state based on OS
-$globalStateDir = match (PHP_OS_FAMILY) {
-    'Windows' => \getenv('APPDATA') . '/CTX',
+$globalStateDir = (string) FSPath::create(match (PHP_OS_FAMILY) {
+    'Windows' => (function (): string {
+            $result = $_SERVER['APPDATA'] ?? null;
+            if (\is_string($result)) {
+                return $result;
+            }
+
+            /*
+             * In some cases, the APPDATA environment variable may not be set by an MCP client (f.e. Claude)
+             * In this case we need to use workaround.
+             */
+            /** @psalm-suppress ForbiddenCode */
+            $output = `reg query "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders" /v "AppData"`;
+            // Check if the command was successful
+            $pos = \strpos($output, $_SERVER['USERPROFILE']);
+            if ($pos === false) {
+                // If the command failed, we can use the default APPDATA path
+                return $_SERVER['USERPROFILE'] . '\AppData\Roaming';
+            }
+
+            return \trim(\explode("\n", \substr($output, $pos))[0]);
+        })() . '/CTX',
     'Darwin' => $_SERVER['HOME'] . '/Library/Application Support/CTX',
     default => $_SERVER['HOME'] . '/.config/ctx',
-};
+});
 
 $app = Kernel::create(
     directories: [
