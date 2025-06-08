@@ -16,6 +16,11 @@ interface DirectoriesInterface
     /**
      * Get the root path of the project
      */
+    public function getBinaryPath(): FSPath;
+
+    /**
+     * Get the root path of the project
+     */
     public function getRootPath(): FSPath;
 
     /**
