@@ -159,8 +159,8 @@ get_latest() {
     curl -H "Authorization: token $GITHUB_PAT" -s "$latest_release" >"$temp_file" || return 1
   fi
 
-  latest="$(grep <"$temp_file" '"tag_name":' | cut -d ':' -f2 | tr -d '"' | tr -d ',' | tr -d ' ' | tr -d 'v')"
-  latestV="$(grep <"$temp_file" '"tag_name":' | cut -d ':' -f2 | tr -d '"' | tr -d ',' | tr -d ' ')"
+  latest="$(grep <"$temp_file" '"tag_name":' | sed 's/.*"tag_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/' | sed 's/^v//')"
+  latestV="$(grep <"$temp_file" '"tag_name":' | sed 's/.*"tag_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/')"
 
   rm -f "$temp_file"
 
