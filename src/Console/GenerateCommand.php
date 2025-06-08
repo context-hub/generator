@@ -87,6 +87,7 @@ final class GenerateCommand extends BaseCommand
                 scope: function (
                     DocumentCompiler $compiler,
                     ConfigurationProvider $configProvider,
+                    DirectoriesInterface $dirs,
                 ): int {
                     try {
                         // Get the appropriate loader based on options provided
@@ -95,7 +96,7 @@ final class GenerateCommand extends BaseCommand
                             $loader = $configProvider->fromString($this->inlineJson);
                         } elseif ($this->configPath !== null) {
                             $this->logger->info(\sprintf('Loading configuration from %s...', $this->configPath));
-                            $loader = $configProvider->fromPath($this->configPath);
+                            $loader = $configProvider->fromPath($dirs->getConfigPath()->toString());
                         } else {
                             $this->logger->info('Loading configuration from default location...');
                             $loader = $configProvider->fromDefaultLocation();

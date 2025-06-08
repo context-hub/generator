@@ -113,7 +113,7 @@ class VariableSystemEdgeCasesTest extends TestCase
     public function it_should_handle_variables_with_special_characters_in_values(string $value): void
     {
         // Create a provider with values containing special characters
-        $specialCharsProvider = new class($value) implements VariableProviderInterface {
+        $specialCharsProvider = new readonly class($value) implements VariableProviderInterface {
             public function __construct(private readonly string $testValue) {}
 
             public function has(string $name): bool
