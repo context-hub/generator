@@ -66,9 +66,8 @@ final class SelfUpdateCommand extends BaseCommand
     public function __invoke(Application $app, EnvironmentInterface $env, DirectoriesInterface $dirs): int
     {
         $this->output->title('CTX Self Update');
-        $storeLocation = \trim($this->storeLocation ?: $env->get('CTX_BINARY_PATH', (string) $dirs->getRootPath()));
+        $storeLocation = \trim($this->storeLocation ?: $env->get('CTX_BINARY_PATH', (string) $dirs->getBinaryPath()));
         $type = \trim($this->type ?: ($app->isBinary ? 'bin' : 'phar'));
-
 
         // Check if we have a valid store location
         if (empty($storeLocation)) {
