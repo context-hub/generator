@@ -57,21 +57,21 @@ final readonly class FileMessageContentLoader extends MessageContentLoader
         }
 
         try {
-            $this->logger?->debug('Loading message content from file', [
+            $this->logger->debug('Loading message content from file', [
                 'source' => $filePath,
                 'provider' => $provider::class,
             ]);
 
             $content = $provider->load($filePath);
 
-            $this->logger?->debug('Successfully loaded message content', [
+            $this->logger->debug('Successfully loaded message content', [
                 'source' => $filePath,
                 'contentLength' => \strlen($content),
             ]);
 
             return $content;
         } catch (FileMessageContentException $e) {
-            $this->logger?->error('Failed to load message content from file', [
+            $this->logger->error('Failed to load message content from file', [
                 'source' => $filePath,
                 'error' => $e->getMessage(),
             ]);

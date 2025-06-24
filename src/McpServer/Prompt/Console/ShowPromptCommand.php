@@ -50,13 +50,6 @@ final class ShowPromptCommand extends BaseCommand
     )]
     protected bool $withMessages = false;
 
-    #[Option(
-        name: 'with-extensions',
-        shortcut: 'e',
-        description: 'Show extension details',
-    )]
-    protected bool $withExtensions = false;
-
     public function __invoke(Container $container, DirectoriesInterface $dirs): int
     {
         return $container->runScope(
@@ -124,11 +117,6 @@ final class ShowPromptCommand extends BaseCommand
         // Arguments table
         if (!empty($prompt->prompt->arguments)) {
             $this->displayArguments($prompt->prompt);
-        }
-
-        // Extensions
-        if ($this->withExtensions && !empty($prompt->extensions)) {
-            $this->displayExtensions($prompt);
         }
 
         // Messages
@@ -201,32 +189,6 @@ final class ShowPromptCommand extends BaseCommand
     }
 
     /**
-     * Displays prompt extensions.
-     */
-    private function displayExtensions(PromptDefinition $prompt): void
-    {
-        $this->output->writeln('');
-        $this->output->writeln(Style::section('Extensions'));
-
-        foreach ($prompt->extensions as $index => $extension) {
-            $this->output->writeln(
-                \sprintf('  %s. %s', $index + 1, Style::property('Template ID:') . ' ' . $extension->templateId),
-            );
-
-            if (!empty($extension->arguments)) {
-                $this->output->writeln('     ' . Style::property('Arguments:'));
-                foreach ($extension->arguments as $arg) {
-                    $this->output->writeln(\sprintf('       • %s: %s', Style::value($arg->name), $arg->value));
-                }
-            }
-
-            if ($index < \count($prompt->extensions) - 1) {
-                $this->output->writeln('');
-            }
-        }
-    }
-
-    /**
      * Displays prompt messages.
      */
     private function displayMessages(PromptDefinition $prompt): void
@@ -235,6 +197,7 @@ final class ShowPromptCommand extends BaseCommand
         $this->output->writeln(Style::section('Messages'));
 
         foreach ($prompt->messages as $index => $message) {
+            $index = (int) $index; // Ensure index is an integer for display
             $this->output->writeln('');
             $this->output->writeln(
                 \sprintf('  %s. %s', $index + 1, Style::property('Role:') . ' ' . Style::value($message->role->value)),
@@ -279,7 +242,7 @@ final class ShowPromptCommand extends BaseCommand
 
         // Find prompts with similar IDs (simple string similarity)
         $suggestions = [];
-        foreach ($allPrompts as $id => $prompt) {
+        foreach ($allPrompts as $id => $_prompt) {
             $similarity = 0;
             \similar_text($this->promptId, $id, $similarity);
             if ($similarity > 30) { // 30% similarity threshold
