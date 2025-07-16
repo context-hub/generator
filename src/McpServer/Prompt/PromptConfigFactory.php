@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer\Prompt;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
+use Butschster\ContextGenerator\McpServer\Prompt\Content\MessageContentLoader;
 use Butschster\ContextGenerator\McpServer\Prompt\Exception\PromptParsingException;
 use Butschster\ContextGenerator\McpServer\Prompt\Extension\PromptDefinition;
 use Butschster\ContextGenerator\McpServer\Prompt\Extension\PromptExtension;
@@ -16,8 +18,14 @@ use Mcp\Types\TextContent;
 /**
  * Factory for creating Prompt objects from configuration arrays.
  */
+#[LoggerPrefix(prefix: 'prompt.factory')]
 final readonly class PromptConfigFactory
 {
+    public function __construct(
+        /** @var MessageContentLoader[] */
+        private array $contentLoaders = [],
+    ) {}
+
     /**
      * Creates a Prompt object from a configuration array.
      *
@@ -220,42 +228,74 @@ final readonly class PromptConfigFactory
                 );
             }
 
-            if (!isset($messageConfig['role']) || !\is_string($messageConfig['role'])) {
-                throw new PromptParsingException(
-                    \sprintf(
-                        'Message at index %d must have a valid role',
-                        $index,
-                    ),
-                );
-            }
-
-            if (!isset($messageConfig['content']) || !\is_string($messageConfig['content'])) {
-                throw new PromptParsingException(
-                    \sprintf(
-                        'Message at index %d must have a valid content',
-                        $index,
-                    ),
-                );
-            }
-
             try {
-                $role = Role::from($messageConfig['role']);
-            } catch (\ValueError) {
+                $messages[] = $this->parseMessage($messageConfig, $index);
+            } catch (PromptParsingException $e) {
                 throw new PromptParsingException(
                     \sprintf(
-                        'Invalid role "%s" at index %d',
-                        $messageConfig['role'],
+                        'Invalid message at index %d: %s',
                         $index,
+                        $e->getMessage(),
                     ),
+                    previous: $e,
                 );
             }
-
-            $messages[] = new PromptMessage(
-                role: $role,
-                content: new TextContent(text: $messageConfig['content']),
-            );
         }
 
         return $messages;
+    }
+
+    /**
+     * Parses a single message configuration into a PromptMessage object.
+     *
+     * @param array<string, mixed> $messageConfig The message configuration
+     * @param int $index The message index (for error reporting)
+     * @return PromptMessage The parsed message
+     * @throws PromptParsingException If the message configuration is invalid
+     */
+    private function parseMessage(array $messageConfig, int $index): PromptMessage
+    {
+        if (!isset($messageConfig['role']) || !\is_string($messageConfig['role'])) {
+            throw new PromptParsingException('Message must have a valid role');
+        }
+
+        try {
+            $role = Role::from($messageConfig['role']);
+        } catch (\ValueError) {
+            throw new PromptParsingException(
+                \sprintf('Invalid role "%s"', $messageConfig['role']),
+            );
+        }
+
+        // Find appropriate content loader
+        $contentLoader = $this->findContentLoader($messageConfig);
+
+        if ($contentLoader === null) {
+            throw new PromptParsingException(
+                'Message must have either a "content" or "file" property',
+            );
+        }
+
+        // Load content using the appropriate loader
+        $content = $contentLoader->loadContent($messageConfig);
+
+        return new PromptMessage(
+            role: $role,
+            content: new TextContent(text: $content),
+        );
+    }
+
+    /**
+     * Finds the appropriate content loader for the given message configuration.
+     */
+    private function findContentLoader(array $messageConfig): ?MessageContentLoader
+    {
+        foreach ($this->contentLoaders as $loader) {
+            if ($loader->canHandle($messageConfig)) {
+                return $loader;
+            }
+        }
+
+        return null;
     }
 }
