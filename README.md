@@ -160,7 +160,12 @@ Point the MCP client to the Context Generator server:
 {
   "mcpServers": {
     "ctx": {
-      "command": "ctx server -c /path/to/your/project"
+      "command": "ctx",
+      "args": [
+        "server",
+        "-c",
+        "/path/to/your/project"
+      ]
     }
   }
 }
