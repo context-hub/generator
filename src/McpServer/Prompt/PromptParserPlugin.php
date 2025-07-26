@@ -21,7 +21,7 @@ final readonly class PromptParserPlugin implements ConfigParserPluginInterface
     public function __construct(
         private PromptRegistryInterface $promptRegistry,
         private TemplateResolver $templateResolver,
-        private PromptConfigFactory $promptFactory = new PromptConfigFactory(),
+        private PromptConfigFactory $promptFactory,
         private ?LoggerInterface $logger = null,
     ) {}
 
