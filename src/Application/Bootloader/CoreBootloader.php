@@ -33,11 +33,16 @@ final class CoreBootloader extends Bootloader
                 fallbackFactory: static function (ContainerInterface $container) {
                     $dirs = $container->get(DirectoriesInterface::class);
 
+                    $jsonSchemaPath = $dirs->get('json-schema');
+                    if (\str_starts_with($jsonSchemaPath, 'phar://')) {
+                        $jsonSchemaPath = 'phar:///' . \substr($jsonSchemaPath, 7);
+                    }
+
                     return new Directories(
                         rootPath: $dirs->get('root'),
                         outputPath: $dirs->get('output'),
                         configPath: $dirs->get('config'),
-                        jsonSchemaPath: $dirs->get('json-schema') . 'json-schema.json',
+                        jsonSchemaPath: $jsonSchemaPath . 'json-schema.json',
                     );
                 },
             ),
