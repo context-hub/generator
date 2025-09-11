@@ -17,6 +17,7 @@ use Spiral\Files\FilesInterface;
 #[Tool(
     name: 'file-write',
     description: 'Write content to a file (mostly new files, use apply-path for updates if possible). Can create parent directories automatically.',
+    title: 'File Write',
 )]
 #[InputSchema(
     name: 'path',

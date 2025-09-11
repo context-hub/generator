@@ -17,6 +17,7 @@ use Spiral\Files\FilesInterface;
 #[Tool(
     name: 'file-info',
     description: 'Get information about a file within the project directory structure',
+    title: 'File Info',
 )]
 #[InputSchema(
     name: 'path',

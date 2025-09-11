@@ -8,6 +8,7 @@ use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Prompt;
 use Butschster\ContextGenerator\McpServer\Attribute\Resource;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
+use Mcp\Types\ToolAnnotations;
 use Mcp\Types\ToolInputSchema;
 use Psr\Log\LoggerInterface;
 
@@ -120,6 +121,9 @@ final class McpItemsRegistry
                 name: $tool->name,
                 inputSchema: ToolInputSchema::fromArray($inputSchema),
                 description: $tool->description,
+                annotations: $tool->title ? new ToolAnnotations(
+                    title: $tool->title,
+                ) : null,
             );
 
             $this->logger->info('Registered tool', [

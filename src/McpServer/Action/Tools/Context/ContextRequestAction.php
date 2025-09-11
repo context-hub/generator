@@ -19,6 +19,7 @@ use Psr\Log\LoggerInterface;
 #[Tool(
     name: 'context-request',
     description: 'Request a context document using JSON schema, filters and modifiers',
+    title: 'Request Context by JSON',
 )]
 #[InputSchema(
     name: 'json',

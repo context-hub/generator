@@ -9,6 +9,7 @@ use Butschster\ContextGenerator\Application\Bootloader\ConfigLoaderBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\ConfigurationBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\ConsoleBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\ContentRendererBootloader;
+use Butschster\ContextGenerator\Application\Bootloader\Context7ClientBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\CoreBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\ExcludeBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\GithubClientBootloader;
@@ -57,6 +58,7 @@ class Kernel extends AbstractKernel
             HttpClientBootloader::class,
             GitlabClientBootloader::class,
             GithubClientBootloader::class,
+            Context7ClientBootloader::class,
             ComposerClientBootloader::class,
             ConfigLoaderBootloader::class,
             VariableBootloader::class,

@@ -17,6 +17,7 @@ use Psr\Log\LoggerInterface;
 #[Tool(
     name: 'prompts-list',
     description: 'Use this tool to get a complete list of available prompts and their descriptions. This is useful when you need to discover what prompts exist and determine which might be helpful for your current task.',
+    title: 'List Available Prompts',
 )]
 final readonly class ListPromptsToolAction
 {

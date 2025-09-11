@@ -33,7 +33,7 @@ final readonly class HttpResponse
     {
         $normalizedName = \strtolower($name);
         foreach ($this->headers as $key => $value) {
-            if (\strtolower($key) === $normalizedName) {
+            if (\strtolower((string) $key) === $normalizedName) {
                 return $value;
             }
         }

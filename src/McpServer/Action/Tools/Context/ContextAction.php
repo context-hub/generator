@@ -16,6 +16,7 @@ use Psr\Log\LoggerInterface;
 #[Tool(
     name: 'context',
     description: 'List all contexts in the project context config',
+    title: 'List Contexts',
 )]
 final readonly class ContextAction
 {

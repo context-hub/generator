@@ -19,6 +19,7 @@ use Psr\Log\LoggerInterface;
 #[Tool(
     name: 'context-get',
     description: 'Get a specific context document from the project context config',
+    title: 'Get Context by path',
 )]
 #[InputSchema(
     name: 'path',
