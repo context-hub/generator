@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Lib\Context7Client;
 
+use Butschster\ContextGenerator\Lib\Context7Client\Exception\Context7ClientException;
 use Butschster\ContextGenerator\Lib\Context7Client\Model\LibrarySearchResult;
 
 interface Context7ClientInterface

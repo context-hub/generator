@@ -71,7 +71,6 @@ final class McpItemsRegistry
         // Check for Tool attribute
         $toolAttributes = $reflection->getAttributes(Tool::class);
         if (!empty($toolAttributes)) {
-            /** @var Tool $tool */
             $tool = $toolAttributes[0]->newInstance();
 
             // Look for InputSchema attributes
