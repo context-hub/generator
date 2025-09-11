@@ -18,6 +18,7 @@ use Spiral\Files\FilesInterface;
 #[Tool(
     name: 'file-move',
     description: 'Move a file within the project directory structure',
+    title: 'File Move',
 )]
 #[InputSchema(
     name: 'source',

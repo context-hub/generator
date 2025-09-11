@@ -17,6 +17,7 @@ use Psr\Log\LoggerInterface;
 #[Tool(
     name: 'prompt-get',
     description: 'Use this tool when you already know the specific prompt ID and need to retrieve its full content. First use prompts-list tool to discover available prompts, then use this tool to get the detailed content of a specific prompt you need. Requires the prompt ID as a parameter.',
+    title: 'Get Prompt by ID',
 )]
 #[InputSchema(
     name: 'id',

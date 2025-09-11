@@ -18,6 +18,7 @@ use Spiral\Files\FilesInterface;
 #[Tool(
     name: 'file-read',
     description: 'Read content from a file within the project directory structure',
+    title: 'File Read',
 )]
 #[InputSchema(
     name: 'path',

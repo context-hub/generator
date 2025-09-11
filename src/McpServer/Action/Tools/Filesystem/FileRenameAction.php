@@ -17,6 +17,7 @@ use Spiral\Files\FilesInterface;
 #[Tool(
     name: 'file-rename',
     description: 'Rename a file within the project directory structure',
+    title: 'File Rename',
 )]
 #[InputSchema(
     name: 'path',

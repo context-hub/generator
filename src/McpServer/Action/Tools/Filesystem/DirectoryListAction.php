@@ -19,6 +19,7 @@ use Symfony\Component\Finder\Finder;
 #[Tool(
     name: 'directory-list',
     description: 'List directories and files with filtering options using Symfony Finder. Always ask for source path.',
+    title: 'Directory List',
 )]
 #[InputSchema(
     name: 'path',

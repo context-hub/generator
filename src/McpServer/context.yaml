@@ -47,3 +47,21 @@ documents:
       - type: file
         sourcePaths:
           - ./Projects
+
+
+  - description: "MCP Docs search"
+    outputPath: "mcp/docs-search.md"
+    sources:
+      - type: file
+        sourcePaths:
+          - ./Action/Tools/Docs/LibrarySearchAction.php
+          - ./Action/Tools/Docs/FetchLibraryDocsAction.php
+      - type: file
+        sourcePaths: ../Lib/HttpClient
+        filePattern:
+          - '*Interface.php'
+      - type: file
+        sourcePaths:
+          - ./Attribute/Tool.php
+          - ./Attribute/InputSchema.php
+          - ./Routing/Attribute/Post.php

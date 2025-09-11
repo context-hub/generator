@@ -13,11 +13,12 @@ use Butschster\ContextGenerator\McpServer\Action\Prompts\ListPromptsAction;
 use Butschster\ContextGenerator\McpServer\Action\Prompts\ProjectStructurePromptAction;
 use Butschster\ContextGenerator\McpServer\Action\Resources\GetDocumentContentResourceAction;
 use Butschster\ContextGenerator\McpServer\Action\Resources\JsonSchemaResourceAction;
-use Butschster\ContextGenerator\McpServer\Action\Tools\Docs\DocsSearchAction;
 use Butschster\ContextGenerator\McpServer\Action\Resources\ListResourcesAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Context\ContextAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Context\ContextGetAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Context\ContextRequestAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Docs\FetchLibraryDocsAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Docs\LibrarySearchAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\ExecuteCustomToolAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\DirectoryListAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileApplyPatchAction;
@@ -81,7 +82,7 @@ final class McpServerBootloader extends Bootloader
                     'enable' => (bool) $env->get('MCP_CONTEXT_OPERATIONS', !$isCommonProject),
                 ],
                 'docs_tools' => [
-                    'enable' => (bool) $env->get('MCP_DOCS_TOOLS_ENABLED', false),
+                    'enable' => (bool) $env->get('MCP_DOCS_TOOLS_ENABLED', true),
                 ],
                 'prompt_operations' => [
                     'enable' => (bool) $env->get('MCP_PROMPT_OPERATIONS', false),
@@ -180,7 +181,8 @@ final class McpServerBootloader extends Bootloader
         if ($config->isDocsToolsEnabled()) {
             $actions = [
                 ...$actions,
-                DocsSearchAction::class,
+                LibrarySearchAction::class,
+                FetchLibraryDocsAction::class,
             ];
         }
         if ($config->isFileOperationsEnabled()) {
