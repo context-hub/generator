@@ -35,13 +35,17 @@ final class LoggerBootloader extends Bootloader implements InjectorInterface
     public function defineSingletons(): array
     {
         return [
-            FileSnapshot::class => static fn(EnvironmentInterface $env, DirectoriesInterface $dirs): FileSnapshot => new FileSnapshot(
+            FileSnapshot::class => static fn(
+                EnvironmentInterface $env,
+                DirectoriesInterface $dirs,
+            ): FileSnapshot => new FileSnapshot(
                 directory: $dirs->get('runtime') . '/snapshots/',
                 maxFiles: (int) $env->get('SNAPSHOT_MAX_FILES', 10),
                 verbosity: Verbosity::VERBOSE,
                 renderer: new PlainRenderer(),
                 files: new Files(),
             ),
+            ExceptionReporterInterface::class => ExceptionHandler::class,
             HasPrefixLoggerInterface::class => new Proxy(
                 interface: HasPrefixLoggerInterface::class,
                 fallbackFactory: static fn(): HasPrefixLoggerInterface => new NullLogger(),

@@ -32,7 +32,10 @@ final readonly class ActionCaller
         if ($inputSchemaClass !== null) {
             $inputSchema = $inputSchemaClass->newInstance();
 
-            $input = $this->schemaMapper->toObject($request->getParsedBody(), $inputSchema->class);
+            $input = $this->schemaMapper->toObject(
+                json: (array) ($request->getParsedBody() ?? []),
+                class: $inputSchema->class,
+            );
             $bindings[$inputSchema->class] = $input;
         }
 
