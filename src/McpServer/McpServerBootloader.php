@@ -22,10 +22,8 @@ use Butschster\ContextGenerator\McpServer\Action\Tools\Docs\LibrarySearchAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\ExecuteCustomToolAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\DirectoryListAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileApplyPatchAction;
-use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileInfoAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileMoveAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileReadAction;
-use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileRenameAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileWriteAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\ListToolsAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Prompts\GetPromptToolAction;
@@ -188,9 +186,7 @@ final class McpServerBootloader extends Bootloader
         if ($config->isFileOperationsEnabled()) {
             $actions = [
                 ...$actions,
-                FileInfoAction::class,
                 FileReadAction::class,
-                FileRenameAction::class,
                 FileMoveAction::class,
             ];
 
