@@ -6,8 +6,9 @@ namespace Butschster\ContextGenerator\McpServer\Action\Tools\Prompts;
 
 use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
 use Butschster\ContextGenerator\McpServer\Prompt\PromptProviderInterface;
-use Butschster\ContextGenerator\McpServer\Attribute\Tool;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Prompts\Dto\GetPromptRequest;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
+use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
 use Mcp\Types\TextContent;
@@ -19,12 +20,7 @@ use Psr\Log\LoggerInterface;
     description: 'Use this tool when you already know the specific prompt ID and need to retrieve its full content. First use prompts-list tool to discover available prompts, then use this tool to get the detailed content of a specific prompt you need. Requires the prompt ID as a parameter.',
     title: 'Get Prompt by ID',
 )]
-#[InputSchema(
-    name: 'id',
-    type: 'string',
-    description: 'The ID of the prompt to retrieve. You can find valid prompt IDs by first using the prompts-list tool.',
-    required: true,
-)]
+#[InputSchema(class: GetPromptRequest::class)]
 final readonly class GetPromptToolAction
 {
     public function __construct(
@@ -34,13 +30,12 @@ final readonly class GetPromptToolAction
     ) {}
 
     #[Post(path: '/tools/call/prompt-get', name: 'tools.prompts.get')]
-    public function __invoke(ServerRequestInterface $request): CallToolResult
+    public function __invoke(GetPromptRequest $request, ServerRequestInterface $serverRequest): CallToolResult
     {
         $this->logger->info('Getting prompt via tool action');
 
         // Get prompt ID from request
-        $parsedBody = $request->getParsedBody();
-        $id = $parsedBody['id'] ?? '';
+        $id = $request->id ?? '';
 
         if (empty($id)) {
             return new CallToolResult([
@@ -62,7 +57,7 @@ final readonly class GetPromptToolAction
 
             // Get prompt and process messages
             $prompt = $this->prompts->get($id);
-            $messages = $this->processMessageTemplates($prompt->messages, $request->getAttributes());
+            $messages = $this->processMessageTemplates($prompt->messages, $serverRequest->getAttributes());
 
             // Format the messages for return
             $formattedMessages = [];

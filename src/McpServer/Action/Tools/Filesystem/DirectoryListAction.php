@@ -7,12 +7,12 @@ namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem;
 use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\Lib\TreeBuilder\FileTreeBuilder;
 use Butschster\ContextGenerator\Lib\TreeBuilder\TreeViewConfig;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\Dto\DirectoryListRequest;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
 use Mcp\Types\TextContent;
-use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Finder\Finder;
 
@@ -21,75 +21,7 @@ use Symfony\Component\Finder\Finder;
     description: 'List directories and files with filtering options using Symfony Finder. Always ask for source path.',
     title: 'Directory List',
 )]
-#[InputSchema(
-    name: 'path',
-    type: 'string',
-    description: 'Base directory path to list (relative to project root)',
-    required: true,
-)]
-#[InputSchema(
-    name: 'pattern',
-    type: 'string',
-    description: 'File name pattern(s) to match (e.g., "*.php", comma-separated for multiple patterns)',
-    required: false,
-)]
-#[InputSchema(
-    name: 'depth',
-    type: 'integer',
-    description: 'Maximum directory depth to search (0 means only files in the given directory) [default: 0]',
-    required: false,
-)]
-#[InputSchema(
-    name: 'size',
-    type: 'string',
-    description: 'Size filter expression (e.g., "> 1K", "< 10M", ">=1K <=10K")',
-    required: false,
-)]
-#[InputSchema(
-    name: 'date',
-    type: 'string',
-    description: 'Date filter expression (e.g., "since yesterday", "> 2023-01-01", "< now - 2 hours")',
-    required: false,
-)]
-#[InputSchema(
-    name: 'contains',
-    type: 'string',
-    description: 'Only files containing this text (uses grep-like behavior)',
-    required: false,
-)]
-#[InputSchema(
-    name: 'type',
-    type: 'string',
-    description: 'Filter by type: "file", "directory", or "any" (default)',
-    required: false,
-)]
-#[InputSchema(
-    name: 'sort',
-    type: 'string',
-    description: 'How to sort results: "name", "type", "date", "size"',
-    required: false,
-)]
-#[InputSchema(
-    name: 'showTree',
-    type: 'boolean',
-    description: 'Whether to include visual ASCII tree in the response',
-    required: false,
-)]
-#[InputSchema(
-    name: 'treeView',
-    type: 'object',
-    description: 'Configuration options for tree view visualization',
-    required: false,
-    properties: [
-        'showSize' => ['type' => 'boolean', 'description' => 'Show file sizes in tree view'],
-        'showLastModified' => ['type' => 'boolean', 'description' => 'Show last modified dates in tree view'],
-        'showCharCount' => ['type' => 'boolean', 'description' => 'Show character counts in tree view'],
-        'includeFiles' => [
-            'type' => 'boolean',
-            'description' => 'Include files in tree view (false to show only directories)',
-        ],
-    ],
-)]
+#[InputSchema(class: DirectoryListRequest::class)]
 final readonly class DirectoryListAction
 {
     public function __construct(
@@ -99,13 +31,12 @@ final readonly class DirectoryListAction
     ) {}
 
     #[Post(path: '/tools/call/directory-list', name: 'tools.directory-list')]
-    public function __invoke(ServerRequestInterface $request): CallToolResult
+    public function __invoke(DirectoryListRequest $request): CallToolResult
     {
         $this->logger->info('Processing directory-list tool');
 
         // Get params from the parsed body for POST requests
-        $parsedBody = $request->getParsedBody();
-        $relativePath = $parsedBody['path'] ?? '';
+        $relativePath = $request->path ?? '';
         $path = (string) $this->dirs->getRootPath()->join($relativePath);
 
         if (empty($path)) {
@@ -132,67 +63,60 @@ final readonly class DirectoryListAction
             $finder->in($path);
 
             // Apply pattern filter if provided
-            if (!empty($parsedBody['pattern'])) {
-                $patterns = \array_map('trim', \explode(',', (string) $parsedBody['pattern']));
+            if (!empty($request->pattern)) {
+                $patterns = \array_map('trim', \explode(',', (string) $request->pattern));
                 $finder->name($patterns);
             }
 
             // Apply depth filter if provided
-            if (isset($parsedBody['depth'])) {
-                $depth = (int) $parsedBody['depth'];
-                $finder->depth('<= ' . $depth);
-            } else {
-                $finder->depth(0);
-            }
+            $depth = $request->depth;
+            $finder->depth('<= ' . $depth);
 
             // Apply size filter if provided
-            if (!empty($parsedBody['size'])) {
-                $finder->size($parsedBody['size']);
+            if (!empty($request->size)) {
+                $finder->size($request->size);
             }
 
             // Apply date filter if provided
-            if (!empty($parsedBody['date'])) {
-                $finder->date($parsedBody['date']);
+            if (!empty($request->date)) {
+                $finder->date($request->date);
             }
 
             // Apply content filter if provided
-            if (!empty($parsedBody['contains'])) {
-                $finder->contains($parsedBody['contains']);
+            if (!empty($request->contains)) {
+                $finder->contains($request->contains);
             }
 
             // Apply type filter if provided
-            if (!empty($parsedBody['type'])) {
-                $type = \strtolower((string) $parsedBody['type']);
-                if ($type === 'file') {
-                    $finder->files();
-                } elseif ($type === 'directory') {
-                    $finder->directories();
-                }
+            $type = \strtolower($request->type);
+            if ($type === 'file') {
+                $finder->files();
+            } elseif ($type === 'directory') {
+                $finder->directories();
             } else {
                 // Default: include both files and directories
                 $finder->ignoreDotFiles(false);
             }
 
             // Apply sorting if provided
-            if (!empty($parsedBody['sort'])) {
-                $sort = \strtolower((string) $parsedBody['sort']);
-                switch ($sort) {
-                    case 'name':
-                        $finder->sortByName();
-                        break;
-                    case 'type':
-                        $finder->sortByType();
-                        break;
-                    case 'date':
-                        $finder->sortByModifiedTime();
-                        break;
-                    case 'size':
-                        $finder->sortBySize();
-                        break;
-                }
-            } else {
-                // Default sort by name
-                $finder->sortByName();
+            $sort = \strtolower($request->sort);
+            switch ($sort) {
+                case 'name':
+                    $finder->sortByName();
+                    break;
+                case 'type':
+                    $finder->sortByType();
+                    break;
+                case 'date':
+                    $finder->sortByModifiedTime();
+                    break;
+                case 'size':
+                    $finder->sortBySize();
+                    break;
+                default:
+                    // Default sort by name
+                    $finder->sortByName();
+                    break;
             }
 
             // Collect results
@@ -224,20 +148,19 @@ final readonly class DirectoryListAction
 
             // Generate tree view if requested
             $treeView = null;
-            if (!empty($parsedBody['showTree']) && (bool) $parsedBody['showTree'] === true) {
-                $treeViewConfig = new TreeViewConfig();
+            if ($request->showTree === true) {
+                $treeViewConfig = new \Butschster\ContextGenerator\Lib\TreeBuilder\TreeViewConfig();
 
                 // Apply tree view configuration if provided
-                if (!empty($parsedBody['treeView']) && \is_array($parsedBody['treeView'])) {
-                    $configData = $parsedBody['treeView'];
-                    $treeViewConfig = new TreeViewConfig(
+                if ($request->treeView !== null) {
+                    $treeViewConfig = new \Butschster\ContextGenerator\Lib\TreeBuilder\TreeViewConfig(
                         enabled: true,
-                        showSize: $configData['showSize'] ?? false,
-                        showLastModified: $configData['showLastModified'] ?? false,
-                        showCharCount: $configData['showCharCount'] ?? false,
-                        includeFiles: $configData['includeFiles'] ?? true,
-                        maxDepth: isset($parsedBody['depth']) ? (int) $parsedBody['depth'] : 0,
-                        dirContext: $configData['dirContext'] ?? [],
+                        showSize: $request->treeView->showSize,
+                        showLastModified: $request->treeView->showLastModified,
+                        showCharCount: $request->treeView->showCharCount,
+                        includeFiles: $request->treeView->includeFiles,
+                        maxDepth: $request->depth,
+                        dirContext: [],
                     );
                 }
 

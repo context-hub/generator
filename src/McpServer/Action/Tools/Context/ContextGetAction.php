@@ -8,12 +8,12 @@ use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
 use Butschster\ContextGenerator\Config\Registry\ConfigRegistryAccessor;
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
 use Butschster\ContextGenerator\Document\Compiler\Error\ErrorCollection;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Context\Dto\ContextGetRequest;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
 use Mcp\Types\TextContent;
-use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
 #[Tool(
@@ -21,12 +21,7 @@ use Psr\Log\LoggerInterface;
     description: 'Get a specific context document from the project context config',
     title: 'Get Context by path',
 )]
-#[InputSchema(
-    name: 'path',
-    type: 'string',
-    description: 'Output path to the context document provided in the config.',
-    required: true,
-)]
+#[InputSchema(class: ContextGetRequest::class)]
 final readonly class ContextGetAction
 {
     public function __construct(
@@ -36,13 +31,12 @@ final readonly class ContextGetAction
     ) {}
 
     #[Post(path: '/tools/call/context-get', name: 'tools.context.get')]
-    public function __invoke(ServerRequestInterface $request): CallToolResult
+    public function __invoke(ContextGetRequest $request): CallToolResult
     {
         $this->logger->info('Processing context-get tool');
 
         // Get params from the parsed body for POST requests
-        $parsedBody = $request->getParsedBody();
-        $path = $parsedBody['path'] ?? '';
+        $path = $request->path ?? '';
 
         if (empty($path)) {
             return new CallToolResult([

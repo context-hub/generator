@@ -6,12 +6,12 @@ namespace Butschster\ContextGenerator\McpServer\Action\Tools\Docs;
 
 use Butschster\ContextGenerator\Lib\Context7Client\Context7ClientInterface;
 use Butschster\ContextGenerator\Lib\Context7Client\Exception\Context7ClientException;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Docs\Dto\FetchLibraryDocsRequest;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
 use Mcp\Types\TextContent;
-use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
 #[Tool(
@@ -19,24 +19,7 @@ use Psr\Log\LoggerInterface;
     description: 'Find documentation for a specific library',
     title: 'Context7 Find Documentation',
 )]
-#[InputSchema(
-    name: 'id',
-    type: 'string',
-    description: 'The library ID to fetch documentation for. Use "library-search" tool to find library IDs by name.',
-    required: true,
-)]
-#[InputSchema(
-    name: 'tokens',
-    type: 'number',
-    description: 'Maximum number of tokens to return (optional)',
-    required: false,
-)]
-#[InputSchema(
-    name: 'topic',
-    type: 'string',
-    description: 'Specific topic to focus on (optional)',
-    required: false,
-)]
+#[InputSchema(class: FetchLibraryDocsRequest::class)]
 final readonly class FetchLibraryDocsAction
 {
     public function __construct(
@@ -45,20 +28,19 @@ final readonly class FetchLibraryDocsAction
     ) {}
 
     #[Post(path: '/tools/call/find-docs', name: 'tools.find-docs')]
-    public function __invoke(ServerRequestInterface $request): CallToolResult
+    public function __invoke(FetchLibraryDocsRequest $request): CallToolResult
     {
         $this->logger->info('Processing find-docs tool');
 
         // Get params from the parsed body for POST requests
-        $parsedBody = $request->getParsedBody();
-        $libraryId = \trim($parsedBody['id'] ?? '');
-        $tokens = isset($parsedBody['tokens']) ? (int) $parsedBody['tokens'] : null;
-        $topic = isset($parsedBody['topic']) ? \trim($parsedBody['topic']) : null;
+        $libraryId = \trim($request->id ?? '');
+        $tokens = $request->tokens;
+        $topic = $request->topic !== null ? \trim($request->topic) : null;
 
         if (empty($libraryId)) {
             return new CallToolResult([
                 new TextContent(
-                    text: 'Error: Missing libraryId parameter',
+                    text: 'Error: Missing id parameter',
                 ),
             ], isError: true);
         }

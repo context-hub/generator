@@ -6,7 +6,7 @@ namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem;
 
 use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\Dto\FileWriteRequest;
-use Butschster\ContextGenerator\McpServer\Attribute\InputClass;
+use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
@@ -19,7 +19,7 @@ use Spiral\Files\FilesInterface;
     description: 'Write content to a file (mostly new files, use apply-path for updates if possible). Can create parent directories automatically.',
     title: 'File Write',
 )]
-#[InputClass(FileWriteRequest::class)]
+#[InputSchema(class: FileWriteRequest::class)]
 final readonly class FileWriteAction
 {
     public function __construct(

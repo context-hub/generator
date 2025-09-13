@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem;
 
 use Butschster\ContextGenerator\DirectoriesInterface;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\Dto\FileReadRequest;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
 use Mcp\Types\TextContent;
-use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 use Spiral\Files\Exception\FilesException;
 use Spiral\Files\FilesInterface;
@@ -20,18 +20,7 @@ use Spiral\Files\FilesInterface;
     description: 'Read content from a file within the project directory structure',
     title: 'File Read',
 )]
-#[InputSchema(
-    name: 'path',
-    type: 'string',
-    description: 'Path to the file, relative to project root. Only files within project directory can be accessed.',
-    required: true,
-)]
-#[InputSchema(
-    name: 'encoding',
-    type: 'string',
-    description: 'File encoding (default: utf-8)',
-    default: 'utf-8',
-)]
+#[InputSchema(class: FileReadRequest::class)]
 final readonly class FileReadAction
 {
     public function __construct(
@@ -41,14 +30,12 @@ final readonly class FileReadAction
     ) {}
 
     #[Post(path: '/tools/call/file-read', name: 'tools.file-read')]
-    public function __invoke(ServerRequestInterface $request): CallToolResult
+    public function __invoke(FileReadRequest $request): CallToolResult
     {
         $this->logger->info('Processing file-read tool');
 
         // Get params from the parsed body for POST requests
-        $parsedBody = $request->getParsedBody();
-        $path = (string) $this->dirs->getRootPath()->join($parsedBody['path'] ?? '');
-        $parsedBody['encoding'] ?? 'utf-8';
+        $path = (string) $this->dirs->getRootPath()->join($request->path ?? '');
 
         if (empty($path)) {
             return new CallToolResult([

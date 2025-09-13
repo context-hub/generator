@@ -6,7 +6,7 @@ namespace Butschster\ContextGenerator\McpServer\Routing;
 
 use Butschster\ContextGenerator\Application\AppScope;
 use Butschster\ContextGenerator\Lib\SchemaMapper\SchemaMapperInterface;
-use Butschster\ContextGenerator\McpServer\Attribute\InputClass;
+use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Psr\Http\Message\ServerRequestInterface;
 use Spiral\Core\Attribute\Proxy;
 use Spiral\Core\InvokerInterface;
@@ -28,7 +28,7 @@ final readonly class ActionCaller
         ];
 
         $reflection = new \ReflectionClass($this->class);
-        $inputSchemaClass = $reflection->getAttributes(InputClass::class)[0] ?? null;
+        $inputSchemaClass = $reflection->getAttributes(InputSchema::class)[0] ?? null;
         if ($inputSchemaClass !== null) {
             $inputSchema = $inputSchemaClass->newInstance();
 
