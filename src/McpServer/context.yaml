@@ -48,9 +48,17 @@ documents:
         sourcePaths:
           - ./Projects
 
+  - description: "MCP Filesystem tool"
+    outputPath: "mcp/tools/filesystem.md"
+    sources:
+      - type: file
+        sourcePaths:
+          - ./Action/Tools/Filesystem
+          - ./McpServerBootloader.php
+          - ../DirectoriesInterface.php
 
   - description: "MCP Docs search"
-    outputPath: "mcp/docs-search.md"
+    outputPath: "mcp/tools/docs-search.md"
     sources:
       - type: file
         sourcePaths:

@@ -10,12 +10,15 @@ final readonly class FileApplyPatchRequest
 {
     public function __construct(
         #[Field(
-            description: 'Path to the file to patch, relative to project root',
+            description: 'Path to the file to modify, relative to project root',
         )]
         public string $path,
+        /**
+         * @var FileApplyPatchChunk[]
+         */
         #[Field(
-            description: 'Content of the git patch to apply. It must start with "diff --git a/b.txt b/b.txt ...". In other words, it must be a valid git patch format.',
+            description: 'Array of change chunks to apply to the file',
         )]
-        public string $patch,
+        public array $chunks,
     ) {}
 }

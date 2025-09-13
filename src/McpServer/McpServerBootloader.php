@@ -76,7 +76,7 @@ final class McpServerBootloader extends Bootloader
                 'file_operations' => [
                     'enable' => (bool) $env->get('MCP_FILE_OPERATIONS', !$isCommonProject),
                     'write' => (bool) $env->get('MCP_FILE_WRITE', true),
-                    'apply-patch' => (bool) $env->get('MCP_FILE_APPLY_PATCH', false),
+                    'apply-patch' => (bool) $env->get('MCP_FILE_APPLY_PATCH', true),
                     'directories-list' => (bool) $env->get('MCP_FILE_DIRECTORIES_LIST', true),
                 ],
                 'context_operations' => [
