@@ -24,17 +24,17 @@ final class FileWriteActionTest extends TestCase
     private FilesInterface&MockObject $files;
     private DirectoriesInterface&MockObject $dirs;
 
-    protected function setUp(): void
+    /**
+     * @return array<string, array{string, string, bool, string}>
+     */
+    public static function contentLengthProvider(): array
     {
-        $this->logger = $this->createMock(LoggerInterface::class);
-        $this->files = $this->createMock(FilesInterface::class);
-        $this->dirs = $this->createMock(DirectoriesInterface::class);
-
-        $this->action = new FileWriteAction(
-            $this->logger,
-            $this->files,
-            $this->dirs,
-        );
+        return [
+            'empty content' => ['', 'test.txt', false, 'Successfully wrote 0 bytes'],
+            'short content' => ['Hi', 'test.txt', false, 'Successfully wrote 2 bytes'],
+            'unicode content' => ['Hello 🌍', 'test.txt', false, 'Successfully wrote 10 bytes'],
+            'multiline content' => ["Line 1\nLine 2\nLine 3", 'test.txt', false, 'Successfully wrote 20 bytes'],
+        ];
     }
 
     #[Test]
@@ -201,7 +201,7 @@ final class FileWriteActionTest extends TestCase
         $this->files
             ->expects($this->once())
             ->method('exists')
-            ->with('/project')  // dirname of '/project/root/' 
+            ->with('/project')  // dirname of '/project/root/'
             ->willReturn(false);
 
         $this->files
@@ -351,19 +351,6 @@ final class FileWriteActionTest extends TestCase
         $content = $result->content[0];
         $this->assertInstanceOf(TextContent::class, $content);
         $this->assertStringContainsString('Successfully wrote 7 bytes', $content->text);
-    }
-
-    /**
-     * @return array<string, array{string, string, bool, string}>
-     */
-    public static function contentLengthProvider(): array
-    {
-        return [
-            'empty content' => ['', 'test.txt', false, 'Successfully wrote 0 bytes'],
-            'short content' => ['Hi', 'test.txt', false, 'Successfully wrote 2 bytes'],
-            'unicode content' => ['Hello 🌍', 'test.txt', false, 'Successfully wrote 10 bytes'],
-            'multiline content' => ["Line 1\nLine 2\nLine 3", 'test.txt', false, 'Successfully wrote 20 bytes'],
-        ];
     }
 
     #[Test]
@@ -516,5 +503,18 @@ final class FileWriteActionTest extends TestCase
         $this->assertInstanceOf(TextContent::class, $content);
         $this->assertStringContainsString('Successfully wrote 18 bytes', $content->text);
         $this->assertStringContainsString($expectedFullPath, $content->text);
+    }
+
+    protected function setUp(): void
+    {
+        $this->logger = $this->createMock(LoggerInterface::class);
+        $this->files = $this->createMock(FilesInterface::class);
+        $this->dirs = $this->createMock(DirectoriesInterface::class);
+
+        $this->action = new FileWriteAction(
+            $this->logger,
+            $this->files,
+            $this->dirs,
+        );
     }
 }

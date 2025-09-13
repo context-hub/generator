@@ -6,7 +6,6 @@ namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem;
 
 use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\Lib\TreeBuilder\FileTreeBuilder;
-use Butschster\ContextGenerator\Lib\TreeBuilder\TreeViewConfig;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\Dto\DirectoryListRequest;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
@@ -100,24 +99,14 @@ final readonly class DirectoryListAction
 
             // Apply sorting if provided
             $sort = \strtolower($request->sort);
-            switch ($sort) {
-                case 'name':
-                    $finder->sortByName();
-                    break;
-                case 'type':
-                    $finder->sortByType();
-                    break;
-                case 'date':
-                    $finder->sortByModifiedTime();
-                    break;
-                case 'size':
-                    $finder->sortBySize();
-                    break;
-                default:
-                    // Default sort by name
-                    $finder->sortByName();
-                    break;
-            }
+            match ($sort) {
+                'name' => $finder->sortByName(),
+                'type' => $finder->sortByType(),
+                'date' => $finder->sortByModifiedTime(),
+                'size' => $finder->sortBySize(),
+                // Default sort by name
+                default => $finder->sortByName(),
+            };
 
             // Collect results
             $files = [];

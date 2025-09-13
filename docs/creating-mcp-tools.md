@@ -280,10 +280,91 @@ Follow the established pattern for route naming:
 - Path: `/tools/call/{tool-name}`
 - Name: `tools.{category}.{action}` or `tools.{tool-name}`
 
-## Tool Discovery
+## Tool Registration
 
-CTX automatically discovers tools through attribute scanning. No manual registration is required - just create your tool
-class with the proper attributes and it will be available in the MCP server.
+While CTX uses attribute-based tool discovery, tools must be registered in the MCP server bootloader to be available. Follow these steps:
+
+### 1. Register Your Tool Classes
+
+Add your tool action classes to `src/McpServer/McpServerBootloader.php`:
+
+```php
+// 1. Import your tool actions
+use YourNamespace\Action\Tools\YourCategory\YourToolAction;
+
+// 2. Add to the actions() method
+if ($config->isYourCategoryEnabled()) {
+    $actions = [
+        ...$actions,
+        YourToolAction::class,
+    ];
+}
+```
+
+### 2. Add Configuration Support (Optional)
+
+For configurable tools, add settings to `McpConfig.php`:
+
+```php
+// In the $config array
+'your_category' => [
+    'enable' => true,
+    'your_tool' => true,
+],
+
+// Add configuration methods
+public function isYourCategoryEnabled(): bool
+{
+    return $this->config['your_category']['enable'] ?? true;
+}
+```
+
+### 3. Environment Variables (Optional)
+
+Add environment variable support in `McpServerBootloader::init()`:
+
+```php
+'your_category' => [
+    'enable' => (bool) $env->get('MCP_YOUR_CATEGORY', true),
+    'your_tool' => (bool) $env->get('MCP_YOUR_TOOL', true),
+],
+```
+
+### Registration Examples
+
+#### Simple Tool Registration
+For basic tools without configuration:
+
+```php
+// In actions() method
+$actions = [
+    ...$actions,
+    YourSimpleToolAction::class,
+];
+```
+
+#### Configurable Tool Category
+For tool categories with multiple tools:
+
+```php
+if ($config->isGitOperationsEnabled()) {
+    $gitActions = [];
+    
+    if ($config->isGitStatusEnabled()) {
+        $gitActions[] = GitStatusAction::class;
+    }
+    
+    if ($config->isGitCommitEnabled()) {
+        $gitActions[] = GitCommitAction::class;
+    }
+    
+    $actions = [...$actions, ...$gitActions];
+}
+```
+
+### Tool Discovery
+
+After registration, CTX discovers tools through attribute scanning of the registered classes. The `#[Tool]` and `#[InputSchema]` attributes define the tool metadata and input schema automatically.
 
 ## Testing Your Tool
 

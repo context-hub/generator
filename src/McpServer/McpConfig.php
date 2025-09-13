@@ -34,6 +34,9 @@ final class McpConfig extends InjectableConfig
             'enable' => true,
             'max_runtime' => 30,
         ],
+        'git_operations' => [
+            'enable' => true,
+        ],
     ];
 
     public function getDocumentNameFormat(string $path, string $description, string $tags): string
@@ -88,5 +91,10 @@ final class McpConfig extends InjectableConfig
     public function isCustomToolsEnabled(): bool
     {
         return $this->config['custom_tools']['enable'] ?? true;
+    }
+
+    public function isGitOperationsEnabled(): bool
+    {
+        return $this->config['git_operations']['enable'] ?? true;
     }
 }

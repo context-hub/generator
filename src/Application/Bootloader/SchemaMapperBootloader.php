@@ -13,6 +13,7 @@ use Butschster\ContextGenerator\Lib\SchemaMapper\Valinor\SchemaMapper;
 
 final class SchemaMapperBootloader extends Bootloader
 {
+    #[\Override]
     public function defineSingletons(): array
     {
         return [

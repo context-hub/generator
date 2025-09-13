@@ -12,6 +12,8 @@ use Mcp\Types\ToolInputSchema;
 
 final readonly class ToolAttributesParser
 {
+    private const string TOOL_NAME_REGEX = '/^[a-zA-Z0-9_-]+$/';
+
     public function __construct(
         private SchemaMapperInterface $schemaMapper,
     ) {}
@@ -31,6 +33,16 @@ final readonly class ToolAttributesParser
         } else {
             $inputSchema = $inputSchemaClass->newInstance();
             $schema = ToolInputSchema::fromArray($this->schemaMapper->toJsonSchema($inputSchema->class));
+        }
+
+        // Tool name can only contain alphanumeric characters and underscores
+        if (!\preg_match(self::TOOL_NAME_REGEX, $tool->name)) {
+            throw new \InvalidArgumentException(
+                \sprintf(
+                    'Tool name "%s" is invalid. It can only contain alphanumeric characters and underscores.',
+                    $tool->name,
+                ),
+            );
         }
 
         return new \Mcp\Types\Tool(

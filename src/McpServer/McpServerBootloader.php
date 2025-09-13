@@ -25,6 +25,9 @@ use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileApplyPatch
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileMoveAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileReadAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileWriteAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Git\GitAddAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Git\GitCommitAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Git\GitStatusAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\ListToolsAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Prompts\GetPromptToolAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Prompts\ListPromptsToolAction;
@@ -91,6 +94,9 @@ final class McpServerBootloader extends Bootloader
                 ],
                 'common_prompts' => [
                     'enable' => (bool) $env->get('MCP_COMMON_PROMPTS', true),
+                ],
+                'git_operations' => [
+                    'enable' => (bool) $env->get('MCP_GIT_OPERATIONS', !$isCommonProject),
                 ],
             ],
         );
@@ -201,6 +207,12 @@ final class McpServerBootloader extends Bootloader
             if ($config->isFileWriteEnabled()) {
                 $actions[] = FileWriteAction::class;
             }
+        }
+
+        if ($config->isGitOperationsEnabled()) {
+            $actions[] = GitStatusAction::class;
+            $actions[] = GitAddAction::class;
+            $actions[] = GitCommitAction::class;
         }
 
         if ($config->isCustomToolsEnabled()) {

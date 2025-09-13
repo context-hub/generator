@@ -109,7 +109,7 @@ class Kernel extends AbstractKernel
 
         return \array_merge(
             [
-                // custom directories
+                'runtime' => $directories['root'] . '/runtime',
             ],
             $directories,
         );
