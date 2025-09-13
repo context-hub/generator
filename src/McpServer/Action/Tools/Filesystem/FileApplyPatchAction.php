@@ -6,30 +6,19 @@ namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem;
 
 use Butschster\ContextGenerator\Lib\Git\CommandsExecutorInterface;
 use Butschster\ContextGenerator\Lib\Git\Exception\GitCommandException;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\Dto\FileApplyPatchRequest;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
 use Mcp\Types\TextContent;
-use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
 #[Tool(
     name: 'file-apply-patch',
     description: 'Apply a git patch to a file within the project',
 )]
-#[InputSchema(
-    name: 'path',
-    type: 'string',
-    description: 'Path to the file to patch, relative to project root',
-    required: true,
-)]
-#[InputSchema(
-    name: 'patch',
-    type: 'string',
-    description: 'Content of the git patch to apply. It must start with "diff --git a/b.txt b/b.txt ...". In other words, it must be a valid git patch format.',
-    required: true,
-)]
+#[InputSchema(class: FileApplyPatchRequest::class)]
 final readonly class FileApplyPatchAction
 {
     public function __construct(
@@ -38,14 +27,13 @@ final readonly class FileApplyPatchAction
     ) {}
 
     #[Post(path: '/tools/call/file-apply-patch', name: 'tools.file-apply-patch')]
-    public function __invoke(ServerRequestInterface $request): CallToolResult
+    public function __invoke(FileApplyPatchRequest $request): CallToolResult
     {
         $this->logger->info('Processing file-apply-patch tool');
 
         // Get params from the parsed body for POST requests
-        $parsedBody = $request->getParsedBody();
-        $path = $parsedBody['path'] ?? '';
-        $patch = $parsedBody['patch'] ?? '';
+        $path = $request->path;
+        $patch = $request->patch;
 
         // Validate patch format
         if (!\str_starts_with($patch, 'diff --git a/')) {

@@ -133,6 +133,7 @@ final readonly class Server
         try {
             $response = $this->router->dispatch($request);
             \assert($response instanceof JsonResponse);
+
             return $response->getPayload();
         } catch (\Throwable $e) {
             $this->logger->error('Tool call error', [
@@ -205,6 +206,7 @@ final readonly class Server
                 'error' => $e->getMessage(),
             ]);
         }
+
         return new GetPromptResult([]);
     }
 }

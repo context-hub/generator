@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem;
 
 use Butschster\ContextGenerator\DirectoriesInterface;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\Dto\FileMoveRequest;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
 use Mcp\Types\TextContent;
-use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 use Spiral\Files\Exception\FilesException;
 use Spiral\Files\FilesInterface;
@@ -20,23 +20,7 @@ use Spiral\Files\FilesInterface;
     description: 'Move a file within the project directory structure',
     title: 'File Move',
 )]
-#[InputSchema(
-    name: 'source',
-    type: 'string',
-    description: 'Path to the source file, relative to project root. Only files within project directory can be accessed.',
-    required: true,
-)]
-#[InputSchema(
-    name: 'destination',
-    type: 'string',
-    description: 'Path to the destination file, relative to project root. Only files within project directory can be accessed.',
-    required: true,
-)]
-#[InputSchema(
-    name: 'createDirectory',
-    type: 'boolean',
-    description: 'Create directory if it does not exist',
-)]
+#[InputSchema(class: FileMoveRequest::class)]
 final readonly class FileMoveAction
 {
     public function __construct(
@@ -46,15 +30,14 @@ final readonly class FileMoveAction
     ) {}
 
     #[Post(path: '/tools/call/file-move', name: 'tools.file-move')]
-    public function __invoke(ServerRequestInterface $request): CallToolResult
+    public function __invoke(FileMoveRequest $request): CallToolResult
     {
         $this->logger->info('Processing file-move tool');
 
         // Get params from the parsed body for POST requests
-        $parsedBody = $request->getParsedBody();
-        $source = (string) $this->dirs->getRootPath()->join($parsedBody['source'] ?? '');
-        $destination = (string) $this->dirs->getRootPath()->join($parsedBody['destination'] ?? '');
-        $createDirectory = $parsedBody['createDirectory'] ?? true;
+        $source = (string) $this->dirs->getRootPath()->join($request->source);
+        $destination = (string) $this->dirs->getRootPath()->join($request->destination);
+        $createDirectory = $request->createDirectory;
 
         if (empty($source)) {
             return new CallToolResult([

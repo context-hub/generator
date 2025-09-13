@@ -6,12 +6,12 @@ namespace Butschster\ContextGenerator\McpServer\Action\Tools\Docs;
 
 use Butschster\ContextGenerator\Lib\Context7Client\Context7ClientInterface;
 use Butschster\ContextGenerator\Lib\Context7Client\Exception\Context7ClientException;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Docs\Dto\LibrarySearchRequest;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
 use Mcp\Types\TextContent;
-use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
 #[Tool(
@@ -19,18 +19,7 @@ use Psr\Log\LoggerInterface;
     description: 'Search for available documentation libraries in Context7',
     title: 'Context7 Library Search',
 )]
-#[InputSchema(
-    name: 'query',
-    type: 'string',
-    description: 'Provide a library name to search for relevant libraries id (Like "Spiral Framework", "Symfony", "Laravel", etc.)',
-    required: true,
-)]
-#[InputSchema(
-    name: 'maxResults',
-    type: 'number',
-    description: 'Maximum number of results to return (default is 5)',
-    required: false,
-)]
+#[InputSchema(class: LibrarySearchRequest::class)]
 final readonly class LibrarySearchAction
 {
     public function __construct(
@@ -39,14 +28,13 @@ final readonly class LibrarySearchAction
     ) {}
 
     #[Post(path: '/tools/call/library-search', name: 'tools.library-search')]
-    public function __invoke(ServerRequestInterface $request): CallToolResult
+    public function __invoke(LibrarySearchRequest $request): CallToolResult
     {
         $this->logger->info('Processing library-search tool');
 
         // Get params from the parsed body for POST requests
-        $parsedBody = $request->getParsedBody();
-        $query = \trim($parsedBody['query'] ?? '');
-        $maxResults = \min(10, \max(1, (int) ($parsedBody['maxResults'] ?? 5)));
+        $query = \trim($request->query);
+        $maxResults = \min(10, \max(1, $request->maxResults ?? 5));
 
         if (empty($query)) {
             return new CallToolResult([

@@ -10,11 +10,13 @@ use League\Route\Strategy\ApplicationStrategy;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
+use Spiral\Exceptions\ExceptionReporterInterface;
 
 final class McpResponseStrategy extends ApplicationStrategy
 {
     public function __construct(
         private readonly LoggerInterface $logger,
+        private readonly ExceptionReporterInterface $reporter,
     ) {}
 
     #[\Override]
@@ -40,6 +42,8 @@ final class McpResponseStrategy extends ApplicationStrategy
                 'exception' => $e,
                 'request' => $request,
             ]);
+
+            $this->reporter->report($e);
 
             return new JsonResponse([
                 'error' => 'Internal Server Error',

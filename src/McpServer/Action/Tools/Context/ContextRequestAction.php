@@ -8,12 +8,12 @@ use Butschster\ContextGenerator\Config\ConfigurationProvider;
 use Butschster\ContextGenerator\Config\Registry\ConfigRegistryAccessor;
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
 use Butschster\ContextGenerator\Document\Compiler\Error\ErrorCollection;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Context\Dto\ContextRequestRequest;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
 use Mcp\Types\TextContent;
-use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
 #[Tool(
@@ -21,12 +21,7 @@ use Psr\Log\LoggerInterface;
     description: 'Request a context document using JSON schema, filters and modifiers',
     title: 'Request Context by JSON',
 )]
-#[InputSchema(
-    name: 'json',
-    type: 'string',
-    description: 'Context configuration in JSON format. It should contain the context documents with sources (file, tree, text) and any filters or modifiers to be applied.',
-    required: true,
-)]
+#[InputSchema(class: ContextRequestRequest::class)]
 final readonly class ContextRequestAction
 {
     public function __construct(
@@ -36,13 +31,12 @@ final readonly class ContextRequestAction
     ) {}
 
     #[Post(path: '/tools/call/context-request', name: 'tools.context.request')]
-    public function __invoke(ServerRequestInterface $request): CallToolResult
+    public function __invoke(ContextRequestRequest $request): CallToolResult
     {
         $this->logger->info('Handling context-request action');
 
         // Get the json parameter from POST body
-        $parsedBody = $request->getParsedBody();
-        $json = $parsedBody['json'] ?? '';
+        $json = $request->json;
 
         if (empty($json)) {
             return new CallToolResult([
