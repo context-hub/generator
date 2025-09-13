@@ -33,7 +33,7 @@ final readonly class FetchLibraryDocsAction
         $this->logger->info('Processing find-docs tool');
 
         // Get params from the parsed body for POST requests
-        $libraryId = \trim($request->id ?? '');
+        $libraryId = \trim($request->id);
         $tokens = $request->tokens;
         $topic = $request->topic !== null ? \trim($request->topic) : null;
 

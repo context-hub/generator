@@ -32,8 +32,8 @@ final readonly class FileApplyPatchAction
         $this->logger->info('Processing file-apply-patch tool');
 
         // Get params from the parsed body for POST requests
-        $path = $request->path ?? '';
-        $patch = $request->patch ?? '';
+        $path = $request->path;
+        $patch = $request->patch;
 
         // Validate patch format
         if (!\str_starts_with($patch, 'diff --git a/')) {

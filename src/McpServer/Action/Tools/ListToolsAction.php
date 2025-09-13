@@ -25,7 +25,6 @@ final readonly class ListToolsAction
     #[Get(path: '/tools/list', name: 'tools.list')]
     public function __invoke(ServerRequestInterface $request): ListToolsResult
     {
-        trap($request);
         $this->logger->info('Listing available tools');
 
         $tools = $this->registry->getTools();

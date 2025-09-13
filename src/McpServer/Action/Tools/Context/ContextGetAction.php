@@ -36,7 +36,7 @@ final readonly class ContextGetAction
         $this->logger->info('Processing context-get tool');
 
         // Get params from the parsed body for POST requests
-        $path = $request->path ?? '';
+        $path = $request->path;
 
         if (empty($path)) {
             return new CallToolResult([

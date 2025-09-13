@@ -34,7 +34,6 @@ final readonly class GitStatusAction
     #[Post(path: '/tools/call/git-status', name: 'tools.git.status')]
     public function __invoke(GitStatusRequest $request): CallToolResult
     {
-        trap($request);
         $this->logger->info('Processing git-status tool');
 
         $repository = (string) $this->dirs->getRootPath();

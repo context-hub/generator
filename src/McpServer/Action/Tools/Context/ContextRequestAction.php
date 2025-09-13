@@ -36,7 +36,7 @@ final readonly class ContextRequestAction
         $this->logger->info('Handling context-request action');
 
         // Get the json parameter from POST body
-        $json = $request->json ?? '';
+        $json = $request->json;
 
         if (empty($json)) {
             return new CallToolResult([

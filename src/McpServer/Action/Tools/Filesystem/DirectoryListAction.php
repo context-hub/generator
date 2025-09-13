@@ -35,7 +35,7 @@ final readonly class DirectoryListAction
         $this->logger->info('Processing directory-list tool');
 
         // Get params from the parsed body for POST requests
-        $relativePath = $request->path ?? '';
+        $relativePath = $request->path;
         $path = (string) $this->dirs->getRootPath()->join($relativePath);
 
         if (empty($path)) {
@@ -63,7 +63,7 @@ final readonly class DirectoryListAction
 
             // Apply pattern filter if provided
             if (!empty($request->pattern)) {
-                $patterns = \array_map('trim', \explode(',', (string) $request->pattern));
+                $patterns = \array_map(\trim(...), \explode(',', $request->pattern));
                 $finder->name($patterns);
             }
 

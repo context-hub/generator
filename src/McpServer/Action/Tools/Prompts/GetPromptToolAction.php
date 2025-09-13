@@ -35,7 +35,7 @@ final readonly class GetPromptToolAction
         $this->logger->info('Getting prompt via tool action');
 
         // Get prompt ID from request
-        $id = $request->id ?? '';
+        $id = $request->id;
 
         if (empty($id)) {
             return new CallToolResult([

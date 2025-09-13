@@ -33,7 +33,7 @@ final readonly class LibrarySearchAction
         $this->logger->info('Processing library-search tool');
 
         // Get params from the parsed body for POST requests
-        $query = \trim($request->query ?? '');
+        $query = \trim($request->query);
         $maxResults = \min(10, \max(1, $request->maxResults ?? 5));
 
         if (empty($query)) {

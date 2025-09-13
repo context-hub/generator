@@ -35,8 +35,8 @@ final readonly class FileMoveAction
         $this->logger->info('Processing file-move tool');
 
         // Get params from the parsed body for POST requests
-        $source = (string) $this->dirs->getRootPath()->join($request->source ?? '');
-        $destination = (string) $this->dirs->getRootPath()->join($request->destination ?? '');
+        $source = (string) $this->dirs->getRootPath()->join($request->source);
+        $destination = (string) $this->dirs->getRootPath()->join($request->destination);
         $createDirectory = $request->createDirectory;
 
         if (empty($source)) {

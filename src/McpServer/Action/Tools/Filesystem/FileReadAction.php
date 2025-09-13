@@ -35,7 +35,7 @@ final readonly class FileReadAction
         $this->logger->info('Processing file-read tool');
 
         // Get params from the parsed body for POST requests
-        $path = (string) $this->dirs->getRootPath()->join($request->path ?? '');
+        $path = (string) $this->dirs->getRootPath()->join($request->path);
 
         if (empty($path)) {
             return new CallToolResult([

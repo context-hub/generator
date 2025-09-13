@@ -22,6 +22,7 @@ final readonly class SchemaMapper implements SchemaMapperInterface
         }
 
         if (\class_exists($class)) {
+            /** @psalm-suppress InternalMethod */
             return $this->generator->generate($class)->jsonSerialize();
         }
 
