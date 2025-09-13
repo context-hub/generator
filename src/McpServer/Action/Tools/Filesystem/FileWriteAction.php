@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem;
 
 use Butschster\ContextGenerator\DirectoriesInterface;
-use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\Dto\FileWriteRequest;
+use Butschster\ContextGenerator\McpServer\Attribute\InputClass;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
 use Mcp\Types\TextContent;
-use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 use Spiral\Files\FilesInterface;
 
@@ -19,24 +19,7 @@ use Spiral\Files\FilesInterface;
     description: 'Write content to a file (mostly new files, use apply-path for updates if possible). Can create parent directories automatically.',
     title: 'File Write',
 )]
-#[InputSchema(
-    name: 'path',
-    type: 'string',
-    description: 'Relative path to the file (e.g., "src/file.txt"). Path is resolved against project root.',
-    required: true,
-)]
-#[InputSchema(
-    name: 'content',
-    type: 'string',
-    description: 'Content to write',
-    required: true,
-)]
-#[InputSchema(
-    name: 'createDirectory',
-    type: 'boolean',
-    description: 'Create directory if it does not exist',
-    default: true,
-)]
+#[InputClass(FileWriteRequest::class)]
 final readonly class FileWriteAction
 {
     public function __construct(
@@ -46,15 +29,12 @@ final readonly class FileWriteAction
     ) {}
 
     #[Post(path: '/tools/call/file-write', name: 'tools.file-write')]
-    public function __invoke(ServerRequestInterface $request): CallToolResult
+    public function __invoke(FileWriteRequest $request): CallToolResult
     {
         $this->logger->info('Processing file-write tool');
 
         // Get params from the parsed body for POST requests
-        $parsedBody = $request->getParsedBody();
-        $path = (string) $this->dirs->getRootPath()->join($parsedBody['path'] ?? '');
-        $content = $parsedBody['content'] ?? '';
-        $createDirectory = $parsedBody['createDirectory'] ?? true;
+        $path = (string) $this->dirs->getRootPath()->join($request->path ?? '');
 
         if (empty($path)) {
             return new CallToolResult([
@@ -66,7 +46,7 @@ final readonly class FileWriteAction
 
         try {
             // Ensure directory exists if requested
-            if ($createDirectory) {
+            if ($request->createDirectory) {
                 $directory = \dirname($path);
                 if (!$this->files->exists($directory)) {
                     if (!$this->files->ensureDirectory($directory)) {
@@ -87,7 +67,7 @@ final readonly class FileWriteAction
                 ], isError: true);
             }
 
-            $success = $this->files->write($path, $content);
+            $success = $this->files->write($path, $request->content);
 
             if (!$success) {
                 return new CallToolResult([
@@ -99,7 +79,7 @@ final readonly class FileWriteAction
 
             return new CallToolResult([
                 new TextContent(
-                    text: \sprintf("Successfully wrote %d bytes to file '%s'", \strlen($content), $path),
+                    text: \sprintf("Successfully wrote %d bytes to file '%s'", \strlen($request->content), $path),
                 ),
             ]);
         } catch (\Throwable $e) {

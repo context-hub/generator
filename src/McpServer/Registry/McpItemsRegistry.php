@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer\Registry;
 
-use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Prompt;
 use Butschster\ContextGenerator\McpServer\Attribute\Resource;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
-use Mcp\Types\ToolAnnotations;
-use Mcp\Types\ToolInputSchema;
+use Butschster\ContextGenerator\McpServer\Tool\ToolAttributesParser;
 use Psr\Log\LoggerInterface;
 
 final class McpItemsRegistry
@@ -24,6 +22,7 @@ final class McpItemsRegistry
     private array $tools = [];
 
     public function __construct(
+        private readonly ToolAttributesParser $toolAttributesParser,
         private readonly LoggerInterface $logger,
     ) {}
 
@@ -72,64 +71,11 @@ final class McpItemsRegistry
         $toolAttributes = $reflection->getAttributes(Tool::class);
         if (!empty($toolAttributes)) {
             $tool = $toolAttributes[0]->newInstance();
-
-            // Look for InputSchema attributes
-            $inputSchemaAttributes = $reflection->getAttributes(InputSchema::class);
-            $inputSchema = [
-                'type' => 'object',
-                'properties' => [],
-                'required' => [],
-            ];
-
-            foreach ($inputSchemaAttributes as $attribute) {
-                $schema = $attribute->newInstance();
-
-                // Add to properties
-                $property = [
-                    'type' => $schema->type,
-                ];
-
-                if ($schema->description !== null) {
-                    $property['description'] = $schema->description;
-                }
-
-                if ($schema->default !== null) {
-                    $property['default'] = $schema->default;
-                }
-
-                if (!empty($schema->properties)) {
-                    $property['properties'] = $schema->properties;
-                }
-
-                if (!empty($schema->items)) {
-                    $property['items'] = $schema->items;
-                }
-
-                if (!empty($schema->enum)) {
-                    $property['enum'] = $schema->enum;
-                }
-
-                $inputSchema['properties'][$schema->name] = $property;
-
-                // Add to required list if needed
-                if ($schema->required) {
-                    $inputSchema['required'][] = $schema->name;
-                }
-            }
-
-            $this->tools[$tool->name] = new \Mcp\Types\Tool(
-                name: $tool->name,
-                inputSchema: ToolInputSchema::fromArray($inputSchema),
-                description: $tool->description,
-                annotations: $tool->title ? new ToolAnnotations(
-                    title: $tool->title,
-                ) : null,
-            );
+            $this->tools[$tool->name] = $this->toolAttributesParser->parse($className);
 
             $this->logger->info('Registered tool', [
                 'name' => $tool->name,
                 'description' => $tool->description,
-                'inputSchema' => $inputSchema,
             ]);
         }
     }
@@ -162,6 +108,7 @@ final class McpItemsRegistry
 
     /**
      * Get all registered tools
+     * @return array<\Mcp\Types\Tool>
      */
     public function getTools(): array
     {

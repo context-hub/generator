@@ -17,6 +17,7 @@ use Butschster\ContextGenerator\Application\Bootloader\GitlabClientBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\HttpClientBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\LoggerBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\ModifierBootloader;
+use Butschster\ContextGenerator\Application\Bootloader\SchemaMapperBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\SourceFetcherBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\VariableBootloader;
 use Butschster\ContextGenerator\McpServer\McpServerBootloader;
@@ -67,6 +68,7 @@ class Kernel extends AbstractKernel
             ContentRendererBootloader::class,
             SourceFetcherBootloader::class,
             SourceRegistryBootloader::class,
+            SchemaMapperBootloader::class,
 
             // Sources
             TextSourceBootloader::class,
