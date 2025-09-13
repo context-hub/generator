@@ -17,7 +17,7 @@ final readonly class FileApplyPatchChunk
          * @var string[]
          */
         #[Field(
-            description: 'Array of change lines: " " for context, "+" for additions, "-" for deletions',
+            description: 'Array of change lines: " " for context, "+" for additions, "-" for deletions. Pay attention to the indentation level. You need to provide the same indentation level as in the original file.',
         )]
         public array $changes,
     ) {}
