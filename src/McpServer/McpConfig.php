@@ -37,6 +37,9 @@ final class McpConfig extends InjectableConfig
         'git_operations' => [
             'enable' => true,
         ],
+        'project_operations' => [
+            'enable' => true,
+        ],
     ];
 
     public function getDocumentNameFormat(string $path, string $description, string $tags): string
@@ -96,5 +99,10 @@ final class McpConfig extends InjectableConfig
     public function isGitOperationsEnabled(): bool
     {
         return $this->config['git_operations']['enable'] ?? true;
+    }
+
+    public function isProjectOperationsEnabled(): bool
+    {
+        return $this->config['project_operations']['enable'] ?? true;
     }
 }
