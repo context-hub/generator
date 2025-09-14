@@ -32,6 +32,8 @@ use Butschster\ContextGenerator\McpServer\Action\Tools\ListToolsAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Prompts\GetPromptToolAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Prompts\ListPromptsToolAction;
 use Butschster\ContextGenerator\McpServer\Console\MCPServerCommand;
+use Butschster\ContextGenerator\McpServer\Projects\Actions\ProjectsListToolAction;
+use Butschster\ContextGenerator\McpServer\Projects\Actions\ProjectSwitchToolAction;
 use Butschster\ContextGenerator\McpServer\Projects\McpProjectsBootloader;
 use Butschster\ContextGenerator\McpServer\ProjectService\ProjectServiceInterface;
 use Butschster\ContextGenerator\McpServer\Prompt\McpPromptBootloader;
@@ -97,6 +99,9 @@ final class McpServerBootloader extends Bootloader
                 ],
                 'git_operations' => [
                     'enable' => (bool) $env->get('MCP_GIT_OPERATIONS', !$isCommonProject),
+                ],
+                'project_operations' => [
+                    'enable' => (bool) $env->get('MCP_PROJECT_OPERATIONS', true),
                 ],
             ],
         );
@@ -189,6 +194,7 @@ final class McpServerBootloader extends Bootloader
                 FetchLibraryDocsAction::class,
             ];
         }
+
         if ($config->isFileOperationsEnabled()) {
             $actions = [
                 ...$actions,
@@ -207,6 +213,14 @@ final class McpServerBootloader extends Bootloader
             if ($config->isFileWriteEnabled()) {
                 $actions[] = FileWriteAction::class;
             }
+        }
+
+        if ($config->isProjectOperationsEnabled()) {
+            $actions = [
+                ...$actions,
+                ProjectsListToolAction::class,
+                ProjectSwitchToolAction::class,
+            ];
         }
 
         if ($config->isGitOperationsEnabled()) {
