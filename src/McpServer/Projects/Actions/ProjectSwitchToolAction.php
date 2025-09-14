@@ -34,11 +34,11 @@ final readonly class ProjectSwitchToolAction
     public function __invoke(ProjectSwitchRequest $request): CallToolResult
     {
         $this->logger->info('Processing project-switch tool', [
-            'pathOrAlias' => $request->pathOrAlias,
+            'pathOrAlias' => $request->alias,
         ]);
 
         try {
-            $pathOrAlias = $request->pathOrAlias;
+            $pathOrAlias = $request->alias;
 
             if (empty($pathOrAlias)) {
                 return new CallToolResult([
@@ -120,7 +120,7 @@ final readonly class ProjectSwitchToolAction
             ], isError: true);
         } catch (\Throwable $e) {
             $this->logger->error('Error switching project', [
-                'pathOrAlias' => $request->pathOrAlias,
+                'pathOrAlias' => $request->alias,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
