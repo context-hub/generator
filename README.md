@@ -62,7 +62,7 @@ into a chat session or provided via the built-in [MCP server](https://docs.ctxgi
 - [Code files and directories](https://docs.ctxgithub.com/sources/file-source.html)
 - [GitHub repositories](https://docs.ctxgithub.com/sources/github-source.html)
 - [Git commit changes and diffs](https://docs.ctxgithub.com/sources/git-diff-source.html)
-- W[eb pages (URLs) with CSS selectors](https://docs.ctxgithub.com/sources/url-source.html)
+- [Web pages (URLs) with CSS selectors](https://docs.ctxgithub.com/sources/url-source.html)
 - Plain text
 - and more!
 
@@ -160,7 +160,7 @@ name from the `src/Models` directory.
   or [URL](https://docs.ctxgithub.com/sources/url-source.html)
 - Apply [Modifiers](https://docs.ctxgithub.com/modifiers.html) to transform your content (like extracting PHP
   signatures)
-- Discover how to use [Environment Variables](https://docs.ctxgithub.com/environment-variables.html) in your config
+- Discover how to use [Environment Variables](https://docs.ctxgithub.com/getting-started/variables.html) in your config
 - Use [IDE Integration](https://docs.ctxgithub.com/getting-started/ide-integration.html) for autocompletion and
   validation
 
@@ -174,7 +174,7 @@ ctx
 
 CTX will process your configuration and create the specified output file (`auth-context.md` in our example).
 
-> **Tip**: Configure [Logging](https://docs.ctxgithub.com/advanced/logging.html) with `-v`, `-vv`, or `-vvv` for
+> **Tip**: Configure [Logging](https://docs.ctxgithub.com/getting-started/logging.html) with `-v`, `-vv`, or `-vvv` for
 > detailed output
 
 ## 5. Share with an LLM
@@ -216,7 +216,7 @@ Point the MCP client to the Context Generator server:
 }
 ```
 
-> **Note:** Read more about [MCP Server](https://docs.ctxgithub.com/mcp-server.html#setting-up) for detailed setup
+> **Note:** Read more about [MCP Server](https://docs.ctxgithub.com/mcp/#setting-up) for detailed setup
 > instructions.
 
 Now you can ask Claude questions about your codebase without manually uploading context files!
@@ -232,3 +232,4 @@ https://docs.ctxgithub.com
 ### License
 
 This project is licensed under the MIT License.
+
