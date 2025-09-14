@@ -1,4 +1,4 @@
-# ctx: The missing link between your codebase and your LLM. Context as Code (CaC) tool with MCP server inside.
+# CTX: The missing link between your codebase and your LLM.
 
 <p>
     <a href="https://docs.ctxgithub.com/"><img alt="Docs" src="https://img.shields.io/badge/docs-green"></a>
@@ -12,43 +12,88 @@
 
 ## Table of Contents
 
-- [How it works](#how-it-works)
 - [Quick Start](#quick-start)
-- [Full Documentation](#full-documentation)
+- [Full Documentation](https://docs.ctxgithub.com)
 - [License](#license)
 
-**CTX** is a tool made to solve a big problem when chatting with LLMs like ChatGPT or Claude: **giving them enough
-context about your project**.
+During development, your codebase constantly evolves. Files are added, modified, and removed. Each time you need to
+continue working with an LLM, you need to regenerate context to provide updated information about your current codebase
+state.
 
-> There is an article about Context Generator
-> on [Medium](https://medium.com/p/ef72df0f83d1) that explains the
-> motivation behind the project and the problem it solves.
+**CTX** helps developers organize contexts and automatically collect information from their codebase into structured
+documents that can be easily shared with LLM.
 
-When you're using AI in development, context isn't just helpful — it's everything.
-Instead of manually copying or explaining your entire codebase each time, ctx automatically builds neat, organized
-context files from:
+For example, a developer describes what context they need:
 
-- Code files,
-- GitHub and Gitlab repositories,
-- Git commits and diffs
-- Web pages (URLs) with CSS selectors,
-- MCP servers
-- and plain text.
+```yaml
+# context.yaml
+documents:
+  - description: User Authentication System
+    outputPath: auth.md
+    sources:
+      - type: file
+        description: Authentication Controllers
+        sourcePaths:
+          - src/Auth
+        filePattern: "*.php"
 
-It was created to solve a common problem: **efficiently providing AI language models like Claude with necessary
-context about your codebase.**
+      - type: file
+        description: Authentication Models
+        sourcePaths:
+          - src/Models
+        filePattern: "*User*.php"
 
-## How it works
+  - description: Another Document
+    outputPath: another-document.md
+    sources:
+      - type: file
+        sourcePaths:
+          - src/SomeModule
+```
 
-1. Gathers code from files, directories, GitHub or Gitlab repositories, web pages, or plain text.
-2. Targets specific files through pattern matching, content search, size, or date filters
-3. Applies optional modifiers (like extracting PHP signatures without implementation details)
-4. Organizes content into well-structured markdown documents
-5. Saves context files ready to be shared with LLMs
-6. Optionally serves context through an MCP server, allowing AI assistants like Claude to directly access project
-   information
+This configuration will gather all PHP files from the `src/Auth` directory and any PHP files containing "**User**" in
+their name from the `src/Models` directory into a single context file `.context/auth.md`. This file can then be pasted
+into a chat session or provided via the built-in [MCP server](https://docs.ctxgithub.com/mcp/).
 
-# Quick Start
+### How it works
+
+**CTX automatically builds structured context documents from:**
+
+- [Code files and directories](https://docs.ctxgithub.com/sources/file-source.html)
+- [GitHub repositories](https://docs.ctxgithub.com/sources/github-source.html)
+- [Git commit changes and diffs](https://docs.ctxgithub.com/sources/git-diff-source.html)
+- W[eb pages (URLs) with CSS selectors](https://docs.ctxgithub.com/sources/url-source.html)
+- Plain text
+- and more!
+
+**Process:**
+
+- Collects code from specified sources
+- Filters files through pattern matching, content search, size, or date criteria
+- Applies modifiers (e.g., extracting function signatures without implementation)
+- Organizes content into structured markdown documents
+- Saves context files ready for LLM consumption
+- Optionally serves context through MCP server for direct AI assistant access
+
+> Here is a [Quickstart guide](https://docs.ctxgithub.com/quick-start.html) to get you started with CTX.
+
+### The Problem CTX Solves
+
+**Without such a tool, you would need to:**
+
+- Manually search for all files that were changed
+- Copy their contents each time
+- Explain the codebase structure repeatedly
+- Spend significant time maintaining context consistency
+
+This repetitive process becomes frustrating and can discourage continued development, as you end up doing the same
+context-gathering work over and over instead of writing code.
+
+Since CTX describes contexts, this process becomes automated.
+
+---
+
+## Quick Start
 
 Getting started with CTX is straightforward. Follow these simple steps to create your first context file.
 
