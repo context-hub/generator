@@ -38,6 +38,7 @@
     "spiral/exceptions": "^3.15",
     "spiral/boot": "^3.15",
     "spiral/files": "^3.15",
+    "spiral/snapshots": "^3.15",
     "spiral/json-schema-generator": "^2.1",
     "logiscape/mcp-sdk-php": "^1.0",
     "league/route": "^6.2",
