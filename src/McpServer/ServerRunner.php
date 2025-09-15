@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\McpServer;
 
 use Butschster\ContextGenerator\Application\AppScope;
-use Butschster\ContextGenerator\McpServer\ProjectService\ProjectServiceInterface;
 use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
 use Butschster\ContextGenerator\McpServer\Registry\McpItemsRegistry;
+use Butschster\ContextGenerator\McpServer\Routing\Handler\Prompts\PromptsHandlerInterface;
+use Butschster\ContextGenerator\McpServer\Routing\Handler\Resources\ResourcesHandlerInterface;
+use Butschster\ContextGenerator\McpServer\Routing\Handler\Tools\ToolsHandlerInterface;
 use Butschster\ContextGenerator\McpServer\Routing\RouteRegistrar;
 use Spiral\Core\Attribute\Proxy;
 use Spiral\Core\Attribute\Singleton;
@@ -24,7 +26,6 @@ final class ServerRunner implements ServerRunnerInterface
 
     public function __construct(
         #[Proxy] private readonly ScopeInterface $scope,
-        private readonly ProjectServiceInterface $projectService,
     ) {}
 
     /**
@@ -47,6 +48,9 @@ final class ServerRunner implements ServerRunnerInterface
                 RouteRegistrar $registrar,
                 McpItemsRegistry $registry,
                 HasPrefixLoggerInterface $logger,
+                PromptsHandlerInterface $promptsHandler,
+                ResourcesHandlerInterface $resourcesHandler,
+                ToolsHandlerInterface $toolsHandler,
             ) use ($name): void {
                 // Register all classes with MCP item attributes. Should be before registering controllers!
                 $registry->registerMany($this->actions);
@@ -54,11 +58,12 @@ final class ServerRunner implements ServerRunnerInterface
                 // Register all controllers for routing
                 $registrar->registerControllers($this->actions);
 
-                // Create the server
+                // Create the server with injected handlers
                 (new Server(
-                    router: $registrar->router,
                     logger: $logger,
-                    projectService: $this->projectService,
+                    promptsHandler: $promptsHandler,
+                    resourcesHandler: $resourcesHandler,
+                    toolsHandler: $toolsHandler,
                 ))->run($name);
             },
         );

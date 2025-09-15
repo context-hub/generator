@@ -38,6 +38,12 @@ use Butschster\ContextGenerator\McpServer\Projects\McpProjectsBootloader;
 use Butschster\ContextGenerator\McpServer\ProjectService\ProjectServiceInterface;
 use Butschster\ContextGenerator\McpServer\Prompt\McpPromptBootloader;
 use Butschster\ContextGenerator\McpServer\Registry\McpItemsRegistry;
+use Butschster\ContextGenerator\McpServer\Routing\Handler\Prompts\PromptsHandler;
+use Butschster\ContextGenerator\McpServer\Routing\Handler\Prompts\PromptsHandlerInterface;
+use Butschster\ContextGenerator\McpServer\Routing\Handler\Resources\ResourcesHandler;
+use Butschster\ContextGenerator\McpServer\Routing\Handler\Resources\ResourcesHandlerInterface;
+use Butschster\ContextGenerator\McpServer\Routing\Handler\Tools\ToolsHandler;
+use Butschster\ContextGenerator\McpServer\Routing\Handler\Tools\ToolsHandlerInterface;
 use Butschster\ContextGenerator\McpServer\Routing\McpResponseStrategy;
 use Butschster\ContextGenerator\McpServer\Routing\RouteRegistrar;
 use Butschster\ContextGenerator\McpServer\Tool\McpToolBootloader;
@@ -116,6 +122,12 @@ final class McpServerBootloader extends Bootloader
     public function defineSingletons(): array
     {
         return [
+            // MCP Handlers
+            PromptsHandlerInterface::class => PromptsHandler::class,
+            ResourcesHandlerInterface::class => ResourcesHandler::class,
+            ToolsHandlerInterface::class => ToolsHandler::class,
+
+            // Server infrastructure
             ServerRunnerInterface::class => function (
                 McpConfig $config,
                 ServerRunner $factory,

@@ -39,7 +39,6 @@ documents:
         sourcePaths:
           - ./Routing
           - ./Server.php
-          - ./ServerFactory.php
 
   - description: "MCP Server Projects"
     outputPath: "mcp/projects.md"
