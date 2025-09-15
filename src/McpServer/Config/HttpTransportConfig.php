@@ -7,7 +7,7 @@ namespace Butschster\ContextGenerator\McpServer\Config;
 /**
  * HTTP Transport configuration DTO
  */
-final readonly class HttpTransportConfig
+readonly class HttpTransportConfig
 {
     public function __construct(
         public string $host = 'localhost',

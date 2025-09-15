@@ -23,6 +23,41 @@ final class McpConfig extends InjectableConfig
                 'cors_origins' => ['*'],
                 'max_request_size' => 10485760,
             ],
+            'swoole' => [
+                'host' => 'localhost',
+                'port' => 8080,
+                'session_store' => 'file',
+                'session_store_path' => null,
+                'cors_enabled' => true,
+                'cors_origins' => ['*'],
+                'max_request_size' => 10485760,
+
+                // SSE-specific configuration
+                'sse_enabled' => true,
+                'max_sse_connections' => 1000,
+                'sse_heartbeat_interval' => 30,
+                'sse_reconnect_timeout' => 5,
+                'sse_buffer_size' => 8192,
+
+                // Swoole server configuration
+                'worker_num' => 4,
+                'task_worker_num' => 2,
+                'max_connections' => 10000,
+                'connection_timeout' => 300,
+                'buffer_size' => 32768,
+                'package_max_length' => 2097152,
+
+                // Performance settings
+                'enable_coroutine' => true,
+                'enable_static_handler' => false,
+                'max_coroutines' => 100000,
+                'socket_buffer_size' => 2097152,
+
+                // Logging and monitoring
+                'enable_stats' => true,
+                'stats_interval' => 60,
+                'log_requests' => false,
+            ],
         ],
         'common_prompts' => [
             'enable' => true,
@@ -73,6 +108,11 @@ final class McpConfig extends InjectableConfig
         return $this->getTransportType() === 'http';
     }
 
+    public function isSwooleTransport(): bool
+    {
+        return $this->getTransportType() === 'swoole';
+    }
+
     public function getHttpTransportConfig(): HttpTransportConfig
     {
         $http = $this->config['transport']['http'] ?? [];
@@ -85,6 +125,48 @@ final class McpConfig extends InjectableConfig
             corsEnabled: (bool) ($http['cors_enabled'] ?? true),
             corsOrigins: $http['cors_origins'] ?? ['*'],
             maxRequestSize: (int) ($http['max_request_size'] ?? 10485760),
+        );
+    }
+
+    public function getSwooleTransportConfig(): SwooleTransportConfig
+    {
+        $swoole = $this->config['transport']['swoole'] ?? [];
+
+        return new SwooleTransportConfig(
+            // Base HTTP configuration
+            host: $swoole['host'] ?? 'localhost',
+            port: (int) ($swoole['port'] ?? 8080),
+            sessionStore: $swoole['session_store'] ?? 'file',
+            sessionStorePath: $swoole['session_store_path'] ?? null,
+            corsEnabled: (bool) ($swoole['cors_enabled'] ?? true),
+            corsOrigins: $swoole['cors_origins'] ?? ['*'],
+            maxRequestSize: (int) ($swoole['max_request_size'] ?? 10485760),
+
+            // SSE-specific configuration
+            sseEnabled: (bool) ($swoole['sse_enabled'] ?? true),
+            maxSseConnections: (int) ($swoole['max_sse_connections'] ?? 1000),
+            sseHeartbeatInterval: (int) ($swoole['sse_heartbeat_interval'] ?? 30),
+            sseReconnectTimeout: (int) ($swoole['sse_reconnect_timeout'] ?? 5),
+            sseBufferSize: (int) ($swoole['sse_buffer_size'] ?? 8192),
+
+            // Swoole server configuration
+            workerNum: (int) ($swoole['worker_num'] ?? 4),
+            taskWorkerNum: (int) ($swoole['task_worker_num'] ?? 2),
+            maxConnections: (int) ($swoole['max_connections'] ?? 10000),
+            connectionTimeout: (int) ($swoole['connection_timeout'] ?? 300),
+            bufferSize: (int) ($swoole['buffer_size'] ?? 32768),
+            packageMaxLength: (int) ($swoole['package_max_length'] ?? 2097152),
+
+            // Performance settings
+            enableCoroutine: (bool) ($swoole['enable_coroutine'] ?? true),
+            enableStaticHandler: (bool) ($swoole['enable_static_handler'] ?? false),
+            maxCoroutines: (int) ($swoole['max_coroutines'] ?? 100000),
+            socketBufferSize: (int) ($swoole['socket_buffer_size'] ?? 2097152),
+
+            // Logging and monitoring
+            enableStats: (bool) ($swoole['enable_stats'] ?? true),
+            statsInterval: (int) ($swoole['stats_interval'] ?? 60),
+            logRequests: (bool) ($swoole['log_requests'] ?? false),
         );
     }
 
