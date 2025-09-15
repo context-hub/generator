@@ -1,4 +1,4 @@
-$schema: 'https://raw.githubusercontent.com/context-hub/generator/refs/heads/main/json-schema.json'
+$schema: 'json-schema.json'
 
 import:
   - path: src/**/context.yaml
@@ -7,7 +7,6 @@ import:
 documents:
   - description: 'Project structure overview'
     outputPath: project-structure.md
-    overwrite: true
     sources:
       - type: tree
         sourcePaths:
