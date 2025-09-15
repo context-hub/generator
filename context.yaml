@@ -28,3 +28,17 @@ documents:
     sources:
       - type: git_diff
         commit: unstaged
+
+  - description: MCP vendor
+    outputPath: mcp/vendor.md
+    sources:
+      - type: file
+        sourcePaths:
+          - vendor/logiscape/mcp-sdk-php/src/Server/Transport
+          - vendor/logiscape/mcp-sdk-php/src/Server/HttpServerRunner.php
+          - vendor/logiscape/mcp-sdk-php/src/Server/HttpServerSession.php
+        notPath:
+          - StdioServerTransport.php
+          - ServerSession.php
+          - Server/Server.php
+          - InitializationOptions.php
