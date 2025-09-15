@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\McpServer;
+namespace Butschster\ContextGenerator\McpServer\Config;
 
 use Spiral\Core\InjectableConfig;
 
@@ -12,6 +12,18 @@ final class McpConfig extends InjectableConfig
 
     protected array $config = [
         'document_name_format' => '[{path}] {description}',
+        'transport' => [
+            'type' => 'stdio',
+            'http' => [
+                'host' => 'localhost',
+                'port' => 8080,
+                'session_store' => 'file',
+                'session_store_path' => null,
+                'cors_enabled' => true,
+                'cors_origins' => ['*'],
+                'max_request_size' => 10485760,
+            ],
+        ],
         'common_prompts' => [
             'enable' => true,
         ],
@@ -48,6 +60,31 @@ final class McpConfig extends InjectableConfig
             ['{path}', '{description}', '{tags}'],
             [$path, $description, $tags],
             (string) $this->config['document_name_format'] ?: '',
+        );
+    }
+
+    public function getTransportType(): string
+    {
+        return $this->config['transport']['type'] ?? 'stdio';
+    }
+
+    public function isHttpTransport(): bool
+    {
+        return $this->getTransportType() === 'http';
+    }
+
+    public function getHttpTransportConfig(): HttpTransportConfig
+    {
+        $http = $this->config['transport']['http'] ?? [];
+
+        return new HttpTransportConfig(
+            host: $http['host'] ?? 'localhost',
+            port: (int) ($http['port'] ?? 8080),
+            sessionStore: $http['session_store'] ?? 'file',
+            sessionStorePath: $http['session_store_path'] ?? null,
+            corsEnabled: (bool) ($http['cors_enabled'] ?? true),
+            corsOrigins: $http['cors_origins'] ?? ['*'],
+            maxRequestSize: (int) ($http['max_request_size'] ?? 10485760),
         );
     }
 

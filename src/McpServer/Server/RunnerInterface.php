@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\McpServer;
+namespace Butschster\ContextGenerator\McpServer\Server;
 
-interface ServerRunnerInterface
+interface RunnerInterface
 {
     /**
      * Create a new McpServer instance with attribute-based routing

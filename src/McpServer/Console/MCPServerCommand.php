@@ -16,7 +16,7 @@ use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\McpServer\Projects\ProjectServiceInterface as ProjectService;
 use Butschster\ContextGenerator\McpServer\ProjectService\ProjectServiceFactory;
 use Butschster\ContextGenerator\McpServer\ProjectService\ProjectServiceInterface;
-use Butschster\ContextGenerator\McpServer\ServerRunnerInterface;
+use Butschster\ContextGenerator\McpServer\Server\RunnerInterface;
 use Butschster\ContextGenerator\McpServer\Tool\Command\CommandExecutor;
 use Butschster\ContextGenerator\McpServer\Tool\Command\CommandExecutorInterface;
 use Monolog\Level;
@@ -142,7 +142,7 @@ final class MCPServerCommand extends BaseCommand
                             ]),
                         ],
                     ),
-                    scope: static function (ServerRunnerInterface $factory) use ($app): void {
+                    scope: static function (RunnerInterface $factory) use ($app): void {
                         $factory->run(name: \sprintf('%s %s', $app->name, $app->version));
                     },
                 );

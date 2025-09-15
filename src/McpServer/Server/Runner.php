@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\McpServer;
+namespace Butschster\ContextGenerator\McpServer\Server;
 
 use Butschster\ContextGenerator\Application\AppScope;
 use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
@@ -17,7 +17,7 @@ use Spiral\Core\Scope;
 use Spiral\Core\ScopeInterface;
 
 #[Singleton]
-final class ServerRunner implements ServerRunnerInterface
+final class Runner implements RunnerInterface
 {
     /**
      * @var array<class-string>
@@ -51,6 +51,7 @@ final class ServerRunner implements ServerRunnerInterface
                 PromptsHandlerInterface $promptsHandler,
                 ResourcesHandlerInterface $resourcesHandler,
                 ToolsHandlerInterface $toolsHandler,
+                ServerDriverFactory $driverFactory,
             ) use ($name): void {
                 // Register all classes with MCP item attributes. Should be before registering controllers!
                 $registry->registerMany($this->actions);
@@ -64,6 +65,7 @@ final class ServerRunner implements ServerRunnerInterface
                     promptsHandler: $promptsHandler,
                     resourcesHandler: $resourcesHandler,
                     toolsHandler: $toolsHandler,
+                    driverFactory: $driverFactory,
                 ))->run($name);
             },
         );

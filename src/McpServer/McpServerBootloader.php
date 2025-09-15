@@ -31,6 +31,7 @@ use Butschster\ContextGenerator\McpServer\Action\Tools\Git\GitStatusAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\ListToolsAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Prompts\GetPromptToolAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Prompts\ListPromptsToolAction;
+use Butschster\ContextGenerator\McpServer\Config\McpConfig;
 use Butschster\ContextGenerator\McpServer\Console\MCPServerCommand;
 use Butschster\ContextGenerator\McpServer\Projects\Actions\ProjectsListToolAction;
 use Butschster\ContextGenerator\McpServer\Projects\Actions\ProjectSwitchToolAction;
@@ -46,6 +47,9 @@ use Butschster\ContextGenerator\McpServer\Routing\Handler\Tools\ToolsHandler;
 use Butschster\ContextGenerator\McpServer\Routing\Handler\Tools\ToolsHandlerInterface;
 use Butschster\ContextGenerator\McpServer\Routing\McpResponseStrategy;
 use Butschster\ContextGenerator\McpServer\Routing\RouteRegistrar;
+use Butschster\ContextGenerator\McpServer\Server\Runner;
+use Butschster\ContextGenerator\McpServer\Server\RunnerInterface;
+use Butschster\ContextGenerator\McpServer\Server\ServerDriverFactory;
 use Butschster\ContextGenerator\McpServer\Tool\McpToolBootloader;
 use League\Route\Router;
 use League\Route\Strategy\StrategyInterface;
@@ -81,6 +85,18 @@ final class McpServerBootloader extends Bootloader
             McpConfig::CONFIG,
             [
                 'document_name_format' => $env->get('MCP_DOCUMENT_NAME_FORMAT', '[{path}] {description}'),
+                'transport' => [
+                    'type' => $env->get('MCP_TRANSPORT', 'stdio'),
+                    'http' => [
+                        'host' => $env->get('MCP_HTTP_HOST', 'localhost'),
+                        'port' => (int) $env->get('MCP_HTTP_PORT', 8080),
+                        'session_store' => $env->get('MCP_HTTP_SESSION_STORE', 'file'),
+                        'session_store_path' => $env->get('MCP_HTTP_SESSION_STORE_PATH'),
+                        'cors_enabled' => (bool) $env->get('MCP_HTTP_CORS_ENABLED', true),
+                        'cors_origins' => \array_filter(\explode(',', $env->get('MCP_HTTP_CORS_ORIGINS', '*'))),
+                        'max_request_size' => (int) $env->get('MCP_HTTP_MAX_REQUEST_SIZE', 10485760),
+                    ],
+                ],
                 'file_operations' => [
                     'enable' => (bool) $env->get('MCP_FILE_OPERATIONS', !$isCommonProject),
                     'write' => (bool) $env->get('MCP_FILE_WRITE', true),
@@ -128,9 +144,9 @@ final class McpServerBootloader extends Bootloader
             ToolsHandlerInterface::class => ToolsHandler::class,
 
             // Server infrastructure
-            ServerRunnerInterface::class => function (
+            RunnerInterface::class => function (
                 McpConfig $config,
-                ServerRunner $factory,
+                Runner $factory,
                 ConfigLoaderInterface $loader,
             ) {
                 $loader->load();

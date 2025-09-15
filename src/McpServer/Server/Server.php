@@ -2,17 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\McpServer;
+namespace Butschster\ContextGenerator\McpServer\Server;
 
 use Butschster\ContextGenerator\McpServer\Routing\Handler\Prompts\PromptsHandlerInterface;
 use Butschster\ContextGenerator\McpServer\Routing\Handler\Resources\ResourcesHandlerInterface;
 use Butschster\ContextGenerator\McpServer\Routing\Handler\Tools\ToolsHandlerInterface;
 use Mcp\Server\Server as McpServer;
-use Mcp\Server\ServerRunner;
 use Psr\Log\LoggerInterface;
 
 /**
- * Refactored Server class that delegates to specific handlers
+ * Server class that delegates transport concerns to drivers
  */
 final readonly class Server
 {
@@ -21,19 +20,21 @@ final readonly class Server
         private PromptsHandlerInterface $promptsHandler,
         private ResourcesHandlerInterface $resourcesHandler,
         private ToolsHandlerInterface $toolsHandler,
+        private ServerDriverFactory $driverFactory,
     ) {}
 
     /**
-     * Start the server
+     * Start the server using the appropriate driver
      */
     public function run(string $name): void
     {
         $server = new McpServer(name: $name, logger: $this->logger);
         $this->configureServer($server);
 
-        $initOptions = $server->createInitializationOptions();
-        $runner = new ServerRunner(server: $server, initOptions: $initOptions, logger: $this->logger);
-        $runner->run();
+        $this->driverFactory->create()->run(
+            server: $server,
+            initOptions: $server->createInitializationOptions(),
+        );
     }
 
     /**
