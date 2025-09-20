@@ -49,7 +49,6 @@ use Butschster\ContextGenerator\McpServer\Routing\McpResponseStrategy;
 use Butschster\ContextGenerator\McpServer\Routing\RouteRegistrar;
 use Butschster\ContextGenerator\McpServer\Server\Runner;
 use Butschster\ContextGenerator\McpServer\Server\RunnerInterface;
-use Butschster\ContextGenerator\McpServer\Server\ServerDriverFactory;
 use Butschster\ContextGenerator\McpServer\Tool\McpToolBootloader;
 use League\Route\Router;
 use League\Route\Strategy\StrategyInterface;
@@ -87,35 +86,28 @@ final class McpServerBootloader extends Bootloader
                 'document_name_format' => $env->get('MCP_DOCUMENT_NAME_FORMAT', '[{path}] {description}'),
                 'transport' => [
                     'type' => $env->get('MCP_TRANSPORT', 'stdio'),
-                    'http' => [
-                        'host' => $env->get('MCP_HTTP_HOST', 'localhost'),
+                    'swoole' => [
+                        'host' => $env->get('MCP_HTTP_HOST', '127.0.0.1'),
                         'port' => (int) $env->get('MCP_HTTP_PORT', 8080),
                         'session_store' => $env->get('MCP_HTTP_SESSION_STORE', 'file'),
                         'session_store_path' => $env->get('MCP_HTTP_SESSION_STORE_PATH'),
                         'cors_enabled' => (bool) $env->get('MCP_HTTP_CORS_ENABLED', true),
-                        'cors_origins' => \array_filter(\explode(',', (string) $env->get('MCP_HTTP_CORS_ORIGINS', '*'))),
+                        'cors_origins' => \array_filter(
+                            \explode(',', (string) $env->get('MCP_HTTP_CORS_ORIGINS', '*')),
+                        ),
                         'max_request_size' => (int) $env->get('MCP_HTTP_MAX_REQUEST_SIZE', 10485760),
-                    ],
-                    'swoole' => [
-                        'host' => $env->get('MCP_SWOOLE_HOST', 'localhost'),
-                        'port' => (int) $env->get('MCP_SWOOLE_PORT', 8080),
-                        'session_store' => $env->get('MCP_SWOOLE_SESSION_STORE', 'file'),
-                        'session_store_path' => $env->get('MCP_SWOOLE_SESSION_STORE_PATH'),
-                        'cors_enabled' => (bool) $env->get('MCP_SWOOLE_CORS_ENABLED', true),
-                        'cors_origins' => \array_filter(\explode(',', (string) $env->get('MCP_SWOOLE_CORS_ORIGINS', '*'))),
-                        'max_request_size' => (int) $env->get('MCP_SWOOLE_MAX_REQUEST_SIZE', 10485760),
 
                         // SSE-specific configuration
-                        'sse_enabled' => (bool) $env->get('MCP_SWOOLE_SSE_ENABLED', true),
-                        'max_sse_connections' => (int) $env->get('MCP_SWOOLE_MAX_SSE_CONNECTIONS', 1000),
-                        'sse_heartbeat_interval' => (int) $env->get('MCP_SWOOLE_SSE_HEARTBEAT_INTERVAL', 30),
-                        'sse_reconnect_timeout' => (int) $env->get('MCP_SWOOLE_SSE_RECONNECT_TIMEOUT', 5),
-                        'sse_buffer_size' => (int) $env->get('MCP_SWOOLE_SSE_BUFFER_SIZE', 8192),
+                        'sse_enabled' => (bool) $env->get('MCP_HTTP_SSE_ENABLED', true),
+                        'max_sse_connections' => (int) $env->get('MCP_HTTP_MAX_SSE_CONNECTIONS', 1000),
+                        'sse_heartbeat_interval' => (int) $env->get('MCP_HTTP_SSE_HEARTBEAT_INTERVAL', 30),
+                        'sse_reconnect_timeout' => (int) $env->get('MCP_HTTP_SSE_RECONNECT_TIMEOUT', 5),
+                        'sse_buffer_size' => (int) $env->get('MCP_HTTP_SSE_BUFFER_SIZE', 8192),
 
                         // Swoole server configuration
                         'worker_num' => (int) $env->get('MCP_SWOOLE_WORKER_NUM', 4),
                         'task_worker_num' => (int) $env->get('MCP_SWOOLE_TASK_WORKER_NUM', 2),
-                        'max_connections' => (int) $env->get('MCP_SWOOLE_MAX_CONNECTIONS', 10000),
+                        'max_connections' => (int) $env->get('MCP_SWOOLE_MAX_CONNECTIONS', 1024),
                         'connection_timeout' => (int) $env->get('MCP_SWOOLE_CONNECTION_TIMEOUT', 300),
                         'buffer_size' => (int) $env->get('MCP_SWOOLE_BUFFER_SIZE', 32768),
                         'package_max_length' => (int) $env->get('MCP_SWOOLE_PACKAGE_MAX_LENGTH', 2097152),
@@ -123,7 +115,7 @@ final class McpServerBootloader extends Bootloader
                         // Performance settings
                         'enable_coroutine' => (bool) $env->get('MCP_SWOOLE_ENABLE_COROUTINE', true),
                         'enable_static_handler' => (bool) $env->get('MCP_SWOOLE_ENABLE_STATIC_HANDLER', false),
-                        'max_coroutines' => (int) $env->get('MCP_SWOOLE_MAX_COROUTINES', 100000),
+                        'max_coroutines' => (int) $env->get('MCP_SWOOLE_MAX_COROUTINES', 1024),
                         'socket_buffer_size' => (int) $env->get('MCP_SWOOLE_SOCKET_BUFFER_SIZE', 2097152),
 
                         // Logging and monitoring

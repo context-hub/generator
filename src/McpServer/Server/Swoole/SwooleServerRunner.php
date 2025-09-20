@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\McpServer\Server\Swoole;
 
 use Butschster\ContextGenerator\McpServer\Config\SwooleTransportConfig;
+use Butschster\ContextGenerator\McpServer\Server\MessageParser;
+use Butschster\ContextGenerator\McpServer\Server\Transport\Swoole\SseConnectionManager;
 use Butschster\ContextGenerator\McpServer\Server\Transport\Swoole\SwooleTransport;
 use Mcp\Server\HttpServerRunner;
-use Mcp\Server\HttpServerSession;
 use Mcp\Server\InitializationOptions;
 use Mcp\Server\Server as McpServer;
 use Mcp\Server\Transport\Http\HttpMessage;
+use Mcp\Server\Transport\Http\InMemorySessionStore;
 use Psr\Log\LoggerInterface;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
@@ -35,15 +37,64 @@ final class SwooleServerRunner extends HttpServerRunner
         McpServer $server,
         InitializationOptions $initOptions,
         private readonly SwooleTransportConfig $config,
+        MessageParser $messageParser,
         LoggerInterface $logger,
     ) {
         // Create our enhanced transport
-        $this->transport = new SwooleTransport($logger, $this->config);
+        $this->transport = new SwooleTransport(
+            logger: $logger,
+            messageParser: $messageParser,
+            config: $config,
+            sessionStore: new InMemorySessionStore(),
+            sseManager: new SseConnectionManager(
+                logger: $logger,
+                maxConnections: $config->maxSseConnections,
+                heartbeatInterval: $config->sseHeartbeatInterval,
+                connectionTimeout: $config->connectionTimeout,
+            ),
+        );
 
         // Initialize stats
         $this->stats['start_time'] = \time();
 
-        // Call parent constructor with our transport
+        // Set up event forwarding from transport to server
+        $this->transport->on('client_connected', function (string $sessionId) use ($server): void {
+            $this->logger->info('Client connected via SSE', ['session_id' => $sessionId]);
+            // Forward to server's event emitter if available
+            if (\method_exists($server, 'emit')) {
+                $server->emit('client_connected', [$sessionId]);
+            }
+        });
+
+        $this->transport->on('client_disconnected', function (string $sessionId, string $reason) use ($server): void {
+            $this->logger->info('Client disconnected', [
+                'session_id' => $sessionId,
+                'reason' => $reason,
+            ]);
+            // Forward to server's event emitter if available
+            if (\method_exists($server, 'emit')) {
+                $server->emit('client_disconnected', [$sessionId, $reason]);
+            }
+        });
+
+        $this->transport->on(
+            'message',
+            static function (mixed $message, string $sessionId, array $context) use ($server): void {
+                // Forward message events to server handlers
+                if (\method_exists($server, 'emit')) {
+                    $server->emit('message', [$message, $sessionId, $context]);
+                }
+            },
+        );
+
+        // Set up SSE manager event forwarding
+        $sseManager = $this->transport->getSseManager();
+        $sseManager->on('client_disconnected', function (string $sessionId, string $reason): void {
+            // Forward SSE manager events to transport
+            $this->transport->emit('client_disconnected', [$sessionId, $reason]);
+        });
+
+        // Call parent constructor with empty httpOptions array since we handle everything
         parent::__construct($server, $initOptions, [], $logger);
     }
 
@@ -55,7 +106,7 @@ final class SwooleServerRunner extends HttpServerRunner
         $this->stats['requests_total']++;
 
         try {
-            // Let the transport handle the Swoole-specific logic
+            // Delegate to our enhanced transport
             $this->transport->handleSwooleRequest($request, $response);
         } catch (\Throwable $e) {
             $this->logger->error('Error in Swoole request handler', [
@@ -81,24 +132,12 @@ final class SwooleServerRunner extends HttpServerRunner
     #[\Override]
     public function handleRequest(?HttpMessage $request = null): HttpMessage
     {
-        // For traditional HTTP requests, delegate to parent
-        // but use our transport's session management
+        // For traditional HTTP requests, create a simple response
+        // The actual request handling is done via handleSwooleRequest
         if ($request === null) {
             $request = HttpMessage::fromGlobals();
         }
 
-        // Create a temporary response to capture transport output
-        $sessionId = $request->getHeader('Mcp-Session-Id');
-
-        if ($sessionId !== null) {
-            $session = $this->getOrCreateSession($sessionId);
-            if ($session !== null) {
-                $this->transport->attachSession($session);
-            }
-        }
-
-        // Process through our enhanced transport logic
-        // This is a simplified version - in practice, we'd need more integration
         return HttpMessage::createJsonResponse(['status' => 'processed']);
     }
 
@@ -179,54 +218,6 @@ final class SwooleServerRunner extends HttpServerRunner
         }
 
         return $stats;
-    }
-
-    /**
-     * Broadcast event to all SSE connections
-     */
-    public function broadcastEvent(string $eventType, mixed $data, ?string $eventId = null): int
-    {
-        if (!$this->config->sseEnabled) {
-            return 0;
-        }
-
-        return $this->transport->getSseManager()->broadcast($data, $eventId);
-    }
-
-    /**
-     * Send event to specific session
-     */
-    public function sendEventToSession(string $sessionId, string $eventType, mixed $data, ?string $eventId = null): int
-    {
-        if (!$this->config->sseEnabled) {
-            return 0;
-        }
-
-        return $this->transport->getSseManager()->sendEventToSession($sessionId, $eventType, $data, $eventId);
-    }
-
-    /**
-     * Get active SSE connection count
-     */
-    public function getSseConnectionCount(): int
-    {
-        if (!$this->config->sseEnabled) {
-            return 0;
-        }
-
-        return $this->transport->getSseManager()->getConnectionCount();
-    }
-
-    /**
-     * Check if session has active SSE connections
-     */
-    public function hasSessionSseConnections(string $sessionId): bool
-    {
-        if (!$this->config->sseEnabled) {
-            return false;
-        }
-
-        return $this->transport->getSseManager()->hasSessionConnections($sessionId);
     }
 
     /**
@@ -325,15 +316,5 @@ final class SwooleServerRunner extends HttpServerRunner
             $this->stats['sse_connections'] = $sseStats['total_connections'];
             $this->stats['sessions_active'] = $sseStats['active_sessions'];
         }
-    }
-
-    /**
-     * Get or create session for the given session ID
-     */
-    private function getOrCreateSession(string $sessionId): ?HttpServerSession
-    {
-        // This would integrate with the existing session management
-        // For now, return null to indicate we need to implement this
-        return null;
     }
 }

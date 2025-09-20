@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\McpServer\Server\Driver;
 
 use Butschster\ContextGenerator\McpServer\Config\SwooleTransportConfig;
+use Butschster\ContextGenerator\McpServer\Server\MessageParser;
 use Butschster\ContextGenerator\McpServer\Server\Swoole\SwooleServerRunner;
 use Mcp\Server\InitializationOptions;
 use Mcp\Server\Server as McpServer;
 use Psr\Log\LoggerInterface;
+use Spiral\Exceptions\ExceptionReporterInterface;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
 use Swoole\Http\Server;
@@ -25,6 +27,8 @@ final class SwooleServerDriver implements ServerDriverInterface
     public function __construct(
         private readonly SwooleTransportConfig $config,
         private readonly LoggerInterface $logger,
+        private readonly ExceptionReporterInterface $reporter,
+        private readonly MessageParser $messageParser,
     ) {}
 
     public function run(McpServer $server, InitializationOptions $initOptions): void
@@ -39,6 +43,7 @@ final class SwooleServerDriver implements ServerDriverInterface
                 $server,
                 $initOptions,
                 $this->config,
+                $this->messageParser,
                 $this->logger,
             );
 
@@ -268,6 +273,7 @@ final class SwooleServerDriver implements ServerDriverInterface
                 $this->sendErrorResponse($response, 'Server not properly initialized', 500);
             }
         } catch (\Throwable $e) {
+            $this->reporter->report($e);
             $this->logger->error('Error handling request', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -506,6 +512,7 @@ final class SwooleServerDriver implements ServerDriverInterface
             try {
                 $this->runner->stop();
             } catch (\Throwable $e) {
+                $this->reporter->report($e);
                 $this->logger->error('Error stopping runner', [
                     'error' => $e->getMessage(),
                 ]);

@@ -10,14 +10,13 @@ namespace Butschster\ContextGenerator\McpServer\Config;
 final readonly class SwooleTransportConfig extends HttpTransportConfig
 {
     public function __construct(
-        // Inherit base HTTP config
-        string $host = 'localhost',
-        int $port = 8080,
-        string $sessionStore = 'file',
-        ?string $sessionStorePath = null,
-        bool $corsEnabled = true,
-        array $corsOrigins = ['*'],
-        int $maxRequestSize = 10485760,
+        public string $host = 'localhost',
+        public int $port = 8080,
+        public string $sessionStore = 'file',
+        public ?string $sessionStorePath = null,
+        public bool $corsEnabled = true,
+        public array $corsOrigins = ['*'],
+        public int $maxRequestSize = 10485760, // 10MB
 
         // SSE-specific configuration
         public bool $sseEnabled = true,
@@ -44,17 +43,7 @@ final readonly class SwooleTransportConfig extends HttpTransportConfig
         public bool $enableStats = true,
         public int $statsInterval = 60,
         public bool $logRequests = false,
-    ) {
-        parent::__construct(
-            host: $host,
-            port: $port,
-            sessionStore: $sessionStore,
-            sessionStorePath: $sessionStorePath,
-            corsEnabled: $corsEnabled,
-            corsOrigins: $corsOrigins,
-            maxRequestSize: $maxRequestSize,
-        );
-    }
+    ) {}
 
     /**
      * Get Swoole server configuration array
@@ -90,20 +79,5 @@ final readonly class SwooleTransportConfig extends HttpTransportConfig
             'reconnect_timeout' => $this->sseReconnectTimeout,
             'buffer_size' => $this->sseBufferSize,
         ];
-    }
-
-    /**
-     * Get HTTP options array for Swoole integration
-     */
-    public function toSwooleHttpOptions(): array
-    {
-        return \array_merge(
-            parent::toHttpOptions(),
-            [
-                'enable_sse' => $this->sseEnabled,
-                'stats_enabled' => $this->enableStats,
-                'log_requests' => $this->logRequests,
-            ],
-        );
     }
 }

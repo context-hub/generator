@@ -11,28 +11,53 @@ use Psr\Log\LoggerInterface;
  */
 final class SseConnectionManager
 {
-    /**
-     * @var array<string, SseConnection>
-     */
+    /** @var array<string, SseConnection> */
     private array $connections = [];
 
-    /**
-     * @var array<string, array<string>>
-     */
+    /** @var array<string, array<string>> */
     private array $sessionConnections = [];
-
-    private readonly int $maxConnections;
-    private readonly int $heartbeatInterval;
-    private readonly int $connectionTimeout;
     private int $lastCleanup = 0;
+
+    /** @var array<string, callable[]> */
+    private array $eventListeners = [];
 
     public function __construct(
         private readonly LoggerInterface $logger,
-        array $config = [],
-    ) {
-        $this->maxConnections = $config['max_connections'] ?? 1000;
-        $this->heartbeatInterval = $config['heartbeat_interval'] ?? 30;
-        $this->connectionTimeout = $config['connection_timeout'] ?? 300;
+        private readonly int $maxConnections,
+        private readonly int $heartbeatInterval,
+        private readonly int $connectionTimeout,
+    ) {}
+
+    /**
+     * Add event listener
+     */
+    public function on(string $event, callable $listener): void
+    {
+        if (!isset($this->eventListeners[$event])) {
+            $this->eventListeners[$event] = [];
+        }
+        $this->eventListeners[$event][] = $listener;
+    }
+
+    /**
+     * Emit event to listeners
+     */
+    public function emit(string $event, array $arguments = []): void
+    {
+        if (!isset($this->eventListeners[$event])) {
+            return;
+        }
+
+        foreach ($this->eventListeners[$event] as $listener) {
+            try {
+                \call_user_func_array($listener, $arguments);
+            } catch (\Throwable $e) {
+                $this->logger->error('Error in SSE manager event listener', [
+                    'event' => $event,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
     }
 
     /**
@@ -49,8 +74,8 @@ final class SseConnectionManager
             return false;
         }
 
-        $connectionId = $connection->getId();
-        $sessionId = $connection->getSessionId();
+        $connectionId = $connection->id;
+        $sessionId = $connection->sessionId;
 
         // Store connection
         $this->connections[$connectionId] = $connection;
@@ -60,6 +85,9 @@ final class SseConnectionManager
             $this->sessionConnections[$sessionId] = [];
         }
         $this->sessionConnections[$sessionId][] = $connectionId;
+
+        // Set up connection close handler
+        $this->setupConnectionCloseHandler($connection);
 
         $this->logger->debug('SSE connection added', [
             'connection_id' => $connectionId,
@@ -73,14 +101,14 @@ final class SseConnectionManager
     /**
      * Remove a connection
      */
-    public function removeConnection(string $connectionId): void
+    public function removeConnection(string $connectionId, string $reason = 'Unknown'): void
     {
         if (!isset($this->connections[$connectionId])) {
             return;
         }
 
         $connection = $this->connections[$connectionId];
-        $sessionId = $connection->getSessionId();
+        $sessionId = $connection->sessionId;
 
         // Close connection if still active
         if ($connection->isActive()) {
@@ -97,25 +125,19 @@ final class SseConnectionManager
                 static fn($id) => $id !== $connectionId,
             );
 
-            // Clean up empty session arrays
+            // If no more connections for this session, emit client_disconnected
             if (empty($this->sessionConnections[$sessionId])) {
                 unset($this->sessionConnections[$sessionId]);
+                $this->emit('client_disconnected', [$sessionId, $reason]);
             }
         }
 
         $this->logger->debug('SSE connection removed', [
             'connection_id' => $connectionId,
             'session_id' => $sessionId,
+            'reason' => $reason,
             'total_connections' => \count($this->connections),
         ]);
-    }
-
-    /**
-     * Get connection by ID
-     */
-    public function getConnection(string $connectionId): ?SseConnection
-    {
-        return $this->connections[$connectionId] ?? null;
     }
 
     /**
@@ -144,14 +166,20 @@ final class SseConnectionManager
     {
         $connections = $this->getSessionConnections($sessionId);
         $sent = 0;
+        $failed = [];
 
         foreach ($connections as $connection) {
             if ($connection->sendMessage($message, $messageId)) {
                 $sent++;
             } else {
-                // Connection failed, remove it
-                $this->removeConnection($connection->getId());
+                // Connection failed, mark for removal
+                $failed[] = $connection->getId();
             }
+        }
+
+        // Remove failed connections
+        foreach ($failed as $connectionId) {
+            $this->removeConnection($connectionId, 'Send message failed');
         }
 
         return $sent;
@@ -164,14 +192,20 @@ final class SseConnectionManager
     {
         $connections = $this->getSessionConnections($sessionId);
         $sent = 0;
+        $failed = [];
 
         foreach ($connections as $connection) {
             if ($connection->sendEvent($eventType, $data, $eventId)) {
                 $sent++;
             } else {
-                // Connection failed, remove it
-                $this->removeConnection($connection->getId());
+                // Connection failed, mark for removal
+                $failed[] = $connection->getId();
             }
+        }
+
+        // Remove failed connections
+        foreach ($failed as $connectionId) {
+            $this->removeConnection($connectionId, 'Send event failed');
         }
 
         return $sent;
@@ -195,7 +229,7 @@ final class SseConnectionManager
 
         // Remove failed connections
         foreach ($failed as $connectionId) {
-            $this->removeConnection($connectionId);
+            $this->removeConnection($connectionId, 'Broadcast failed');
         }
 
         return $sent;
@@ -229,7 +263,7 @@ final class SseConnectionManager
 
         // Remove failed/timed out connections
         foreach ($failed as $connectionId) {
-            $this->removeConnection($connectionId);
+            $this->removeConnection($connectionId, 'Heartbeat timeout');
         }
 
         if (!empty($failed)) {
@@ -248,7 +282,7 @@ final class SseConnectionManager
         $connections = $this->getSessionConnections($sessionId);
 
         foreach ($connections as $connection) {
-            $this->removeConnection($connection->getId());
+            $this->removeConnection($connection->getId(), 'Session closed');
         }
 
         $this->logger->debug('Closed all SSE connections for session', [
@@ -259,19 +293,22 @@ final class SseConnectionManager
 
     /**
      * Get connection statistics
+     *
+     * @return array{
+     *     total_connections: int,
+     *     active_sessions: int,
+     *     max_connections: int,
+     *     session_connections: array<string, int>,
+     *     last_cleanup: int,
+     * }
      */
     public function getStats(): array
     {
-        $sessionCounts = [];
-        foreach ($this->sessionConnections as $sessionId => $connections) {
-            $sessionCounts[$sessionId] = \count($connections);
-        }
-
         return [
             'total_connections' => \count($this->connections),
             'active_sessions' => \count($this->sessionConnections),
             'max_connections' => $this->maxConnections,
-            'session_connections' => $sessionCounts,
+            'session_connections' => \array_map(\count(...), $this->sessionConnections),
             'last_cleanup' => $this->lastCleanup,
         ];
     }
@@ -285,14 +322,6 @@ final class SseConnectionManager
     }
 
     /**
-     * Get total connection count
-     */
-    public function getConnectionCount(): int
-    {
-        return \count($this->connections);
-    }
-
-    /**
      * Cleanup all connections (for shutdown)
      */
     public function cleanup(): void
@@ -300,11 +329,24 @@ final class SseConnectionManager
         $connectionIds = \array_keys($this->connections);
 
         foreach ($connectionIds as $connectionId) {
-            $this->removeConnection($connectionId);
+            $this->removeConnection($connectionId, 'Transport stopped');
         }
 
         $this->logger->info('SSE connection manager cleaned up', [
             'closed_connections' => \count($connectionIds),
         ]);
+    }
+
+    /**
+     * Setup connection close handler to detect when Swoole closes the connection
+     */
+    private function setupConnectionCloseHandler(SseConnection $connection): void
+    {
+        // This is a bit of a workaround since Swoole doesn't have built-in
+        // connection close detection for SSE. We can set up periodic checks
+        // or use the heartbeat mechanism to detect closed connections.
+
+        // For now, we rely on the heartbeat mechanism in sendHeartbeat()
+        // to detect and clean up closed connections
     }
 }

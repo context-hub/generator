@@ -5,20 +5,21 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\McpServer\Server\Transport\Swoole;
 
 use Butschster\ContextGenerator\McpServer\Config\SwooleTransportConfig;
+use Butschster\ContextGenerator\McpServer\Server\MessageParser;
 use Mcp\Server\Transport\BufferedTransport;
 use Mcp\Server\Transport\Http\HttpMessage;
 use Mcp\Server\Transport\Http\HttpSession;
-use Mcp\Server\Transport\Http\InMemorySessionStore;
 use Mcp\Server\Transport\Http\MessageQueue;
 use Mcp\Server\Transport\Http\SessionStoreInterface;
 use Mcp\Server\Transport\SessionAwareTransport;
 use Mcp\Shared\BaseSession;
+use Mcp\Shared\McpError;
 use Mcp\Types\JSONRPCBatchResponse;
 use Mcp\Types\JSONRPCError;
 use Mcp\Types\JsonRpcMessage;
-use Mcp\Types\JSONRPCNotification;
 use Mcp\Types\JSONRPCResponse;
 use Psr\Log\LoggerInterface;
+use Random\RandomException;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
 
@@ -27,38 +28,30 @@ use Swoole\Http\Response;
  */
 final class SwooleTransport implements BufferedTransport, SessionAwareTransport
 {
-    private readonly SwooleTransportConfig $config;
     private readonly MessageQueue $messageQueue;
-    private readonly SessionStoreInterface $sessionStore;
-    private readonly SseConnectionManager $sseManager;
 
-    /**
-     * @var array<string, HttpSession>
-     */
+    /** @var array<string, HttpSession> */
     private array $sessions = [];
 
     private ?string $currentSessionId = null;
-    private ?HttpSession $lastUsedSession = null;
     private bool $isStarted = false;
     private int $lastSessionCleanup = 0;
     private int $sessionCleanupInterval = 300;
 
+    /**
+     * @var array<string, callable>
+     */
+    private array $eventListeners = [];
+
     public function __construct(
         private readonly LoggerInterface $logger,
-        ?SwooleTransportConfig $config = null,
-        ?SessionStoreInterface $sessionStore = null,
+        private readonly MessageParser $messageParser,
+        private readonly SwooleTransportConfig $config,
+        private readonly SessionStoreInterface $sessionStore,
+        private readonly SseConnectionManager $sseManager,
+        private readonly int $sessionTimeout = 300,
     ) {
-        $this->config = $config ?? new SwooleTransportConfig();
-        $this->sessionStore = $sessionStore ?? new InMemorySessionStore();
-
-        $this->messageQueue = new MessageQueue(
-            $this->config->get('max_queue_size') ?? 1000,
-        );
-
-        $this->sseManager = new SseConnectionManager(
-            $this->logger,
-            $this->config->getSseConfig(),
-        );
+        $this->messageQueue = new MessageQueue(1000);
     }
 
     public function start(): void
@@ -166,8 +159,25 @@ final class SwooleTransport implements BufferedTransport, SessionAwareTransport
     {
         try {
             $httpMessage = $this->createHttpMessageFromSwoole($request);
-            $responseMessage = $this->handleRequest($httpMessage, $response);
+            trap($httpMessage);
+            $path = $request->server['request_uri'] ?? '/';
+            $method = \strtoupper($request->server['request_method'] ?? 'GET');
 
+            // Handle SSE connections (GET /sse)
+            if ($method === 'GET' && \str_ends_with($path, '/sse')) {
+                $this->handleSseConnection($request, $response);
+                return;
+            }
+
+            // Handle message posts (POST /message)
+            if ($method === 'POST' && \str_ends_with($path, '/message')) {
+                $responseMessage = $this->handleMessagePost($httpMessage, $request);
+                $this->sendSwooleResponse($response, $responseMessage);
+                return;
+            }
+
+            // Other requests
+            $responseMessage = $this->handleRequest($httpMessage, $response);
             if ($responseMessage !== null) {
                 $this->sendSwooleResponse($response, $responseMessage);
             }
@@ -198,15 +208,180 @@ final class SwooleTransport implements BufferedTransport, SessionAwareTransport
     }
 
     /**
+     * Send message to client via SSE (compatible with ReactPHP interface)
+     */
+    public function sendMessage(mixed $message, string $sessionId): bool
+    {
+        if (!$this->config->sseEnabled) {
+            return false;
+        }
+
+        $json = \json_encode($message, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        if ($json === false) {
+            return false;
+        }
+
+        return $this->sseManager->sendEventToSession($sessionId, 'message', $json) > 0;
+    }
+
+    /**
+     * Event emission support (compatible with ReactPHP EventEmitter)
+     */
+    public function on(string $event, callable $listener): void
+    {
+        if (!isset($this->eventListeners[$event])) {
+            $this->eventListeners[$event] = [];
+        }
+        $this->eventListeners[$event][] = $listener;
+    }
+
+    /**
+     * Emit event to listeners
+     */
+    public function emit(string $event, array $arguments = []): void
+    {
+        if (!isset($this->eventListeners[$event])) {
+            return;
+        }
+
+        foreach ($this->eventListeners[$event] as $listener) {
+            try {
+                \call_user_func_array($listener, $arguments);
+            } catch (\Throwable $e) {
+                $this->logger->error('Error in event listener', [
+                    'event' => $event,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+    }
+
+    public function isStarted(): bool
+    {
+        return $this->isStarted;
+    }
+
+    /**
+     * Handle SSE connection (simplified approach like ReactPHP)
+     */
+    private function handleSseConnection(Request $request, Response $response): void
+    {
+        // Generate new session ID automatically like ReactPHP version
+        $sessionId = $this->generateSessionId();
+
+        $this->logger->info('New SSE connection', ['sessionId' => $sessionId]);
+
+        // Create session
+        $session = $this->createSession($sessionId);
+        $this->currentSessionId = $sessionId;
+
+        // Create SSE connection
+        $connectionId = \bin2hex(\random_bytes(16));
+        $sseConnection = new SseConnection(
+            $connectionId,
+            $response,
+            $sessionId,
+        );
+
+        if (!$this->sseManager->addConnection($sseConnection)) {
+            $this->sendErrorResponse($response, 'SSE connection limit reached', 503);
+            return;
+        }
+
+        $postEndpoint = '/message?clientId=' . $sessionId;
+
+        $sseConnection->sendEvent('endpoint', $postEndpoint, "init-{$sessionId}");
+
+        // Emit client_connected event
+        $this->emit('client_connected', [$sessionId]);
+
+        // The connection will be handled by SseConnection class
+        // Response is already configured by SseConnection constructor
+    }
+
+    /**
+     * Handle message POST requests
+     */
+    private function handleMessagePost(HttpMessage $httpMessage, Request $request): HttpMessage
+    {
+        $queryParams = $request->get ?? [];
+        $sessionId = $queryParams['clientId'] ?? null;
+
+        if (!$sessionId || !\is_string($sessionId)) {
+            $this->logger->warning('Received POST without valid clientId query parameter.');
+            return HttpMessage::createJsonResponse(
+                ['error' => 'Missing or invalid clientId query parameter'],
+                400,
+            );
+        }
+
+        // todo: Workaround. Find out why session ID contains double quotes at the end!
+        $sessionId = \trim($sessionId, '"');
+
+        if (!$this->sseManager->hasSessionConnections($sessionId)) {
+            $this->logger->warning('Received POST for unknown or disconnected sessionId.', ['sessionId' => $sessionId]);
+            return HttpMessage::createJsonResponse(
+                ['error' => 'Session ID not found or disconnected'],
+                404,
+            );
+        }
+
+        $contentType = $httpMessage->getHeader('Content-Type');
+        if ($contentType === null || \stripos($contentType, 'application/json') === false) {
+            return HttpMessage::createJsonResponse(
+                ['error' => 'Content-Type must be application/json'],
+                415,
+            );
+        }
+
+        $body = $httpMessage->getBody();
+        if ($body === null || $body === '') {
+            $this->logger->warning('Received empty POST body', ['sessionId' => $sessionId]);
+            return HttpMessage::createJsonResponse(
+                ['error' => 'Empty request body'],
+                400,
+            );
+        }
+
+        try {
+            $jsonData = \json_decode($body, true, 512, JSON_THROW_ON_ERROR);
+
+            // Get or create session
+            $session = $this->getSession($sessionId);
+            if ($session === null) {
+                $session = $this->createSession($sessionId);
+            }
+
+            $this->currentSessionId = $sessionId;
+            $containsRequests = $this->processJsonRpcData($jsonData, $session);
+
+            $session->updateActivity();
+            $this->sessionStore->save($session);
+
+            // Emit message event
+            $this->emit('message', [$jsonData, $sessionId, ['request' => $request]]);
+
+            return HttpMessage::createEmptyResponse(202);
+        } catch (\JsonException $e) {
+            $this->logger->error('Error parsing message', ['sessionId' => $sessionId, 'exception' => $e]);
+            return HttpMessage::createJsonResponse(
+                ['error' => 'JSON parse error: ' . $e->getMessage()],
+                400,
+            );
+        } catch (\Exception $e) {
+            $this->logger->error('Error processing message', ['sessionId' => $sessionId, 'exception' => $e]);
+            return HttpMessage::createJsonResponse(
+                ['error' => 'Internal server error: ' . $e->getMessage()],
+                500,
+            );
+        }
+    }
+
+    /**
      * Handle HTTP request and return response message
      */
     private function handleRequest(HttpMessage $request, Response $swooleResponse): ?HttpMessage
     {
-        // Check for SSE upgrade
-        if ($this->isSSERequest($request) && $this->config->sseEnabled) {
-            return $this->handleSSEUpgrade($request, $swooleResponse);
-        }
-
         // Extract session ID from request headers
         $sessionId = $request->getHeader('Mcp-Session-Id');
         $session = null;
@@ -215,7 +390,7 @@ final class SwooleTransport implements BufferedTransport, SessionAwareTransport
         if ($sessionId !== null) {
             $session = $this->getSession($sessionId);
 
-            if ($session === null || $session->isExpired($this->config->get('session_timeout'))) {
+            if ($session === null || $session->isExpired($this->sessionTimeout)) {
                 if ($request->getMethod() !== 'POST' || $this->isInitializeRequest($request)) {
                     $session = $this->createSession();
                 } else {
@@ -237,7 +412,6 @@ final class SwooleTransport implements BufferedTransport, SessionAwareTransport
         }
 
         $this->currentSessionId = $session->getId();
-        $this->lastUsedSession = $session;
 
         // Process request based on HTTP method
         $response = match (\strtoupper((string) $request->getMethod())) {
@@ -256,48 +430,6 @@ final class SwooleTransport implements BufferedTransport, SessionAwareTransport
         }
 
         return $response;
-    }
-
-    /**
-     * Handle SSE connection upgrade
-     */
-    private function handleSSEUpgrade(HttpMessage $request, Response $response): ?HttpMessage
-    {
-        $sessionId = $request->getHeader('Mcp-Session-Id');
-
-        if ($sessionId === null) {
-            return HttpMessage::createJsonResponse(
-                ['error' => 'Session ID required for SSE'],
-                400,
-            );
-        }
-
-        $session = $this->getSession($sessionId);
-        if ($session === null) {
-            return HttpMessage::createJsonResponse(
-                ['error' => 'Invalid session for SSE'],
-                404,
-            );
-        }
-
-        // Create SSE connection
-        $connectionId = \bin2hex(\random_bytes(16));
-        $sseConnection = new SseConnection(
-            $connectionId,
-            $response,
-            $sessionId,
-        );
-
-        if ($this->sseManager->addConnection($sseConnection)) {
-            // Connection will be managed by SseConnection class
-            // Return null to indicate response is handled
-            return null;
-        }
-        return HttpMessage::createJsonResponse(
-            ['error' => 'SSE connection limit reached'],
-            503,
-        );
-
     }
 
     /**
@@ -351,18 +483,6 @@ final class SwooleTransport implements BufferedTransport, SessionAwareTransport
      */
     private function handleGetRequest(HttpMessage $request, HttpSession $session): HttpMessage
     {
-        $acceptHeader = $request->getHeader('Accept');
-        $wantsSse = $acceptHeader !== null &&
-                   \stripos($acceptHeader, 'text/event-stream') !== false;
-
-        if ($wantsSse && $this->config->sseEnabled) {
-            // This should be handled by handleSSEUpgrade
-            return HttpMessage::createJsonResponse(
-                ['error' => 'SSE upgrade required'],
-                426,
-            );
-        }
-
         return HttpMessage::createJsonResponse(
             ['error' => 'Method not allowed'],
             405,
@@ -374,15 +494,17 @@ final class SwooleTransport implements BufferedTransport, SessionAwareTransport
      */
     private function handleDeleteRequest(HttpMessage $request, HttpSession $session): HttpMessage
     {
+        $sessionId = $session->getId();
         $session->expire();
-        unset($this->sessions[$session->getId()]);
+        unset($this->sessions[$sessionId]);
 
         // Close SSE connections for this session
         if ($this->config->sseEnabled) {
-            $this->sseManager->closeSessionConnections($session->getId());
+            $this->sseManager->closeSessionConnections($sessionId);
+            $this->emit('client_disconnected', [$sessionId, 'Session deleted']);
         }
 
-        $this->messageQueue->cleanupExpiredSessions([$session->getId()]);
+        $this->messageQueue->cleanupExpiredSessions([$sessionId]);
 
         return HttpMessage::createEmptyResponse(204);
     }
@@ -394,8 +516,12 @@ final class SwooleTransport implements BufferedTransport, SessionAwareTransport
     {
         $message = new HttpMessage();
 
+        // I don't know why Swoole adds a trailing slash to the URI like this "request_uri" => "/%22//message"
+        // Let's filter it out
+        $uri = $this->filterRequestUri($request->server['request_uri'] ?? '/');
+
         $message->setMethod($request->server['request_method'] ?? 'GET');
-        $message->setUri($request->server['request_uri'] ?? '/');
+        $message->setUri($uri);
 
         // Set headers
         if ($request->header) {
@@ -415,6 +541,28 @@ final class SwooleTransport implements BufferedTransport, SessionAwareTransport
         }
 
         return $message;
+    }
+
+    private function filterRequestUri(string $requestUri): string
+    {
+        // Remove URL encoding
+        $uri = \urldecode($requestUri);
+
+        // Remove extra quotes and special characters
+        $uri = \trim($uri, '"\'');
+
+        // Normalize multiple slashes to single slash
+        $uri = \preg_replace('#/+#', '/', $uri);
+
+        // Remove any remaining problematic characters
+        $uri = \preg_replace('/[^\w\-.\/?&=]/', '', $uri);
+
+        // Ensure URI starts with /
+        if (!\str_starts_with($uri, '/')) {
+            $uri = '/' . $uri;
+        }
+
+        return $uri;
     }
 
     /**
@@ -450,26 +598,22 @@ final class SwooleTransport implements BufferedTransport, SessionAwareTransport
     }
 
     /**
-     * Check if request is for SSE
+     * Generate session ID
+     * @throws RandomException
      */
-    private function isSSERequest(HttpMessage $request): bool
+    private function generateSessionId(): string
     {
-        $accept = $request->getHeader('Accept');
-        return $accept !== null && \stripos($accept, 'text/event-stream') !== false;
+        return \bin2hex(\random_bytes(16));
     }
 
-    // ... [Include the rest of the helper methods from HttpServerTransport]
-    // processJsonRpcData, isInitializeRequest, getSession, createSession, etc.
-    // These would be identical or very similar to the existing HttpServerTransport implementation
-
     /**
-     * Get session by ID (similar to HttpServerTransport)
+     * Get session by ID
      */
     private function getSession(string $sessionId): ?HttpSession
     {
         if (isset($this->sessions[$sessionId])) {
             $session = $this->sessions[$sessionId];
-            if ($session->isExpired($this->config->get('session_timeout'))) {
+            if ($session->isExpired($this->sessionTimeout)) {
                 $session->expire();
                 $this->sessionStore->delete($sessionId);
                 unset($this->sessions[$sessionId]);
@@ -479,7 +623,7 @@ final class SwooleTransport implements BufferedTransport, SessionAwareTransport
         }
 
         $session = $this->sessionStore->load($sessionId);
-        if ($session && !$session->isExpired($this->config->get('session_timeout'))) {
+        if ($session && !$session->isExpired($this->sessionTimeout)) {
             $this->sessions[$sessionId] = $session;
             return $session;
         }
@@ -494,9 +638,9 @@ final class SwooleTransport implements BufferedTransport, SessionAwareTransport
     /**
      * Create new session
      */
-    private function createSession(): HttpSession
+    private function createSession(?string $sessionId = null): HttpSession
     {
-        $session = new HttpSession();
+        $session = new HttpSession($sessionId);
         $session->activate();
         $this->sessions[$session->getId()] = $session;
         $this->sessionStore->save($session);
@@ -528,14 +672,42 @@ final class SwooleTransport implements BufferedTransport, SessionAwareTransport
     }
 
     /**
-     * Process JSON-RPC data (simplified version)
+     * Process JSON-RPC data and queue messages
      */
-    private function processJsonRpcData(array $data, HttpSession $session): bool
+    private function processJsonRpcData(mixed $data, HttpSession $session): bool
     {
-        // This would contain the same logic as HttpServerTransport
-        // For brevity, returning true to indicate requests were processed
-        $this->messageQueue->queueIncoming(new JsonRpcMessage(new JSONRPCNotification('2.0', 'test')));
-        return true;
+        if (!\is_array($data)) {
+            return false;
+        }
+
+        $containsRequests = false;
+
+        // Handle batch requests
+        if (isset($data[0]) && \is_array($data[0])) {
+            foreach ($data as $item) {
+                if ($this->processJsonRpcItem($item, $session)) {
+                    $containsRequests = true;
+                }
+            }
+        } else {
+            $containsRequests = $this->processJsonRpcItem($data, $session);
+        }
+
+        return $containsRequests;
+    }
+
+    /**
+     * Process individual JSON-RPC item
+     * @throws McpError
+     */
+    private function processJsonRpcItem(mixed $item, HttpSession $session): bool
+    {
+        $this->messageQueue->queueIncoming(
+            $this->messageParser->parse($item),
+        );
+
+        return false; // Notifications don't expect responses
+
     }
 
     /**
@@ -572,7 +744,7 @@ final class SwooleTransport implements BufferedTransport, SessionAwareTransport
         }
 
         $this->lastSessionCleanup = $now;
-        $sessionTimeout = $this->config->get('session_timeout');
+        $sessionTimeout = $this->sessionTimeout;
         $expiredSessionIds = [];
 
         foreach ($this->sessions as $sessionId => $session) {
@@ -589,13 +761,9 @@ final class SwooleTransport implements BufferedTransport, SessionAwareTransport
             if ($this->config->sseEnabled) {
                 foreach ($expiredSessionIds as $sessionId) {
                     $this->sseManager->closeSessionConnections($sessionId);
+                    $this->emit('client_disconnected', [$sessionId, 'Session expired']);
                 }
             }
         }
-    }
-
-    public function isStarted(): bool
-    {
-        return $this->isStarted;
     }
 }

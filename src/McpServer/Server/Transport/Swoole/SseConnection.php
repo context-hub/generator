@@ -14,12 +14,13 @@ final class SseConnection
     private bool $active = true;
     private int $lastPing = 0;
     private array $metadata = [];
+    private readonly int $createdAt;
 
     public function __construct(
-        private readonly string $id,
+        public readonly string $id,
         private readonly Response $response,
-        private readonly string $sessionId,
-        private readonly int $createdAt = 0,
+        public readonly string $sessionId,
+        ?int $createdAt = null,
     ) {
         $this->createdAt = $createdAt ?: \time();
         $this->lastPing = $this->createdAt;
@@ -46,7 +47,7 @@ final class SseConnection
             $event .= "event: {$type}\n";
 
             if ($data !== null) {
-                $jsonData = \json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+                $jsonData = \json_encode($data);
                 $event .= "data: {$jsonData}\n";
             }
 
@@ -135,38 +136,6 @@ final class SseConnection
     }
 
     /**
-     * Get connection ID
-     */
-    public function getId(): string
-    {
-        return $this->id;
-    }
-
-    /**
-     * Get session ID
-     */
-    public function getSessionId(): string
-    {
-        return $this->sessionId;
-    }
-
-    /**
-     * Get creation timestamp
-     */
-    public function getCreatedAt(): int
-    {
-        return $this->createdAt;
-    }
-
-    /**
-     * Get last ping timestamp
-     */
-    public function getLastPing(): int
-    {
-        return $this->lastPing;
-    }
-
-    /**
      * Set connection metadata
      */
     public function setMetadata(string $key, mixed $value): void
@@ -180,29 +149,6 @@ final class SseConnection
     public function getMetadata(string $key, mixed $default = null): mixed
     {
         return $this->metadata[$key] ?? $default;
-    }
-
-    /**
-     * Get all metadata
-     */
-    public function getAllMetadata(): array
-    {
-        return $this->metadata;
-    }
-
-    /**
-     * Get connection info as array
-     */
-    public function toArray(): array
-    {
-        return [
-            'id' => $this->id,
-            'session_id' => $this->sessionId,
-            'active' => $this->active,
-            'created_at' => $this->createdAt,
-            'last_ping' => $this->lastPing,
-            'metadata' => $this->metadata,
-        ];
     }
 
     /**

@@ -5,17 +5,18 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\McpServer\Server;
 
 use Butschster\ContextGenerator\McpServer\Config\McpConfig;
-use Butschster\ContextGenerator\McpServer\Server\Driver\HttpServerDriver;
 use Butschster\ContextGenerator\McpServer\Server\Driver\ServerDriverInterface;
 use Butschster\ContextGenerator\McpServer\Server\Driver\StdioServerDriver;
 use Butschster\ContextGenerator\McpServer\Server\Driver\SwooleServerDriver;
 use Psr\Log\LoggerInterface;
+use Spiral\Exceptions\ExceptionReporterInterface;
 
 final readonly class ServerDriverFactory
 {
     public function __construct(
         private McpConfig $config,
         private LoggerInterface $logger,
+        private ExceptionReporterInterface $reporter,
     ) {}
 
     /**
@@ -24,13 +25,11 @@ final readonly class ServerDriverFactory
     public function create(): ServerDriverInterface
     {
         return match ($this->config->getTransportType()) {
-            'http' => new HttpServerDriver(
-                httpConfig: $this->config->getHttpTransportConfig(),
-                logger: $this->logger,
-            ),
-            'swoole' => new SwooleServerDriver(
+            'http' => new SwooleServerDriver(
                 config: $this->config->getSwooleTransportConfig(),
                 logger: $this->logger,
+                reporter: $this->reporter,
+                messageParser: new MessageParser(),
             ),
             'stdio' => new StdioServerDriver(
                 logger: $this->logger,
