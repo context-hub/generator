@@ -96,7 +96,7 @@ final readonly class TemplateMatchingService
         // Normalize confidence based on how many criteria were met
         if ($totalCriteria > 0) {
             $matchRatio = $matchedCriteria / $totalCriteria;
-            $confidence = $confidence * $matchRatio;
+            $confidence = $confidence * (float) $matchRatio;
         }
 
         return \min($confidence, 1.0);

@@ -7,7 +7,6 @@ namespace Butschster\ContextGenerator\Template;
 use Butschster\ContextGenerator\Application\Bootloader\ConsoleBootloader;
 use Butschster\ContextGenerator\Template\Analysis\Analyzer\ComposerAnalyzer;
 use Butschster\ContextGenerator\Template\Analysis\Analyzer\FallbackAnalyzer;
-use Butschster\ContextGenerator\Template\Analysis\Analyzer\LaravelAnalyzer;
 use Butschster\ContextGenerator\Template\Analysis\Analyzer\PackageJsonAnalyzer;
 use Butschster\ContextGenerator\Template\Analysis\AnalyzerChain;
 use Butschster\ContextGenerator\Template\Analysis\ProjectAnalysisService;
@@ -73,7 +72,6 @@ final class TemplateSystemBootloader extends Bootloader
                 ProjectStructureDetector $structureDetector,
             ): AnalyzerChain => new AnalyzerChain([
                 // Register analyzers in priority order (highest first)
-                new LaravelAnalyzer($composerReader, $structureDetector),
                 new PackageJsonAnalyzer($files, $structureDetector),
                 new ComposerAnalyzer($composerReader, $structureDetector),
                 new FallbackAnalyzer($structureDetector), // Always register fallback analyzer last

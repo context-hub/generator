@@ -132,7 +132,7 @@ final class InitCommand extends BaseCommand
                 '  - %s (priority: %d, threshold: %.0f%%)',
                 $strategy->getName(),
                 $strategy->getPriority(),
-                $strategy->getConfidenceThreshold() * 100,
+                $strategy->getConfidenceThreshold() * 100.0,
             ));
         }
         $this->output->newLine();
@@ -142,7 +142,7 @@ final class InitCommand extends BaseCommand
         $detection,
         TemplateDetectionService $detectionService,
     ): void {
-        $confidencePercent = $detection->confidence * 100;
+        $confidencePercent = $detection->confidence * 100.0;
 
         if ($detection->isHighConfidenceTemplateDetection()) {
             $this->output->success(\sprintf(
@@ -206,7 +206,7 @@ final class InitCommand extends BaseCommand
 
         $tableData = [];
         foreach ($allDetections as $detection) {
-            $confidencePercent = $detection->confidence * 100;
+            $confidencePercent = $detection->confidence * 100.0;
 
             $isSelected = $bestDetection->hasTemplate() &&
                          $detection->template !== null &&
@@ -232,7 +232,7 @@ final class InitCommand extends BaseCommand
 
         $this->output->note(\sprintf(
             'Template detection uses %.0f%% confidence threshold. Strategies are tried in priority order.',
-            $detectionService->getHighConfidenceThreshold() * 100,
+            $detectionService->getHighConfidenceThreshold() * 100.0,
         ));
 
         if ($bestDetection->hasTemplate()) {
@@ -286,7 +286,7 @@ final class InitCommand extends BaseCommand
                 $this->output->writeln(\sprintf(
                     '  - %s (threshold: %.0f%%)',
                     \ucfirst(\str_replace('-', ' ', $strategy->getName())),
-                    $strategy->getConfidenceThreshold() * 100,
+                    $strategy->getConfidenceThreshold() * 100.0,
                 ));
             }
         }
@@ -303,7 +303,7 @@ final class InitCommand extends BaseCommand
             $outputConfig = new ConfigRegistry(JsonSchema::SCHEMA_URL);
 
             // Copy all registries from the original config
-            foreach ($config->all() as $registryType => $registry) {
+            foreach ($config->all() as $registry) {
                 $outputConfig->register($registry);
             }
 

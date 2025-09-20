@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Template\Definition;
 
+use Butschster\ContextGenerator\Document\Document;
+use Butschster\ContextGenerator\Source\File\FileSource;
+
 /**
  * Laravel project template definition using the improved abstract base
  */
@@ -74,30 +77,25 @@ final class LaravelTemplateDefinition extends AbstractTemplateDefinition
         $existingDirs = $projectMetadata['existingDirectories'] ?? $projectMetadata['directories'] ?? [];
 
         if (\in_array('app', $existingDirs, true)) {
-            $documents[] = new \Butschster\ContextGenerator\Document\Document(
+            $documents[] = new Document(
                 description: 'Laravel Controllers and Models',
                 outputPath: 'docs/laravel-controllers-models.md',
-                overwrite: true,
-                modifiers: ['php-signature'],
                 tags: ['laravel', 'controllers', 'models'],
-                fileSource: new \Butschster\ContextGenerator\Source\File\FileSource(
+                fileSource: new FileSource(
                     sourcePaths: ['app/Http/Controllers', 'app/Models'],
                     description: 'Laravel Controllers and Models',
                     filePattern: '*.php',
-                    modifiers: ['php-signature'],
                 ),
             );
         }
 
         // Add Routes document if routes directory exists
         if (\in_array('routes', $existingDirs, true)) {
-            $documents[] = new \Butschster\ContextGenerator\Document\Document(
+            $documents[] = new Document(
                 description: 'Laravel Routes Configuration',
                 outputPath: 'docs/laravel-routes.md',
-                overwrite: true,
-                modifiers: [],
                 tags: ['laravel', 'routes'],
-                fileSource: new \Butschster\ContextGenerator\Source\File\FileSource(
+                fileSource: new FileSource(
                     sourcePaths: ['routes'],
                     description: 'Laravel Routes',
                     filePattern: '*.php',

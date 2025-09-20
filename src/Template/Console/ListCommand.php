@@ -80,9 +80,7 @@ final class ListCommand extends BaseCommand
 
         $this->output->table(['Name', 'Description', 'Tags', 'Priority'], $tableData);
 
-        $this->output->note(\sprintf(
-            'Use "ctx init <template-name>" to initialize with a specific template.',
-        ));
+        $this->output->note('Use "ctx init <template-name>" to initialize with a specific template.');
 
         return Command::SUCCESS;
     }
