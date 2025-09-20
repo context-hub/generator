@@ -39,7 +39,6 @@ final class SymfonyTemplateDefinition implements TemplateDefinitionInterface
      */
     private const array SYMFONY_PACKAGES = [
         'symfony/framework-bundle',
-        'symfony/console',
         'symfony/dotenv',
         'symfony/flex',
         'symfony/runtime',

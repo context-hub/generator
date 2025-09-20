@@ -26,6 +26,9 @@ use Butschster\ContextGenerator\Template\Definition\TemplateDefinitionRegistry;
 use Butschster\ContextGenerator\Template\Definition\VueTemplateDefinition;
 use Butschster\ContextGenerator\Template\Definition\Yii2TemplateDefinition;
 use Butschster\ContextGenerator\Template\Definition\Yii3TemplateDefinition;
+use Butschster\ContextGenerator\Template\Detection\ProjectMetadataExtractor;
+use Butschster\ContextGenerator\Template\Detection\TemplateDetectionService;
+use Butschster\ContextGenerator\Template\Detection\TemplateMatchingService;
 use Butschster\ContextGenerator\Template\Provider\BuiltinTemplateProvider;
 use Butschster\ContextGenerator\Template\Registry\TemplateRegistry;
 use Spiral\Boot\Bootloader\Bootloader;
@@ -71,6 +74,10 @@ final class TemplateSystemBootloader extends Bootloader
                 new ComposerAnalyzer($composerReader, $structureDetector),
                 new FallbackAnalyzer($structureDetector), // Always register fallback analyzer last
             ]),
+            // Template Detection Services
+            ProjectMetadataExtractor::class => ProjectMetadataExtractor::class,
+            TemplateMatchingService::class => TemplateMatchingService::class,
+            TemplateDetectionService::class => TemplateDetectionService::class,
         ];
     }
 

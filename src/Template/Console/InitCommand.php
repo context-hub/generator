@@ -8,7 +8,7 @@ use Butschster\ContextGenerator\Config\ConfigType;
 use Butschster\ContextGenerator\Config\Registry\ConfigRegistry;
 use Butschster\ContextGenerator\Console\BaseCommand;
 use Butschster\ContextGenerator\DirectoriesInterface;
-use Butschster\ContextGenerator\Template\Analysis\ProjectAnalysisService;
+use Butschster\ContextGenerator\Template\Detection\TemplateDetectionService;
 use Butschster\ContextGenerator\Template\Registry\TemplateRegistry;
 use Spiral\Console\Attribute\Argument;
 use Spiral\Console\Attribute\Option;
@@ -36,11 +36,18 @@ final class InitCommand extends BaseCommand
     )]
     protected string $configFilename = 'context.yaml';
 
+    #[Option(
+        name: 'show-all',
+        shortcut: 'a',
+        description: 'Show all possible templates with confidence scores',
+    )]
+    protected bool $showAll = false;
+
     public function __invoke(
         DirectoriesInterface $dirs,
         FilesInterface $files,
         TemplateRegistry $templateRegistry,
-        ProjectAnalysisService $analysisService,
+        TemplateDetectionService $detectionService,
     ): int {
         $filename = $this->configFilename;
         $ext = \pathinfo($filename, \PATHINFO_EXTENSION);
@@ -64,7 +71,7 @@ final class InitCommand extends BaseCommand
             return $this->initWithTemplate($files, $templateRegistry, $this->template, $type, $filePath);
         }
 
-        return $this->initWithAnalysis($dirs, $files, $analysisService, $templateRegistry, $type, $filePath);
+        return $this->initWithDetection($dirs, $files, $detectionService, $type, $filePath);
     }
 
     private function initWithTemplate(
@@ -95,95 +102,177 @@ final class InitCommand extends BaseCommand
         return $this->writeConfig($files, $template->config, $type, $filePath);
     }
 
-    private function initWithAnalysis(
+    private function initWithDetection(
         DirectoriesInterface $dirs,
         FilesInterface $files,
-        ProjectAnalysisService $analysisService,
-        TemplateRegistry $templateRegistry,
+        TemplateDetectionService $detectionService,
         ConfigType $type,
         string $filePath,
     ): int {
-        $this->output->writeln('Analyzing project...');
+        if ($this->output->isVerbose()) {
+            $this->output->writeln('Analyzing project...');
+        }
 
-        $results = $analysisService->analyzeProject($dirs->getRootPath());
-        $bestMatch = $results[0];
+        if ($this->showAll) {
+            return $this->showAllPossibleTemplates($dirs, $files, $detectionService, $type, $filePath);
+        }
 
-        // Check if this is a fallback result
-        $isFallback = $bestMatch->metadata['isFallback'] ?? false;
+        $detection = $detectionService->detectBestTemplate($dirs->getRootPath());
 
-        if ($isFallback) {
-            $this->output->warning('No specific project type detected. Using default configuration.');
+        if (!$detection->hasTemplate()) {
+            $this->output->warning('No specific project type detected. Please specify a template manually.');
+            $this->output->writeln('Use <info>ctx template:list</info> to see available templates.');
+            $this->output->writeln('Use <info>ctx init <template-name></info> to use a specific template.');
+            return Command::FAILURE;
+        }
+
+        // Show detection details only in verbose mode
+        if ($this->output->isVerbose()) {
+            $this->displayDetectionResult($detection, $detectionService);
         } else {
-            $this->output->success(\sprintf(
-                'Detected: %s (confidence: %.0f%%)',
-                $bestMatch->detectedType,
-                $bestMatch->confidence * 100,
-            ));
+            // In non-verbose mode, just show what template is being used
+            $this->output->success(\sprintf('Using template: %s', $detection->template->description));
         }
 
-        if ($bestMatch->hasHighConfidence()) {
-            $primaryTemplate = $bestMatch->getPrimaryTemplate();
-            if ($primaryTemplate !== null) {
-                $template = $templateRegistry->getTemplate($primaryTemplate);
-                if ($template !== null) {
-                    $this->output->writeln(\sprintf('Using template: %s', $template->description));
-                    return $this->writeConfig($files, $template->config, $type, $filePath);
-                }
-            }
-        }
-
-        // Show analysis results for lower confidence matches
-        return $this->showAnalysisResults($results, $templateRegistry, $files, $type, $filePath);
+        return $this->writeConfig($files, $detection->template->config, $type, $filePath);
     }
 
-    private function showAnalysisResults(
-        array $results,
-        TemplateRegistry $templateRegistry,
+    private function displayDetectionResult(
+        $detection,
+        TemplateDetectionService $detectionService,
+    ): void {
+        $confidencePercent = $detection->confidence * 100;
+        $threshold = $detectionService->getHighConfidenceThreshold() * 100;
+
+        if ($detection->detectionMethod === 'template_criteria') {
+            $this->output->success(\sprintf(
+                'High-confidence template match: %s (%.0f%% confidence)',
+                $detection->template->description,
+                $confidencePercent,
+            ));
+        } else {
+            $this->output->writeln(\sprintf(
+                'Detected via analysis: %s (%.0f%% confidence, method: %s)',
+                $detection->template->description,
+                $confidencePercent,
+                $detection->getDetectionMethodDescription(),
+            ));
+
+            // Show why template detection wasn't used
+            if (isset($detection->metadata['templateMatchesConsidered']) && $detection->metadata['templateMatchesConsidered'] > 0) {
+                $templateConfidence = $detection->metadata['templateMatchesConsidered'] * 100;
+                $this->output->writeln(\sprintf(
+                    '<comment>Template match found but below %.0f%% threshold (%.0f%%), using analyzer instead</comment>',
+                    $threshold,
+                    $templateConfidence,
+                ));
+            }
+        }
+
+        $this->output->writeln(\sprintf('Using template: %s', $detection->template->description));
+    }
+
+    private function showAllPossibleTemplates(
+        DirectoriesInterface $dirs,
         FilesInterface $files,
+        TemplateDetectionService $detectionService,
         ConfigType $type,
         string $filePath,
     ): int {
-        $this->output->title('Analysis Results');
+        // Always show analysis message when showing all templates
+        $this->output->writeln('Analyzing project...');
 
-        foreach ($results as $result) {
-            // Skip showing fallback results in detailed analysis
-            if ($result->metadata['isFallback'] ?? false) {
-                continue;
-            }
+        // Get the actual best detection (this uses the 90% threshold logic)
+        $bestDetection = $detectionService->detectBestTemplate($dirs->getRootPath());
 
-            $this->output->section(\sprintf(
-                '%s: %s (%.0f%% confidence)',
-                \ucfirst((string) $result->analyzerName),
-                $result->detectedType,
-                $result->confidence * 100,
-            ));
+        // Get all possible templates for display
+        $allDetections = $detectionService->getAllPossibleTemplates($dirs->getRootPath());
 
-            if (!empty($result->suggestedTemplates)) {
-                $this->output->writeln('Suggested templates:');
-                foreach ($result->suggestedTemplates as $templateName) {
-                    $template = $templateRegistry->getTemplate($templateName);
-                    if ($template !== null) {
-                        $this->output->writeln(\sprintf('  - %s: %s', $templateName, $template->description));
-                    }
-                }
+        if (empty($allDetections)) {
+            $this->output->warning('No templates detected for this project.');
+            return Command::FAILURE;
+        }
+
+        $this->output->title('All Possible Templates');
+        $threshold = $detectionService->getHighConfidenceThreshold() * 100;
+
+        $tableData = [];
+        foreach ($allDetections as $detection) {
+            $confidencePercent = $detection->confidence * 100;
+
+            // Determine status based on whether this is the actual best detection
+            $isSelected = $bestDetection->hasTemplate() &&
+                         $detection->template !== null &&
+                         $detection->template->name === $bestDetection->template->name;
+
+            $status = match (true) {
+                $isSelected && $detection->detectionMethod === 'template_criteria' => '✓ Selected (Template)',
+                $isSelected && $detection->detectionMethod === 'analyzer' => '✓ Selected (Analyzer)',
+                $detection->detectionMethod === 'template_criteria' && $detection->confidence > $detectionService->getHighConfidenceThreshold() => '✗ High confidence but not best',
+                $detection->detectionMethod === 'template_criteria' => '✗ Low confidence',
+                default => 'Available',
+            };
+
+            $tableData[] = [
+                $detection->template->name ?? 'Unknown',
+                $detection->template->description ?? 'Unknown',
+                \sprintf('%.0f%%', $confidencePercent),
+                $detection->getDetectionMethodDescription(),
+                $status,
+            ];
+        }
+
+        $this->output->table(['Template', 'Description', 'Confidence', 'Method', 'Status'], $tableData);
+
+        $this->output->note(\sprintf(
+            'Templates with >%.0f%% confidence from template criteria are preferred. Otherwise, analyzer detection is used.',
+            $threshold,
+        ));
+
+        // Use the actual best detection (which respects the 90% threshold)
+        if (!$bestDetection->hasTemplate()) {
+            $this->output->error('No suitable template found');
+            return Command::FAILURE;
+        }
+
+        // Always show details when using --show-all
+        $this->displayDetectionResult($bestDetection, $detectionService);
+
+        return $this->writeConfig($files, $bestDetection->template->config, $type, $filePath);
+    }
+
+    private function showDetectionOptions(
+        DirectoriesInterface $dirs,
+        FilesInterface $files,
+        TemplateDetectionService $detectionService,
+        $detection,
+        ConfigType $type,
+        string $filePath,
+    ): int {
+        $this->output->section('Detection Results');
+
+        $this->output->writeln(\sprintf(
+            'Best match: %s (%.0f%% confidence)',
+            $detection->template->description,
+            $detection->confidence * 100,
+        ));
+
+        // Show other possible templates
+        $allDetections = $detectionService->getAllPossibleTemplates($dirs->getRootPath());
+        if (\count($allDetections) > 1) {
+            $this->output->writeln('Other possible templates:');
+            foreach (\array_slice($allDetections, 1, 3) as $altDetection) {
+                $this->output->writeln(\sprintf(
+                    '  - %s (%.0f%% confidence, %s)',
+                    $altDetection->template->description,
+                    $altDetection->confidence * 100,
+                    \strtolower($altDetection->getDetectionMethodDescription()),
+                ));
             }
         }
 
-        // Use the best match (could be fallback if no other matches)
-        $bestResult = $results[0];
-        $primaryTemplate = $bestResult->getPrimaryTemplate();
-
-        if ($primaryTemplate !== null) {
-            $template = $templateRegistry->getTemplate($primaryTemplate);
-            if ($template !== null) {
-                $this->output->note(\sprintf('Using template: %s', $template->description));
-                return $this->writeConfig($files, $template->config, $type, $filePath);
-            }
-        }
-
-        // This should never happen, but provide safety fallback
-        $this->output->error('No suitable template found');
-        return Command::FAILURE;
+        $this->output->note(\sprintf('Using best match: %s', $detection->template->description));
+        return $this->writeConfig($files, $detection->template->config, $type, $filePath);
     }
 
     private function writeConfig(

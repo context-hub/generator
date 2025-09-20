@@ -109,21 +109,33 @@ final class ListCommand extends BaseCommand
             if (!empty($template->detectionCriteria)) {
                 $this->output->writeln('<info>Detection Criteria:</info>');
 
-                foreach ($template->detectionCriteria as $key => $criteria) {
-                    if (\is_array($criteria)) {
-                        $this->output->writeln(\sprintf(
-                            '  • %s: %s',
-                            \ucfirst((string) $key),
-                            \implode(', ', $criteria),
-                        ));
-                    } else {
-                        $this->output->writeln(\sprintf('  • %s: %s', \ucfirst((string) $key), $criteria));
-                    }
+                // Show files
+                if (isset($template->detectionCriteria['files']) && !empty($template->detectionCriteria['files'])) {
+                    $this->output->writeln(\sprintf(
+                        '  • Required Files: %s',
+                        \implode(', ', $template->detectionCriteria['files']),
+                    ));
+                }
+
+                // Show directories
+                if (isset($template->detectionCriteria['directories']) && !empty($template->detectionCriteria['directories'])) {
+                    $this->output->writeln(\sprintf(
+                        '  • Expected Directories: %s',
+                        \implode(', ', $template->detectionCriteria['directories']),
+                    ));
+                }
+
+                // Show patterns (packages)
+                if (isset($template->detectionCriteria['patterns']) && !empty($template->detectionCriteria['patterns'])) {
+                    $this->output->writeln(\sprintf(
+                        '  • Required Packages: %s',
+                        \implode(', ', $template->detectionCriteria['patterns']),
+                    ));
                 }
             }
 
             // Show generated documents
-            $documents = $template->config->has('documents')
+            $documents = $template->config?->has('documents')
                 ? $template->config->get('documents', DocumentRegistry::class)->getAll()
                 : [];
 
@@ -139,9 +151,11 @@ final class ListCommand extends BaseCommand
             }
         }
 
-        $this->output->note(\sprintf(
+        $this->output->note([
             'Use "ctx init <template-name>" to initialize with a specific template.',
-        ));
+            'Use "ctx init" to let the system detect the best template automatically.',
+            'Use "ctx init --show-all" to see all possible templates with confidence scores.',
+        ]);
 
         return Command::SUCCESS;
     }
