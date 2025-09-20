@@ -195,11 +195,68 @@ That's it! You're now ready to leverage LLMs with proper context about your code
 
 ## 6. Connect to Claude AI (Optional)
 
-For a more seamless experience, you can connect Context Generator directly to Claude AI using the MCP server:
+For a more seamless experience, you can connect Context Generator directly to Claude AI using the MCP server.
 
-There is a built-in MCP server that allows you to connect Claude AI directly to your codebase.
+### Quick MCP Setup
 
-Point the MCP client to the Context Generator server:
+Generate the perfect MCP configuration for your environment automatically:
+
+```bash
+# Auto-detect OS and generate configuration
+ctx mcp:config
+```
+
+This command:
+- 🔍 **Auto-detects your OS** (Windows, Linux, macOS, WSL)
+- 🎯 **Generates the right config** for your environment
+- 📋 **Provides copy-paste ready** JSON for Claude Desktop
+- 🧭 **Includes setup instructions** and troubleshooting tips
+
+### Configuration Options
+
+```bash
+# Interactive mode with guided questions
+ctx mcp:config --interactive
+
+# Project-specific configuration (single project)
+ctx mcp:config --project-path /path/to/project
+
+# Global registry mode (switch between projects)
+ctx mcp:config --global
+
+# Show detailed setup instructions  
+ctx mcp:config --explain
+```
+
+### Sample Output
+
+**Global Registry Mode** (recommended for multiple projects):
+```json
+{
+    "mcpServers": {
+        "ctx": {
+            "command": "ctx",
+            "args": ["server"]
+        }
+    }
+}
+```
+
+**Project-Specific Mode** (single project):
+```json
+{
+    "mcpServers": {
+        "ctx": {
+            "command": "ctx", 
+            "args": ["server", "-c", "/path/to/project"]
+        }
+    }
+}
+```
+
+### Manual Configuration
+
+If you prefer manual setup, point the MCP client to the Context Generator server:
 
 ```json
 {
@@ -217,7 +274,7 @@ Point the MCP client to the Context Generator server:
 ```
 
 > **Note:** Read more about [MCP Server](https://docs.ctxgithub.com/mcp/#setting-up) for detailed setup
-> instructions.
+> instructions and troubleshooting.
 
 Now you can ask Claude questions about your codebase without manually uploading context files!
 
