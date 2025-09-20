@@ -21,7 +21,6 @@ final readonly class ComposerAnalyzer implements ProjectAnalyzerInterface
         private ProjectStructureDetector $structureDetector,
     ) {}
 
-    #[\Override]
     public function analyze(FSPath $projectRoot): ?AnalysisResult
     {
         if (!$this->canAnalyze($projectRoot)) {
@@ -62,19 +61,16 @@ final readonly class ComposerAnalyzer implements ProjectAnalyzerInterface
         );
     }
 
-    #[\Override]
     public function canAnalyze(FSPath $projectRoot): bool
     {
         return $projectRoot->join('composer.json')->exists();
     }
 
-    #[\Override]
     public function getPriority(): int
     {
         return 50; // Medium priority - let specific framework analyzers go first
     }
 
-    #[\Override]
     public function getName(): string
     {
         return 'composer';

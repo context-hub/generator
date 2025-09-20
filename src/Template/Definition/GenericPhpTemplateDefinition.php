@@ -28,7 +28,6 @@ final class GenericPhpTemplateDefinition implements TemplateDefinitionInterface
         'includes',
     ];
 
-    #[\Override]
     public function createTemplate(array $projectMetadata = []): Template
     {
         $config = new ConfigRegistry();
@@ -50,31 +49,26 @@ final class GenericPhpTemplateDefinition implements TemplateDefinitionInterface
         );
     }
 
-    #[\Override]
     public function getName(): string
     {
         return 'generic-php';
     }
 
-    #[\Override]
     public function getDescription(): string
     {
         return 'Generic PHP project template';
     }
 
-    #[\Override]
     public function getTags(): array
     {
         return ['php', 'generic'];
     }
 
-    #[\Override]
     public function getPriority(): int
     {
         return 10;
     }
 
-    #[\Override]
     public function getDetectionCriteria(): array
     {
         return [

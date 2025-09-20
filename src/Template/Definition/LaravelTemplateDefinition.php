@@ -17,7 +17,6 @@ use Butschster\ContextGenerator\Template\Template;
  */
 final class LaravelTemplateDefinition implements TemplateDefinitionInterface
 {
-    #[\Override]
     public function createTemplate(array $projectMetadata = []): Template
     {
         $config = new ConfigRegistry();
@@ -39,31 +38,26 @@ final class LaravelTemplateDefinition implements TemplateDefinitionInterface
         );
     }
 
-    #[\Override]
     public function getName(): string
     {
         return 'laravel';
     }
 
-    #[\Override]
     public function getDescription(): string
     {
         return 'Laravel PHP Framework project template';
     }
 
-    #[\Override]
     public function getTags(): array
     {
         return ['php', 'laravel', 'web', 'framework'];
     }
 
-    #[\Override]
     public function getPriority(): int
     {
         return 100;
     }
 
-    #[\Override]
     public function getDetectionCriteria(): array
     {
         return [

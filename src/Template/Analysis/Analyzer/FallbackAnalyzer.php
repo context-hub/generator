@@ -19,7 +19,6 @@ final readonly class FallbackAnalyzer implements ProjectAnalyzerInterface
         private ProjectStructureDetector $structureDetector,
     ) {}
 
-    #[\Override]
     public function analyze(FSPath $projectRoot): ?AnalysisResult
     {
         // This analyzer always provides a result as a fallback
@@ -42,20 +41,17 @@ final readonly class FallbackAnalyzer implements ProjectAnalyzerInterface
         );
     }
 
-    #[\Override]
     public function canAnalyze(FSPath $projectRoot): bool
     {
         // This analyzer can always analyze any project as a fallback
         return true;
     }
 
-    #[\Override]
     public function getPriority(): int
     {
         return 1; // Lowest priority - only used when no other analyzers match
     }
 
-    #[\Override]
     public function getName(): string
     {
         return 'fallback';

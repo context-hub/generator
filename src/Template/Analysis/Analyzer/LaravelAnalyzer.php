@@ -36,7 +36,6 @@ final readonly class LaravelAnalyzer implements ProjectAnalyzerInterface
         private ProjectStructureDetector $structureDetector,
     ) {}
 
-    #[\Override]
     public function analyze(FSPath $projectRoot): ?AnalysisResult
     {
         if (!$this->canAnalyze($projectRoot)) {
@@ -80,7 +79,6 @@ final readonly class LaravelAnalyzer implements ProjectAnalyzerInterface
         );
     }
 
-    #[\Override]
     public function canAnalyze(FSPath $projectRoot): bool
     {
         // Must have composer.json to be a Laravel project
@@ -93,13 +91,11 @@ final readonly class LaravelAnalyzer implements ProjectAnalyzerInterface
         return $composer !== null && $this->composerReader->hasPackage($composer, 'laravel/framework');
     }
 
-    #[\Override]
     public function getPriority(): int
     {
         return 100; // High priority - specific framework detection should run first
     }
 
-    #[\Override]
     public function getName(): string
     {
         return 'laravel';
