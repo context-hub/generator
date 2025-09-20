@@ -21,6 +21,7 @@ use Butschster\ContextGenerator\Application\Bootloader\SchemaMapperBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\SourceFetcherBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\VariableBootloader;
 use Butschster\ContextGenerator\McpServer\McpServerBootloader;
+use Butschster\ContextGenerator\Template\TemplateSystemBootloader;
 use Butschster\ContextGenerator\Modifier\PhpContentFilter\PhpContentFilterBootloader;
 use Butschster\ContextGenerator\Modifier\PhpDocs\PhpDocsModifierBootloader;
 use Butschster\ContextGenerator\Modifier\PhpSignature\PhpSignatureModifierBootloader;
@@ -69,6 +70,9 @@ class Kernel extends AbstractKernel
             SourceFetcherBootloader::class,
             SourceRegistryBootloader::class,
             SchemaMapperBootloader::class,
+
+            // Template System
+            TemplateSystemBootloader::class,
 
             // Sources
             TextSourceBootloader::class,
