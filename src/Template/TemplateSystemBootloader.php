@@ -9,6 +9,7 @@ use Butschster\ContextGenerator\Template\Analysis\Analyzer\ComposerAnalyzer;
 use Butschster\ContextGenerator\Template\Analysis\Analyzer\FallbackAnalyzer;
 use Butschster\ContextGenerator\Template\Analysis\Analyzer\LaravelAnalyzer;
 use Butschster\ContextGenerator\Template\Analysis\Analyzer\PackageJsonAnalyzer;
+use Butschster\ContextGenerator\Template\Analysis\AnalyzerChain;
 use Butschster\ContextGenerator\Template\Analysis\ProjectAnalysisService;
 use Butschster\ContextGenerator\Template\Analysis\Util\ComposerFileReader;
 use Butschster\ContextGenerator\Template\Analysis\Util\ProjectStructureDetector;
@@ -26,9 +27,9 @@ use Butschster\ContextGenerator\Template\Definition\TemplateDefinitionRegistry;
 use Butschster\ContextGenerator\Template\Definition\VueTemplateDefinition;
 use Butschster\ContextGenerator\Template\Definition\Yii2TemplateDefinition;
 use Butschster\ContextGenerator\Template\Definition\Yii3TemplateDefinition;
-use Butschster\ContextGenerator\Template\Detection\ProjectMetadataExtractor;
-use Butschster\ContextGenerator\Template\Detection\TemplateDetectionService;
-use Butschster\ContextGenerator\Template\Detection\TemplateMatchingService;
+use Butschster\ContextGenerator\Template\Detection\Strategy\AnalyzerBasedDetectionStrategy;
+use Butschster\ContextGenerator\Template\Detection\Strategy\CompositeDetectionStrategy;
+use Butschster\ContextGenerator\Template\Detection\Strategy\TemplateBasedDetectionStrategy;
 use Butschster\ContextGenerator\Template\Provider\BuiltinTemplateProvider;
 use Butschster\ContextGenerator\Template\Registry\TemplateRegistry;
 use Spiral\Boot\Bootloader\Bootloader;
@@ -36,7 +37,7 @@ use Spiral\Core\Attribute\Singleton;
 use Spiral\Files\FilesInterface;
 
 /**
- * Bootloader for the template system
+ * Improved bootloader for the template system using new architecture patterns
  */
 #[Singleton]
 final class TemplateSystemBootloader extends Bootloader
@@ -45,6 +46,7 @@ final class TemplateSystemBootloader extends Bootloader
     public function defineSingletons(): array
     {
         return [
+            // Core registries
             TemplateRegistry::class => TemplateRegistry::class,
             TemplateDefinitionRegistry::class => static fn(
             ): TemplateDefinitionRegistry => new TemplateDefinitionRegistry([
@@ -63,21 +65,31 @@ final class TemplateSystemBootloader extends Bootloader
                 new VueTemplateDefinition(),
                 new ExpressTemplateDefinition(),
             ]),
-            ProjectAnalysisService::class => static fn(
+
+            // Analysis system with improved chain pattern
+            AnalyzerChain::class => static fn(
                 FilesInterface $files,
                 ComposerFileReader $composerReader,
                 ProjectStructureDetector $structureDetector,
-            ): ProjectAnalysisService => new ProjectAnalysisService([
+            ): AnalyzerChain => new AnalyzerChain([
                 // Register analyzers in priority order (highest first)
                 new LaravelAnalyzer($composerReader, $structureDetector),
                 new PackageJsonAnalyzer($files, $structureDetector),
                 new ComposerAnalyzer($composerReader, $structureDetector),
                 new FallbackAnalyzer($structureDetector), // Always register fallback analyzer last
             ]),
-            // Template Detection Services
-            ProjectMetadataExtractor::class => ProjectMetadataExtractor::class,
-            TemplateMatchingService::class => TemplateMatchingService::class,
-            TemplateDetectionService::class => TemplateDetectionService::class,
+
+            ProjectAnalysisService::class => static fn(
+                AnalyzerChain $analyzerChain,
+            ): ProjectAnalysisService => new ProjectAnalysisService($analyzerChain->getAllAnalyzers()),
+
+            CompositeDetectionStrategy::class => static fn(
+                TemplateBasedDetectionStrategy $templateStrategy,
+                AnalyzerBasedDetectionStrategy $analyzerStrategy,
+            ): CompositeDetectionStrategy => new CompositeDetectionStrategy([
+                $templateStrategy,
+                $analyzerStrategy,
+            ]),
         ];
     }
 

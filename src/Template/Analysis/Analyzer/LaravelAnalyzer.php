@@ -5,16 +5,20 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Template\Analysis\Analyzer;
 
 use Butschster\ContextGenerator\Application\FSPath;
-use Butschster\ContextGenerator\Template\Analysis\AnalysisResult;
-use Butschster\ContextGenerator\Template\Analysis\ProjectAnalyzerInterface;
-use Butschster\ContextGenerator\Template\Analysis\Util\ComposerFileReader;
-use Butschster\ContextGenerator\Template\Analysis\Util\ProjectStructureDetector;
 
 /**
- * Analyzes Laravel PHP projects
+ * Analyzes Laravel PHP projects using the improved abstract framework analyzer
  */
-final readonly class LaravelAnalyzer implements ProjectAnalyzerInterface
+final class LaravelAnalyzer extends AbstractFrameworkAnalyzer
 {
+    /**
+     * Laravel-specific packages that indicate a Laravel project
+     */
+    private const array LARAVEL_PACKAGES = [
+        'laravel/framework',
+        'laravel/laravel',
+    ];
+
     /**
      * Laravel-specific directories that indicate a Laravel project
      */
@@ -22,6 +26,10 @@ final readonly class LaravelAnalyzer implements ProjectAnalyzerInterface
         'app',
         'database',
         'routes',
+        'config',
+        'resources',
+        'storage',
+        'bootstrap',
     ];
 
     /**
@@ -29,66 +37,13 @@ final readonly class LaravelAnalyzer implements ProjectAnalyzerInterface
      */
     private const array LARAVEL_FILES = [
         'artisan',
+        '.env.example',
+        'server.php',
     ];
 
-    public function __construct(
-        private ComposerFileReader $composerReader,
-        private ProjectStructureDetector $structureDetector,
-    ) {}
-
-    public function analyze(FSPath $projectRoot): ?AnalysisResult
+    public function getName(): string
     {
-        if (!$this->canAnalyze($projectRoot)) {
-            return null;
-        }
-
-        $composer = $this->composerReader->readComposerFile($projectRoot);
-
-        if ($composer === null || !$this->composerReader->hasPackage($composer, 'laravel/framework')) {
-            return null;
-        }
-
-        $confidence = 0.6; // Base confidence for having laravel/framework
-
-        // Check for Laravel-specific files
-        $laravelFilesScore = $this->checkLaravelFiles($projectRoot);
-        $confidence += $laravelFilesScore * 0.2;
-
-        // Check for Laravel-specific directories
-        $existingDirs = $this->structureDetector->detectExistingDirectories($projectRoot);
-        $laravelDirScore = $this->structureDetector->getPatternMatchConfidence(
-            $existingDirs,
-            self::LARAVEL_DIRECTORIES,
-        );
-        $confidence += $laravelDirScore * 0.2;
-
-        return new AnalysisResult(
-            analyzerName: $this->getName(),
-            detectedType: 'laravel',
-            confidence: \min($confidence, 1.0),
-            suggestedTemplates: ['laravel'],
-            metadata: [
-                'composer' => $composer,
-                'laravelVersion' => $this->composerReader->getPackageVersion($composer, 'laravel/framework'),
-                'hasArtisan' => $projectRoot->join('artisan')->exists(),
-                'existingDirectories' => $existingDirs,
-                'laravelDirectoriesFound' => \array_intersect($existingDirs, self::LARAVEL_DIRECTORIES),
-                'laravelFilesScore' => $laravelFilesScore,
-                'laravelDirScore' => $laravelDirScore,
-            ],
-        );
-    }
-
-    public function canAnalyze(FSPath $projectRoot): bool
-    {
-        // Must have composer.json to be a Laravel project
-        if (!$projectRoot->join('composer.json')->exists()) {
-            return false;
-        }
-
-        $composer = $this->composerReader->readComposerFile($projectRoot);
-
-        return $composer !== null && $this->composerReader->hasPackage($composer, 'laravel/framework');
+        return 'laravel';
     }
 
     public function getPriority(): int
@@ -96,25 +51,118 @@ final readonly class LaravelAnalyzer implements ProjectAnalyzerInterface
         return 100; // High priority - specific framework detection should run first
     }
 
-    public function getName(): string
+    protected function getFrameworkPackages(): array
     {
-        return 'laravel';
+        return self::LARAVEL_PACKAGES;
+    }
+
+    protected function getFrameworkDirectories(): array
+    {
+        return self::LARAVEL_DIRECTORIES;
+    }
+
+    protected function getFrameworkFiles(): array
+    {
+        return self::LARAVEL_FILES;
     }
 
     /**
-     * Check for Laravel-specific files and return confidence score
+     * Laravel-specific confidence enhancements
      */
-    private function checkLaravelFiles(FSPath $projectRoot): float
-    {
-        $found = 0;
-        $total = \count(self::LARAVEL_FILES);
+    #[\Override]
+    protected function getAdditionalConfidence(
+        FSPath $projectRoot,
+        array $composer,
+        array $existingDirectories,
+    ): float {
+        $additionalConfidence = 0.0;
 
-        foreach (self::LARAVEL_FILES as $file) {
-            if ($projectRoot->join($file)->exists()) {
-                $found++;
+        // Boost confidence if it has Laravel-specific config files
+        $configFiles = ['app.php', 'database.php', 'auth.php'];
+        $configDir = $projectRoot->join('config');
+
+        if ($configDir->exists()) {
+            $foundConfigs = 0;
+            foreach ($configFiles as $configFile) {
+                if ($configDir->join($configFile)->exists()) {
+                    $foundConfigs++;
+                }
+            }
+
+            if ($foundConfigs > 0) {
+                $additionalConfidence += ($foundConfigs / \count($configFiles)) * 0.1;
             }
         }
 
-        return $total > 0 ? $found / $total : 0.0;
+        // Boost confidence if it has Laravel service providers
+        $appDir = $projectRoot->join('app/Providers');
+        if ($appDir->exists()) {
+            $additionalConfidence += 0.05;
+        }
+
+        // Check for Laravel-specific blade templates
+        $viewsDir = $projectRoot->join('resources/views');
+        if ($viewsDir->exists()) {
+            $additionalConfidence += 0.05;
+        }
+
+        return $additionalConfidence;
+    }
+
+    /**
+     * Enhanced metadata with Laravel-specific information
+     */
+    #[\Override]
+    protected function buildMetadata(FSPath $projectRoot, array $composer): array
+    {
+        $metadata = parent::buildMetadata($projectRoot, $composer);
+
+        // Add Laravel-specific metadata
+        $metadata['laravelVersion'] = $this->composerReader->getPackageVersion($composer, 'laravel/framework');
+        $metadata['hasArtisan'] = $projectRoot->join('artisan')->exists();
+        $metadata['hasEnvExample'] = $projectRoot->join('.env.example')->exists();
+
+        // Check Laravel directory structure completeness
+        $coreDirectories = ['app', 'database', 'routes', 'config'];
+        $foundCoreDirectories = \array_intersect($metadata['existingDirectories'], $coreDirectories);
+        $metadata['coreDirectoryCompleteness'] = \count($foundCoreDirectories) / \count($coreDirectories);
+
+        // Laravel-specific files detection
+        $metadata['laravelSpecificFiles'] = $this->detectLaravelSpecificFiles($projectRoot);
+
+        return $metadata;
+    }
+
+    /**
+     * Detect Laravel-specific files beyond the basic framework files
+     */
+    private function detectLaravelSpecificFiles(FSPath $projectRoot): array
+    {
+        $laravelFiles = [];
+
+        // Check for Laravel Mix or Vite config
+        if ($projectRoot->join('webpack.mix.js')->exists()) {
+            $laravelFiles[] = 'webpack.mix.js';
+        }
+        if ($projectRoot->join('vite.config.js')->exists()) {
+            $laravelFiles[] = 'vite.config.js';
+        }
+
+        // Check for Laravel-specific config files
+        $configFiles = [
+            'config/app.php',
+            'config/database.php',
+            'config/auth.php',
+            'config/cache.php',
+            'config/queue.php',
+        ];
+
+        foreach ($configFiles as $configFile) {
+            if ($projectRoot->join($configFile)->exists()) {
+                $laravelFiles[] = $configFile;
+            }
+        }
+
+        return $laravelFiles;
     }
 }

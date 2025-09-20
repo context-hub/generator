@@ -7,21 +7,18 @@ namespace Butschster\ContextGenerator\Template\Analysis;
 use Butschster\ContextGenerator\Application\FSPath;
 
 /**
- * Service for orchestrating project analysis
+ * Improved service for orchestrating project analysis using analyzer chain
  */
-final class ProjectAnalysisService
+final readonly class ProjectAnalysisService
 {
-    /** @var array<ProjectAnalyzerInterface> */
-    private array $analyzers = [];
+    private AnalyzerChain $analyzerChain;
 
     /**
      * @param array<ProjectAnalyzerInterface> $analyzers
      */
     public function __construct(array $analyzers = [])
     {
-        foreach ($analyzers as $analyzer) {
-            $this->addAnalyzer($analyzer);
-        }
+        $this->analyzerChain = new AnalyzerChain($analyzers);
     }
 
     /**
@@ -29,10 +26,15 @@ final class ProjectAnalysisService
      */
     public function addAnalyzer(ProjectAnalyzerInterface $analyzer): void
     {
-        $this->analyzers[] = $analyzer;
+        $this->analyzerChain->addAnalyzer($analyzer);
+    }
 
-        // Sort by priority (highest first)
-        \usort($this->analyzers, static fn($a, $b) => $b->getPriority() <=> $a->getPriority());
+    /**
+     * Remove an analyzer from the service
+     */
+    public function removeAnalyzer(string $analyzerName): void
+    {
+        $this->analyzerChain->removeAnalyzer($analyzerName);
     }
 
     /**
@@ -45,19 +47,7 @@ final class ProjectAnalysisService
      */
     public function analyzeProject(FSPath $projectRoot): array
     {
-        $results = [];
-
-        foreach ($this->analyzers as $analyzer) {
-            if ($analyzer->canAnalyze($projectRoot)) {
-                $result = $analyzer->analyze($projectRoot);
-                if ($result !== null) {
-                    $results[] = $result;
-                }
-            }
-        }
-
-        // Sort by confidence (highest first)
-        \usort($results, static fn($a, $b) => $b->confidence <=> $a->confidence);
+        $results = $this->analyzerChain->analyze($projectRoot);
 
         // This should never happen if FallbackAnalyzer is registered,
         // but add safety check just in case
@@ -68,5 +58,58 @@ final class ProjectAnalysisService
         }
 
         return $results;
+    }
+
+    /**
+     * Get the best analysis result (highest confidence)
+     */
+    public function getBestAnalysis(FSPath $projectRoot): ?AnalysisResult
+    {
+        $results = $this->analyzeProject($projectRoot);
+        return $results[0] ?? null;
+    }
+
+    /**
+     * Get the first analyzer that can handle the project
+     */
+    public function getFirstApplicableAnalyzer(FSPath $projectRoot): ?ProjectAnalyzerInterface
+    {
+        return $this->analyzerChain->getFirstApplicableAnalyzer($projectRoot);
+    }
+
+    /**
+     * Get all analyzers that can handle the project
+     *
+     * @return array<ProjectAnalyzerInterface>
+     */
+    public function getApplicableAnalyzers(FSPath $projectRoot): array
+    {
+        return $this->analyzerChain->getApplicableAnalyzers($projectRoot);
+    }
+
+    /**
+     * Get analyzer by name
+     */
+    public function getAnalyzer(string $name): ?ProjectAnalyzerInterface
+    {
+        return $this->analyzerChain->getAnalyzer($name);
+    }
+
+    /**
+     * Get all registered analyzers
+     *
+     * @return array<ProjectAnalyzerInterface>
+     */
+    public function getAllAnalyzers(): array
+    {
+        return $this->analyzerChain->getAllAnalyzers();
+    }
+
+    /**
+     * Get the analyzer chain for direct access
+     */
+    public function getAnalyzerChain(): AnalyzerChain
+    {
+        return $this->analyzerChain;
     }
 }

@@ -4,38 +4,11 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Template\Definition;
 
-use Butschster\ContextGenerator\Config\Registry\ConfigRegistry;
-use Butschster\ContextGenerator\Document\Document;
-use Butschster\ContextGenerator\Document\DocumentRegistry;
-use Butschster\ContextGenerator\Lib\TreeBuilder\TreeViewConfig;
-use Butschster\ContextGenerator\Source\Tree\TreeSource;
-use Butschster\ContextGenerator\Template\Template;
-
 /**
- * Laravel project template definition
+ * Laravel project template definition using the improved abstract base
  */
-final class LaravelTemplateDefinition implements TemplateDefinitionInterface
+final class LaravelTemplateDefinition extends AbstractTemplateDefinition
 {
-    public function createTemplate(array $projectMetadata = []): Template
-    {
-        $config = new ConfigRegistry();
-
-        $documents = new DocumentRegistry([
-            $this->createStructureDocument($projectMetadata),
-        ]);
-
-        $config->register($documents);
-
-        return new Template(
-            name: $this->getName(),
-            description: $this->getDescription(),
-            tags: $this->getTags(),
-            priority: $this->getPriority(),
-            detectionCriteria: $this->getDetectionCriteria(),
-            config: $config,
-        );
-    }
-
     public function getName(): string
     {
         return 'laravel';
@@ -56,35 +29,82 @@ final class LaravelTemplateDefinition implements TemplateDefinitionInterface
         return 100;
     }
 
-    public function getDetectionCriteria(): array
+    protected function getSourceDirectories(): array
+    {
+        return ['app', 'database', 'routes', 'config'];
+    }
+
+    protected function getFrameworkSpecificCriteria(): array
     {
         return [
             'files' => ['composer.json', 'artisan'],
             'patterns' => ['laravel/framework'],
-            'directories' => ['app', 'database', 'routes'],
         ];
     }
 
     /**
-     * Create the Laravel project structure document
+     * Override to customize Laravel tree view with framework-specific directories
      */
-    private function createStructureDocument(array $projectMetadata): Document
-    {
-        return new Document(
-            description: 'Laravel Project Structure',
-            outputPath: 'docs/laravel-structure.md',
-            overwrite: true,
-            modifiers: [],
-            tags: [],
-            treeSource: new TreeSource(
-                sourcePaths: ['app', 'database', 'routes', 'config'],
-                description: 'Laravel Directory Structure',
-                treeView: new TreeViewConfig(
-                    showCharCount: true,
-                    includeFiles: true,
-                    maxDepth: 3,
-                ),
-            ),
+    #[\Override]
+    protected function customizeTreeViewConfig(
+        \Butschster\ContextGenerator\Lib\TreeBuilder\TreeViewConfig $config,
+    ): \Butschster\ContextGenerator\Lib\TreeBuilder\TreeViewConfig {
+        return new \Butschster\ContextGenerator\Lib\TreeBuilder\TreeViewConfig(
+            showCharCount: true,
+            includeFiles: true,
+            maxDepth: 3,
+            dirContext: [
+                'app' => 'Application core - models, controllers, services',
+                'database' => 'Database migrations, seeders, and factories',
+                'routes' => 'Application route definitions',
+                'config' => 'Application configuration files',
+            ],
         );
+    }
+
+    /**
+     * Add Laravel-specific documents beyond the basic structure
+     */
+    #[\Override]
+    protected function createAdditionalDocuments(array $projectMetadata): array
+    {
+        $documents = [];
+
+        // Add Controllers and Models document if they exist
+        $existingDirs = $projectMetadata['existingDirectories'] ?? $projectMetadata['directories'] ?? [];
+
+        if (\in_array('app', $existingDirs, true)) {
+            $documents[] = new \Butschster\ContextGenerator\Document\Document(
+                description: 'Laravel Controllers and Models',
+                outputPath: 'docs/laravel-controllers-models.md',
+                overwrite: true,
+                modifiers: ['php-signature'],
+                tags: ['laravel', 'controllers', 'models'],
+                fileSource: new \Butschster\ContextGenerator\Source\File\FileSource(
+                    sourcePaths: ['app/Http/Controllers', 'app/Models'],
+                    description: 'Laravel Controllers and Models',
+                    filePattern: '*.php',
+                    modifiers: ['php-signature'],
+                ),
+            );
+        }
+
+        // Add Routes document if routes directory exists
+        if (\in_array('routes', $existingDirs, true)) {
+            $documents[] = new \Butschster\ContextGenerator\Document\Document(
+                description: 'Laravel Routes Configuration',
+                outputPath: 'docs/laravel-routes.md',
+                overwrite: true,
+                modifiers: [],
+                tags: ['laravel', 'routes'],
+                fileSource: new \Butschster\ContextGenerator\Source\File\FileSource(
+                    sourcePaths: ['routes'],
+                    description: 'Laravel Routes',
+                    filePattern: '*.php',
+                ),
+            );
+        }
+
+        return $documents;
     }
 }
