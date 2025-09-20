@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Console;
+namespace Butschster\ContextGenerator\Template\Console;
 
 use Butschster\ContextGenerator\Config\ConfigType;
 use Butschster\ContextGenerator\Config\Registry\ConfigRegistry;
+use Butschster\ContextGenerator\Console\BaseCommand;
 use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\Template\Analysis\ProjectAnalysisService;
 use Butschster\ContextGenerator\Template\Registry\TemplateRegistry;

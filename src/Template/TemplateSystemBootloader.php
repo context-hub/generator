@@ -12,6 +12,7 @@ use Butschster\ContextGenerator\Template\Analysis\Analyzer\PackageJsonAnalyzer;
 use Butschster\ContextGenerator\Template\Analysis\ProjectAnalysisService;
 use Butschster\ContextGenerator\Template\Analysis\Util\ComposerFileReader;
 use Butschster\ContextGenerator\Template\Analysis\Util\ProjectStructureDetector;
+use Butschster\ContextGenerator\Template\Console\InitCommand;
 use Butschster\ContextGenerator\Template\Console\ListCommand;
 use Butschster\ContextGenerator\Template\Definition\ExpressTemplateDefinition;
 use Butschster\ContextGenerator\Template\Definition\GenericPhpTemplateDefinition;
@@ -82,6 +83,7 @@ final class TemplateSystemBootloader extends Bootloader
         $templateRegistry->registerProvider($builtinTemplateProvider);
 
         // Register console commands
+        $console->addCommand(InitCommand::class);
         $console->addCommand(ListCommand::class);
     }
 }
