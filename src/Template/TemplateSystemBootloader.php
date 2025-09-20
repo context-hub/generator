@@ -7,18 +7,26 @@ namespace Butschster\ContextGenerator\Template;
 use Butschster\ContextGenerator\Application\Bootloader\ConsoleBootloader;
 use Butschster\ContextGenerator\Template\Analysis\Analyzer\ComposerAnalyzer;
 use Butschster\ContextGenerator\Template\Analysis\Analyzer\FallbackAnalyzer;
+use Butschster\ContextGenerator\Template\Analysis\Analyzer\GoAnalyzer;
 use Butschster\ContextGenerator\Template\Analysis\Analyzer\PackageJsonAnalyzer;
+use Butschster\ContextGenerator\Template\Analysis\Analyzer\PythonAnalyzer;
 use Butschster\ContextGenerator\Template\Analysis\AnalyzerChain;
 use Butschster\ContextGenerator\Template\Analysis\ProjectAnalysisService;
 use Butschster\ContextGenerator\Template\Analysis\Util\ComposerFileReader;
 use Butschster\ContextGenerator\Template\Analysis\Util\ProjectStructureDetector;
 use Butschster\ContextGenerator\Template\Console\InitCommand;
 use Butschster\ContextGenerator\Template\Console\ListCommand;
+use Butschster\ContextGenerator\Template\Definition\DjangoTemplateDefinition;
 use Butschster\ContextGenerator\Template\Definition\ExpressTemplateDefinition;
+use Butschster\ContextGenerator\Template\Definition\FastApiTemplateDefinition;
+use Butschster\ContextGenerator\Template\Definition\FlaskTemplateDefinition;
 use Butschster\ContextGenerator\Template\Definition\GenericPhpTemplateDefinition;
+use Butschster\ContextGenerator\Template\Definition\GinTemplateDefinition;
+use Butschster\ContextGenerator\Template\Definition\GoTemplateDefinition;
 use Butschster\ContextGenerator\Template\Definition\LaravelTemplateDefinition;
 use Butschster\ContextGenerator\Template\Definition\NextJsTemplateDefinition;
 use Butschster\ContextGenerator\Template\Definition\NuxtTemplateDefinition;
+use Butschster\ContextGenerator\Template\Definition\PythonTemplateDefinition;
 use Butschster\ContextGenerator\Template\Definition\ReactTemplateDefinition;
 use Butschster\ContextGenerator\Template\Definition\SpiralTemplateDefinition;
 use Butschster\ContextGenerator\Template\Definition\SymfonyTemplateDefinition;
@@ -36,7 +44,7 @@ use Spiral\Core\Attribute\Singleton;
 use Spiral\Files\FilesInterface;
 
 /**
- * Improved bootloader for the template system using new architecture patterns
+ * Enhanced template system bootloader with Python and Go support
  */
 #[Singleton]
 final class TemplateSystemBootloader extends Bootloader
@@ -57,6 +65,16 @@ final class TemplateSystemBootloader extends Bootloader
                 new Yii2TemplateDefinition(),
                 new GenericPhpTemplateDefinition(),
 
+                // Python Frameworks (ordered by priority)
+                new DjangoTemplateDefinition(),
+                new FastApiTemplateDefinition(),
+                new FlaskTemplateDefinition(),
+                new PythonTemplateDefinition(),
+
+                // Go Frameworks (ordered by priority)
+                new GinTemplateDefinition(),
+                new GoTemplateDefinition(),
+
                 // JavaScript Frameworks (ordered by priority)
                 new NextJsTemplateDefinition(),
                 new NuxtTemplateDefinition(),
@@ -65,16 +83,18 @@ final class TemplateSystemBootloader extends Bootloader
                 new ExpressTemplateDefinition(),
             ]),
 
-            // Analysis system with improved chain pattern
+            // Enhanced analysis system with Python and Go analyzers
             AnalyzerChain::class => static fn(
                 FilesInterface $files,
                 ComposerFileReader $composerReader,
                 ProjectStructureDetector $structureDetector,
             ): AnalyzerChain => new AnalyzerChain([
                 // Register analyzers in priority order (highest first)
-                new PackageJsonAnalyzer($files, $structureDetector),
-                new ComposerAnalyzer($composerReader, $structureDetector),
-                new FallbackAnalyzer($structureDetector), // Always register fallback analyzer last
+                new PackageJsonAnalyzer($files, $structureDetector),     // 80
+                new GoAnalyzer($files, $structureDetector),              // 80
+                new PythonAnalyzer($files, $structureDetector),          // 75
+                new ComposerAnalyzer($composerReader, $structureDetector), // 50
+                new FallbackAnalyzer($structureDetector),                // 1 - Always register fallback analyzer last
             ]),
 
             ProjectAnalysisService::class => static fn(
