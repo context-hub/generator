@@ -32,6 +32,8 @@ use Butschster\ContextGenerator\McpServer\Action\Tools\ListToolsAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Prompts\GetPromptToolAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Prompts\ListPromptsToolAction;
 use Butschster\ContextGenerator\McpServer\Console\MCPServerCommand;
+use Butschster\ContextGenerator\McpServer\Console\McpConfigCommand;
+use Butschster\ContextGenerator\McpServer\Console\McpConfig\McpConfigBootloader;
 use Butschster\ContextGenerator\McpServer\Projects\Actions\ProjectsListToolAction;
 use Butschster\ContextGenerator\McpServer\Projects\Actions\ProjectSwitchToolAction;
 use Butschster\ContextGenerator\McpServer\Projects\McpProjectsBootloader;
@@ -64,6 +66,7 @@ final class McpServerBootloader extends Bootloader
             McpToolBootloader::class,
             McpPromptBootloader::class,
             McpProjectsBootloader::class,
+            McpConfigBootloader::class,
         ];
     }
 
@@ -110,6 +113,7 @@ final class McpServerBootloader extends Bootloader
     public function boot(ConsoleBootloader $console): void
     {
         $console->addCommand(MCPServerCommand::class);
+        $console->addCommand(McpConfigCommand::class);
     }
 
     #[\Override]
