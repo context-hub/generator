@@ -20,9 +20,7 @@ final class TemplateConfigurationBuilder
     private array $documents = [];
     private array $detectionCriteria = [];
 
-    public function __construct(private readonly string $templateName)
-    {
-    }
+    public function __construct(private readonly string $templateName) {}
 
     /**
      * Add a structure document showing project directory tree
