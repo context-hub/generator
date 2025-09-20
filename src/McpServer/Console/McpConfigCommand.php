@@ -1,0 +1,207 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Butschster\ContextGenerator\McpServer\Console;
+
+use Butschster\ContextGenerator\Console\BaseCommand;
+use Butschster\ContextGenerator\DirectoriesInterface;
+use Butschster\ContextGenerator\McpServer\Console\McpConfig\ConfigGeneratorInterface;
+use Butschster\ContextGenerator\McpServer\Console\McpConfig\Renderer\McpConfigRenderer;
+use Butschster\ContextGenerator\McpServer\Console\McpConfig\Service\OsDetectionService;
+use Spiral\Console\Attribute\Option;
+use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Command\Command;
+
+#[AsCommand(
+    name: 'mcp:config',
+    description: 'Generate MCP configuration for connecting CTX to Claude or other MCP clients',
+)]
+final class McpConfigCommand extends BaseCommand
+{
+    #[Option(
+        name: 'wsl',
+        shortcut: 'f',
+        description: 'Force WSL configuration mode',
+    )]
+    protected bool $forceWsl = false;
+
+    #[Option(
+        name: 'explain',
+        shortcut: 'e',
+        description: 'Show detailed setup instructions',
+    )]
+    protected bool $explain = false;
+
+    #[Option(
+        name: 'interactive',
+        shortcut: 'i',
+        description: 'Interactive mode with guided questions',
+    )]
+    protected bool $interactive = false;
+
+    #[Option(
+        name: 'client',
+        shortcut: 'c',
+        description: 'MCP client type (claude, generic)',
+    )]
+    protected string $client = 'generic';
+
+    #[Option(
+        name: 'project-path',
+        shortcut: 'p',
+        description: 'Use specific project path in configuration',
+    )]
+    protected ?string $projectPath = null;
+
+    #[Option(
+        name: 'global',
+        shortcut: 'g',
+        description: 'Use global project registry (no -c option)',
+    )]
+    protected bool $useGlobal = true;
+
+    public function __invoke(
+        OsDetectionService $osDetection,
+        ConfigGeneratorInterface $configGenerator,
+        DirectoriesInterface $dirs,
+    ): int {
+        $renderer = new McpConfigRenderer($this->output);
+        $renderer->renderHeader();
+
+        // Handle interactive mode
+        if ($this->interactive) {
+            return $this->runInteractiveMode($osDetection, $configGenerator, $renderer, $dirs);
+        }
+
+        // Detect operating system and environment
+        $osInfo = $osDetection->detect($this->forceWsl);
+
+        // Determine configuration approach
+        $options = $this->buildConfigOptions($dirs);
+
+        // Generate configuration
+        $config = $configGenerator->generate(
+            client: $this->client,
+            osInfo: $osInfo,
+            projectPath: $options['project_path'] ?? (string) $dirs->getRootPath(),
+            options: $options,
+        );
+
+        // Render the configuration
+        $renderer->renderConfiguration($config, $osInfo, $options);
+
+        // Show explanations if requested
+        if ($this->explain) {
+            $renderer->renderExplanation($config, $osInfo, $options);
+        }
+
+        return Command::SUCCESS;
+    }
+
+    private function runInteractiveMode(
+        OsDetectionService $osDetection,
+        ConfigGeneratorInterface $configGenerator,
+        McpConfigRenderer $renderer,
+        DirectoriesInterface $dirs,
+    ): int {
+        $renderer->renderInteractiveWelcome();
+
+        // Ask about client type
+        $clientType = $this->output->choice(
+            'Which MCP client are you configuring?',
+            ['claude' => 'Claude Desktop', 'generic' => 'Generic MCP Client'],
+            'generic',
+        );
+
+        // Auto-detect OS
+        $osInfo = $osDetection->detect();
+        $renderer->renderDetectedEnvironment($osInfo);
+
+        // Ask about WSL if on Windows
+        if ($osInfo->isWindows() && !$osInfo->isWsl()) {
+            $useWsl = $this->output->confirm(
+                'Are you planning to run CTX inside WSL (Windows Subsystem for Linux)?',
+                false,
+            );
+
+            if ($useWsl) {
+                $osInfo = $osDetection->detect(forceWsl: true);
+            }
+        }
+
+        // Ask about project configuration approach
+        $configChoice = $this->output->choice(
+            'How do you want to configure project access?',
+            [
+                'global' => 'Use global project registry (switch between projects dynamically)',
+                'specific' => 'Use specific project path (single project)',
+            ],
+            'global',
+        );
+
+        $options = ['use_project_path' => false];
+        $projectPath = (string) $dirs->getRootPath();
+
+        if ($configChoice === 'specific') {
+            $options['use_project_path'] = true;
+
+            // Ask about project path
+            $defaultPath = (string) $dirs->getRootPath();
+            $projectPath = $this->output->ask(
+                'What is the path to your CTX project?',
+                $defaultPath,
+            );
+
+            // Validate project path
+            if (!\is_dir($projectPath)) {
+                $this->output->warning("Warning: The specified path does not exist: {$projectPath}");
+
+                if (!$this->output->confirm('Continue anyway?', true)) {
+                    return Command::FAILURE;
+                }
+            }
+        }
+
+        // Ask about environment variables
+        if ($this->output->confirm('Do you need to configure environment variables (e.g., GitHub token)?', false)) {
+            $options['enable_file_operations'] = $this->output->confirm('Enable file operations?', true);
+
+            if ($this->output->confirm('Do you have a GitHub personal access token?', false)) {
+                $options['github_token'] = $this->output->askHidden('GitHub Token (input will be hidden):');
+            }
+        }
+
+        // Generate and display configuration
+        $config = $configGenerator->generate(
+            client: $clientType,
+            osInfo: $osInfo,
+            projectPath: $projectPath,
+            options: $options,
+        );
+
+        $renderer->renderConfiguration($config, $osInfo, $options);
+        $renderer->renderExplanation($config, $osInfo, $options);
+
+        return Command::SUCCESS;
+    }
+
+    private function buildConfigOptions(DirectoriesInterface $dirs): array
+    {
+        $options = [];
+
+        // Determine if we should use project path
+        if ($this->projectPath !== null) {
+            $options['use_project_path'] = true;
+            $options['project_path'] = $this->projectPath;
+        } elseif (!$this->useGlobal) {
+            // If not explicitly global and we have a project path, use it
+            $options['use_project_path'] = true;
+            $options['project_path'] = (string) $dirs->getRootPath();
+        } else {
+            $options['use_project_path'] = false;
+        }
+
+        return $options;
+    }
+}
