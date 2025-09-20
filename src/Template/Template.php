@@ -56,7 +56,11 @@ final readonly class Template implements \JsonSerializable
         }
 
         // Check if required patterns exist in composer.json
-        if (isset($this->detectionCriteria['patterns']) && isset($projectMetadata['composer'])) {
+        if (isset($this->detectionCriteria['patterns'])) {
+            if (!isset($projectMetadata['composer'])) {
+                return false; // Required patterns but no composer data
+            }
+
             foreach ($this->detectionCriteria['patterns'] as $pattern) {
                 $found = false;
                 $composer = $projectMetadata['composer'];

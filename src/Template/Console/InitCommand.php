@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Template\Console;
 
+use Butschster\ContextGenerator\Application\JsonSchema;
 use Butschster\ContextGenerator\Config\ConfigType;
 use Butschster\ContextGenerator\Config\Registry\ConfigRegistry;
 use Butschster\ContextGenerator\Console\BaseCommand;
@@ -298,10 +299,18 @@ final class InitCommand extends BaseCommand
         string $filePath,
     ): int {
         try {
+            // Create a new config registry with schema for output
+            $outputConfig = new ConfigRegistry(JsonSchema::SCHEMA_URL);
+
+            // Copy all registries from the original config
+            foreach ($config->all() as $registryType => $registry) {
+                $outputConfig->register($registry);
+            }
+
             $content = match ($type) {
-                ConfigType::Json => \json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),
+                ConfigType::Json => \json_encode($outputConfig, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),
                 ConfigType::Yaml => Yaml::dump(
-                    \json_decode(\json_encode($config), true),
+                    \json_decode(\json_encode($outputConfig), true),
                     10,
                     2,
                     Yaml::DUMP_MULTI_LINE_LITERAL_BLOCK,

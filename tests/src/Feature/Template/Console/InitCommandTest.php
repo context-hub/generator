@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Console;
+namespace Tests\Feature\Template\Console;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\Feature\Console\ConsoleTestCase;
 
 final class InitCommandTest extends ConsoleTestCase
 {
@@ -24,10 +25,8 @@ final class InitCommandTest extends ConsoleTestCase
             '--config-file' => $filename,
         ]);
 
-        $this->assertStringContainsString(
-            \sprintf('[OK] Config %s created', $this->getConfigPath($resultFilename)),
-            $result,
-        );
+        $this->assertStringContainsString('[OK] Configuration created:', $result);
+        $this->assertStringContainsString($this->getConfigPath($resultFilename), $result);
 
         $this->assertFileExists($this->getConfigPath($resultFilename), 'Config file should exist');
 
@@ -35,8 +34,8 @@ final class InitCommandTest extends ConsoleTestCase
         $this->assertNotEmpty($content, 'Config file should not be empty');
 
         $this->assertStringContainsString('$schema', $content);
-        $this->assertStringContainsString('Project structure overview', $content);
-        $this->assertStringContainsString('project-structure.md', $content);
+        $this->assertStringContainsString('PHP Project Structure', $content);
+        $this->assertStringContainsString('docs/php-structure.md', $content);
     }
 
     #[Test]
@@ -58,7 +57,10 @@ final class InitCommandTest extends ConsoleTestCase
         parent::tearDown();
 
         foreach (self::configFileFormat() as $format) {
-            \unlink($this->getConfigPath($format[1]));
+            $filePath = $this->getConfigPath($format[1]);
+            if (\file_exists($filePath)) {
+                \unlink($filePath);
+            }
         }
     }
 

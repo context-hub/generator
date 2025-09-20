@@ -34,6 +34,14 @@ abstract class AbstractTemplateDefinition implements TemplateDefinitionInterface
     }
 
     /**
+     * Get detection criteria for automatic selection
+     */
+    final public function getDetectionCriteria(): array
+    {
+        return $this->buildDetectionCriteria();
+    }
+
+    /**
      * Get the main source directories for this template type
      *
      * @return array<string>

@@ -136,7 +136,7 @@ final class ListCommand extends BaseCommand
 
             // Show generated documents
             $documents = $template->config?->has('documents')
-                ? $template->config->get('documents', DocumentRegistry::class)->getAll()
+                ? $template->config->get('documents', DocumentRegistry::class)->getItems()
                 : [];
 
             if (!empty($documents)) {
