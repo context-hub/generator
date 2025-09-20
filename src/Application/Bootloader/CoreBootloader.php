@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Application\Bootloader;
 
 use Butschster\ContextGenerator\Console\GenerateCommand;
-use Butschster\ContextGenerator\Console\InitCommand;
 use Butschster\ContextGenerator\Console\SchemaCommand;
 use Butschster\ContextGenerator\Console\SelfUpdateCommand;
 use Butschster\ContextGenerator\Console\VersionCommand;
@@ -58,7 +57,6 @@ final class CoreBootloader extends Bootloader
     {
         $console->addCommand(
             VersionCommand::class,
-            InitCommand::class,
             SchemaCommand::class,
             SelfUpdateCommand::class,
             GenerateCommand::class,

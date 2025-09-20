@@ -15,3 +15,13 @@ documents:
         filePattern: '*.php'
         showTreeView: true
 
+  - description: Init command
+    outputPath: console/init.md
+    sources:
+      - type: file
+        sourcePaths:
+          - ./InitCommand.php
+          - ../DirectoriesInterface.php
+          - ../Application/FSPath.php
+          - ../Application/Bootloader/ConsoleBootloader.php
+

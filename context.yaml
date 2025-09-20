@@ -24,6 +24,15 @@ documents:
           - '*Interface.php'
         showTreeView: true
 
+  - description: Project Templates
+    outputPath: core/templates.md
+    sources:
+      - type: file
+        sourcePaths:
+          - src/Template
+          - vendor/spiral/files/src/FilesInterface.php
+        showTreeView: true
+
   - description: "Changes in the Project"
     outputPath: "changes.md"
     sources:
