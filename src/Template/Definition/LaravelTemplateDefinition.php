@@ -9,7 +9,6 @@ use Butschster\ContextGenerator\Document\Document;
 use Butschster\ContextGenerator\Document\DocumentRegistry;
 use Butschster\ContextGenerator\Lib\TreeBuilder\TreeViewConfig;
 use Butschster\ContextGenerator\Source\Tree\TreeSource;
-use Butschster\ContextGenerator\Source\Text\TextSource;
 use Butschster\ContextGenerator\Template\Template;
 
 /**
@@ -22,7 +21,6 @@ final class LaravelTemplateDefinition implements TemplateDefinitionInterface
         $config = new ConfigRegistry();
 
         $documents = new DocumentRegistry([
-            $this->createOverviewDocument($projectMetadata),
             $this->createStructureDocument($projectMetadata),
         ]);
 
@@ -68,24 +66,6 @@ final class LaravelTemplateDefinition implements TemplateDefinitionInterface
     }
 
     /**
-     * Create the Laravel application overview document
-     */
-    private function createOverviewDocument(array $projectMetadata): Document
-    {
-        return new Document(
-            description: 'Laravel Application Overview',
-            outputPath: 'docs/laravel-overview.md',
-            overwrite: true,
-            modifiers: [],
-            tags: [],
-            textSource: new TextSource(
-                content: $this->generateOverviewContent($projectMetadata),
-                description: 'Laravel Overview Header',
-            ),
-        );
-    }
-
-    /**
      * Create the Laravel project structure document
      */
     private function createStructureDocument(array $projectMetadata): Document
@@ -106,70 +86,5 @@ final class LaravelTemplateDefinition implements TemplateDefinitionInterface
                 ),
             ),
         );
-    }
-
-    /**
-     * Generate overview content with Laravel-specific information
-     */
-    private function generateOverviewContent(array $projectMetadata): string
-    {
-        $composer = $projectMetadata['composer'] ?? null;
-        $laravelVersion = $projectMetadata['laravelVersion'] ?? null;
-
-        $content = <<<'CONTENT'
-# Laravel Application Context
-
-This document provides a comprehensive overview of the Laravel application structure and key components.
-
-CONTENT;
-
-        // Add Laravel version information if available
-        if ($laravelVersion !== null) {
-            $content .= "**Laravel Version:** `{$laravelVersion}`\n\n";
-        }
-
-        $content .= <<<'CONTENT'
-## Project Structure
-
-This Laravel application follows the standard Laravel directory structure:
-
-- **app/**: Contains the core application code
-  - **Http/Controllers/**: Request handlers
-  - **Models/**: Eloquent models
-  - **Services/**: Business logic services
-  - **Providers/**: Service providers
-
-- **database/**: Database related files
-  - **migrations/**: Database migrations
-  - **seeders/**: Database seeders
-  - **factories/**: Model factories
-
-- **routes/**: Route definitions
-  - **web.php**: Web routes
-  - **api.php**: API routes
-
-- **config/**: Configuration files
-- **resources/**: Views, assets, and language files
-- **storage/**: Application storage
-- **tests/**: Test files
-
-CONTENT;
-
-        // Add composer information if available
-        if ($composer !== null) {
-            $content .= "\n## Dependencies\n\n";
-
-            if (isset($composer['name'])) {
-                $content .= "**Package Name:** `{$composer['name']}`\n\n";
-            }
-
-            if (isset($composer['description'])) {
-                $content .= "**Description:** {$composer['description']}\n\n";
-            }
-        }
-
-        $content .= "\nGenerated automatically by CTX for Laravel projects.\n";
-
-        return $content;
     }
 }

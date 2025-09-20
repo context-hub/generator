@@ -65,23 +65,4 @@ final class TemplateRegistry
 
         return null;
     }
-
-    /**
-     * Get templates that match the given project metadata
-     *
-     * @param array<string, mixed> $projectMetadata
-     * @return array<Template>
-     */
-    public function getMatchingTemplates(array $projectMetadata): array
-    {
-        $matching = [];
-
-        foreach ($this->getAllTemplates() as $template) {
-            if ($template->matches($projectMetadata)) {
-                $matching[] = $template;
-            }
-        }
-
-        return $matching;
-    }
 }

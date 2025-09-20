@@ -36,16 +36,6 @@ final class TemplateDefinitionRegistry
     }
 
     /**
-     * Get all registered template definitions
-     *
-     * @return array<TemplateDefinitionInterface>
-     */
-    public function getAllDefinitions(): array
-    {
-        return $this->definitions;
-    }
-
-    /**
      * Get a specific template definition by name
      */
     public function getDefinition(string $name): ?TemplateDefinitionInterface
@@ -86,26 +76,5 @@ final class TemplateDefinitionRegistry
         $definition = $this->getDefinition($name);
 
         return $definition?->createTemplate($projectMetadata);
-    }
-
-    /**
-     * Check if a template definition exists
-     */
-    public function hasDefinition(string $name): bool
-    {
-        return $this->getDefinition($name) !== null;
-    }
-
-    /**
-     * Get all template names
-     *
-     * @return array<string>
-     */
-    public function getTemplateNames(): array
-    {
-        return \array_map(
-            static fn(TemplateDefinitionInterface $definition) => $definition->getName(),
-            $this->definitions,
-        );
     }
 }

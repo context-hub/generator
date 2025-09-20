@@ -69,26 +69,4 @@ final class ProjectAnalysisService
 
         return $results;
     }
-
-    /**
-     * Get the best matching analysis result
-     *
-     * This method guarantees to always return a result.
-     */
-    public function getBestMatch(FSPath $projectRoot): AnalysisResult
-    {
-        $results = $this->analyzeProject($projectRoot);
-
-        return $results[0];
-    }
-
-    /**
-     * Get all registered analyzers
-     *
-     * @return array<ProjectAnalyzerInterface>
-     */
-    public function getAnalyzers(): array
-    {
-        return $this->analyzers;
-    }
 }
