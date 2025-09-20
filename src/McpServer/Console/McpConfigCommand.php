@@ -21,12 +21,14 @@ final class McpConfigCommand extends BaseCommand
 {
     #[Option(
         name: 'wsl',
+        shortcut: 'f',
         description: 'Force WSL configuration mode',
     )]
     protected bool $forceWsl = false;
 
     #[Option(
         name: 'explain',
+        shortcut: 'e',
         description: 'Show detailed setup instructions',
     )]
     protected bool $explain = false;
@@ -43,14 +45,21 @@ final class McpConfigCommand extends BaseCommand
         shortcut: 'c',
         description: 'MCP client type (claude, generic)',
     )]
-    protected string $client = 'claude';
+    protected string $client = 'generic';
 
     #[Option(
         name: 'project-path',
         shortcut: 'p',
-        description: 'Override project path in configuration',
+        description: 'Use specific project path in configuration',
     )]
     protected ?string $projectPath = null;
+
+    #[Option(
+        name: 'global',
+        shortcut: 'g',
+        description: 'Use global project registry (no -c option)',
+    )]
+    protected bool $useGlobal = true;
 
     public function __invoke(
         OsDetectionService $osDetection,
@@ -68,21 +77,23 @@ final class McpConfigCommand extends BaseCommand
         // Detect operating system and environment
         $osInfo = $osDetection->detect($this->forceWsl);
 
-        $projectPath = $this->projectPath ?? (string) $dirs->getRootPath();
+        // Determine configuration approach
+        $options = $this->buildConfigOptions($dirs);
 
         // Generate configuration
         $config = $configGenerator->generate(
             client: $this->client,
             osInfo: $osInfo,
-            projectPath: $projectPath,
+            projectPath: $options['project_path'] ?? (string) $dirs->getRootPath(),
+            options: $options,
         );
 
         // Render the configuration
-        $renderer->renderConfiguration($config, $osInfo);
+        $renderer->renderConfiguration($config, $osInfo, $options);
 
         // Show explanations if requested
         if ($this->explain) {
-            $renderer->renderExplanation($config, $osInfo);
+            $renderer->renderExplanation($config, $osInfo, $options);
         }
 
         return Command::SUCCESS;
@@ -100,7 +111,7 @@ final class McpConfigCommand extends BaseCommand
         $clientType = $this->output->choice(
             'Which MCP client are you configuring?',
             ['claude' => 'Claude Desktop', 'generic' => 'Generic MCP Client'],
-            'claude',
+            'generic',
         );
 
         // Auto-detect OS
@@ -119,19 +130,45 @@ final class McpConfigCommand extends BaseCommand
             }
         }
 
-        // Ask about project path
-        $defaultPath = (string) $dirs->getRootPath();
-        $projectPath = $this->output->ask(
-            'What is the path to your CTX project?',
-            $defaultPath,
+        // Ask about project configuration approach
+        $configChoice = $this->output->choice(
+            'How do you want to configure project access?',
+            [
+                'global' => 'Use global project registry (switch between projects dynamically)',
+                'specific' => 'Use specific project path (single project)',
+            ],
+            'global',
         );
 
-        // Validate project path
-        if (!$dirs->getRootPath()->join($projectPath)->exists()) {
-            $this->output->warning("Warning: The specified path does not exist: {$projectPath}");
+        $options = ['use_project_path' => false];
+        $projectPath = (string) $dirs->getRootPath();
 
-            if (!$this->output->confirm('Continue anyway?', true)) {
-                return Command::FAILURE;
+        if ($configChoice === 'specific') {
+            $options['use_project_path'] = true;
+
+            // Ask about project path
+            $defaultPath = (string) $dirs->getRootPath();
+            $projectPath = $this->output->ask(
+                'What is the path to your CTX project?',
+                $defaultPath,
+            );
+
+            // Validate project path
+            if (!\is_dir($projectPath)) {
+                $this->output->warning("Warning: The specified path does not exist: {$projectPath}");
+
+                if (!$this->output->confirm('Continue anyway?', true)) {
+                    return Command::FAILURE;
+                }
+            }
+        }
+
+        // Ask about environment variables
+        if ($this->output->confirm('Do you need to configure environment variables (e.g., GitHub token)?', false)) {
+            $options['enable_file_operations'] = $this->output->confirm('Enable file operations?', true);
+
+            if ($this->output->confirm('Do you have a GitHub personal access token?', false)) {
+                $options['github_token'] = $this->output->askHidden('GitHub Token (input will be hidden):');
             }
         }
 
@@ -140,11 +177,31 @@ final class McpConfigCommand extends BaseCommand
             client: $clientType,
             osInfo: $osInfo,
             projectPath: $projectPath,
+            options: $options,
         );
 
-        $renderer->renderConfiguration($config, $osInfo);
-        $renderer->renderExplanation($config, $osInfo);
+        $renderer->renderConfiguration($config, $osInfo, $options);
+        $renderer->renderExplanation($config, $osInfo, $options);
 
         return Command::SUCCESS;
+    }
+
+    private function buildConfigOptions(DirectoriesInterface $dirs): array
+    {
+        $options = [];
+
+        // Determine if we should use project path
+        if ($this->projectPath !== null) {
+            $options['use_project_path'] = true;
+            $options['project_path'] = $this->projectPath;
+        } elseif (!$this->useGlobal) {
+            // If not explicitly global and we have a project path, use it
+            $options['use_project_path'] = true;
+            $options['project_path'] = (string) $dirs->getRootPath();
+        } else {
+            $options['use_project_path'] = false;
+        }
+
+        return $options;
     }
 }

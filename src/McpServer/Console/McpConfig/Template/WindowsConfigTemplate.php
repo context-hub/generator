@@ -30,27 +30,30 @@ final class WindowsConfigTemplate extends BaseConfigTemplate
 
     protected function getArgs(OsInfo $osInfo, string $projectPath, array $options = []): array
     {
-        // Convert Unix-style paths to Windows paths if needed
-        $windowsPath = $this->convertToWindowsPath($projectPath);
-        
-        return [
-            'server',
-            "-c{$windowsPath}",
-        ];
+        $args = ['server'];
+
+        // Only add -c option if project path is explicitly requested
+        if (isset($options['use_project_path']) && $options['use_project_path']) {
+            // Convert Unix-style paths to Windows paths if needed
+            $windowsPath = $this->convertToWindowsPath($projectPath);
+            $args[] = "-c{$windowsPath}";
+        }
+
+        return $args;
     }
 
     private function convertToWindowsPath(string $path): string
     {
         // Convert forward slashes to backslashes for Windows
         $windowsPath = \str_replace('/', '\\', $path);
-        
+
         // Ensure we have a proper Windows path format
         if (!\preg_match('/^[A-Za-z]:/', $windowsPath)) {
             // If it doesn't start with a drive letter, assume it's a relative path
             // and keep it as-is since it will be resolved relative to current directory
             return $windowsPath;
         }
-        
+
         return $windowsPath;
     }
 }

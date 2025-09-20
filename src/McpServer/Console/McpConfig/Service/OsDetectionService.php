@@ -70,7 +70,7 @@ final class OsDetectionService
     private function detectWsl(): bool
     {
         // Multiple methods to detect WSL
-        
+
         // Method 1: Check for WSL environment variables
         if (\getenv('WSL_DISTRO_NAME') !== false || \getenv('WSLENV') !== false) {
             return true;
@@ -90,12 +90,13 @@ final class OsDetectionService
         }
 
         // Method 4: Check uname output
-        if (\function_exists('shell_exec')) {
-            $uname = \shell_exec('uname -r 2>/dev/null');
-            if ($uname !== null && (\str_contains($uname, 'Microsoft') || \str_contains($uname, 'WSL'))) {
-                return true;
-            }
-        }
+        // if (\function_exists('shell_exec')) {
+        //     /** @psalm-suppress ForbiddenCode */
+        //     $uname = \shell_exec('uname -r 2>/dev/null');
+        //     if ($uname !== null && (\str_contains($uname, 'Microsoft') || \str_contains($uname, 'WSL'))) {
+        //         return true;
+        //     }
+        // }
 
         return false;
     }

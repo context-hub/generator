@@ -54,4 +54,14 @@ final readonly class OsInfo
             default => 'generic',
         };
     }
+
+    public function isWindows(): bool
+    {
+        return $this->isWindows;
+    }
+
+    public function isWsl(): bool
+    {
+        return $this->isWsl;
+    }
 }

@@ -29,10 +29,14 @@ final class MacOsConfigTemplate extends BaseConfigTemplate
 
     protected function getArgs(OsInfo $osInfo, string $projectPath, array $options = []): array
     {
-        return [
-            'server',
-            '-c',
-            $projectPath,
-        ];
+        $args = ['server'];
+
+        // Only add -c option if project path is explicitly requested
+        if (isset($options['use_project_path']) && $options['use_project_path']) {
+            $args[] = '-c';
+            $args[] = $projectPath;
+        }
+
+        return $args;
     }
 }

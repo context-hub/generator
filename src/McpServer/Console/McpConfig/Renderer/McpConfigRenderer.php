@@ -48,13 +48,16 @@ final readonly class McpConfigRenderer
         $this->output->newLine();
     }
 
-    public function renderConfiguration(McpConfig $config, OsInfo $osInfo): void
+    public function renderConfiguration(McpConfig $config, OsInfo $osInfo, array $options = []): void
     {
         $this->output->section('Generated Configuration');
+
+        $configType = ($options['use_project_path'] ?? false) ? 'Project-specific' : 'Global project registry';
 
         $this->output->text([
             "Configuration type: <info>{$config->clientType}</info>",
             "Operating system: <info>{$osInfo->getDisplayName()}</info>",
+            "Project mode: <info>{$configType}</info>",
             "Command: <info>{$config->getDisplayCommand()}</info>",
         ]);
 
@@ -67,14 +70,14 @@ final readonly class McpConfigRenderer
         }
     }
 
-    public function renderExplanation(McpConfig $config, OsInfo $osInfo): void
+    public function renderExplanation(McpConfig $config, OsInfo $osInfo, array $options = []): void
     {
         $this->output->section('Setup Instructions');
 
         if ($config->clientType === 'claude') {
-            $this->renderClaudeSetupInstructions($config, $osInfo);
+            $this->renderClaudeSetupInstructions($config, $osInfo, $options);
         } else {
-            $this->renderGenericSetupInstructions($config, $osInfo);
+            $this->renderGenericSetupInstructions($config, $osInfo, $options);
         }
 
         $this->renderTroubleshootingTips($osInfo);
@@ -106,7 +109,7 @@ final readonly class McpConfigRenderer
         $this->output->text('Claude Desktop configuration file location:');
 
         $configPaths = match (true) {
-            $osInfo->isWindows && !$osInfo->isWsl => [
+            $osInfo->isWindows || $osInfo->isWsl => [
                 '%APPDATA%\\Claude\\claude_desktop_config.json',
                 'C:\\Users\\<username>\\AppData\\Roaming\\Claude\\claude_desktop_config.json',
             ],
@@ -126,7 +129,7 @@ final readonly class McpConfigRenderer
         $this->output->newLine();
     }
 
-    private function renderClaudeSetupInstructions(McpConfig $config, OsInfo $osInfo): void
+    private function renderClaudeSetupInstructions(McpConfig $config, OsInfo $osInfo, array $options = []): void
     {
         $this->output->text('To set up Claude Desktop with CTX:');
 
@@ -145,6 +148,24 @@ final readonly class McpConfigRenderer
 
         $this->output->newLine();
 
+        // Add explanation about configuration mode
+        if (isset($options['use_project_path']) && $options['use_project_path']) {
+            $this->output->note([
+                'Project-specific configuration:',
+                '• This configuration is tied to a specific project path',
+                '• CTX will only have access to the specified project',
+                '• Good for single-project workflows',
+            ]);
+        } else {
+            $this->output->note([
+                'Global project registry configuration:',
+                '• This configuration uses CTX\'s project registry system',
+                '• You can switch between different registered projects dynamically',
+                '• Use "ctx project:add" to register projects first',
+                '• Good for multi-project workflows',
+            ]);
+        }
+
         if ($config->hasEnvironmentVariables()) {
             $this->output->note([
                 'This configuration includes environment variables.',
@@ -162,7 +183,7 @@ final readonly class McpConfigRenderer
         }
     }
 
-    private function renderGenericSetupInstructions(McpConfig $config, OsInfo $osInfo): void
+    private function renderGenericSetupInstructions(McpConfig $config, OsInfo $osInfo, array $options = []): void
     {
         $this->output->text('To use this configuration with your MCP client:');
 
@@ -207,7 +228,7 @@ final readonly class McpConfigRenderer
                 'WSL-specific tips:',
                 '  • Ensure CTX is installed in your WSL distribution, not just Windows',
                 '  • Use WSL paths (/mnt/c/... for Windows drives) in the configuration',
-                '  • Test the command manually in WSL: bash.exe -c "ctx server -c /path/to/project"',
+                '  • Test the command manually in WSL: bash.exe -c "ctx server"',
             ]);
         }
 

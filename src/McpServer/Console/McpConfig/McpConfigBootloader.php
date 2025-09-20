@@ -15,23 +15,22 @@ use Spiral\Boot\Bootloader\Bootloader;
 
 final class McpConfigBootloader extends Bootloader
 {
+    #[\Override]
     public function defineSingletons(): array
     {
         return [
             OsDetectionService::class => OsDetectionService::class,
-            ConfigGeneratorInterface::class => static function (
+            ConfigGeneratorInterface::class => static fn(
                 LinuxConfigTemplate $linuxTemplate,
                 WindowsConfigTemplate $windowsTemplate,
                 WslConfigTemplate $wslTemplate,
                 MacOsConfigTemplate $macosTemplate,
-            ): McpConfigGenerator {
-                return new McpConfigGenerator(
-                    windowsTemplate: $windowsTemplate,
-                    linuxTemplate: $linuxTemplate,
-                    wslTemplate: $wslTemplate,
-                    macosTemplate: $macosTemplate,
-                );
-            },
+            ): McpConfigGenerator => new McpConfigGenerator(
+                windowsTemplate: $windowsTemplate,
+                linuxTemplate: $linuxTemplate,
+                wslTemplate: $wslTemplate,
+                macosTemplate: $macosTemplate,
+            ),
             LinuxConfigTemplate::class => LinuxConfigTemplate::class,
             WindowsConfigTemplate::class => WindowsConfigTemplate::class,
             WslConfigTemplate::class => WslConfigTemplate::class,
@@ -39,6 +38,7 @@ final class McpConfigBootloader extends Bootloader
         ];
     }
 
+    #[\Override]
     public function defineBindings(): array
     {
         return [

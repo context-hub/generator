@@ -40,7 +40,7 @@ final readonly class McpConfig
     {
         $command = $this->command;
         $args = \implode(' ', $this->args);
-        
+
         return \trim("{$command} {$args}");
     }
 }

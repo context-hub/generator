@@ -9,13 +9,13 @@ use Butschster\ContextGenerator\McpServer\Console\McpConfig\Model\McpConfig;
 use Butschster\ContextGenerator\McpServer\Console\McpConfig\Model\OsInfo;
 use Butschster\ContextGenerator\McpServer\Console\McpConfig\Template\ConfigTemplateInterface;
 
-final class McpConfigGenerator implements ConfigGeneratorInterface
+final readonly class McpConfigGenerator implements ConfigGeneratorInterface
 {
     public function __construct(
-        private readonly ConfigTemplateInterface $windowsTemplate,
-        private readonly ConfigTemplateInterface $linuxTemplate,
-        private readonly ConfigTemplateInterface $wslTemplate,
-        private readonly ConfigTemplateInterface $macosTemplate,
+        private ConfigTemplateInterface $windowsTemplate,
+        private ConfigTemplateInterface $linuxTemplate,
+        private ConfigTemplateInterface $wslTemplate,
+        private ConfigTemplateInterface $macosTemplate,
     ) {}
 
     public function generate(

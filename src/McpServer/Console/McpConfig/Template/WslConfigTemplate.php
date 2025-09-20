@@ -29,9 +29,14 @@ final class WslConfigTemplate extends BaseConfigTemplate
 
     protected function getArgs(OsInfo $osInfo, string $projectPath, array $options = []): array
     {
-        // For WSL, we need to wrap the command in bash
-        $bashCommand = "ctx server -c {$projectPath}";
-        
+        // Build the base command
+        $bashCommand = 'ctx server';
+
+        // Only add -c option if project path is explicitly requested
+        if (isset($options['use_project_path']) && $options['use_project_path']) {
+            $bashCommand .= " -c {$projectPath}";
+        }
+
         // Handle environment variables by exporting them in the bash command
         $env = $this->getEnvironmentVariables($options);
         if (!empty($env)) {
@@ -49,6 +54,7 @@ final class WslConfigTemplate extends BaseConfigTemplate
         ];
     }
 
+    #[\Override]
     protected function generateClaudeConfig(
         OsInfo $osInfo,
         string $projectPath,
@@ -56,7 +62,7 @@ final class WslConfigTemplate extends BaseConfigTemplate
     ): McpConfig {
         $command = $this->getCommand($osInfo);
         $args = $this->getArgs($osInfo, $projectPath, $options);
-        
+
         // For WSL, we don't use the env property in Claude config since
         // environment variables are handled within the bash command
         $configData = [
@@ -68,6 +74,15 @@ final class WslConfigTemplate extends BaseConfigTemplate
             ],
         ];
 
+        $metadata = [
+            'os_name' => $osInfo->osName,
+            'wsl_note' => 'Environment variables are exported within the bash command',
+        ];
+
+        if (isset($options['use_project_path']) && $options['use_project_path']) {
+            $metadata['project_path'] = $projectPath;
+        }
+
         return new McpConfig(
             clientType: 'claude',
             osType: $osInfo->getConfigType(),
@@ -75,11 +90,7 @@ final class WslConfigTemplate extends BaseConfigTemplate
             command: $command,
             args: $args,
             env: $this->getEnvironmentVariables($options),
-            metadata: [
-                'os_name' => $osInfo->osName,
-                'project_path' => $projectPath,
-                'wsl_note' => 'Environment variables are exported within the bash command',
-            ],
+            metadata: $metadata,
         );
     }
 }
