@@ -1,0 +1,23 @@
+$schema: 'https://raw.githubusercontent.com/context-hub/generator/refs/heads/main/json-schema.json'
+
+# Demonstrate markdown import functionality
+import:
+  - type: local
+    path: ./prompts
+    format: md
+  - type: local
+    path: ./docs  
+    format: md
+  - type: local
+    path: ./resources
+    format: md
+
+documents:
+  - description: "Example Regular Document"
+    outputPath: "output/example.md"
+    sources:
+      - type: text
+        content: |
+          # Regular Document
+          
+          This is a regular document alongside imported markdown resources.

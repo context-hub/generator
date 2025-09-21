@@ -3,6 +3,8 @@ $schema: 'https://raw.githubusercontent.com/context-hub/generator/refs/heads/mai
 import:
   - path: src/**/context.yaml
   - path: prompts.yaml
+  - path: ./docs
+    format: md
 
 documents:
   - description: 'Project structure overview'
