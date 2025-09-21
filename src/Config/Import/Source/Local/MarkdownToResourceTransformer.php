@@ -72,17 +72,10 @@ final readonly class MarkdownToResourceTransformer
         // Get description with fallback hierarchy
         $description = $this->getDescription($metadata, $relativePath);
 
-        switch ($resourceType) {
-            case 'prompt':
-                return $this->createPromptResource($id, $metadata, $content, $relativePath, $description);
-
-            case 'document':
-                return $this->createDocumentResource($id, $metadata, $content, $relativePath, $description);
-
-            case 'resource':
-            default:
-                return $this->createGenericResource($id, $metadata, $content, $relativePath, $description);
-        }
+        return match ($resourceType) {
+            'prompt' => $this->createPromptResource($id, $metadata, $content, $relativePath, $description),
+            default => $this->createGenericResource($id, $metadata, $content, $relativePath, $description),
+        };
     }
 
     /**
@@ -110,7 +103,7 @@ final readonly class MarkdownToResourceTransformer
         // Check explicit type declaration
         if (isset($metadata['type'])) {
             $type = \strtolower($metadata['type']);
-            if (\in_array($type, ['prompt', 'document', 'resource'], true)) {
+            if (\in_array($type, ['prompt', 'resource'], true)) {
                 return $type;
             }
         }
@@ -123,10 +116,6 @@ final readonly class MarkdownToResourceTransformer
         // Infer type from other metadata properties
         if (isset($metadata['role']) || isset($metadata['messages']) || isset($metadata['schema'])) {
             return 'prompt';
-        }
-
-        if (isset($metadata['outputPath']) || isset($metadata['sources'])) {
-            return 'document';
         }
 
         // Default to resource
@@ -155,23 +144,13 @@ final readonly class MarkdownToResourceTransformer
             $prompt['schema'] = $metadata['schema'];
         }
 
-        // Handle messages - either from metadata or convert content
-        if (!empty($metadata['messages']) && \is_array($metadata['messages'])) {
-            $prompt['messages'] = $metadata['messages'];
-        } else {
-            // Convert content to a simple user message
-            $prompt['messages'] = [
-                [
-                    'role' => $metadata['role'] ?? 'user',
-                    'content' => $content,
-                ],
-            ];
-        }
-
-        // Add extend configuration if present
-        if (!empty($metadata['extend'])) {
-            $prompt['extend'] = $metadata['extend'];
-        }
+        // Convert content to a simple user message
+        $prompt['messages'] = [
+            [
+                'role' => $metadata['role'] ?? 'user',
+                'content' => $content,
+            ],
+        ];
 
         $this->logger?->debug('Created prompt resource', [
             'id' => $id,
@@ -265,12 +244,12 @@ final readonly class MarkdownToResourceTransformer
     {
         if (\is_string($tags)) {
             // Handle comma-separated string
-            return \array_map('trim', \explode(',', $tags));
+            return \array_map(\trim(...), \explode(',', $tags));
         }
 
         if (\is_array($tags)) {
             // Filter to ensure all elements are strings
-            return \array_filter(\array_map('strval', $tags));
+            return \array_filter(\array_map(\strval(...), $tags));
         }
 
         return [];
