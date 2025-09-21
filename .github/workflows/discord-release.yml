@@ -45,7 +45,7 @@ jobs:
                      },
                      {
                        "name": "What to do",
-                       "value": "• Update your CTX installation\n• Check the changelog for new features\n• Share feedback in #general-chat",
+                       "value": "To install or update CTX use our installation script. This automatically downloads the latest version and sets it up for immediate use.\n\n```bash\ncurl -sSL https://raw.githubusercontent.com/context-hub/generator/main/download-latest.sh | sh\n```",
                        "inline": false
                      }
                    ],
