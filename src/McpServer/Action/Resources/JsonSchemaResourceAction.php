@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\McpServer\Action\Resources;
 
 use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
-use Butschster\ContextGenerator\DirectoriesInterface;
+use Butschster\ContextGenerator\McpServer\Action\Resources\Service\JsonSchemaService;
 use Butschster\ContextGenerator\McpServer\Attribute\Resource;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Get;
 use Mcp\Types\ReadResourceResult;
 use Mcp\Types\TextResourceContents;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
-use Spiral\Files\FilesInterface;
 
 #[Resource(
     name: 'CTX app Json Schema',
@@ -25,8 +24,7 @@ final readonly class JsonSchemaResourceAction
     public function __construct(
         #[LoggerPrefix(prefix: 'resources.ctx.json-schema')]
         private LoggerInterface $logger,
-        private FilesInterface $files,
-        private DirectoriesInterface $dirs,
+        private JsonSchemaService $jsonSchema,
     ) {}
 
     #[Get(path: '/resource/ctx/json-schema', name: 'resources.ctx.json-schema')]
@@ -36,41 +34,10 @@ final readonly class JsonSchemaResourceAction
 
         return new ReadResourceResult([
             new TextResourceContents(
-                text: $this->getJsonSchema(),
+                text: \json_encode($this->jsonSchema->getSimplifiedSchema()),
                 uri: 'ctx://json-schema',
                 mimeType: 'application/json',
             ),
         ]);
-    }
-
-    /**
-     * Get simplified JSON schema
-     */
-    private function getJsonSchema(): string
-    {
-        $schema = \json_decode(
-            $this->files->read($this->dirs->getJsonSchemaPath()),
-            associative: true,
-        );
-
-        unset(
-            $schema['properties']['import'],
-            $schema['properties']['settings'],
-            $schema['definitions']['document']['properties']['modifiers'],
-            $schema['definitions']['source']['properties']['modifiers'],
-            $schema['definitions']['urlSource'],
-            $schema['definitions']['githubSource'],
-            $schema['definitions']['textSource'],
-            $schema['definitions']['composerSource'],
-            $schema['definitions']['php-content-filter'],
-            $schema['definitions']['php-docs'],
-            $schema['definitions']['sanitizer'],
-            $schema['definitions']['modifiers'],
-            $schema['definitions']['visibilityOptions'],
-        );
-
-        $schema['definitions']['source']['properties']['type']['enum'] = ['file', 'tree', 'git_diff'];
-
-        return (string) \json_encode($schema);
     }
 }

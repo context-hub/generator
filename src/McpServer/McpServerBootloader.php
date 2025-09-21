@@ -14,6 +14,7 @@ use Butschster\ContextGenerator\McpServer\Action\Prompts\ProjectStructurePromptA
 use Butschster\ContextGenerator\McpServer\Action\Resources\GetDocumentContentResourceAction;
 use Butschster\ContextGenerator\McpServer\Action\Resources\JsonSchemaResourceAction;
 use Butschster\ContextGenerator\McpServer\Action\Resources\ListResourcesAction;
+use Butschster\ContextGenerator\McpServer\Action\Resources\GenerateConfigAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Context\ContextAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Context\ContextGetAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Context\ContextRequestAction;
@@ -171,6 +172,7 @@ final class McpServerBootloader extends Bootloader
                 FilesystemOperationsAction::class,
                 ...$actions,
                 JsonSchemaResourceAction::class,
+                GenerateConfigAction::class,
             ];
         }
 
