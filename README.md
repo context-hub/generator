@@ -285,6 +285,20 @@ For complete documentation, including all available features and configuration o
 
 https://docs.ctxgithub.com
 
+## Join Our Community
+
+Join hundreds of developers using CTX for professional AI-assisted coding:
+
+[![Join Discord](https://img.shields.io/discord/1419284404315881633?color=5865F2&label=Join%20Discord&logo=discord&logoColor=white&style=for-the-badge)](https://discord.gg/YmFckwVkQM)
+
+**What you'll find in our Discord:**
+
+- 💡 Share and discover context configurations
+- 🛠️ Get help with setup and advanced usage
+- 🚀 Showcase your AI development workflows
+- 🤝 Connect with like-minded developers
+- 📢 First to know about new releases and features
+
 ---
 
 ### License
