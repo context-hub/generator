@@ -9,7 +9,7 @@ use Butschster\ContextGenerator\Template\Template;
 /**
  * Result of template detection process
  */
-final readonly class TemplateDetectionResult
+final readonly class TemplateDetectionResult implements \JsonSerializable
 {
     public function __construct(
         public ?Template $template,
@@ -61,5 +61,14 @@ final readonly class TemplateDetectionResult
     public function isHighConfidenceTemplateDetection(): bool
     {
         return $this->detectionMethod === 'template_criteria' && $this->meetsTemplateDetectionThreshold();
+    }
+
+    public function jsonSerialize(): array
+    {
+        return [
+            'config' => $this->template->config,
+            'confidence' => $this->confidence,
+            'detectionMethod' => $this->detectionMethod,
+        ];
     }
 }
