@@ -1,0 +1,58 @@
+name: Discord Release Notification
+
+on:
+  release:
+    types: [ published ]
+
+jobs:
+  notify-discord:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get Release Info
+        id: release
+        run: |
+          echo "tag_name=${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
+          echo "release_name=${{ github.event.release.name }}" >> $GITHUB_OUTPUT
+          echo "release_url=${{ github.event.release.html_url }}" >> $GITHUB_OUTPUT
+          echo "author=${{ github.event.release.author.login }}" >> $GITHUB_OUTPUT
+          echo "prerelease=${{ github.event.release.prerelease }}" >> $GITHUB_OUTPUT
+
+      - name: Send Discord Notification
+        run: |
+          PRERELEASE_TEXT=""
+          if [ "${{ steps.release.outputs.prerelease }}" = "true" ]; then
+            PRERELEASE_TEXT=" (Pre-release)"
+          fi
+          
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d '{
+                 "embeds": [{
+                   "title": "🚀 New CTX Release: ${{ steps.release.outputs.release_name }}${{ env.PRERELEASE_TEXT }}",
+                   "description": "A new version of CTX has been released!",
+                   "url": "${{ steps.release.outputs.release_url }}",
+                   "color": 5814783,
+                   "fields": [
+                     {
+                       "name": "Version",
+                       "value": "`${{ steps.release.outputs.tag_name }}`",
+                       "inline": true
+                     },
+                     {
+                       "name": "Released by",
+                       "value": "${{ steps.release.outputs.author }}",
+                       "inline": true
+                     },
+                     {
+                       "name": "What to do",
+                       "value": "• Update your CTX installation\n• Check the changelog for new features\n• Share feedback in #general-chat",
+                       "inline": false
+                     }
+                   ],
+                   "footer": {
+                     "text": "CTX - Professional AI Development for Every Developer"
+                   },
+                   "timestamp": "${{ github.event.release.published_at }}"
+                 }]
+               }' \
+               ${{ secrets.DISCORD_WEBHOOK_URL }}
