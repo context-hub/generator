@@ -48,9 +48,6 @@ final readonly class GenerateConfigAction
                 ## Project info
                 %s
                 
-                ## Input Requirements
-                %s
-                
                 ## Available Tools
                 1. Use directory-list if you need to list directories in the project
                 2. Use file-read if you need to read files in the project
@@ -81,7 +78,6 @@ final readonly class GenerateConfigAction
                 $response,
                 \json_encode($this->jsonSchema->getSimplifiedSchema()),
                 \json_encode($detection),
-                $request->userRequirements ?? 'Not provided',
             );
 
             return new ReadResourceResult([
