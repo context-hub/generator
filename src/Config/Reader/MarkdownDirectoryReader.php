@@ -54,7 +54,11 @@ final readonly class MarkdownDirectoryReader implements ReaderInterface
                     $markdownFiles[] = [
                         'file' => $filePath,
                         'relativePath' => $file->getRelativePathname(),
-                        'name' => $file->getBasename('.md') ?: $file->getBasename('.markdown'),
+                        'name' => match ($file->getExtension()) {
+                            'md' => $file->getBasename('.md'),
+                            'markdown' => $file->getBasename('.markdown'),
+                            default => $file->getBasename(),
+                        },
                         'metadata' => $parsedContent['metadata'] ?? [],
                         'content' => $parsedContent['content'] ?? '',
                     ];
