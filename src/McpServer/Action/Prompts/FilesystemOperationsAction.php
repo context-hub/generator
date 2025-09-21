@@ -32,8 +32,9 @@ final readonly class FilesystemOperationsAction
 
         $rules = [
             'When handling file operations, use the following tools:',
-            '- Whenever you need to do file operations, use these tools: file-info, file-read, file-write, file-apply-patch, file-move, file-rename.',
-            '- Always use file-write when creating new files. For updating existing files, use file-apply-patch whenever possible to reduce token consumption.',
+            '- Whenever you need to do file operations, use these tools: file-info, file-read, file-write',
+            '- Always use file-write when creating new files.',
+            '- Use directory-list to list files in a directory.',
         ];
 
         return new GetPromptResult(
