@@ -83,7 +83,7 @@ final readonly class GenerateConfigAction
             return new ReadResourceResult([
                 new TextResourceContents(
                     text: $response,
-                    uri: 'ctx:///schema-builder-instructions',
+                    uri: 'ctx://schema-builder-instructions',
                     mimeType: 'application/json',
                 ),
             ]);
@@ -97,7 +97,7 @@ final readonly class GenerateConfigAction
             return new ReadResourceResult([
                 new TextResourceContents(
                     text: 'Error: ' . $e->getMessage(),
-                    uri: 'ctx:///schema-builder-instructions',
+                    uri: 'ctx://schema-builder-instructions',
                     mimeType: 'application/json',
                 ),
             ]);
