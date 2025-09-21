@@ -58,7 +58,7 @@ abstract readonly class AbstractReader implements ReaderInterface
 
     public function supports(string $path): bool
     {
-        if (!$this->files->exists($path) || !\is_file($path)) {
+        if (!$this->files->isFile($path)) {
             return false;
         }
 

@@ -107,7 +107,7 @@
               "type": {
                 "type": "string",
                 "enum": [
-                  "file",
+                  "local",
                   "url"
                 ],
                 "description": "Type of import source"
@@ -129,7 +129,7 @@
                 "if": {
                   "properties": {
                     "type": {
-                      "const": "file"
+                      "const": "local"
                     }
                   }
                 },
@@ -140,7 +140,16 @@
                   "properties": {
                     "path": {
                       "type": "string",
-                      "description": "Path to configuration file (relative to this file)"
+                      "description": "Path to configuration file or directory (relative to this file)"
+                    },
+                    "format": {
+                      "type": "string",
+                      "enum": [
+                        "config",
+                        "md"
+                      ],
+                      "description": "Format type: 'config' for YAML/JSON files, 'md' for markdown files with metadata",
+                      "default": "config"
                     }
                   }
                 }
@@ -161,6 +170,19 @@
                     "url": {
                       "type": "string",
                       "description": "URL to fetch configuration from"
+                    },
+                    "ttl": {
+                      "type": "integer",
+                      "description": "Cache time-to-live in seconds",
+                      "default": 300,
+                      "minimum": 0
+                    },
+                    "headers": {
+                      "type": "object",
+                      "description": "HTTP headers to include in the request",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
                     }
                   }
                 }
@@ -175,7 +197,16 @@
             "properties": {
               "path": {
                 "type": "string",
-                "description": "Path to configuration file (relative to this file)"
+                "description": "Path to configuration file or directory (relative to this file)"
+              },
+              "format": {
+                "type": "string",
+                "enum": [
+                  "config",
+                  "md"
+                ],
+                "description": "Format type: 'config' for YAML/JSON files, 'md' for markdown files with metadata",
+                "default": "config"
               },
               "pathPrefix": {
                 "type": "string",
@@ -184,12 +215,38 @@
               "description": {
                 "type": "string",
                 "description": "Human-readable description of the import"
+              },
+              "docs": {
+                "type": "array",
+                "description": "List of document paths to selectively import (for local imports only)",
+                "items": {
+                  "type": "string"
+                }
               }
             },
             "additionalProperties": false
           }
         ]
-      }
+      },
+      "examples": [
+        {
+          "type": "local",
+          "path": "./prompts",
+          "format": "md",
+          "description": "Import prompts from markdown files"
+        },
+        {
+          "type": "local",
+          "path": "./config/api.yaml",
+          "format": "config",
+          "pathPrefix": "/api"
+        },
+        {
+          "path": "./docs",
+          "format": "markdown"
+        },
+        "./shared/context.yaml"
+      ]
     },
     "settings": {
       "type": "object",

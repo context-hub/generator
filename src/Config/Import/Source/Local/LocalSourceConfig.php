@@ -21,6 +21,7 @@ final class LocalSourceConfig extends AbstractSourceConfig
         string $path,
         private readonly string $absolutePath,
         private readonly bool $hasWildcard = false,
+        private readonly string $format = 'config',
         ?string $pathPrefix = null,
         ?array $selectiveDocuments = null,
         ?FilterConfig $filter = null,
@@ -44,6 +45,17 @@ final class LocalSourceConfig extends AbstractSourceConfig
         $pathPrefix = $config['pathPrefix'] ?? null;
         $selectiveDocuments = $config['docs'] ?? null;
         $filter = FilterConfig::fromArray($config['filter'] ?? null);
+        $format = $config['format'] ?? 'config';
+
+        // Validate format
+        if (!\in_array($format, ['config', 'md', 'markdown'], true)) {
+            throw new \InvalidArgumentException("Unsupported format: {$format}. Supported formats: config, md, markdown");
+        }
+
+        // Normalize markdown format
+        if ($format === 'markdown') {
+            $format = 'md';
+        }
 
         // Check if the path contains wildcards
         $hasWildcard = PathMatcher::containsWildcard($path);
@@ -55,6 +67,7 @@ final class LocalSourceConfig extends AbstractSourceConfig
             path: $path,
             absolutePath: $absolutePath,
             hasWildcard: $hasWildcard,
+            format: $format,
             pathPrefix: $pathPrefix,
             selectiveDocuments: $selectiveDocuments,
             filter: $filter,
@@ -64,6 +77,22 @@ final class LocalSourceConfig extends AbstractSourceConfig
     public function getType(): string
     {
         return 'local';
+    }
+
+    /**
+     * Get the format type (config, md)
+     */
+    public function getFormat(): string
+    {
+        return $this->format;
+    }
+
+    /**
+     * Check if this is a markdown import
+     */
+    public function isMarkdownImport(): bool
+    {
+        return $this->format === 'md';
     }
 
     /**
@@ -93,6 +122,7 @@ final class LocalSourceConfig extends AbstractSourceConfig
         $result = [
             'type' => $this->getType(),
             'path' => $this->path,
+            'format' => $this->format,
             'pathPrefix' => $this->pathPrefix,
         ];
 
