@@ -232,7 +232,7 @@ final readonly class MarkdownToResourceTransformer
         // Convert filename to a valid identifier
         $id = \strtolower($filename);
         $id = \preg_replace('/[^a-z0-9]+/', '-', $id);
-        $id = \trim($id, '-');
+        $id = \trim((string) $id, '-');
 
         return $id ?: 'unknown';
     }

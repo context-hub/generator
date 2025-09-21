@@ -22,8 +22,8 @@ use Spiral\Files\FilesInterface;
 #[LoggerPrefix(prefix: 'import-source-local')]
 final class LocalImportSource extends AbstractImportSource
 {
-    private MarkdownDirectoryReader $markdownDirectoryReader;
-    private MarkdownToResourceTransformer $markdownTransformer;
+    private readonly MarkdownDirectoryReader $markdownDirectoryReader;
+    private readonly MarkdownToResourceTransformer $markdownTransformer;
 
     public function __construct(
         private readonly FilesInterface $files,

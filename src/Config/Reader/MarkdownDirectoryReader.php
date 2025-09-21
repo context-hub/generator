@@ -59,7 +59,6 @@ final readonly class MarkdownDirectoryReader implements ReaderInterface
                         'content' => $parsedContent['content'] ?? '',
                     ];
                 } catch (\Throwable $e) {
-                    trap($e);
                     $this->logger?->warning('Failed to process markdown file', [
                         'file' => $filePath,
                         'error' => $e->getMessage(),

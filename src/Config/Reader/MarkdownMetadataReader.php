@@ -221,7 +221,7 @@ final readonly class MarkdownMetadataReader implements ReaderInterface
             if (\str_starts_with($line, '#')) {
                 // Extract the title part after the # symbols
                 $title = \preg_replace('/^#+\s*/', '', $line);
-                $title = \trim($title);
+                $title = \trim((string) $title);
 
                 if (!empty($title)) {
                     return $title;
