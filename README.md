@@ -1,4 +1,6 @@
-# CTX: The missing link between your codebase and your LLM.
+# CTX: Professional AI Development for Every Developer
+
+> Create LLM-ready contexts in minutes
 
 <p>
     <a href="https://docs.ctxgithub.com/"><img alt="Docs" src="https://img.shields.io/badge/docs-green"></a>
@@ -20,7 +22,11 @@ During development, your codebase constantly evolves. Files are added, modified,
 continue working with an LLM, you need to regenerate context to provide updated information about your current codebase
 state.
 
-**CTX** helps developers organize contexts and automatically collect information from their codebase into structured
+**CTX** is a context management tool that gives developers full control over what AI sees from their codebase. Instead
+of letting AI tools guess what's relevant, you define exactly what context to provide - making your AI-assisted
+development more predictable, secure, and efficient.
+
+It helps developers organize contexts and automatically collect information from their codebase into structured
 documents that can be easily shared with LLM.
 
 For example, a developer describes what context they need:
@@ -55,49 +61,26 @@ This configuration will gather all PHP files from the `src/Auth` directory and a
 their name from the `src/Models` directory into a single context file `.context/auth.md`. This file can then be pasted
 into a chat session or provided via the built-in [MCP server](https://docs.ctxgithub.com/mcp/).
 
-### How it works
+### Why CTX?
 
-**CTX automatically builds structured context documents from:**
+Current AI coding tools automatically scan your entire codebase, which creates several issues:
 
-- [Code files and directories](https://docs.ctxgithub.com/sources/file-source.html)
-- [GitHub repositories](https://docs.ctxgithub.com/sources/github-source.html)
-- [Git commit changes and diffs](https://docs.ctxgithub.com/sources/git-diff-source.html)
-- [Web pages (URLs) with CSS selectors](https://docs.ctxgithub.com/sources/url-source.html)
-- Plain text
-- and more!
+- **Security risk**: Your sensitive files (env vars, tokens, private code) get uploaded to cloud services
+- **Context dilution**: AI gets overwhelmed with irrelevant code, reducing output quality
+- **No control**: You can't influence what the AI considers when generating responses
+- **Expensive**: Premium tools charge based on how much they scan, not how much you actually need
 
-**Process:**
+### The CTX Approach
 
-- Collects code from specified sources
-- Filters files through pattern matching, content search, size, or date criteria
-- Applies modifiers (e.g., extracting function signatures without implementation)
-- Organizes content into structured markdown documents
-- Saves context files ready for LLM consumption
-- Optionally serves context through MCP server for direct AI assistant access
+You know your code better than any AI. CTX puts you in control:
 
-> Here is a [Quickstart guide](https://docs.ctxgithub.com/quick-start.html) to get you started with CTX.
-
-### The Problem CTX Solves
-
-**Without such a tool, you would need to:**
-
-- Manually search for all files that were changed
-- Copy their contents each time
-- Explain the codebase structure repeatedly
-- Spend significant time maintaining context consistency
-
-This repetitive process becomes frustrating and can discourage continued development, as you end up doing the same
-context-gathering work over and over instead of writing code.
-
-Since CTX describes contexts, this process becomes automated.
-
----
+- ✅ Define exactly what context to share - no more, no less
+- ✅ Keep sensitive data local - works with local LLMs or carefully curated cloud contexts
+- ✅ Generate reusable, shareable contexts - commit configurations to your repo
+- ✅ Improve code architecture - designing for AI context windows naturally leads to better modular code
+- ✅ Works with any LLM - Claude, ChatGPT, local models, or future tools
 
 ## Quick Start
-
-Getting started with CTX is straightforward. Follow these simple steps to create your first context file.
-
-## 1. Install CTX
 
 Download and install the tool using our installation script:
 
@@ -110,96 +93,156 @@ This installs the `ctx` command to your system (typically in `/usr/local/bin`).
 > **Want more options?** See the complete [Installation Guide](https://docs.ctxgithub.com/getting-started.html) for
 > alternative installation methods.
 
-## 2. Initialize a Configuration File
+## 5-Minute Setup
 
-Create a new configuration file in your project directory:
+1. **Initialize your project:**
 
 ```bash
+cd your-project
+
 ctx init
 ```
 
-This generates a `context.yaml` file with a basic structure to get you started.
+This generates a `context.yaml` file with a basic configuration and shows your project structure, helping you understand
+what contexts might be useful.
 
 > Check the [Command Reference](https://docs.ctxgithub.com/getting-started/command-reference.html) for all available
 > commands and options.
 
-## 3. Describe Your Project Structure
-
-Edit the generated `context.yaml` file to specify what code or content you want to include.
-
-**For example:**
-
-```yaml
-$schema: 'https://raw.githubusercontent.com/context-hub/generator/refs/heads/main/json-schema.json'
-
-documents:
-  - description: "User Authentication System"
-    outputPath: "auth-context.md"
-    sources:
-      - type: file
-        description: "Authentication Controllers"
-        sourcePaths:
-          - src/Auth
-        filePattern: "*.php"
-
-      - type: file
-        description: "Authentication Models"
-        sourcePaths:
-          - src/Models
-        filePattern: "*User*.php"
-```
-
-This configuration will gather all PHP files from the `src/Auth` directory and any PHP files containing "User" in their
-name from the `src/Models` directory.
-
-#### Need more advanced configuration?
-
-- Learn about [Document Structure](https://docs.ctxgithub.com/documents.html) and properties
-- Explore different source types
-  like [GitHub](https://docs.ctxgithub.com/sources/github-source.html), [Git Diff](https://docs.ctxgithub.com/sources/git-diff-source.html),
-  or [URL](https://docs.ctxgithub.com/sources/url-source.html)
-- Apply [Modifiers](https://docs.ctxgithub.com/modifiers.html) to transform your content (like extracting PHP
-  signatures)
-- Discover how to use [Environment Variables](https://docs.ctxgithub.com/getting-started/variables.html) in your config
-- Use [IDE Integration](https://docs.ctxgithub.com/getting-started/ide-integration.html) for autocompletion and
-  validation
-
-## 4. Build the Context
-
-Generate your context file by running:
+2. Create your first context:
 
 ```bash
-ctx
+ctx generate
 ```
 
-CTX will process your configuration and create the specified output file (`auth-context.md` in our example).
+3. Use with your favorite AI:
 
-> **Tip**: Configure [Logging](https://docs.ctxgithub.com/getting-started/logging.html) with `-v`, `-vv`, or `-vvv` for
-> detailed output
+- Copy the generated markdown files to your AI chat
+- Or use the built-in MCP server with Claude Desktop
+- Or process locally with open-source models
 
-## 5. Share with an LLM
+## Real-World Use Cases
 
-Upload or paste the generated context file to your favorite LLM (like ChatGPT or Claude). Now you can ask specific
-questions about your codebase, and the LLM will have the necessary context to provide accurate assistance.
+### 🚀 Onboarding New Team Member
 
-Example prompt:
+```yaml
+# Quick project overview for new developers
+documents:
+  - description: "Project Architecture Overview"
+    outputPath: "docs/architecture.md"
+    sources:
+      - type: tree
+        sourcePaths: [ "src" ]
+        maxDepth: 2
+      - type: file
+        description: "Core interfaces and main classes"
+        sourcePaths: [ "src" ]
+        filePattern: "*Interface.php"
+```
 
-> I've shared my authentication system code with you. Can you help me identify potential security vulnerabilities in the
-> user registration process?
+### 📝 Feature Development
 
-> **Next steps:** Check
-> out [Development with Context Generator](https://docs.ctxgithub.com/advanced/development-process.html) for best
-> practices on integrating context generation into your AI-powered development workflow.
+```yaml
+# Context for developing a new feature
+documents:
+  - description: "User Authentication System"
+    outputPath: "contexts/auth-context.md"
+    sources:
+      - type: file
+        sourcePaths: [ "src/Auth", "src/Models" ]
+        filePattern: "*.php"
+      - type: git_diff
+        description: "Recent auth changes"
+        commit: "last-week"
+```
 
-That's it! You're now ready to leverage LLMs with proper context about your codebase.
+### 📚 Documentation Generation
 
-## 6. Connect to Claude AI (Optional)
+```yaml
+# Generate API documentation
+documents:
+  - description: "API Documentation"
+    outputPath: "docs/api.md"
+    sources:
+      - type: file
+        sourcePaths: [ "src/Controllers" ]
+        modifiers: [ "php-signature" ]
+        contains: [ "@Route", "@Api" ]
+```
 
-For a more seamless experience, you can connect Context Generator directly to Claude AI using the MCP server:
+## Key Features
 
-There is a built-in MCP server that allows you to connect Claude AI directly to your codebase.
+### 🎯 **Precise Context Control**
 
-Point the MCP client to the Context Generator server:
+- Define exactly which files, directories, or code patterns to include
+- Filter by content, file patterns, date ranges, or size
+- Apply modifiers to extract only relevant parts (e.g., function signatures)
+
+### 🔒 **Security by Design**
+
+- **Local-first**: Generate contexts locally, choose what to share
+- **No automatic uploads**: Unlike tools that scan everything, you control what gets sent
+- **Works with local models**: Use completely offline with Ollama, LM Studio, etc.
+
+### 🔄 **Version Control Integration**
+
+- Context configurations are part of your project
+- Team members get the same contexts
+- Evolve contexts as your codebase changes
+- Include git diffs to show recent changes
+
+### 🛠 **Developer Experience**
+
+- **Fast**: Generate contexts in seconds, not minutes of manual copying
+- **Flexible**: Works with any AI tool or local model
+- **Shareable**: Commit configurations, share with team
+- **Extensible**: Plugin system for custom sources and modifiers
+
+## Architecture
+
+CTX follows a simple pipeline:
+
+```
+Configuration → Sources → Filters → Modifiers → Output
+```
+
+- **Sources**: Where to get content (files, GitHub, git diffs, URLs, etc.)
+- **Filters**: What to include/exclude (patterns, content, dates, sizes)
+- **Modifiers**: How to transform content (extract signatures, remove comments)
+- **Output**: Structured markdown ready for AI consumption
+
+## Connect to Claude Desktop (Optional)
+
+For a more seamless experience, you can connect Context Generator directly to Claude AI using the MCP server.
+
+```bash
+# Auto-detect OS and generate configuration
+ctx mcp:config
+```
+
+This command:
+
+- 🔍 **Auto-detects your OS** (Windows, Linux, macOS, WSL)
+- 🎯 **Generates the right config** for your environment
+- 📋 **Provides copy-paste ready** JSON for Claude Desktop
+- 🧭 **Includes setup instructions** and troubleshooting tips
+
+**Global Registry Mode** (recommended for multiple projects):
+
+```json
+{
+  "mcpServers": {
+    "ctx": {
+      "command": "ctx",
+      "args": [
+        "server"
+      ]
+    }
+  }
+}
+```
+
+If you prefer manual setup, point the MCP client to the Context Generator server:
 
 ```json
 {
@@ -209,7 +252,7 @@ Point the MCP client to the Context Generator server:
       "args": [
         "server",
         "-c",
-        "/path/to/your/project"
+        "/path/to/project"
       ]
     }
   }
@@ -217,9 +260,23 @@ Point the MCP client to the Context Generator server:
 ```
 
 > **Note:** Read more about [MCP Server](https://docs.ctxgithub.com/mcp/#setting-up) for detailed setup
-> instructions.
+> instructions and troubleshooting.
 
 Now you can ask Claude questions about your codebase without manually uploading context files!
+
+## Custom Tools
+
+Define project-specific commands that can be executed through the MCP interface:
+
+```yaml
+tools:
+  - id: run-tests
+    description: "Run project tests with coverage"
+    type: run
+    commands:
+      - cmd: npm
+        args: [ "test", "--coverage" ]
+```
 
 ## Full Documentation
 
