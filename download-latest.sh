@@ -16,11 +16,6 @@ BLUE="${ESC}[34m"
 BOLD="${ESC}[1m"
 DEFAULT="${ESC}[0m"
 
-# Symbols (ASCII compatible)
-CHECK_MARK="✓"
-CROSS_MARK="✗"
-ARROW="→"
-
 # Project name
 PNAME='ctx'
 REPO_OWNER='context-hub'
