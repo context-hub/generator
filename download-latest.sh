@@ -7,13 +7,14 @@
 # GLOBALS
 
 # Colors
-RED='\033[31m'
-MUTED='\033[2m'
-GREEN='\033[32m'
-YELLOW='\033[33m'
-BLUE='\033[34m'
-BOLD='\033[1m'
-DEFAULT='\033[0m'
+ESC=$(printf '\033')
+RED="${ESC}[31m"
+MUTED="${ESC}[2m"
+GREEN="${ESC}[32m"
+YELLOW="${ESC}[33m"
+BLUE="${ESC}[34m"
+BOLD="${ESC}[1m"
+DEFAULT="${ESC}[0m"
 
 # Symbols (ASCII compatible)
 CHECK_MARK="✓"
