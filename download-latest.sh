@@ -375,7 +375,7 @@ download_and_install() {
   fi
 
   # Make executable (not necessary on Windows but doesn't hurt)
-  if ! chmod +x "$bin_dir/$binary_name"; then
+  if ! chmod 755 "$bin_dir/$binary_name"; then
     print_error "Failed to make $bin_dir/$binary_name executable"
     exit 1
   fi
