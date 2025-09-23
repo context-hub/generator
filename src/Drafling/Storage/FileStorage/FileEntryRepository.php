@@ -223,6 +223,7 @@ final class FileEntryRepository extends FileStorageRepositoryBase implements Ent
             return new Entry(
                 entryId: $frontmatter['entry_id'],
                 title: $frontmatter['title'],
+                description: $frontmatter['description'] ?? '', // Default to empty if not present in file
                 entryType: $frontmatter['entry_type'],
                 category: $frontmatter['category'],
                 status: $frontmatter['status'],
@@ -259,6 +260,7 @@ final class FileEntryRepository extends FileStorageRepositoryBase implements Ent
         $frontmatter = [
             'entry_id' => $entry->entryId,
             'title' => $entry->title,
+            'description' => $entry->description,
             'entry_type' => $entry->entryType,
             'category' => $entry->category,
             'status' => $entry->status,
@@ -301,6 +303,27 @@ final class FileEntryRepository extends FileStorageRepositoryBase implements Ent
                 }
             }
             if (!$hasMatchingTag) {
+                return false;
+            }
+        }
+
+        // Title contains filter
+        if (isset($filters['title_contains']) && \is_string($filters['title_contains'])) {
+            if (\stripos($entry->title, $filters['title_contains']) === false) {
+                return false;
+            }
+        }
+
+        // Description contains filter
+        if (isset($filters['description_contains']) && \is_string($filters['description_contains'])) {
+            if (\stripos($entry->description, $filters['description_contains']) === false) {
+                return false;
+            }
+        }
+
+        // Content contains filter
+        if (isset($filters['content_contains']) && \is_string($filters['content_contains'])) {
+            if (\stripos($entry->content, $filters['content_contains']) === false) {
                 return false;
             }
         }

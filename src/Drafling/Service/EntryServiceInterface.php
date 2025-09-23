@@ -18,6 +18,9 @@ interface EntryServiceInterface
     /**
      * Create a new entry in the specified project
      *
+     * Creates an entry with title, description, content, and metadata.
+     * Description is auto-generated from content if not provided.
+     *
      * @throws \Butschster\ContextGenerator\Drafling\Exception\ProjectNotFoundException
      * @throws \Butschster\ContextGenerator\Drafling\Exception\TemplateNotFoundException
      * @throws \Butschster\ContextGenerator\Drafling\Exception\DraflingException
@@ -26,6 +29,9 @@ interface EntryServiceInterface
 
     /**
      * Update an existing entry
+     *
+     * Updates entry fields including title, description, content, status, and tags.
+     * Supports partial updates - only provided fields are modified.
      *
      * @throws \Butschster\ContextGenerator\Drafling\Exception\ProjectNotFoundException
      * @throws \Butschster\ContextGenerator\Drafling\Exception\EntryNotFoundException
@@ -48,6 +54,9 @@ interface EntryServiceInterface
 
     /**
      * Get entries for a project with optional filtering
+     *
+     * Supports filtering by title, description, category, type, status, tags, and content.
+     * Returns entries with full metadata including description for LLM understanding.
      *
      * @return Entry[]
      */

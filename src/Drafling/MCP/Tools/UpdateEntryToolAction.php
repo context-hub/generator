@@ -40,6 +40,7 @@ final readonly class UpdateEntryToolAction
             'project_id' => $request->projectId,
             'entry_id' => $request->entryId,
             'has_title' => $request->title !== null,
+            'has_description' => $request->description !== null,
             'has_content' => $request->content !== null,
             'has_status' => $request->status !== null,
             'has_tags' => $request->tags !== null,
@@ -190,6 +191,10 @@ final readonly class UpdateEntryToolAction
 
         if ($request->title !== null) {
             $changes[] = 'title';
+        }
+
+        if ($request->description !== null) {
+            $changes[] = 'description';
         }
 
         if ($request->content !== null) {

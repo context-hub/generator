@@ -26,6 +26,11 @@ final readonly class EntryCreateRequest
         )]
         public ?string $title = null,
         #[Field(
+            description: 'Short description for LLM understanding (optional, max 200 chars)',
+            default: null,
+        )]
+        public ?string $description = null,
+        #[Field(
             description: 'Entry status (optional, accepts display names)',
             default: null,
         )]
@@ -68,6 +73,35 @@ final readonly class EntryCreateRequest
     }
 
     /**
+     * Get the processed description for entry creation
+     * This should be called by the service layer to ensure consistent description handling
+     */
+    public function getProcessedDescription(): string
+    {
+        if ($this->description !== null && !empty(\trim($this->description))) {
+            $desc = \trim($this->description);
+            // Limit to 200 characters
+            return \strlen($desc) > 200 ? \substr($desc, 0, 197) . '...' : $desc;
+        }
+
+        // Generate description from content summary
+        $cleanContent = \strip_tags($this->content);
+        $lines = \explode("\n", \trim($cleanContent));
+
+        // Skip title line and get summary from content
+        $contentLines = \array_filter(\array_slice($lines, 1), static fn($line) => !empty(\trim($line)));
+
+        if (empty($contentLines)) {
+            return 'Entry content';
+        }
+
+        $summary = \implode(' ', \array_slice($contentLines, 0, 3));
+        $summary = \preg_replace('/\s+/', ' ', $summary);
+
+        return \strlen((string) $summary) > 200 ? \substr((string) $summary, 0, 197) . '...' : $summary;
+    }
+
+    /**
      * @deprecated Use getProcessedTitle() instead for consistency
      */
     public function getTitle(): string
@@ -106,6 +140,11 @@ final readonly class EntryCreateRequest
             }
         }
 
+        // Validate description length if provided
+        if ($this->description !== null && \strlen(\trim($this->description)) > 200) {
+            $errors[] = 'Description must not exceed 200 characters';
+        }
+
         return $errors;
     }
 
@@ -123,6 +162,7 @@ final readonly class EntryCreateRequest
             entryType: $resolvedEntryType,
             content: $this->content,
             title: $this->title,
+            description: $this->description,
             status: $resolvedStatus ?? $this->status,
             tags: $this->tags,
         );

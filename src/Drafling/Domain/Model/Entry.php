@@ -12,6 +12,7 @@ final readonly class Entry implements \JsonSerializable
     /**
      * @param string $entryId Unique entry identifier (UUID)
      * @param string $title Entry title
+     * @param string $description Short description for LLM understanding (max 200 chars)
      * @param string $entryType Entry type key (must match template)
      * @param string $category Category name (must match template)
      * @param string $status Current entry status
@@ -24,6 +25,7 @@ final readonly class Entry implements \JsonSerializable
     public function __construct(
         public string $entryId,
         public string $title,
+        public string $description,
         public string $entryType,
         public string $category,
         public string $status,
@@ -39,6 +41,7 @@ final readonly class Entry implements \JsonSerializable
      */
     public function withUpdates(
         ?string $title = null,
+        ?string $description = null,
         ?string $status = null,
         ?array $tags = null,
         ?string $content = null,
@@ -46,6 +49,7 @@ final readonly class Entry implements \JsonSerializable
         return new self(
             entryId: $this->entryId,
             title: $title ?? $this->title,
+            description: $description ?? $this->description,
             entryType: $this->entryType,
             category: $this->category,
             status: $status ?? $this->status,
@@ -75,6 +79,7 @@ final readonly class Entry implements \JsonSerializable
         return [
             'entry_id' => $this->entryId,
             'title' => $this->title,
+            'description' => $this->description,
             'entry_type' => $this->entryType,
             'category' => $this->category,
             'status' => $this->status,
@@ -92,6 +97,7 @@ final readonly class Entry implements \JsonSerializable
         return [
             'entry_id' => $this->entryId,
             'title' => $this->title,
+            'description' => $this->description,
             'entry_type' => $this->entryType,
             'category' => $this->category,
             'status' => $this->status,

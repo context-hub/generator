@@ -207,6 +207,7 @@ final class FileStorageDriver extends AbstractStorageDriver
         $entry = new Entry(
             entryId: $entryId,
             title: $resolvedRequest->getProcessedTitle(), // Use processed title
+            description: $resolvedRequest->getProcessedDescription(), // Use processed description
             entryType: $resolvedRequest->entryType,
             category: $resolvedRequest->category,
             status: $resolvedRequest->status ?? $this->config->defaultEntryStatus,
@@ -257,6 +258,7 @@ final class FileStorageDriver extends AbstractStorageDriver
 
         $updatedEntry = $entry->withUpdates(
             title: $resolvedRequest->title,
+            description: $resolvedRequest->description,
             status: $resolvedRequest->status,
             tags: $resolvedRequest->tags,
             content: $finalContent, // Use processed content with text replacement

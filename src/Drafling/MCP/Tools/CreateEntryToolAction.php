@@ -38,6 +38,7 @@ final readonly class CreateEntryToolAction
             'project_id' => $request->projectId,
             'category' => $request->category,
             'entry_type' => $request->entryType,
+            'has_description' => $request->description !== null,
         ]);
 
         try {

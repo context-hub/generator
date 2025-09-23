@@ -42,6 +42,7 @@ final class DraflingBootloader extends Bootloader
         ];
     }
 
+    #[\Override]
     public function defineSingletons(): array
     {
         return [

@@ -21,6 +21,10 @@ final readonly class EntryUpdateRequest
         )]
         public ?string $title = null,
         #[Field(
+            description: 'New description (optional, max 200 chars)',
+        )]
+        public ?string $description = null,
+        #[Field(
             description: 'New content (optional)',
         )]
         public ?string $content = null,
@@ -51,6 +55,7 @@ final readonly class EntryUpdateRequest
     public function hasUpdates(): bool
     {
         return $this->title !== null
+            || $this->description !== null
             || $this->content !== null
             || $this->status !== null
             || $this->contentType !== null
@@ -127,6 +132,11 @@ final readonly class EntryUpdateRequest
             }
         }
 
+        // Validate description length if provided
+        if ($this->description !== null && \strlen(\trim($this->description)) > 200) {
+            $errors[] = 'Description must not exceed 200 characters';
+        }
+
         // Validate text replace if provided
         if ($this->textReplace !== null) {
             $replaceErrors = $this->textReplace->validate();
@@ -145,6 +155,7 @@ final readonly class EntryUpdateRequest
             projectId: $this->projectId,
             entryId: $this->entryId,
             title: $this->title,
+            description: $this->description,
             content: $this->content,
             status: $resolvedStatus,
             contentType: $this->contentType,

@@ -39,6 +39,11 @@ final readonly class EntryFilters
         )]
         public ?string $titleContains = null,
         #[Field(
+            description: 'Filter by entry description (partial match)',
+            default: null,
+        )]
+        public ?string $descriptionContains = null,
+        #[Field(
             description: 'Filter by entry content (partial match)',
             default: null,
         )]
@@ -72,6 +77,10 @@ final readonly class EntryFilters
             $filters['title_contains'] = $this->titleContains;
         }
 
+        if ($this->descriptionContains !== null) {
+            $filters['description_contains'] = $this->descriptionContains;
+        }
+
         if ($this->contentContains !== null) {
             $filters['content_contains'] = $this->contentContains;
         }
@@ -89,6 +98,7 @@ final readonly class EntryFilters
             || $this->status !== null
             || ($this->tags !== null && !empty($this->tags))
             || $this->titleContains !== null
+            || $this->descriptionContains !== null
             || $this->contentContains !== null;
     }
 
@@ -118,6 +128,7 @@ final readonly class EntryFilters
         // Validate text filters if provided
         $textFilters = [
             'titleContains' => $this->titleContains,
+            'descriptionContains' => $this->descriptionContains,
             'contentContains' => $this->contentContains,
         ];
 
