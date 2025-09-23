@@ -26,9 +26,7 @@ final class FileEntryRepository extends FileStorageRepositoryBase implements Ent
         $entries = [];
 
         try {
-            // Get entry directories from project or scan all directories
-            $entryDirs = $this->getProjectEntryDirs($projectPath);
-            $entryFiles = $this->directoryScanner->scanEntries($projectPath, $entryDirs);
+            $entryFiles = $this->directoryScanner->scanEntries($projectPath);
 
             foreach ($entryFiles as $filePath) {
                 try {
@@ -173,8 +171,7 @@ final class FileEntryRepository extends FileStorageRepositoryBase implements Ent
      */
     private function findEntryFile(string $projectPath, string $entryId): ?string
     {
-        $entryDirs = $this->getProjectEntryDirs($projectPath);
-        $entryFiles = $this->directoryScanner->scanEntries($projectPath, $entryDirs);
+        $entryFiles = $this->directoryScanner->scanEntries($projectPath);
 
         foreach ($entryFiles as $filePath) {
             try {

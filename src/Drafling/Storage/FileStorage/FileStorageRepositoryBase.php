@@ -8,6 +8,8 @@ use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\Drafling\Config\DraflingConfigInterface;
 use Spiral\Files\FilesInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Yaml\Exception\ParseException;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * Abstract base class for file-based repositories
@@ -62,8 +64,8 @@ abstract class FileStorageRepositoryBase
         $content = $this->files->read($filePath);
 
         try {
-            return \Symfony\Component\Yaml\Yaml::parse($content) ?? [];
-        } catch (\Symfony\Component\Yaml\Exception\ParseException $e) {
+            return Yaml::parse($content) ?? [];
+        } catch (ParseException $e) {
             throw new \RuntimeException("Failed to parse YAML file '{$filePath}': {$e->getMessage()}", 0, $e);
         }
     }
@@ -73,11 +75,11 @@ abstract class FileStorageRepositoryBase
      */
     protected function writeYamlFile(string $filePath, array $data): void
     {
-        $yamlContent = \Symfony\Component\Yaml\Yaml::dump(
+        $yamlContent = Yaml::dump(
             $data,
             4,
             2,
-            \Symfony\Component\Yaml\Yaml::DUMP_MULTI_LINE_LITERAL_BLOCK,
+            Yaml::DUMP_MULTI_LINE_LITERAL_BLOCK,
         );
 
         $this->ensureDirectory(\dirname($filePath));
@@ -123,23 +125,6 @@ abstract class FileStorageRepositoryBase
         $slug = \trim((string) $slug, '-');
 
         return $slug . '.' . $extension;
-    }
-
-    /**
-     * Generate unique ID
-     */
-    protected function generateId(string $prefix = ''): string
-    {
-        $id = \uniqid($prefix, true);
-        return \str_replace('.', '_', $id);
-    }
-
-    /**
-     * Get current ISO 8601 timestamp
-     */
-    protected function getCurrentTimestamp(): string
-    {
-        return (new \DateTime())->format('c');
     }
 
     /**

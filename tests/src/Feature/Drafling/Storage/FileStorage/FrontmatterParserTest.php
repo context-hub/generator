@@ -12,12 +12,6 @@ final class FrontmatterParserTest extends TestCase
 {
     private FrontmatterParser $parser;
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->parser = new FrontmatterParser();
-    }
-
     #[Test]
     public function it_parses_content_with_frontmatter(): void
     {
@@ -322,5 +316,11 @@ function test() {
 CONTENT;
 
         $this->assertEquals($expectedContent, $result['content']);
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->parser = new FrontmatterParser();
     }
 }

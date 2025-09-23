@@ -181,7 +181,7 @@ MARKDOWN;
 
         $nestedEntryFound = false;
         foreach ($entries as $entryPath) {
-            if (\str_contains($entryPath, 'nested_entry.md')) {
+            if (\str_contains((string) $entryPath, 'nested_entry.md')) {
                 $nestedEntryFound = true;
                 break;
             }
