@@ -12,7 +12,7 @@ final readonly class ProjectId implements \Stringable
     public function __construct(
         public string $value,
     ) {
-        if (empty($this->value)) {
+        if (empty(\trim($this->value))) {
             throw new \InvalidArgumentException('Project ID cannot be empty');
         }
     }
@@ -31,6 +31,14 @@ final readonly class ProjectId implements \Stringable
     public static function fromString(string $value): self
     {
         return new self($value);
+    }
+
+    /**
+     * Check equality with another ProjectId
+     */
+    public function equals(self $other): bool
+    {
+        return $this->value === $other->value;
     }
 
     public function toString(): string

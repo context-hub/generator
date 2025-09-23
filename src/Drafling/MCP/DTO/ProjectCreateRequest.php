@@ -56,11 +56,11 @@ final readonly class ProjectCreateRequest
     {
         $errors = [];
 
-        if (empty($this->templateId)) {
+        if (empty(\trim($this->templateId))) {
             $errors[] = 'Template ID cannot be empty';
         }
 
-        if (empty($this->title)) {
+        if (empty(\trim($this->title))) {
             $errors[] = 'Project title cannot be empty';
         }
 

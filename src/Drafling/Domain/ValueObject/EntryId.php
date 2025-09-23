@@ -12,7 +12,7 @@ final readonly class EntryId implements \Stringable
     public function __construct(
         public string $value,
     ) {
-        if (empty($this->value)) {
+        if (empty(\trim($this->value))) {
             throw new \InvalidArgumentException('Entry ID cannot be empty');
         }
     }
@@ -31,6 +31,14 @@ final readonly class EntryId implements \Stringable
     public static function fromString(string $value): self
     {
         return new self($value);
+    }
+
+    /**
+     * Check equality with another EntryId
+     */
+    public function equals(self $other): bool
+    {
+        return $this->value === $other->value;
     }
 
     public function toString(): string

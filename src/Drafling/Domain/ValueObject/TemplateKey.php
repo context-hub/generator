@@ -12,7 +12,7 @@ final readonly class TemplateKey implements \Stringable
     public function __construct(
         public string $value,
     ) {
-        if (empty($this->value)) {
+        if (empty(\trim($this->value))) {
             throw new \InvalidArgumentException('Template key cannot be empty');
         }
     }
@@ -23,6 +23,14 @@ final readonly class TemplateKey implements \Stringable
     public static function fromString(string $value): self
     {
         return new self($value);
+    }
+
+    /**
+     * Check equality with another TemplateKey
+     */
+    public function equals(self $other): bool
+    {
+        return $this->value === $other->value;
     }
 
     public function toString(): string
