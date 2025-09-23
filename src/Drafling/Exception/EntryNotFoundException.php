@@ -7,6 +7,4 @@ namespace Butschster\ContextGenerator\Drafling\Exception;
 /**
  * Exception thrown when an entry cannot be found
  */
-class EntryNotFoundException extends DraflingException
-{
-}
+class EntryNotFoundException extends DraflingException {}

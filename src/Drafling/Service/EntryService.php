@@ -190,14 +190,14 @@ final readonly class EntryService implements EntryServiceInterface
         if ($request->status !== null) {
             $templateKey = TemplateKey::fromString($project->template);
             $template = $this->templateService->getTemplate($templateKey);
-            
+
             if ($template !== null) {
                 $resolvedStatusValue = $this->templateService->resolveStatusValue(
                     $template,
                     $existingEntry->entryType,
                     $request->status,
                 );
-                
+
                 if ($resolvedStatusValue === null) {
                     $error = "Status '{$request->status}' not found for entry type '{$existingEntry->entryType}'";
                     $this->logger?->error($error, [
@@ -208,7 +208,7 @@ final readonly class EntryService implements EntryServiceInterface
                     ]);
                     throw new DraflingException($error);
                 }
-                
+
                 $resolvedStatus = $resolvedStatusValue;
             }
         }
@@ -249,7 +249,7 @@ final readonly class EntryService implements EntryServiceInterface
     public function entryExists(ProjectId $projectId, EntryId $entryId): bool
     {
         $exists = $this->entryRepository->exists($projectId, $entryId);
-        
+
         $this->logger?->debug('Checking entry existence', [
             'project_id' => $projectId->value,
             'entry_id' => $entryId->value,

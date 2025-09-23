@@ -41,9 +41,6 @@ interface EntryServiceInterface
     /**
      * Get a specific entry by ID
      *
-     * @param ProjectId $projectId
-     * @param EntryId $entryId
-     * @return Entry|null
      * @throws \Butschster\ContextGenerator\Drafling\Exception\ProjectNotFoundException
      * @throws \Butschster\ContextGenerator\Drafling\Exception\DraflingException
      */

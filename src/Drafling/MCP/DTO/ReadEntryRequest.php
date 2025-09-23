@@ -42,12 +42,12 @@ final readonly class ReadEntryRequest
         $errors = [];
 
         // Validate project ID
-        if (empty(trim($this->projectId))) {
+        if (empty(\trim($this->projectId))) {
             $errors[] = 'Project ID is required';
         }
 
         // Validate entry ID
-        if (empty(trim($this->entryId))) {
+        if (empty(\trim($this->entryId))) {
             $errors[] = 'Entry ID is required';
         }
 

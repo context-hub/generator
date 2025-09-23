@@ -80,5 +80,4 @@ final readonly class ListEntriesRequest
     {
         return $this->filters?->toArray() ?? [];
     }
-
 }
