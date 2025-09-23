@@ -17,8 +17,6 @@ interface ProjectServiceInterface
     /**
      * Create a new project from template
      *
-     * @param ProjectCreateRequest $request
-     * @return Project
      * @throws \Butschster\ContextGenerator\Drafling\Exception\TemplateNotFoundException
      * @throws \Butschster\ContextGenerator\Drafling\Exception\DraflingException
      */
@@ -27,9 +25,6 @@ interface ProjectServiceInterface
     /**
      * Update an existing project
      *
-     * @param ProjectId $projectId
-     * @param ProjectUpdateRequest $request
-     * @return Project
      * @throws \Butschster\ContextGenerator\Drafling\Exception\ProjectNotFoundException
      * @throws \Butschster\ContextGenerator\Drafling\Exception\DraflingException
      */
@@ -43,15 +38,12 @@ interface ProjectServiceInterface
     /**
      * Get a single project by ID
      *
-     * @param ProjectId $projectId
-     * @return Project|null
      */
     public function getProject(ProjectId $projectId): ?Project;
 
     /**
      * List projects with optional filtering
      *
-     * @param array $filters
      * @return Project[]
      */
     public function listProjects(array $filters = []): array;
@@ -59,8 +51,6 @@ interface ProjectServiceInterface
     /**
      * Delete a project
      *
-     * @param ProjectId $projectId
-     * @return bool
      */
     public function deleteProject(ProjectId $projectId): bool;
 }
