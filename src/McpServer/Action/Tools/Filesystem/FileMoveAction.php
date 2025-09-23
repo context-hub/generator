@@ -8,9 +8,9 @@ use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\Dto\FileMoveRequest;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
+use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
-use Mcp\Types\TextContent;
 use Psr\Log\LoggerInterface;
 use Spiral\Files\Exception\FilesException;
 use Spiral\Files\FilesInterface;
@@ -40,28 +40,16 @@ final readonly class FileMoveAction
         $createDirectory = $request->createDirectory;
 
         if (empty($source)) {
-            return new CallToolResult([
-                new TextContent(
-                    text: 'Error: Missing source parameter',
-                ),
-            ], isError: true);
+            return ToolResult::error('Missing source parameter');
         }
 
         if (empty($destination)) {
-            return new CallToolResult([
-                new TextContent(
-                    text: 'Error: Missing destination parameter',
-                ),
-            ], isError: true);
+            return ToolResult::error('Missing destination parameter');
         }
 
         try {
             if (!$this->files->exists($source)) {
-                return new CallToolResult([
-                    new TextContent(
-                        text: \sprintf("Error: Source file '%s' does not exist", $source),
-                    ),
-                ], isError: true);
+                return ToolResult::error(\sprintf("Source file '%s' does not exist", $source));
             }
 
             // Ensure destination directory exists if requested
@@ -69,11 +57,7 @@ final readonly class FileMoveAction
                 $directory = \dirname($destination);
                 if (!$this->files->exists($directory)) {
                     if (!$this->files->ensureDirectory($directory)) {
-                        return new CallToolResult([
-                            new TextContent(
-                                text: \sprintf("Error: Could not create directory '%s'", $directory),
-                            ),
-                        ], isError: true);
+                        return ToolResult::error(\sprintf("Could not create directory '%s'", $directory));
                     }
                 }
             }
@@ -82,43 +66,29 @@ final readonly class FileMoveAction
             try {
                 $content = $this->files->read($source);
             } catch (FilesException) {
-                return new CallToolResult([
-                    new TextContent(
-                        text: \sprintf("Error: Could not read source file '%s'", $source),
-                    ),
-                ], isError: true);
+                return ToolResult::error(\sprintf("Could not read source file '%s'", $source));
             }
 
             // Write to destination
             $writeSuccess = $this->files->write($destination, $content);
             if (!$writeSuccess) {
-                return new CallToolResult([
-                    new TextContent(
-                        text: \sprintf("Error: Could not write to destination file '%s'", $destination),
-                    ),
-                ], isError: true);
+                return ToolResult::error(\sprintf("Could not write to destination file '%s'", $destination));
             }
 
             // Delete source file
             $deleteSuccess = $this->files->delete($source);
             if (!$deleteSuccess) {
                 // Even if delete fails, the move operation is partially successful
-                return new CallToolResult([
-                    new TextContent(
-                        text: \sprintf(
-                            "Warning: File copied to '%s' but could not delete source file '%s'",
-                            $destination,
-                            $source,
-                        ),
+                return ToolResult::text(
+                    \sprintf(
+                        "Warning: File copied to '%s' but could not delete source file '%s'",
+                        $destination,
+                        $source,
                     ),
-                ]);
+                );
             }
 
-            return new CallToolResult([
-                new TextContent(
-                    text: \sprintf("Successfully moved '%s' to '%s'", $source, $destination),
-                ),
-            ]);
+            return ToolResult::text(\sprintf("Successfully moved '%s' to '%s'", $source, $destination));
         } catch (\Throwable $e) {
             $this->logger->error('Error moving file', [
                 'source' => $source,
@@ -126,11 +96,7 @@ final readonly class FileMoveAction
                 'error' => $e->getMessage(),
             ]);
 
-            return new CallToolResult([
-                new TextContent(
-                    text: 'Error: ' . $e->getMessage(),
-                ),
-            ], isError: true);
+            return ToolResult::error($e->getMessage());
         }
     }
 }

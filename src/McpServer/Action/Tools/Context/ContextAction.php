@@ -7,6 +7,7 @@ namespace Butschster\ContextGenerator\McpServer\Action\Tools\Context;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
 use Butschster\ContextGenerator\Config\Registry\ConfigRegistryAccessor;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
+use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
 use Mcp\Types\TextContent;
@@ -48,9 +49,7 @@ final readonly class ContextAction
             ]);
 
             // Return all documents in JSON format
-            return new CallToolResult([
-                new TextContent('Error: ' . $e->getMessage()),
-            ], isError: true);
+            return ToolResult::error($e->getMessage());
         }
     }
 }

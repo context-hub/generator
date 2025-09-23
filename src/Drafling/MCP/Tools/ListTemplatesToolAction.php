@@ -9,9 +9,9 @@ use Butschster\ContextGenerator\Drafling\MCP\DTO\ListTemplatesRequest;
 use Butschster\ContextGenerator\Drafling\Service\TemplateServiceInterface;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
+use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
-use Mcp\Types\TextContent;
 use Psr\Log\LoggerInterface;
 
 #[Tool(
@@ -41,15 +41,7 @@ final readonly class ListTemplatesToolAction
             // Validate request
             $validationErrors = $request->validate();
             if (!empty($validationErrors)) {
-                return new CallToolResult([
-                    new TextContent(
-                        text: \json_encode([
-                            'success' => false,
-                            'error' => 'Validation failed',
-                            'details' => $validationErrors,
-                        ], JSON_PRETTY_PRINT),
-                    ),
-                ], isError: true);
+                return ToolResult::validationError($validationErrors);
             }
 
             // Get all templates
@@ -68,39 +60,21 @@ final readonly class ListTemplatesToolAction
                 'filters_applied' => $request->hasFilters(),
             ]);
 
-            return new CallToolResult([
-                new TextContent(
-                    text: \json_encode($response, JSON_PRETTY_PRINT),
-                ),
-            ]);
+            return ToolResult::success($response);
 
         } catch (DraflingException $e) {
             $this->logger->error('Drafling error listing templates', [
                 'error' => $e->getMessage(),
             ]);
 
-            return new CallToolResult([
-                new TextContent(
-                    text: \json_encode([
-                        'success' => false,
-                        'error' => $e->getMessage(),
-                    ], JSON_PRETTY_PRINT),
-                ),
-            ], isError: true);
+            return ToolResult::error($e->getMessage());
 
         } catch (\Throwable $e) {
             $this->logger->error('Unexpected error listing templates', [
                 'error' => $e->getMessage(),
             ]);
 
-            return new CallToolResult([
-                new TextContent(
-                    text: \json_encode([
-                        'success' => false,
-                        'error' => 'Failed to list templates: ' . $e->getMessage(),
-                    ], JSON_PRETTY_PRINT),
-                ),
-            ], isError: true);
+            return ToolResult::error('Failed to list templates: ' . $e->getMessage());
         }
     }
 

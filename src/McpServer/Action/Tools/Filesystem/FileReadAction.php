@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem;
 
 use Butschster\ContextGenerator\DirectoriesInterface;
+use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\Dto\FileReadRequest;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
-use Mcp\Types\TextContent;
 use Psr\Log\LoggerInterface;
 use Spiral\Files\Exception\FilesException;
 use Spiral\Files\FilesInterface;
@@ -38,56 +38,32 @@ final readonly class FileReadAction
         $path = (string) $this->dirs->getRootPath()->join($request->path);
 
         if (empty($path)) {
-            return new CallToolResult([
-                new TextContent(
-                    text: 'Error: Missing path parameter',
-                ),
-            ], isError: true);
+            return ToolResult::error('Missing path parameter');
         }
 
         try {
             if (!$this->files->exists($path)) {
-                return new CallToolResult([
-                    new TextContent(
-                        text: \sprintf("Error: File '%s' does not exist", $path),
-                    ),
-                ], isError: true);
+                return ToolResult::error(\sprintf("File '%s' does not exist", $path));
             }
 
             if (\is_dir($path)) {
-                return new CallToolResult([
-                    new TextContent(
-                        text: \sprintf("Error: '%s' is a directory", $path),
-                    ),
-                ], isError: true);
+                return ToolResult::error(\sprintf("'%s' is a directory", $path));
             }
 
             try {
                 $content = $this->files->read($path);
             } catch (FilesException) {
-                return new CallToolResult([
-                    new TextContent(
-                        text: \sprintf("Error: Could not read file '%s'", $path),
-                    ),
-                ], isError: true);
+                return ToolResult::error(\sprintf("Could not read file '%s'", $path));
             }
 
-            return new CallToolResult([
-                new TextContent(
-                    text: $content,
-                ),
-            ]);
+            return ToolResult::text($content);
         } catch (\Throwable $e) {
             $this->logger->error('Error reading file', [
                 'path' => $path,
                 'error' => $e->getMessage(),
             ]);
 
-            return new CallToolResult([
-                new TextContent(
-                    text: 'Error: ' . $e->getMessage(),
-                ),
-            ], isError: true);
+            return ToolResult::error($e->getMessage());
         }
     }
 }

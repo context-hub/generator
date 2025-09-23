@@ -11,9 +11,9 @@ use Butschster\ContextGenerator\Document\Compiler\Error\ErrorCollection;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Context\Dto\ContextGetRequest;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
+use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
-use Mcp\Types\TextContent;
 use Psr\Log\LoggerInterface;
 
 #[Tool(
@@ -39,11 +39,7 @@ final readonly class ContextGetAction
         $path = $request->path;
 
         if (empty($path)) {
-            return new CallToolResult([
-                new TextContent(
-                    text: 'Error: Missing path parameter',
-                ),
-            ], isError: true);
+            return ToolResult::error('Missing path parameter');
         }
 
         try {
@@ -51,21 +47,15 @@ final readonly class ContextGetAction
 
             foreach ($config->getDocuments() as $document) {
                 if ($document->outputPath === $path) {
-                    $content = new TextContent(
-                        text: (string) $this->documentCompiler->buildContent(new ErrorCollection(), $document)->content,
-                    );
+                    $content = (string) $this->documentCompiler->buildContent(new ErrorCollection(), $document)->content;
 
                     // Return all documents in JSON format
-                    return new CallToolResult([$content]);
+                    return ToolResult::text($content);
                 }
             }
 
             // Return all documents in JSON format
-            return new CallToolResult([
-                new TextContent(
-                    text: \sprintf("Error: Document with path '%s' not found", $path),
-                ),
-            ], isError: true);
+            return ToolResult::error(\sprintf("Document with path '%s' not found", $path));
         } catch (\Throwable $e) {
             $this->logger->error('Error getting context', [
                 'path' => $path,
@@ -73,11 +63,7 @@ final readonly class ContextGetAction
             ]);
 
             // Return all documents in JSON format
-            return new CallToolResult([
-                new TextContent(
-                    text: 'Error: ' . $e->getMessage(),
-                ),
-            ], isError: true);
+            return ToolResult::error($e->getMessage());
         }
     }
 }

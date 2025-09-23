@@ -11,9 +11,9 @@ use Butschster\ContextGenerator\Lib\Git\Exception\GitCommandException;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Git\Dto\GitAddRequest;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
+use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
-use Mcp\Types\TextContent;
 use Psr\Log\LoggerInterface;
 
 #[Tool(
@@ -39,20 +39,12 @@ final readonly class GitAddAction
 
         // Check if we're in a valid git repository
         if (!$this->commandsExecutor->isValidRepository($repository)) {
-            return new CallToolResult([
-                new TextContent(
-                    text: 'Error: Not a git repository (or any of the parent directories)',
-                ),
-            ], isError: true);
+            return ToolResult::error('Not a git repository (or any of the parent directories)');
         }
 
         // Validate that paths are provided
         if (empty($request->paths)) {
-            return new CallToolResult([
-                new TextContent(
-                    text: 'Error: No paths specified for staging',
-                ),
-            ], isError: true);
+            return ToolResult::error('No paths specified for staging');
         }
 
         try {
@@ -78,11 +70,7 @@ final readonly class GitAddAction
                 $result = $stagedInfo ?: 'Files staged successfully';
             }
 
-            return new CallToolResult([
-                new TextContent(
-                    text: $result,
-                ),
-            ]);
+            return ToolResult::text($result);
         } catch (GitCommandException $e) {
             $this->logger->error('Error executing git add', [
                 'repository' => $repository,
@@ -91,11 +79,7 @@ final readonly class GitAddAction
                 'code' => $e->getCode(),
             ]);
 
-            return new CallToolResult([
-                new TextContent(
-                    text: 'Error: ' . $e->getMessage(),
-                ),
-            ], isError: true);
+            return ToolResult::error($e->getMessage());
         } catch (\Throwable $e) {
             $this->logger->error('Unexpected error during git add', [
                 'repository' => $repository,
@@ -103,11 +87,7 @@ final readonly class GitAddAction
                 'error' => $e->getMessage(),
             ]);
 
-            return new CallToolResult([
-                new TextContent(
-                    text: 'Error: ' . $e->getMessage(),
-                ),
-            ], isError: true);
+            return ToolResult::error($e->getMessage());
         }
     }
 

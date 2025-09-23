@@ -9,9 +9,9 @@ use Butschster\ContextGenerator\Lib\Git\Exception\GitCommandException;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\Dto\FileApplyPatchRequest;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
+use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
-use Mcp\Types\TextContent;
 use Psr\Log\LoggerInterface;
 
 #[Tool(
@@ -37,37 +37,21 @@ final readonly class FileApplyPatchAction
 
         // Validate patch format
         if (!\str_starts_with($patch, 'diff --git a/')) {
-            return new CallToolResult([
-                new TextContent(
-                    text: 'Error: Invalid patch format. The patch must start with "diff --git a/".',
-                ),
-            ], isError: true);
+            return ToolResult::error('Invalid patch format. The patch must start with "diff --git a/".');
         }
 
         if (empty($path)) {
-            return new CallToolResult([
-                new TextContent(
-                    text: 'Error: Missing path parameter',
-                ),
-            ], isError: true);
+            return ToolResult::error('Missing path parameter');
         }
 
         if (empty($patch)) {
-            return new CallToolResult([
-                new TextContent(
-                    text: 'Error: Missing patch parameter',
-                ),
-            ], isError: true);
+            return ToolResult::error('Missing patch parameter');
         }
 
         try {
             $result = $this->commandsExecutor->applyPatch($path, $patch);
 
-            return new CallToolResult([
-                new TextContent(
-                    text: $result,
-                ),
-            ]);
+            return ToolResult::text($result);
         } catch (GitCommandException $e) {
             $this->logger->error('Error applying git patch', [
                 'path' => $path,
@@ -75,22 +59,14 @@ final readonly class FileApplyPatchAction
                 'code' => $e->getCode(),
             ]);
 
-            return new CallToolResult([
-                new TextContent(
-                    text: 'Error: ' . $e->getMessage(),
-                ),
-            ], isError: true);
+            return ToolResult::error($e->getMessage());
         } catch (\Throwable $e) {
             $this->logger->error('Unexpected error applying git patch', [
                 'path' => $path,
                 'error' => $e->getMessage(),
             ]);
 
-            return new CallToolResult([
-                new TextContent(
-                    text: 'Error: ' . $e->getMessage(),
-                ),
-            ], isError: true);
+            return ToolResult::error($e->getMessage());
         }
     }
 }

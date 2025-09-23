@@ -11,6 +11,7 @@ use Butschster\ContextGenerator\Document\Compiler\Error\ErrorCollection;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Context\Dto\ContextRequestRequest;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
+use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
 use Mcp\Types\TextContent;
@@ -39,11 +40,7 @@ final readonly class ContextRequestAction
         $json = $request->json;
 
         if (empty($json)) {
-            return new CallToolResult([
-                new TextContent(
-                    text: 'Missing JSON parameter',
-                ),
-            ], isError: true);
+            return ToolResult::error('Missing JSON parameter');
         }
 
         try {
@@ -64,11 +61,7 @@ final readonly class ContextRequestAction
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return new CallToolResult([
-                new TextContent(
-                    text: \sprintf('Error: %s', $e->getMessage()),
-                ),
-            ], isError: true);
+            return ToolResult::error($e->getMessage());
         }
     }
 }

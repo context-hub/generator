@@ -10,11 +10,11 @@ use Butschster\ContextGenerator\Drafling\Exception\TemplateNotFoundException;
 use Butschster\ContextGenerator\Drafling\MCP\DTO\ProjectCreateRequest;
 use Butschster\ContextGenerator\Drafling\Service\ProjectServiceInterface;
 use Butschster\ContextGenerator\Drafling\Service\TemplateServiceInterface;
+use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
-use Mcp\Types\TextContent;
 use Psr\Log\LoggerInterface;
 
 #[Tool(
@@ -43,28 +43,13 @@ final readonly class CreateProjectToolAction
             // Validate request
             $validationErrors = $request->validate();
             if (!empty($validationErrors)) {
-                return new CallToolResult([
-                    new TextContent(
-                        text: \json_encode([
-                            'success' => false,
-                            'error' => 'Validation failed',
-                            'details' => $validationErrors,
-                        ], JSON_PRETTY_PRINT),
-                    ),
-                ], isError: true);
+                return ToolResult::validationError($validationErrors);
             }
 
             // Verify template exists
             $templateKey = TemplateKey::fromString($request->templateId);
             if (!$this->templateService->templateExists($templateKey)) {
-                return new CallToolResult([
-                    new TextContent(
-                        text: \json_encode([
-                            'success' => false,
-                            'error' => "Template '{$request->templateId}' not found",
-                        ], JSON_PRETTY_PRINT),
-                    ),
-                ], isError: true);
+                return ToolResult::error("Template '{$request->templateId}' not found");
             }
 
             // Create project using domain service
@@ -85,11 +70,7 @@ final readonly class CreateProjectToolAction
                 'created_at' => (new \DateTime())->format('c'),
             ];
 
-            return new CallToolResult([
-                new TextContent(
-                    text: \json_encode($response, JSON_PRETTY_PRINT),
-                ),
-            ]);
+            return ToolResult::success($response);
 
         } catch (TemplateNotFoundException $e) {
             $this->logger->error('Template not found', [
@@ -97,14 +78,7 @@ final readonly class CreateProjectToolAction
                 'error' => $e->getMessage(),
             ]);
 
-            return new CallToolResult([
-                new TextContent(
-                    text: \json_encode([
-                        'success' => false,
-                        'error' => $e->getMessage(),
-                    ], JSON_PRETTY_PRINT),
-                ),
-            ], isError: true);
+            return ToolResult::error($e->getMessage());
 
         } catch (DraflingException $e) {
             $this->logger->error('Drafling error during project creation', [
@@ -112,14 +86,7 @@ final readonly class CreateProjectToolAction
                 'error' => $e->getMessage(),
             ]);
 
-            return new CallToolResult([
-                new TextContent(
-                    text: \json_encode([
-                        'success' => false,
-                        'error' => $e->getMessage(),
-                    ], JSON_PRETTY_PRINT),
-                ),
-            ], isError: true);
+            return ToolResult::error($e->getMessage());
 
         } catch (\Throwable $e) {
             $this->logger->error('Unexpected error creating project', [
@@ -127,14 +94,7 @@ final readonly class CreateProjectToolAction
                 'error' => $e->getMessage(),
             ]);
 
-            return new CallToolResult([
-                new TextContent(
-                    text: \json_encode([
-                        'success' => false,
-                        'error' => 'Failed to create project: ' . $e->getMessage(),
-                    ], JSON_PRETTY_PRINT),
-                ),
-            ], isError: true);
+            return ToolResult::error('Failed to create project: ' . $e->getMessage());
         }
     }
 }

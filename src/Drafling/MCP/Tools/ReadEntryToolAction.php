@@ -14,9 +14,9 @@ use Butschster\ContextGenerator\Drafling\Service\EntryServiceInterface;
 use Butschster\ContextGenerator\Drafling\Service\ProjectServiceInterface;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
+use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
-use Mcp\Types\TextContent;
 use Psr\Log\LoggerInterface;
 
 #[Tool(
@@ -45,28 +45,13 @@ final readonly class ReadEntryToolAction
             // Validate request
             $validationErrors = $request->validate();
             if (!empty($validationErrors)) {
-                return new CallToolResult([
-                    new TextContent(
-                        text: \json_encode([
-                            'success' => false,
-                            'error' => 'Validation failed',
-                            'details' => $validationErrors,
-                        ], JSON_PRETTY_PRINT),
-                    ),
-                ], isError: true);
+                return ToolResult::validationError($validationErrors);
             }
 
             // Verify project exists
             $projectId = ProjectId::fromString($request->projectId);
             if (!$this->projectService->projectExists($projectId)) {
-                return new CallToolResult([
-                    new TextContent(
-                        text: \json_encode([
-                            'success' => false,
-                            'error' => "Project '{$request->projectId}' not found",
-                        ], JSON_PRETTY_PRINT),
-                    ),
-                ], isError: true);
+                return ToolResult::error("Project '{$request->projectId}' not found");
             }
 
             // Get the entry
@@ -74,14 +59,7 @@ final readonly class ReadEntryToolAction
             $entry = $this->entryService->getEntry($projectId, $entryId);
 
             if ($entry === null) {
-                return new CallToolResult([
-                    new TextContent(
-                        text: \json_encode([
-                            'success' => false,
-                            'error' => "Entry '{$request->entryId}' not found in project '{$request->projectId}'",
-                        ], JSON_PRETTY_PRINT),
-                    ),
-                ], isError: true);
+                return ToolResult::error("Entry '{$request->entryId}' not found in project '{$request->projectId}'");
             }
 
             $this->logger->info('Entry read successfully', [
@@ -90,11 +68,7 @@ final readonly class ReadEntryToolAction
                 'title' => $entry->title,
             ]);
 
-            return new CallToolResult([
-                new TextContent(
-                    text: \json_encode($entry, JSON_PRETTY_PRINT),
-                ),
-            ]);
+            return ToolResult::success($entry);
 
         } catch (ProjectNotFoundException $e) {
             $this->logger->error('Project not found', [
@@ -102,14 +76,7 @@ final readonly class ReadEntryToolAction
                 'error' => $e->getMessage(),
             ]);
 
-            return new CallToolResult([
-                new TextContent(
-                    text: \json_encode([
-                        'success' => false,
-                        'error' => $e->getMessage(),
-                    ], JSON_PRETTY_PRINT),
-                ),
-            ], isError: true);
+            return ToolResult::error($e->getMessage());
 
         } catch (EntryNotFoundException $e) {
             $this->logger->error('Entry not found', [
@@ -118,14 +85,7 @@ final readonly class ReadEntryToolAction
                 'error' => $e->getMessage(),
             ]);
 
-            return new CallToolResult([
-                new TextContent(
-                    text: \json_encode([
-                        'success' => false,
-                        'error' => $e->getMessage(),
-                    ], JSON_PRETTY_PRINT),
-                ),
-            ], isError: true);
+            return ToolResult::error($e->getMessage());
 
         } catch (DraflingException $e) {
             $this->logger->error('Drafling error reading entry', [
@@ -134,14 +94,7 @@ final readonly class ReadEntryToolAction
                 'error' => $e->getMessage(),
             ]);
 
-            return new CallToolResult([
-                new TextContent(
-                    text: \json_encode([
-                        'success' => false,
-                        'error' => $e->getMessage(),
-                    ], JSON_PRETTY_PRINT),
-                ),
-            ], isError: true);
+            return ToolResult::error($e->getMessage());
 
         } catch (\Throwable $e) {
             $this->logger->error('Unexpected error reading entry', [
@@ -150,14 +103,7 @@ final readonly class ReadEntryToolAction
                 'error' => $e->getMessage(),
             ]);
 
-            return new CallToolResult([
-                new TextContent(
-                    text: \json_encode([
-                        'success' => false,
-                        'error' => 'Failed to read entry: ' . $e->getMessage(),
-                    ], JSON_PRETTY_PRINT),
-                ),
-            ], isError: true);
+            return ToolResult::error('Failed to read entry: ' . $e->getMessage());
         }
     }
 }

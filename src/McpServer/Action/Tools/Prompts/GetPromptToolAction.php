@@ -9,6 +9,7 @@ use Butschster\ContextGenerator\McpServer\Prompt\PromptProviderInterface;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Prompts\Dto\GetPromptRequest;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
+use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
 use Mcp\Types\TextContent;
@@ -38,21 +39,13 @@ final readonly class GetPromptToolAction
         $id = $request->id;
 
         if (empty($id)) {
-            return new CallToolResult([
-                new TextContent(
-                    text: 'Error: Missing prompt ID parameter',
-                ),
-            ], isError: true);
+            return ToolResult::error('Missing prompt ID parameter');
         }
 
         try {
             // Check if prompt exists
             if (!$this->prompts->has($id)) {
-                return new CallToolResult([
-                    new TextContent(
-                        text: \sprintf("Error: Prompt with ID '%s' not found", $id),
-                    ),
-                ], isError: true);
+                return ToolResult::error(\sprintf("Prompt with ID '%s' not found", $id));
             }
 
             // Get prompt and process messages
@@ -69,14 +62,10 @@ final readonly class GetPromptToolAction
                 ];
             }
 
-            return new CallToolResult([
-                new TextContent(
-                    text: \json_encode([
-                        'id' => $id,
-                        'description' => $prompt->prompt->description,
-                        'messages' => $formattedMessages,
-                    ], JSON_PRETTY_PRINT),
-                ),
+            return ToolResult::success([
+                'id' => $id,
+                'description' => $prompt->prompt->description,
+                'messages' => $formattedMessages,
             ]);
         } catch (\Throwable $e) {
             $this->logger->error('Error getting prompt', [
@@ -85,11 +74,7 @@ final readonly class GetPromptToolAction
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return new CallToolResult([
-                new TextContent(
-                    text: 'Error: ' . $e->getMessage(),
-                ),
-            ], isError: true);
+            return ToolResult::error($e->getMessage());
         }
     }
 

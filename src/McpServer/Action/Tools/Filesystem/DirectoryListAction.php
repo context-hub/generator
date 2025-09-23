@@ -9,9 +9,9 @@ use Butschster\ContextGenerator\Lib\TreeBuilder\FileTreeBuilder;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\Dto\DirectoryListRequest;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
+use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
-use Mcp\Types\TextContent;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Finder\Finder;
 
@@ -39,22 +39,16 @@ final readonly class DirectoryListAction
         $path = (string) $this->dirs->getRootPath()->join($relativePath);
 
         if (empty($path)) {
-            return new CallToolResult([
-                new TextContent(text: 'Error: Missing path parameter'),
-            ], isError: true);
+            return ToolResult::error('Missing path parameter');
         }
 
         try {
             if (!\file_exists($path)) {
-                return new CallToolResult([
-                    new TextContent(text: \sprintf("Error: Path '%s' does not exist", $relativePath)),
-                ], isError: true);
+                return ToolResult::error(\sprintf("Path '%s' does not exist", $relativePath));
             }
 
             if (!\is_dir($path)) {
-                return new CallToolResult([
-                    new TextContent(text: \sprintf("Error: Path '%s' is not a directory", $relativePath)),
-                ], isError: true);
+                return ToolResult::error(\sprintf("Path '%s' is not a directory", $relativePath));
             }
 
             // Create and configure Symfony Finder
@@ -176,11 +170,7 @@ final readonly class DirectoryListAction
                 $responseData['files'] = $files;
             }
 
-            return new CallToolResult([
-                new TextContent(
-                    text: \json_encode($responseData, JSON_PRETTY_PRINT),
-                ),
-            ]);
+            return ToolResult::success($responseData);
         } catch (\Throwable $e) {
             $this->logger->error('Error listing directory', [
                 'path' => $path,
@@ -188,11 +178,7 @@ final readonly class DirectoryListAction
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return new CallToolResult([
-                new TextContent(
-                    text: 'Error: ' . $e->getMessage(),
-                ),
-            ], isError: true);
+            return ToolResult::error($e->getMessage());
         }
     }
 }

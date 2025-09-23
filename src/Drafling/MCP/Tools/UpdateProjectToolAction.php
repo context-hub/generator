@@ -11,9 +11,9 @@ use Butschster\ContextGenerator\Drafling\MCP\DTO\ProjectUpdateRequest;
 use Butschster\ContextGenerator\Drafling\Service\ProjectServiceInterface;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
+use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
-use Mcp\Types\TextContent;
 use Psr\Log\LoggerInterface;
 
 #[Tool(
@@ -46,28 +46,13 @@ final readonly class UpdateProjectToolAction
             // Validate request
             $validationErrors = $request->validate();
             if (!empty($validationErrors)) {
-                return new CallToolResult([
-                    new TextContent(
-                        text: \json_encode([
-                            'success' => false,
-                            'error' => 'Validation failed',
-                            'details' => $validationErrors,
-                        ], JSON_PRETTY_PRINT),
-                    ),
-                ], isError: true);
+                return ToolResult::validationError($validationErrors);
             }
 
             // Verify project exists
             $projectId = ProjectId::fromString($request->projectId);
             if (!$this->projectService->projectExists($projectId)) {
-                return new CallToolResult([
-                    new TextContent(
-                        text: \json_encode([
-                            'success' => false,
-                            'error' => "Project '{$request->projectId}' not found",
-                        ], JSON_PRETTY_PRINT),
-                    ),
-                ], isError: true);
+                return ToolResult::error("Project '{$request->projectId}' not found");
             }
 
             // Update project using domain service
@@ -96,11 +81,7 @@ final readonly class UpdateProjectToolAction
                 'changes_applied' => $this->getAppliedChanges($request),
             ];
 
-            return new CallToolResult([
-                new TextContent(
-                    text: \json_encode($response, JSON_PRETTY_PRINT),
-                ),
-            ]);
+            return ToolResult::success($response);
 
         } catch (ProjectNotFoundException $e) {
             $this->logger->error('Project not found', [
@@ -108,14 +89,7 @@ final readonly class UpdateProjectToolAction
                 'error' => $e->getMessage(),
             ]);
 
-            return new CallToolResult([
-                new TextContent(
-                    text: \json_encode([
-                        'success' => false,
-                        'error' => $e->getMessage(),
-                    ], JSON_PRETTY_PRINT),
-                ),
-            ], isError: true);
+            return ToolResult::error($e->getMessage());
 
         } catch (DraflingException $e) {
             $this->logger->error('Drafling error during project update', [
@@ -123,14 +97,7 @@ final readonly class UpdateProjectToolAction
                 'error' => $e->getMessage(),
             ]);
 
-            return new CallToolResult([
-                new TextContent(
-                    text: \json_encode([
-                        'success' => false,
-                        'error' => $e->getMessage(),
-                    ], JSON_PRETTY_PRINT),
-                ),
-            ], isError: true);
+            return ToolResult::error($e->getMessage());
 
         } catch (\Throwable $e) {
             $this->logger->error('Unexpected error updating project', [
@@ -138,14 +105,7 @@ final readonly class UpdateProjectToolAction
                 'error' => $e->getMessage(),
             ]);
 
-            return new CallToolResult([
-                new TextContent(
-                    text: \json_encode([
-                        'success' => false,
-                        'error' => 'Failed to update project: ' . $e->getMessage(),
-                    ], JSON_PRETTY_PRINT),
-                ),
-            ], isError: true);
+            return ToolResult::error('Failed to update project: ' . $e->getMessage());
         }
     }
 

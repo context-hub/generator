@@ -9,9 +9,9 @@ use Butschster\ContextGenerator\Lib\Context7Client\Exception\Context7ClientExcep
 use Butschster\ContextGenerator\McpServer\Action\Tools\Docs\Dto\LibrarySearchRequest;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
+use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
-use Mcp\Types\TextContent;
 use Psr\Log\LoggerInterface;
 
 #[Tool(
@@ -37,11 +37,7 @@ final readonly class LibrarySearchAction
         $maxResults = \min(10, \max(1, $request->maxResults ?? 5));
 
         if (empty($query)) {
-            return new CallToolResult([
-                new TextContent(
-                    text: 'Error: Missing query parameter',
-                ),
-            ], isError: true);
+            return ToolResult::error('Missing query parameter');
         }
 
         try {
@@ -50,15 +46,9 @@ final readonly class LibrarySearchAction
                 maxResults: $maxResults,
             );
 
-            return new CallToolResult([
-                new TextContent(
-                    text: \json_encode($searchResult),
-                ),
-            ]);
+            return ToolResult::success($searchResult);
         } catch (Context7ClientException $e) {
-            return new CallToolResult([
-                new TextContent(text: $e->getMessage()),
-            ], isError: true);
+            return ToolResult::error($e->getMessage());
         } catch (\Throwable $e) {
             $this->logger->error('Unexpected error in library-search tool', [
                 'query' => $query,
@@ -66,11 +56,7 @@ final readonly class LibrarySearchAction
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return new CallToolResult([
-                new TextContent(
-                    text: 'Error searching libraries: ' . $e->getMessage(),
-                ),
-            ], isError: true);
+            return ToolResult::error('Error searching libraries: ' . $e->getMessage());
         }
     }
 }

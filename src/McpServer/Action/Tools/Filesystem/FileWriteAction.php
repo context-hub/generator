@@ -8,9 +8,9 @@ use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\Dto\FileWriteRequest;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
+use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
-use Mcp\Types\TextContent;
 use Psr\Log\LoggerInterface;
 use Spiral\Files\FilesInterface;
 
@@ -37,11 +37,7 @@ final readonly class FileWriteAction
         $path = (string) $this->dirs->getRootPath()->join($request->path);
 
         if (empty($path)) {
-            return new CallToolResult([
-                new TextContent(
-                    text: 'Error: Missing path parameter',
-                ),
-            ], isError: true);
+            return ToolResult::error('Missing path parameter');
         }
 
         try {
@@ -50,49 +46,29 @@ final readonly class FileWriteAction
                 $directory = \dirname($path);
                 if (!$this->files->exists($directory)) {
                     if (!$this->files->ensureDirectory($directory)) {
-                        return new CallToolResult([
-                            new TextContent(
-                                text: \sprintf("Error: Could not create directory '%s'", $directory),
-                            ),
-                        ], isError: true);
+                        return ToolResult::error(\sprintf("Could not create directory '%s'", $directory));
                     }
                 }
             }
 
             if (\is_dir($path)) {
-                return new CallToolResult([
-                    new TextContent(
-                        text: \sprintf("Error: '%s' is a directory", $path),
-                    ),
-                ], isError: true);
+                return ToolResult::error(\sprintf("'%s' is a directory", $path));
             }
 
             $success = $this->files->write($path, $request->content);
 
             if (!$success) {
-                return new CallToolResult([
-                    new TextContent(
-                        text: \sprintf("Error: Could not write to file '%s'", $path),
-                    ),
-                ], isError: true);
+                return ToolResult::error(\sprintf("Could not write to file '%s'", $path));
             }
 
-            return new CallToolResult([
-                new TextContent(
-                    text: \sprintf("Successfully wrote %d bytes to file '%s'", \strlen($request->content), $path),
-                ),
-            ]);
+            return ToolResult::text(\sprintf("Successfully wrote %d bytes to file '%s'", \strlen($request->content), $path));
         } catch (\Throwable $e) {
             $this->logger->error('Error writing file', [
                 'path' => $path,
                 'error' => $e->getMessage(),
             ]);
 
-            return new CallToolResult([
-                new TextContent(
-                    text: 'Error: ' . $e->getMessage(),
-                ),
-            ], isError: true);
+            return ToolResult::error($e->getMessage());
         }
     }
 }

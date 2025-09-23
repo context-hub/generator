@@ -11,9 +11,9 @@ use Butschster\ContextGenerator\McpServer\Projects\Actions\Dto\ProjectInfoRespon
 use Butschster\ContextGenerator\McpServer\Projects\Actions\Dto\ProjectListRequest;
 use Butschster\ContextGenerator\McpServer\Projects\Actions\Dto\ProjectsListResponse;
 use Butschster\ContextGenerator\McpServer\Projects\ProjectServiceInterface;
+use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
-use Mcp\Types\TextContent;
 use Psr\Log\LoggerInterface;
 
 #[Tool(
@@ -47,9 +47,7 @@ final readonly class ProjectsListToolAction
                     message: 'No projects registered. Use project:add command to add projects.',
                 );
 
-                return new CallToolResult([
-                    new TextContent(text: \json_encode($response, JSON_PRETTY_PRINT)),
-                ]);
+                return ToolResult::success($response);
             }
 
             // Create inverse alias map for quick lookups
@@ -91,18 +89,14 @@ final readonly class ProjectsListToolAction
                 totalProjects: \count($projects),
             );
 
-            return new CallToolResult([
-                new TextContent(text: \json_encode($response, JSON_PRETTY_PRINT)),
-            ]);
+            return ToolResult::success($response);
         } catch (\Throwable $e) {
             $this->logger->error('Error listing projects', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return new CallToolResult([
-                new TextContent(text: 'Error: ' . $e->getMessage()),
-            ], isError: true);
+            return ToolResult::error($e->getMessage());
         }
     }
 }

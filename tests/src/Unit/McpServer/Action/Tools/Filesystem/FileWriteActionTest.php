@@ -175,8 +175,10 @@ final class FileWriteActionTest extends TestCase
 
         $content = $result->content[0];
         $this->assertInstanceOf(TextContent::class, $content);
-        $this->assertStringContainsString('Could not create directory', $content->text);
-        $this->assertStringContainsString($directory, $content->text);
+        $decodedContent = \json_decode($content->text, true);
+        $this->assertEquals(false, $decodedContent['success']);
+        $this->assertStringContainsString('Could not create directory', $decodedContent['error']);
+        $this->assertStringContainsString($directory, $decodedContent['error']);
     }
 
     #[Test]
@@ -261,8 +263,10 @@ final class FileWriteActionTest extends TestCase
 
         $content = $result->content[0];
         $this->assertInstanceOf(TextContent::class, $content);
-        $this->assertStringContainsString('Could not write to file', $content->text);
-        $this->assertStringContainsString($expectedFullPath, $content->text);
+        $decodedContent = \json_decode($content->text, true);
+        $this->assertEquals(false, $decodedContent['success']);
+        $this->assertStringContainsString('Could not write to file', $decodedContent['error']);
+        $this->assertStringContainsString($expectedFullPath, $decodedContent['error']);
     }
 
     #[Test]
@@ -305,7 +309,9 @@ final class FileWriteActionTest extends TestCase
 
         $content = $result->content[0];
         $this->assertInstanceOf(TextContent::class, $content);
-        $this->assertEquals('Error: File system error', $content->text);
+        $decodedContent = \json_decode($content->text, true);
+        $this->assertEquals(false, $decodedContent['success']);
+        $this->assertEquals('File system error', $decodedContent['error']);
     }
 
     #[Test]

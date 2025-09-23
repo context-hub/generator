@@ -9,9 +9,9 @@ use Butschster\ContextGenerator\Lib\Context7Client\Exception\Context7ClientExcep
 use Butschster\ContextGenerator\McpServer\Action\Tools\Docs\Dto\FetchLibraryDocsRequest;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
+use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
-use Mcp\Types\TextContent;
 use Psr\Log\LoggerInterface;
 
 #[Tool(
@@ -38,11 +38,7 @@ final readonly class FetchLibraryDocsAction
         $topic = $request->topic !== null ? \trim($request->topic) : null;
 
         if (empty($libraryId)) {
-            return new CallToolResult([
-                new TextContent(
-                    text: 'Error: Missing id parameter',
-                ),
-            ], isError: true);
+            return ToolResult::error('Missing id parameter');
         }
 
         try {
@@ -52,13 +48,9 @@ final readonly class FetchLibraryDocsAction
                 topic: $topic,
             );
 
-            return new CallToolResult([
-                new TextContent(text: $documentation),
-            ]);
+            return ToolResult::text($documentation);
         } catch (Context7ClientException $e) {
-            return new CallToolResult([
-                new TextContent(text: $e->getMessage()),
-            ], isError: true);
+            return ToolResult::error($e->getMessage());
         } catch (\Throwable $e) {
             $this->logger->error('Unexpected error in fetch-library-docs tool', [
                 'libraryId' => $libraryId,
@@ -66,11 +58,7 @@ final readonly class FetchLibraryDocsAction
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return new CallToolResult([
-                new TextContent(
-                    text: 'Error fetching library documentation. Please try again later. ' . $e->getMessage(),
-                ),
-            ], isError: true);
+            return ToolResult::error('Error fetching library documentation. Please try again later. ' . $e->getMessage());
         }
     }
 }

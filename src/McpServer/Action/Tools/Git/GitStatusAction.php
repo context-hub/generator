@@ -8,13 +8,13 @@ use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\Lib\Git\Command;
 use Butschster\ContextGenerator\Lib\Git\CommandsExecutorInterface;
 use Butschster\ContextGenerator\Lib\Git\Exception\GitCommandException;
+use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Git\Dto\GitStatusFormat;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Git\Dto\GitStatusRequest;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
-use Mcp\Types\TextContent;
 use Psr\Log\LoggerInterface;
 
 #[Tool(
@@ -40,11 +40,7 @@ final readonly class GitStatusAction
 
         // Check if we're in a valid git repository
         if (!$this->commandsExecutor->isValidRepository($repository)) {
-            return new CallToolResult([
-                new TextContent(
-                    text: 'Error: Not a git repository (or any of the parent directories)',
-                ),
-            ], isError: true);
+            return ToolResult::error('Not a git repository (or any of the parent directories)');
         }
 
         try {
@@ -83,11 +79,7 @@ final readonly class GitStatusAction
                 );
             }
 
-            return new CallToolResult([
-                new TextContent(
-                    text: $result,
-                ),
-            ]);
+            return ToolResult::text($result);
         } catch (GitCommandException $e) {
             $this->logger->error('Error executing git status', [
                 'repository' => $repository,
@@ -95,22 +87,14 @@ final readonly class GitStatusAction
                 'code' => $e->getCode(),
             ]);
 
-            return new CallToolResult([
-                new TextContent(
-                    text: 'Error: ' . $e->getMessage(),
-                ),
-            ], isError: true);
+            return ToolResult::error($e->getMessage());
         } catch (\Throwable $e) {
             $this->logger->error('Unexpected error during git status', [
                 'repository' => $repository,
                 'error' => $e->getMessage(),
             ]);
 
-            return new CallToolResult([
-                new TextContent(
-                    text: 'Error: ' . $e->getMessage(),
-                ),
-            ], isError: true);
+            return ToolResult::error($e->getMessage());
         }
     }
 
