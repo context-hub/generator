@@ -1,0 +1,17 @@
+template:
+  key: "minimal"
+  name: "Minimal Template"
+  description: "A minimal project template with basic structure"
+  categories:
+    - name: "notes"
+      displayName: "Notes"
+      description: "General notes and documentation"
+  entryTypes:
+    - key: "note"
+      displayName: "Note"
+      description: "General note or documentation"
+      statuses:
+        - value: "draft"
+          displayName: "Draft"
+        - value: "published"
+          displayName: "Published"

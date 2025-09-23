@@ -1,0 +1,9 @@
+project:
+  name: "Empty Project"
+  description: "A project with no entries for testing"
+  template: "minimal"
+  status: "draft"
+  tags: []
+  memory: []
+  entries:
+    dirs: ["notes"]

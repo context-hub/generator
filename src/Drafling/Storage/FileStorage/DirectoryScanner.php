@@ -59,10 +59,9 @@ final readonly class DirectoryScanner
      * Scan project directory for entry files
      *
      * @param string $projectPath Path to project directory
-     * @param array $entryDirs Entry directories to scan (relative to project)
      * @return array Array of entry file paths
      */
-    public function scanEntries(string $projectPath, array $entryDirs = []): array
+    public function scanEntries(string $projectPath): array
     {
         if (!$this->files->exists($projectPath) || !$this->files->isDirectory($projectPath)) {
             return [];
