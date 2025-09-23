@@ -22,7 +22,7 @@ final readonly class FrontmatterParser
     public function parse(string $content): array
     {
         $content = \trim($content);
-        
+
         // Check if file starts with frontmatter delimiter
         if (!\str_starts_with($content, self::FRONTMATTER_DELIMITER)) {
             return [

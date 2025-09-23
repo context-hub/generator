@@ -10,7 +10,6 @@ use Butschster\ContextGenerator\Drafling\Domain\Model\Status;
 use Butschster\ContextGenerator\Drafling\Domain\Model\Template;
 use Butschster\ContextGenerator\Drafling\Domain\ValueObject\TemplateKey;
 use Butschster\ContextGenerator\Drafling\Repository\TemplateRepositoryInterface;
-use Butschster\ContextGenerator\Drafling\Exception\TemplateNotFoundException;
 
 /**
  * File-based template repository implementation
@@ -67,17 +66,17 @@ final class FileTemplateRepository extends FileStorageRepositoryBase implements 
     private function loadTemplatesFromFilesystem(): void
     {
         $templatesPath = $this->getTemplatesPath();
-        
+
         if (!$this->files->exists($templatesPath) || !$this->files->isDirectory($templatesPath)) {
             $this->logger?->warning('Templates directory not found', ['path' => $templatesPath]);
             return;
         }
 
         $templateFiles = $this->files->getFiles($templatesPath, '*.yaml');
-        
+
         foreach ($templateFiles as $templateFile) {
             $filePath = $this->files->normalizePath($templatesPath . '/' . $templateFile);
-            
+
             try {
                 $template = $this->loadTemplateFromFile($filePath);
                 if ($template !== null) {

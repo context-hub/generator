@@ -15,7 +15,7 @@ interface EntryRepositoryInterface
 {
     /**
      * Find entries for a project with optional filters
-     * 
+     *
      * @param ProjectId $projectId Project identifier
      * @param array $filters Optional filters (category, status, tags, etc.)
      * @return Entry[]

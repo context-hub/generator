@@ -15,7 +15,7 @@ use Butschster\ContextGenerator\Drafling\MCP\DTO\ProjectUpdateRequest;
 
 /**
  * Storage driver contract for different persistence mechanisms
- * 
+ *
  * @template TConfig of object
  */
 interface StorageDriverInterface
@@ -27,7 +27,7 @@ interface StorageDriverInterface
 
     /**
      * Initialize storage driver with configuration
-     * 
+     *
      * @param TConfig $config
      */
     public function initialize(object $config): void;

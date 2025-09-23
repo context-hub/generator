@@ -20,15 +20,15 @@ final class ValidationException extends DraflingException
     ) {
         $errorMessage = $message;
         if (!empty($this->errors)) {
-            $errorMessage .= ': ' . implode(', ', $this->errors);
+            $errorMessage .= ': ' . \implode(', ', $this->errors);
         }
-        
+
         parent::__construct($errorMessage, $code, $previous);
     }
 
     /**
      * Create from array of errors
-     * 
+     *
      * @param string[] $errors
      */
     public static function fromErrors(array $errors, string $message = 'Validation failed'): self

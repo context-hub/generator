@@ -25,7 +25,7 @@ use Spiral\Files\FilesInterface;
 
 /**
  * File-based storage driver implementation using Markdown files with YAML frontmatter
- * 
+ *
  * @extends AbstractStorageDriver<FileStorageConfig>
  */
 final class FileStorageDriver extends AbstractStorageDriver
@@ -40,11 +40,11 @@ final class FileStorageDriver extends AbstractStorageDriver
         ?\Psr\Log\LoggerInterface $logger = null,
     ) {
         parent::__construct($draflingConfig, $logger);
-        
+
         // Initialize repositories
         $frontmatterParser = new FrontmatterParser();
         $directoryScanner = new DirectoryScanner($files);
-        
+
         $this->templateRepository = new FileTemplateRepository(
             $files,
             $draflingConfig,
@@ -52,7 +52,7 @@ final class FileStorageDriver extends AbstractStorageDriver
             $directoryScanner,
             $logger,
         );
-        
+
         $this->projectRepository = new FileProjectRepository(
             $files,
             $draflingConfig,
@@ -60,7 +60,7 @@ final class FileStorageDriver extends AbstractStorageDriver
             $directoryScanner,
             $logger,
         );
-        
+
         $this->entryRepository = new FileEntryRepository(
             $files,
             $draflingConfig,
@@ -104,7 +104,7 @@ final class FileStorageDriver extends AbstractStorageDriver
         // Validate template exists
         $templateKey = \Butschster\ContextGenerator\Drafling\Domain\ValueObject\TemplateKey::fromString($request->templateId);
         $template = $this->templateRepository->findByKey($templateKey);
-        
+
         if ($template === null) {
             throw TemplateNotFoundException::withKey($request->templateId);
         }
@@ -183,7 +183,7 @@ final class FileStorageDriver extends AbstractStorageDriver
         // Generate entry ID and create entry
         $entryId = $this->generateId('entry_');
         $now = $this->getCurrentTimestamp();
-        
+
         $entry = new Entry(
             entryId: $entryId,
             title: $request->title,
@@ -252,12 +252,36 @@ final class FileStorageDriver extends AbstractStorageDriver
         return $deleted;
     }
 
+    /**
+     * Get project repository
+     */
+    public function getProjectRepository(): ProjectRepositoryInterface
+    {
+        return $this->projectRepository;
+    }
+
+    /**
+     * Get entry repository
+     */
+    public function getEntryRepository(): EntryRepositoryInterface
+    {
+        return $this->entryRepository;
+    }
+
+    /**
+     * Get template repository
+     */
+    public function getTemplateRepository(): TemplateRepositoryInterface
+    {
+        return $this->templateRepository;
+    }
+
     #[\Override]
     protected function performSynchronization(): void
     {
         // Refresh template cache
         $this->templateRepository->refresh();
-        
+
         $this->logOperation('Synchronized file storage');
     }
 
@@ -280,7 +304,7 @@ final class FileStorageDriver extends AbstractStorageDriver
     {
         $templateKey = \Butschster\ContextGenerator\Drafling\Domain\ValueObject\TemplateKey::fromString($project->template);
         $template = $this->templateRepository->findByKey($templateKey);
-        
+
         if ($template === null) {
             throw TemplateNotFoundException::withKey($project->template);
         }
@@ -307,29 +331,5 @@ final class FileStorageDriver extends AbstractStorageDriver
                 throw new \InvalidArgumentException("Status '{$request->status}' is not valid for entry type '{$request->entryType}'");
             }
         }
-    }
-
-    /**
-     * Get project repository
-     */
-    public function getProjectRepository(): ProjectRepositoryInterface
-    {
-        return $this->projectRepository;
-    }
-
-    /**
-     * Get entry repository
-     */
-    public function getEntryRepository(): EntryRepositoryInterface
-    {
-        return $this->entryRepository;
-    }
-
-    /**
-     * Get template repository
-     */
-    public function getTemplateRepository(): TemplateRepositoryInterface
-    {
-        return $this->templateRepository;
     }
 }

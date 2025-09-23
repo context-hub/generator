@@ -30,27 +30,27 @@ final readonly class ProjectFilters
     public function toArray(): array
     {
         $filters = [];
-        
+
         if ($this->status !== null) {
             $filters['status'] = $this->status;
         }
-        
+
         if ($this->template !== null) {
             $filters['template'] = $this->template;
         }
-        
+
         if ($this->tags !== null && !empty($this->tags)) {
             $filters['tags'] = $this->tags;
         }
-        
+
         if ($this->limit !== null) {
             $filters['limit'] = $this->limit;
         }
-        
+
         if ($this->offset > 0) {
             $filters['offset'] = $this->offset;
         }
-        
+
         return $filters;
     }
 }

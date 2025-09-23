@@ -14,7 +14,7 @@ interface TemplateRepositoryInterface
 {
     /**
      * Find all templates
-     * 
+     *
      * @return Template[]
      */
     public function findAll(): array;

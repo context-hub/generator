@@ -7,7 +7,6 @@ namespace Butschster\ContextGenerator\Drafling\Storage\FileStorage;
 use Butschster\ContextGenerator\Drafling\Domain\Model\Project;
 use Butschster\ContextGenerator\Drafling\Domain\ValueObject\ProjectId;
 use Butschster\ContextGenerator\Drafling\Repository\ProjectRepositoryInterface;
-use Butschster\ContextGenerator\Drafling\Exception\ProjectNotFoundException;
 
 /**
  * File-based project repository implementation
@@ -43,7 +42,7 @@ final class FileProjectRepository extends FileStorageRepositoryBase implements P
     public function findById(ProjectId $id): ?Project
     {
         $projectPath = $this->getProjectPath($id->value);
-        
+
         if (!$this->files->exists($projectPath)) {
             return null;
         }
@@ -60,7 +59,7 @@ final class FileProjectRepository extends FileStorageRepositoryBase implements P
     public function save(Project $project): void
     {
         $projectPath = $this->getProjectPath($project->id);
-        
+
         try {
             // Ensure project directory exists
             $this->ensureDirectory($projectPath);
@@ -89,14 +88,14 @@ final class FileProjectRepository extends FileStorageRepositoryBase implements P
     public function delete(ProjectId $id): bool
     {
         $projectPath = $this->getProjectPath($id->value);
-        
+
         if (!$this->files->exists($projectPath)) {
             return false;
         }
 
         try {
             $deleted = $this->files->deleteDirectory($projectPath);
-            
+
             if ($deleted) {
                 $this->logOperation('Deleted project', ['id' => $id->value, 'path' => $projectPath]);
             }
@@ -113,7 +112,7 @@ final class FileProjectRepository extends FileStorageRepositoryBase implements P
     {
         $projectPath = $this->getProjectPath($id->value);
         $configPath = $projectPath . '/project.yaml';
-        
+
         return $this->files->exists($configPath);
     }
 
@@ -132,22 +131,22 @@ final class FileProjectRepository extends FileStorageRepositoryBase implements P
     private function loadProjectFromDirectory(string $projectPath): ?Project
     {
         $configPath = $projectPath . '/project.yaml';
-        
+
         if (!$this->files->exists($configPath)) {
             throw new \RuntimeException("Project configuration not found: {$configPath}");
         }
 
         $config = $this->readYamlFile($configPath);
-        
+
         if (!isset($config['project'])) {
             throw new \RuntimeException("Invalid project configuration: missing 'project' section");
         }
 
         $projectData = $config['project'];
-        
+
         // Extract project ID from directory name
         $projectId = \basename($projectPath);
-        
+
         return new Project(
             id: $projectId,
             name: $projectData['name'] ?? $projectId,
@@ -166,7 +165,7 @@ final class FileProjectRepository extends FileStorageRepositoryBase implements P
     private function saveProjectConfig(string $projectPath, Project $project): void
     {
         $configPath = $projectPath . '/project.yaml';
-        
+
         $config = [
             'project' => [
                 'name' => $project->name,

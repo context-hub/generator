@@ -8,7 +8,6 @@ use Butschster\ContextGenerator\Drafling\Domain\Model\Entry;
 use Butschster\ContextGenerator\Drafling\Domain\ValueObject\EntryId;
 use Butschster\ContextGenerator\Drafling\Domain\ValueObject\ProjectId;
 use Butschster\ContextGenerator\Drafling\Repository\EntryRepositoryInterface;
-use Butschster\ContextGenerator\Drafling\Exception\EntryNotFoundException;
 
 /**
  * File-based entry repository implementation
@@ -19,13 +18,13 @@ final class FileEntryRepository extends FileStorageRepositoryBase implements Ent
     public function findByProject(ProjectId $projectId, array $filters = []): array
     {
         $projectPath = $this->getProjectPath($projectId->value);
-        
+
         if (!$this->files->exists($projectPath)) {
             return [];
         }
 
         $entries = [];
-        
+
         try {
             // Get entry directories from project or scan all directories
             $entryDirs = $this->getProjectEntryDirs($projectPath);
@@ -59,7 +58,7 @@ final class FileEntryRepository extends FileStorageRepositoryBase implements Ent
     {
         $projectPath = $this->getProjectPath($projectId->value);
         $entryFile = $this->findEntryFile($projectPath, $entryId->value);
-        
+
         if ($entryFile === null) {
             return null;
         }
@@ -79,14 +78,14 @@ final class FileEntryRepository extends FileStorageRepositoryBase implements Ent
     public function save(ProjectId $projectId, Entry $entry): void
     {
         $projectPath = $this->getProjectPath($projectId->value);
-        
+
         if (!$this->files->exists($projectPath)) {
             throw new \RuntimeException("Project directory not found: {$projectPath}");
         }
 
         try {
             $this->saveEntryToFile($projectPath, $entry);
-            
+
             $this->logOperation('Saved entry', [
                 'project_id' => $projectId->value,
                 'entry_id' => $entry->entryId,
@@ -106,14 +105,14 @@ final class FileEntryRepository extends FileStorageRepositoryBase implements Ent
     {
         $projectPath = $this->getProjectPath($projectId->value);
         $entryFile = $this->findEntryFile($projectPath, $entryId->value);
-        
+
         if ($entryFile === null) {
             return false;
         }
 
         try {
             $deleted = $this->files->delete($entryFile);
-            
+
             if ($deleted) {
                 $this->logOperation('Deleted entry', [
                     'project_id' => $projectId->value,
@@ -154,7 +153,7 @@ final class FileEntryRepository extends FileStorageRepositoryBase implements Ent
     private function getProjectEntryDirs(string $projectPath): array
     {
         $configPath = $projectPath . '/project.yaml';
-        
+
         if (!$this->files->exists($configPath)) {
             // Fallback: scan all directories
             return $this->directoryScanner->getEntryDirectories($projectPath);
@@ -180,7 +179,7 @@ final class FileEntryRepository extends FileStorageRepositoryBase implements Ent
         foreach ($entryFiles as $filePath) {
             try {
                 $frontmatter = $this->frontmatterParser->extractFrontmatter(
-                    $this->files->read($filePath)
+                    $this->files->read($filePath),
                 );
 
                 if (isset($frontmatter['entry_id']) && $frontmatter['entry_id'] === $entryId) {
@@ -213,11 +212,11 @@ final class FileEntryRepository extends FileStorageRepositoryBase implements Ent
             }
 
             // Parse dates
-            $createdAt = isset($frontmatter['created_at']) 
+            $createdAt = isset($frontmatter['created_at'])
                 ? new \DateTime($frontmatter['created_at'])
                 : new \DateTime();
-                
-            $updatedAt = isset($frontmatter['updated_at']) 
+
+            $updatedAt = isset($frontmatter['updated_at'])
                 ? new \DateTime($frontmatter['updated_at'])
                 : new \DateTime();
 
@@ -246,12 +245,12 @@ final class FileEntryRepository extends FileStorageRepositoryBase implements Ent
     {
         // Determine file path
         $filePath = $entry->filePath;
-        
+
         if ($filePath === null) {
             // New entry - generate file path
             $categoryPath = $this->files->normalizePath($projectPath . '/' . $entry->category);
             $this->ensureDirectory($categoryPath);
-            
+
             $filename = $this->generateFilename($entry->title);
             $filePath = $categoryPath . '/' . $filename;
         }

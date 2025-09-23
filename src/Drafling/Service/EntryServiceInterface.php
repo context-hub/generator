@@ -17,7 +17,7 @@ interface EntryServiceInterface
 {
     /**
      * Get entries for a project with optional filtering
-     * 
+     *
      * @param ProjectId $projectId Project identifier
      * @param array $filters Optional filters (category, status, tags, etc.)
      * @return Entry[]
