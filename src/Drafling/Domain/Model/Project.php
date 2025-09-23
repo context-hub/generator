@@ -1,0 +1,82 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Butschster\ContextGenerator\Drafling\Domain\Model;
+
+/**
+ * Project represents an instance of a template with its own configuration and entries
+ */
+final readonly class Project
+{
+    /**
+     * @param string $id Unique project identifier
+     * @param string $name Project name
+     * @param string $description Project description
+     * @param string $template Template key this project is based on
+     * @param string $status Project status
+     * @param string[] $tags Project tags for organization
+     * @param string[] $entryDirs Directories to scan for entries
+     * @param string|null $projectPath Optional file path for storage reference
+     */
+    public function __construct(
+        public string $id,
+        public string $name,
+        public string $description,
+        public string $template,
+        public string $status,
+        public array $tags,
+        public array $entryDirs,
+        public ?string $projectPath = null,
+    ) {}
+
+    /**
+     * Create updated project with new values
+     */
+    public function withUpdates(
+        ?string $name = null,
+        ?string $description = null,
+        ?string $status = null,
+        ?array $tags = null,
+        ?array $entryDirs = null,
+    ): self {
+        return new self(
+            id: $this->id,
+            name: $name ?? $this->name,
+            description: $description ?? $this->description,
+            template: $this->template,
+            status: $status ?? $this->status,
+            tags: $tags ?? $this->tags,
+            entryDirs: $entryDirs ?? $this->entryDirs,
+            projectPath: $this->projectPath,
+        );
+    }
+
+    /**
+     * Generate directory name for this project
+     */
+    public function generateDirectoryName(): string
+    {
+        $slug = \preg_replace('/[^a-z0-9]+/', '-', \strtolower($this->name));
+        return \trim($slug, '-');
+    }
+
+    /**
+     * Get project configuration as array
+     */
+    public function getConfiguration(): array
+    {
+        return [
+            'project' => [
+                'name' => $this->name,
+                'description' => $this->description,
+                'template' => $this->template,
+                'status' => $this->status,
+                'tags' => $this->tags,
+                'entries' => [
+                    'dirs' => $this->entryDirs,
+                ],
+            ],
+        ];
+    }
+}

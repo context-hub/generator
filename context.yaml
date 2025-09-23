@@ -35,6 +35,15 @@ documents:
           - vendor/spiral/files/src/FilesInterface.php
         showTreeView: true
 
+  - description: Drafling Templates
+    outputPath: core/drafling.md
+    sources:
+      - type: file
+        sourcePaths:
+          - src/Drafling
+          - vendor/spiral/files/src/FilesInterface.php
+        showTreeView: true
+
   - description: "Changes in the Project"
     outputPath: "changes.md"
     sources:
