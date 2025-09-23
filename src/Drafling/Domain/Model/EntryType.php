@@ -12,18 +12,14 @@ final readonly class EntryType
     /**
      * @param string $key Unique identifier for this entry type
      * @param string $displayName Human-readable name
-     * @param string $icon Tabler icon identifier
      * @param string $contentType MIME type for content
-     * @param string $color Theme color
      * @param string $defaultStatus Default status value for new entries
      * @param Status[] $statuses Available statuses for this entry type
      */
     public function __construct(
         public string $key,
         public string $displayName,
-        public string $icon,
         public string $contentType,
-        public string $color,
         public string $defaultStatus,
         public array $statuses,
     ) {}

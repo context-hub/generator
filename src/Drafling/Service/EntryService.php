@@ -98,7 +98,6 @@ final readonly class EntryService implements EntryServiceInterface
         }
 
         // Resolve status if provided, otherwise use entry type default
-        $resolvedStatus = null;
         if ($request->status !== null) {
             $resolvedStatus = $this->templateService->resolveStatusValue($template, $resolvedEntryType, $request->status);
             if ($resolvedStatus === null) {

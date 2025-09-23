@@ -12,13 +12,11 @@ final readonly class Category
     /**
      * @param string $name Category identifier
      * @param string $displayName Human-readable name
-     * @param string $icon Tabler icon identifier
      * @param string[] $entryTypes Array of entry type keys allowed in this category
      */
     public function __construct(
         public string $name,
         public string $displayName,
-        public string $icon,
         public array $entryTypes,
     ) {}
 

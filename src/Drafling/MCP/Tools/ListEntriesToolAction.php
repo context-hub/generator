@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Drafling\MCP\Tools;
 
+use Butschster\ContextGenerator\Drafling\Domain\Model\Entry;
 use Butschster\ContextGenerator\Drafling\Domain\ValueObject\ProjectId;
 use Butschster\ContextGenerator\Drafling\Exception\DraflingException;
 use Butschster\ContextGenerator\Drafling\Exception\ProjectNotFoundException;
@@ -81,7 +82,13 @@ final readonly class ListEntriesToolAction
             );
 
             // Format entries for response (using JsonSerializable)
-            $entryData = $paginatedEntries;
+            $entryData = \array_map(static function (Entry $entry) {
+                $data = $entry->jsonSerialize();
+                unset($data['content']);
+
+                return $data;
+
+            }, $paginatedEntries);
 
             $response = [
                 'success' => true,

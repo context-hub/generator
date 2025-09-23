@@ -33,6 +33,12 @@ final readonly class ProjectCreateRequest
         )]
         /** @var string[] */
         public array $entryDirs = [],
+        #[Field(
+            description: 'Initial memory entries (optional)',
+            default: [],
+        )]
+        /** @var string[] */
+        public array $memory = [],
     ) {}
 
     /**

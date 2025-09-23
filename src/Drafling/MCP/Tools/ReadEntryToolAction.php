@@ -39,8 +39,6 @@ final readonly class ReadEntryToolAction
         $this->logger->info('Reading entry', [
             'project_id' => $request->projectId,
             'entry_id' => $request->entryId,
-            'include_content' => $request->includeContent,
-            'include_metadata' => $request->includeMetadata,
         ]);
 
         try {
@@ -86,43 +84,15 @@ final readonly class ReadEntryToolAction
                 ], isError: true);
             }
 
-            // Build response based on inclusion flags
-            $response = [
-                'success' => true,
-                'entry_id' => $entry->entryId,
-                'title' => $entry->title,
-                'entry_type' => $entry->entryType,
-                'category' => $entry->category,
-                'status' => $entry->status,
-                'content_type' => 'markdown',
-                'created_at' => $entry->createdAt->format('c'),
-                'updated_at' => $entry->updatedAt->format('c'),
-            ];
-
-            // Include content if requested
-            if ($request->includeContent) {
-                $response['content'] = $entry->content ?? '';
-            }
-
-            // Include metadata if requested
-            if ($request->includeMetadata) {
-                $response['metadata'] = [
-                    'tags' => $entry->tags,
-                    'file_path' => $entry->filePath ?? null,
-                ];
-            }
-
             $this->logger->info('Entry read successfully', [
                 'project_id' => $request->projectId,
                 'entry_id' => $request->entryId,
                 'title' => $entry->title,
-                'included_content' => $request->includeContent,
-                'included_metadata' => $request->includeMetadata,
             ]);
 
             return new CallToolResult([
                 new TextContent(
-                    text: \json_encode($response, JSON_PRETTY_PRINT),
+                    text: \json_encode($entry, JSON_PRETTY_PRINT),
                 ),
             ]);
 

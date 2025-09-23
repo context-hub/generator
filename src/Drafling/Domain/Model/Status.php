@@ -12,6 +12,5 @@ final readonly class Status
     public function __construct(
         public string $value,
         public string $displayName,
-        public string $color,
     ) {}
 }

@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Drafling\MCP\Tools;
 
 use Butschster\ContextGenerator\Drafling\Domain\ValueObject\ProjectId;
+use Butschster\ContextGenerator\Drafling\Domain\ValueObject\TemplateKey;
 use Butschster\ContextGenerator\Drafling\Exception\DraflingException;
 use Butschster\ContextGenerator\Drafling\Exception\ProjectNotFoundException;
 use Butschster\ContextGenerator\Drafling\MCP\DTO\GetProjectRequest;
 use Butschster\ContextGenerator\Drafling\Service\ProjectServiceInterface;
+use Butschster\ContextGenerator\Drafling\Service\TemplateServiceInterface;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
@@ -27,6 +29,7 @@ final readonly class GetProjectToolAction
     public function __construct(
         private LoggerInterface $logger,
         private ProjectServiceInterface $projectService,
+        private TemplateServiceInterface $templateService,
     ) {}
 
     #[Post(path: '/tools/call/drafling_get_project', name: 'tools.drafling_get_project')]
@@ -71,6 +74,8 @@ final readonly class GetProjectToolAction
                 'template' => $project->template,
             ]);
 
+            $template = $this->templateService->getTemplate(TemplateKey::fromString($project->template));
+
             // Format project for response
             $response = [
                 'success' => true,
@@ -78,15 +83,13 @@ final readonly class GetProjectToolAction
                     'project_id' => $project->id,
                     'title' => $project->name,
                     'status' => $project->status,
-                    'project_type' => $project->template,
-                    'created_at' => (new \DateTime())->format('c'), // Would need actual creation date
-                    'updated_at' => (new \DateTime())->format('c'), // Would need actual update date
                     'metadata' => [
                         'description' => $project->description,
                         'tags' => $project->tags,
-                        'entry_dirs' => $project->entryDirs,
+                        'memory' => $project->memory,
                     ],
                 ],
+                'template' => $template,
             ];
 
             return new CallToolResult([

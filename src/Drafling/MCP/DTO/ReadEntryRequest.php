@@ -22,16 +22,6 @@ final readonly class ReadEntryRequest
             default: null,
         )]
         public string $entryId,
-        #[Field(
-            description: 'Include entry content in response (default: true)',
-            default: true,
-        )]
-        public bool $includeContent = true,
-        #[Field(
-            description: 'Include entry metadata in response (default: true)',
-            default: true,
-        )]
-        public bool $includeMetadata = true,
     ) {}
 
     /**

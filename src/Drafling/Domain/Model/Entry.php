@@ -68,25 +68,8 @@ final readonly class Entry implements \JsonSerializable
     {
         $slug = \preg_replace('/[^a-z0-9]+/', '-', \strtolower($this->title));
         $slug = \trim((string) $slug, '-');
-        return "{$slug}.md";
-    }
 
-    /**
-     * Get entry metadata as array
-     */
-    public function getMetadata(): array
-    {
-        return [
-            'entry_id' => $this->entryId,
-            'title' => $this->title,
-            'description' => $this->description,
-            'entry_type' => $this->entryType,
-            'category' => $this->category,
-            'status' => $this->status,
-            'created_at' => $this->createdAt->format('c'),
-            'updated_at' => $this->updatedAt->format('c'),
-            'tags' => $this->tags,
-        ];
+        return "{$slug}.md";
     }
 
     /**
@@ -101,10 +84,8 @@ final readonly class Entry implements \JsonSerializable
             'entry_type' => $this->entryType,
             'category' => $this->category,
             'status' => $this->status,
-            'content_type' => 'markdown',
-            'created_at' => $this->createdAt->format('c'),
-            'updated_at' => $this->updatedAt->format('c'),
             'tags' => $this->tags,
+            'content' => $this->content,
         ];
     }
 }

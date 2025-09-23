@@ -120,14 +120,10 @@ final readonly class EntryUpdateRequest
 
         // Validate tags if provided
         if ($this->tags !== null) {
-            if (!\is_array($this->tags)) {
-                $errors[] = 'Tags must be an array';
-            } else {
-                foreach ($this->tags as $tag) {
-                    if (!\is_string($tag) || empty(\trim($tag))) {
-                        $errors[] = 'All tags must be non-empty strings';
-                        break;
-                    }
+            foreach ($this->tags as $tag) {
+                if (!\is_string($tag) || empty(\trim($tag))) {
+                    $errors[] = 'All tags must be non-empty strings';
+                    break;
                 }
             }
         }

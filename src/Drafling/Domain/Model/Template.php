@@ -7,7 +7,7 @@ namespace Butschster\ContextGenerator\Drafling\Domain\Model;
 /**
  * Template definition with categories, entry types, and metadata
  */
-final readonly class Template
+final readonly class Template implements \JsonSerializable
 {
     /**
      * @param string $key Unique template identifier
@@ -81,5 +81,34 @@ final readonly class Template
         }
 
         return $category->allowsEntryType($entryTypeKey);
+    }
+
+    public function jsonSerialize(): array
+    {
+        $formatted = [
+            'template_id' => $this->key,
+            'name' => $this->name,
+            'description' => $this->description,
+            'tags' => $this->tags,
+        ];
+
+        $formatted['categories'] = \array_map(static fn($category) => [
+            'name' => $category->name,
+            'display_name' => $category->displayName,
+            'allowed_entry_types' => $category->entryTypes,
+        ], $this->categories);
+
+        $formatted['entry_types'] = \array_map(static fn($entryType) => [
+            'key' => $entryType->key,
+            'display_name' => $entryType->displayName,
+            'default_status' => $entryType->defaultStatus,
+            'statuses' => \array_map(static fn($status) => $status->value, $entryType->statuses),
+        ], $this->entryTypes);
+
+        if ($this->prompt !== null) {
+            $formatted['prompt'] = $this->prompt;
+        }
+
+        return $formatted;
     }
 }

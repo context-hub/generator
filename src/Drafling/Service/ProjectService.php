@@ -86,6 +86,7 @@ final readonly class ProjectService implements ProjectServiceInterface
                 'status' => $request->status !== null,
                 'tags' => $request->tags !== null,
                 'entry_dirs' => $request->entryDirs !== null,
+                'memory' => $request->memory !== null,
             ],
         ]);
 
@@ -235,6 +236,52 @@ final readonly class ProjectService implements ProjectServiceInterface
 
             throw new DraflingException(
                 "Failed to delete project: {$e->getMessage()}",
+                previous: $e,
+            );
+        }
+    }
+
+    #[\Override]
+    public function addProjectMemory(ProjectId $projectId, string $memory): Project
+    {
+        $this->logger?->info('Adding memory to project', [
+            'project_id' => $projectId->value,
+            'memory_length' => \strlen($memory),
+        ]);
+
+        // Verify project exists and get current project
+        $currentProject = $this->projectRepository->findById($projectId);
+        if ($currentProject === null) {
+            $error = "Project '{$projectId->value}' not found";
+            $this->logger?->error($error, [
+                'project_id' => $projectId->value,
+            ]);
+            throw new ProjectNotFoundException($error);
+        }
+
+        try {
+            // Create updated project with added memory
+            $updatedProject = $currentProject->withAddedMemory($memory);
+
+            // Save updated project to repository
+            $this->projectRepository->save($updatedProject);
+
+            $this->logger?->info('Memory added to project successfully', [
+                'project_id' => $projectId->value,
+                'memory_count' => \count($updatedProject->memory),
+                'name' => $updatedProject->name,
+            ]);
+
+            return $updatedProject;
+
+        } catch (\Throwable $e) {
+            $this->logger?->error('Failed to add memory to project', [
+                'project_id' => $projectId->value,
+                'error' => $e->getMessage(),
+            ]);
+
+            throw new DraflingException(
+                "Failed to add memory to project: {$e->getMessage()}",
                 previous: $e,
             );
         }

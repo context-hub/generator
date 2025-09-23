@@ -38,6 +38,12 @@ final readonly class ProjectUpdateRequest
         )]
         /** @var string[]|null */
         public ?array $entryDirs = null,
+        #[Field(
+            description: 'New memory entries (optional)',
+            default: null,
+        )]
+        /** @var ProjectMemory[]|null */
+        public ?array $memory = null,
     ) {}
 
     /**
@@ -57,7 +63,8 @@ final readonly class ProjectUpdateRequest
             || $this->description !== null
             || $this->status !== null
             || $this->tags !== null
-            || $this->entryDirs !== null;
+            || $this->entryDirs !== null
+            || $this->memory !== null;
     }
 
     /**

@@ -15,6 +15,7 @@ use Butschster\ContextGenerator\Drafling\Domain\ValueObject\TemplateKey;
 use Butschster\ContextGenerator\Drafling\MCP\DTO\EntryCreateRequest;
 use Butschster\ContextGenerator\Drafling\MCP\DTO\EntryUpdateRequest;
 use Butschster\ContextGenerator\Drafling\MCP\DTO\ProjectCreateRequest;
+use Butschster\ContextGenerator\Drafling\MCP\DTO\ProjectMemory;
 use Butschster\ContextGenerator\Drafling\MCP\DTO\ProjectUpdateRequest;
 use Butschster\ContextGenerator\Drafling\Repository\EntryRepositoryInterface;
 use Butschster\ContextGenerator\Drafling\Repository\ProjectRepositoryInterface;
@@ -116,7 +117,7 @@ final class FileStorageDriver extends AbstractStorageDriver
         $template = $this->templateRepository->findByKey($templateKey);
 
         if ($template === null) {
-            throw TemplateNotFoundException::withKey($request->templateId);
+            throw new TemplateNotFoundException("Template '{$request->templateId}' not found");
         }
 
         // Generate project ID and create project
@@ -129,6 +130,7 @@ final class FileStorageDriver extends AbstractStorageDriver
             status: $this->config->defaultEntryStatus,
             tags: $request->tags,
             entryDirs: !empty($request->entryDirs) ? $request->entryDirs : $this->getDefaultEntryDirs($template),
+            memory: $request->memory,
         );
 
         $this->projectRepository->save($project);
@@ -142,7 +144,7 @@ final class FileStorageDriver extends AbstractStorageDriver
     {
         $project = $this->projectRepository->findById($projectId);
         if ($project === null) {
-            throw ProjectNotFoundException::withId($projectId->value);
+            throw new ProjectNotFoundException("Project '{$projectId->value}' not found");
         }
 
         if (!$request->hasUpdates()) {
@@ -155,6 +157,10 @@ final class FileStorageDriver extends AbstractStorageDriver
             status: $request->status,
             tags: $request->tags,
             entryDirs: $request->entryDirs,
+            memory: \array_map(
+                static fn(ProjectMemory $memory): string => $memory->record,
+                $request->memory,
+            ),
         );
 
         $this->projectRepository->save($updatedProject);
@@ -184,14 +190,14 @@ final class FileStorageDriver extends AbstractStorageDriver
         // Verify project exists
         $project = $this->projectRepository->findById($projectId);
         if ($project === null) {
-            throw ProjectNotFoundException::withId($projectId->value);
+            throw new ProjectNotFoundException("Project '{$projectId->value}' not found");
         }
 
         // Get template for validation and key resolution
         $templateKey = TemplateKey::fromString($project->template);
         $template = $this->templateRepository->findByKey($templateKey);
         if ($template === null) {
-            throw TemplateNotFoundException::withKey($project->template);
+            throw new TemplateNotFoundException("Template '{$project->template}' not found");
         }
 
         // Resolve display names to internal keys
@@ -232,7 +238,7 @@ final class FileStorageDriver extends AbstractStorageDriver
     {
         $entry = $this->entryRepository->findById($projectId, $entryId);
         if ($entry === null) {
-            throw EntryNotFoundException::withId($projectId->value, $entryId->value);
+            throw new EntryNotFoundException("Entry '{$entryId->value}' not found in project '{$projectId->value}'");
         }
 
         if (!$request->hasUpdates()) {

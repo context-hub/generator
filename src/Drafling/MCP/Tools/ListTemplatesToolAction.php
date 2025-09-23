@@ -58,24 +58,12 @@ final readonly class ListTemplatesToolAction
             // Apply filters
             $filteredTemplates = $this->applyFilters($allTemplates, $request);
 
-            // Format templates for response
-            $templateData = \array_map(
-                fn($template) => $this->formatTemplate($template, $request->includeDetails),
-                $filteredTemplates,
-            );
-
             $response = [
                 'success' => true,
-                'templates' => $templateData,
-                'count' => \count($templateData),
-                'filters_applied' => $request->hasFilters() ? [
-                    'tag' => $request->tag,
-                    'name_contains' => $request->nameContains,
-                ] : null,
+                'templates' => $filteredTemplates,
             ];
 
             $this->logger->info('Templates listed successfully', [
-                'returned_count' => \count($templateData),
                 'total_available' => \count($allTemplates),
                 'filters_applied' => $request->hasFilters(),
             ]);
@@ -145,48 +133,5 @@ final readonly class ListTemplatesToolAction
 
             return true;
         });
-    }
-
-    /**
-     * Format template for response
-     * @param mixed $template
-     */
-    private function formatTemplate($template, bool $includeDetails): array
-    {
-        $formatted = [
-            'template_id' => $template->key,
-            'name' => $template->name,
-            'description' => $template->description,
-            'tags' => $template->tags,
-        ];
-
-        if ($includeDetails) {
-            $formatted['categories'] = \array_map(static fn($category) => [
-                'name' => $category->name,
-                'display_name' => $category->displayName,
-                'icon' => $category->icon,
-                'allowed_entry_types' => $category->entryTypes,
-            ], $template->categories);
-
-            $formatted['entry_types'] = \array_map(static fn($entryType) => [
-                'key' => $entryType->key,
-                'display_name' => $entryType->displayName,
-                'icon' => $entryType->icon,
-                'content_type' => $entryType->contentType,
-                'color' => $entryType->color,
-                'default_status' => $entryType->defaultStatus,
-                'statuses' => \array_map(static fn($status) => [
-                    'value' => $status->value,
-                    'display_name' => $status->displayName,
-                    'color' => $status->color,
-                ], $entryType->statuses),
-            ], $template->entryTypes);
-
-            if ($template->prompt !== null) {
-                $formatted['prompt'] = $template->prompt;
-            }
-        }
-
-        return $formatted;
     }
 }

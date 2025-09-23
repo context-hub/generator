@@ -56,7 +56,7 @@ final class TemplateListCommand extends BaseCommand
                 $templates = \array_filter(
                     $templates,
                     static fn($template) =>
-                    \str_contains(\strtolower((string) $template->name), $searchTerm),
+                    \str_contains(\strtolower($template->name), $searchTerm),
                 );
             }
 

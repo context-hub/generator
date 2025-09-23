@@ -83,9 +83,7 @@ final readonly class ProjectFilters
 
         // Validate tags array if provided
         if ($this->tags !== null) {
-            if (!\is_array($this->tags)) {
-                $errors[] = 'Tags must be an array';
-            } elseif (empty($this->tags)) {
+            if (empty($this->tags)) {
                 $errors[] = 'Tags array cannot be empty when provided';
             } else {
                 foreach ($this->tags as $tag) {

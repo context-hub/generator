@@ -70,30 +70,12 @@ final readonly class DirectoryScanner
 
         $entryFiles = [];
 
-        // If no specific directories provided, scan all subdirectories
-        if (empty($entryDirs)) {
-            $entryDirs = $this->getEntryDirectories($projectPath);
-        }
-
-        $validDirs = [];
-        foreach ($entryDirs as $dir) {
-            $dirPath = $this->files->normalizePath($projectPath . '/' . $dir);
-            if ($this->files->exists($dirPath) && $this->files->isDirectory($dirPath)) {
-                $validDirs[] = $dirPath;
-            }
-        }
-
-        if (empty($validDirs)) {
-            return [];
-        }
-
         try {
             $finder = new Finder();
             $finder
                 ->files()
-                ->in($validDirs)
-                ->name('*.md')
-                ->depth(0); // Only files directly in entry directories
+                ->in($projectPath)
+                ->name('*.md');
 
             foreach ($finder as $file) {
                 $entryFiles[] = $file->getRealPath();
@@ -238,7 +220,7 @@ final readonly class DirectoryScanner
                 ->directories()
                 ->in($projectPath);
 
-            foreach ($dirFinder as $directory) {
+            foreach ($dirFinder as $_) {
                 $stats['directories']++;
             }
         } catch (\Throwable) {

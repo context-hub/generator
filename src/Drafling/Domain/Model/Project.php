@@ -17,6 +17,7 @@ final readonly class Project implements \JsonSerializable
      * @param string $status Project status
      * @param string[] $tags Project tags for organization
      * @param string[] $entryDirs Directories to scan for entries
+     * @param string[] $memory LLM memory entries for project context
      * @param string|null $projectPath Optional file path for storage reference
      */
     public function __construct(
@@ -27,6 +28,7 @@ final readonly class Project implements \JsonSerializable
         public string $status,
         public array $tags,
         public array $entryDirs,
+        public array $memory = [],
         public ?string $projectPath = null,
     ) {}
 
@@ -39,6 +41,7 @@ final readonly class Project implements \JsonSerializable
         ?string $status = null,
         ?array $tags = null,
         ?array $entryDirs = null,
+        ?array $memory = null,
     ): self {
         return new self(
             id: $this->id,
@@ -48,6 +51,25 @@ final readonly class Project implements \JsonSerializable
             status: $status ?? $this->status,
             tags: $tags ?? $this->tags,
             entryDirs: $entryDirs ?? $this->entryDirs,
+            memory: $memory ?? $this->memory,
+            projectPath: $this->projectPath,
+        );
+    }
+
+    /**
+     * Create project with added memory entry
+     */
+    public function withAddedMemory(string $memoryEntry): self
+    {
+        return new self(
+            id: $this->id,
+            name: $this->name,
+            description: $this->description,
+            template: $this->template,
+            status: $this->status,
+            tags: $this->tags,
+            entryDirs: $this->entryDirs,
+            memory: [...$this->memory, $memoryEntry],
             projectPath: $this->projectPath,
         );
     }
@@ -73,6 +95,7 @@ final readonly class Project implements \JsonSerializable
                 'template' => $this->template,
                 'status' => $this->status,
                 'tags' => $this->tags,
+                'memory' => $this->memory,
                 'entries' => [
                     'dirs' => $this->entryDirs,
                 ],
@@ -96,6 +119,7 @@ final readonly class Project implements \JsonSerializable
                 'description' => $this->description,
                 'tags' => $this->tags,
                 'entry_dirs' => $this->entryDirs,
+                'memory' => $this->memory,
             ],
         ];
     }

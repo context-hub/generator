@@ -148,7 +148,7 @@ final class FileTemplateRepository extends FileStorageRepositoryBase implements 
      */
     private function createCategoryFromData(array $data): Category
     {
-        $requiredFields = ['name', 'display_name', 'icon', 'entry_types'];
+        $requiredFields = ['name', 'display_name', 'entry_types'];
         foreach ($requiredFields as $field) {
             if (!isset($data[$field])) {
                 throw new \RuntimeException("Missing required category field: {$field}");
@@ -158,7 +158,6 @@ final class FileTemplateRepository extends FileStorageRepositoryBase implements 
         return new Category(
             name: $data['name'],
             displayName: $data['display_name'],
-            icon: $data['icon'],
             entryTypes: $data['entry_types'],
         );
     }
@@ -168,7 +167,7 @@ final class FileTemplateRepository extends FileStorageRepositoryBase implements 
      */
     private function createEntryTypeFromData(string $key, array $data): EntryType
     {
-        $requiredFields = ['display_name', 'icon', 'content_type', 'color', 'default_status'];
+        $requiredFields = ['display_name', 'content_type', 'default_status'];
         foreach ($requiredFields as $field) {
             if (!isset($data[$field])) {
                 throw new \RuntimeException("Missing required entry type field: {$field}");
@@ -186,9 +185,7 @@ final class FileTemplateRepository extends FileStorageRepositoryBase implements 
         return new EntryType(
             key: $key,
             displayName: $data['display_name'],
-            icon: $data['icon'],
             contentType: $data['content_type'],
-            color: $data['color'],
             defaultStatus: $data['default_status'],
             statuses: $statuses,
         );
@@ -199,7 +196,7 @@ final class FileTemplateRepository extends FileStorageRepositoryBase implements 
      */
     private function createStatusFromData(array $data): Status
     {
-        $requiredFields = ['value', 'display_name', 'color'];
+        $requiredFields = ['value', 'display_name'];
         foreach ($requiredFields as $field) {
             if (!isset($data[$field])) {
                 throw new \RuntimeException("Missing required status field: {$field}");
@@ -209,7 +206,6 @@ final class FileTemplateRepository extends FileStorageRepositoryBase implements 
         return new Status(
             value: $data['value'],
             displayName: $data['display_name'],
-            color: $data['color'],
         );
     }
 }

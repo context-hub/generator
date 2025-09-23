@@ -96,9 +96,9 @@ final readonly class EntryCreateRequest
         }
 
         $summary = \implode(' ', \array_slice($contentLines, 0, 3));
-        $summary = \preg_replace('/\s+/', ' ', $summary);
+        $summary = \preg_replace('/\s+/', ' ', $summary) ?? $summary;
 
-        return \strlen((string) $summary) > 200 ? \substr((string) $summary, 0, 197) . '...' : $summary;
+        return \strlen($summary) > 200 ? \substr($summary, 0, 197) . '...' : $summary;
     }
 
     /**

@@ -53,4 +53,12 @@ interface ProjectServiceInterface
      *
      */
     public function deleteProject(ProjectId $projectId): bool;
+
+    /**
+     * Add a memory entry to project
+     *
+     * @throws \Butschster\ContextGenerator\Drafling\Exception\ProjectNotFoundException
+     * @throws \Butschster\ContextGenerator\Drafling\Exception\DraflingException
+     */
+    public function addProjectMemory(ProjectId $projectId, string $memory): Project;
 }

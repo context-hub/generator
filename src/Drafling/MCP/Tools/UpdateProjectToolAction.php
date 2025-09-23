@@ -18,7 +18,7 @@ use Psr\Log\LoggerInterface;
 
 #[Tool(
     name: 'drafling_update_project',
-    description: 'Update existing project properties including title, description, status, tags, and entry directories',
+    description: 'Update existing project properties including title, description, status, tags, entry directories, and memory entries',
     title: 'Update Project',
 )]
 #[InputSchema(class: ProjectUpdateRequest::class)]
@@ -39,6 +39,7 @@ final readonly class UpdateProjectToolAction
             'has_status' => $request->status !== null,
             'has_tags' => $request->tags !== null,
             'has_entry_dirs' => $request->entryDirs !== null,
+            'has_memory' => $request->memory !== null,
         ]);
 
         try {
@@ -90,6 +91,7 @@ final readonly class UpdateProjectToolAction
                     'description' => $updatedProject->description,
                     'tags' => $updatedProject->tags,
                     'entry_dirs' => $updatedProject->entryDirs,
+                    'memory' => $updatedProject->memory,
                 ],
                 'changes_applied' => $this->getAppliedChanges($request),
             ];
@@ -172,6 +174,10 @@ final readonly class UpdateProjectToolAction
 
         if ($request->entryDirs !== null) {
             $changes[] = 'entry_directories';
+        }
+
+        if ($request->memory !== null) {
+            $changes[] = 'memory';
         }
 
         return $changes;

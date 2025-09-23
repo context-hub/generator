@@ -249,7 +249,7 @@ final class FileEntryRepository extends FileStorageRepositoryBase implements Ent
 
         if ($filePath === null) {
             // New entry - generate file path
-            $categoryPath = $this->files->normalizePath($projectPath . '/' . $entry->category);
+            $categoryPath = $this->files->normalizePath($projectPath . '/' . $entry->category . '/' . $entry->entryType);
             $this->ensureDirectory($categoryPath);
 
             $filename = $this->generateFilename($entry->title);

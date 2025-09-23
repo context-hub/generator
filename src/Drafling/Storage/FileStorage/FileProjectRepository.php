@@ -155,6 +155,7 @@ final class FileProjectRepository extends FileStorageRepositoryBase implements P
             status: $projectData['status'] ?? 'draft',
             tags: $projectData['tags'] ?? [],
             entryDirs: $projectData['entries']['dirs'] ?? [],
+            memory: $projectData['memory'] ?? [],
             projectPath: $projectPath,
         );
     }
@@ -173,6 +174,7 @@ final class FileProjectRepository extends FileStorageRepositoryBase implements P
                 'template' => $project->template,
                 'status' => $project->status,
                 'tags' => $project->tags,
+                'memory' => $project->memory,
                 'entries' => [
                     'dirs' => $project->entryDirs,
                 ],

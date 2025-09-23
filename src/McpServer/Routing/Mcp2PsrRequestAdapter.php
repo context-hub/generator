@@ -34,7 +34,17 @@ final readonly class Mcp2PsrRequestAdapter
 
         // For POST requests, also add parameters to parsed body
         if ($httpMethod === 'POST' && !empty($mcpParams)) {
-            $request = $request->withParsedBody($mcpParams);
+            $parsedBody = [];
+
+            foreach ($mcpParams as $key => $value) {
+                if (\is_string($value) && \json_validate($value)) {
+                    $value = \json_decode($value, true);
+                }
+
+                $parsedBody[$key] = $value;
+            }
+
+            $request = $request->withParsedBody($parsedBody);
         }
 
         return $request;
