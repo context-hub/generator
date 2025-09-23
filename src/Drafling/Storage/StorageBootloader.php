@@ -30,25 +30,25 @@ final class StorageBootloader extends Bootloader
                 LoggerInterface $logger,
             ): StorageDriverInterface {
                 $driver = new FileStorageDriver($config, $files, $logger);
-                
+
                 // Initialize with typed configuration
                 $storageConfig = FileStorageConfig::fromArray([
                     'base_path' => $config->getProjectsPath(),
                     'templates_path' => $config->getTemplatesPath(),
                     'default_entry_status' => $config->getDefaultEntryStatus(),
                 ]);
-                
+
                 $driver->initialize($storageConfig);
-                
+
                 return $driver;
             },
 
-            // Repositories - bind to storage driver repositories  
+            // Repositories - bind to storage driver repositories
             TemplateRepositoryInterface::class => static function (StorageDriverInterface $driver): TemplateRepositoryInterface {
                 if ($driver instanceof FileStorageDriver) {
                     return $driver->getTemplateRepository();
                 }
-                
+
                 throw new \RuntimeException('Storage driver does not support template repository');
             },
 
@@ -56,7 +56,7 @@ final class StorageBootloader extends Bootloader
                 if ($driver instanceof FileStorageDriver) {
                     return $driver->getProjectRepository();
                 }
-                
+
                 throw new \RuntimeException('Storage driver does not support project repository');
             },
 
@@ -64,7 +64,7 @@ final class StorageBootloader extends Bootloader
                 if ($driver instanceof FileStorageDriver) {
                     return $driver->getEntryRepository();
                 }
-                
+
                 throw new \RuntimeException('Storage driver does not support entry repository');
             },
         ];

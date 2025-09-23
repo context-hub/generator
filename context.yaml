@@ -42,7 +42,25 @@ documents:
         sourcePaths:
           - src/Drafling
           - vendor/spiral/files/src/FilesInterface.php
-        showTreeView: true
+        notPath:
+          - src/Drafling/Storage
+          - src/Drafling/MCP
+
+  - description: Drafling FileStorage
+    outputPath: drafling/file-storage.md
+    sources:
+      - type: file
+        sourcePaths:
+          - src/Drafling/Storage
+
+  - description: Drafling MCP
+    outputPath: drafling/mcp.md
+    sources:
+      - type: file
+        sourcePaths:
+          - src/Drafling/MCP
+          - src/McpServer/McpServerBootloader.php
+
 
   - description: "Changes in the Project"
     outputPath: "changes.md"

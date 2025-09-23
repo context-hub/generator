@@ -12,7 +12,7 @@ use Symfony\Component\Yaml\Exception\ParseException;
  */
 final readonly class FrontmatterParser
 {
-    private const FRONTMATTER_DELIMITER = '---';
+    private const string FRONTMATTER_DELIMITER = '---';
 
     /**
      * Parse frontmatter and content from markdown file content
@@ -22,7 +22,7 @@ final readonly class FrontmatterParser
     public function parse(string $content): array
     {
         $content = \trim($content);
-        
+
         // Check if file starts with frontmatter delimiter
         if (!\str_starts_with($content, self::FRONTMATTER_DELIMITER)) {
             return [

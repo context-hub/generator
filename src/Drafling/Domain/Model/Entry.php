@@ -63,7 +63,7 @@ final readonly class Entry
     public function generateFilename(): string
     {
         $slug = \preg_replace('/[^a-z0-9]+/', '-', \strtolower($this->title));
-        $slug = \trim($slug, '-');
+        $slug = \trim((string) $slug, '-');
         return "{$slug}.md";
     }
 

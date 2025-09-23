@@ -58,7 +58,7 @@ final readonly class Project
     public function generateDirectoryName(): string
     {
         $slug = \preg_replace('/[^a-z0-9]+/', '-', \strtolower($this->name));
-        return \trim($slug, '-');
+        return \trim((string) $slug, '-');
     }
 
     /**

@@ -22,6 +22,7 @@ final class DraflingBootloader extends Bootloader
         private readonly ConfiguratorInterface $config,
     ) {}
 
+    #[\Override]
     public function defineDependencies(): array
     {
         return [
@@ -46,6 +47,7 @@ final class DraflingBootloader extends Bootloader
         );
     }
 
+    #[\Override]
     public function defineSingletons(): array
     {
         return [

@@ -9,7 +9,7 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Abstract base class for storage drivers with common functionality
- * 
+ *
  * @template TConfig of object
  * @implements StorageDriverInterface<TConfig>
  */
@@ -39,7 +39,7 @@ abstract class AbstractStorageDriver implements StorageDriverInterface
         $this->logger?->debug('Synchronizing storage state', [
             'driver' => $this->getName(),
         ]);
-        
+
         // Base implementation - override in concrete classes
         $this->performSynchronization();
     }
@@ -93,12 +93,12 @@ abstract class AbstractStorageDriver implements StorageDriverInterface
     {
         // Remove or replace unsafe characters
         $filename = \preg_replace('/[^a-zA-Z0-9\-_\.]/', '-', $filename);
-        
+
         // Remove consecutive dashes
-        $filename = \preg_replace('/-+/', '-', $filename);
-        
+        $filename = \preg_replace('/-+/', '-', (string) $filename);
+
         // Trim dashes from ends
-        return \trim($filename, '-');
+        return \trim((string) $filename, '-');
     }
 
     /**
@@ -108,8 +108,8 @@ abstract class AbstractStorageDriver implements StorageDriverInterface
     {
         $slug = \strtolower($title);
         $slug = \preg_replace('/[^a-z0-9\s\-]/', '', $slug);
-        $slug = \preg_replace('/[\s\-]+/', '-', $slug);
-        return \trim($slug, '-');
+        $slug = \preg_replace('/[\s\-]+/', '-', (string) $slug);
+        return \trim((string) $slug, '-');
     }
 
     /**

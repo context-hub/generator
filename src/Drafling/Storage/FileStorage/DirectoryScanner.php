@@ -98,7 +98,7 @@ final readonly class DirectoryScanner
             foreach ($finder as $file) {
                 $entryFiles[] = $file->getRealPath();
             }
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             // Handle cases where directories are not accessible
             // Return empty array - calling code can handle this gracefully
         }
@@ -132,7 +132,7 @@ final readonly class DirectoryScanner
             foreach ($finder as $directory) {
                 $directories[] = $directory->getFilename(); // Return relative directory name
             }
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             // Handle cases where directory is not accessible
             // Return empty array
         }
@@ -241,7 +241,7 @@ final readonly class DirectoryScanner
             foreach ($dirFinder as $directory) {
                 $stats['directories']++;
             }
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             // Return basic stats if scanning fails
         }
 
@@ -275,7 +275,7 @@ final readonly class DirectoryScanner
             foreach ($finder as $file) {
                 $files[] = $file->getRealPath();
             }
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             // Return empty array if scanning fails
         }
 
@@ -300,7 +300,7 @@ final readonly class DirectoryScanner
                 ->depth(0);
 
             return $finder->hasResults();
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             return false;
         }
     }
@@ -325,7 +325,7 @@ final readonly class DirectoryScanner
             foreach ($finder as $file) {
                 $totalSize += $file->getSize();
             }
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             // Return 0 if calculation fails
         }
 

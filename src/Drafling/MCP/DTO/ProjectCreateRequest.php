@@ -4,23 +4,60 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Drafling\MCP\DTO;
 
+use Spiral\JsonSchemaGenerator\Attribute\Field;
+
 /**
- * Request DTO for creating a new project
+ * Data Transfer Object for project creation requests
  */
 final readonly class ProjectCreateRequest
 {
-    /**
-     * @param string $templateId Template key to base project on
-     * @param string $name Project name
-     * @param string $description Project description
-     * @param string[] $tags Project tags
-     * @param string[] $entryDirs Directories to create for entries
-     */
     public function __construct(
+        #[Field(description: 'Template ID to use for the project')]
         public string $templateId,
-        public string $name,
-        public string $description,
+        #[Field(description: 'Project title')]
+        public string $title,
+        #[Field(
+            description: 'Project description (optional)',
+            default: '',
+        )]
+        public string $description = '',
+        #[Field(
+            description: 'Project tags for organization (optional)',
+            default: [],
+        )]
+        /** @var string[] */
         public array $tags = [],
+        #[Field(
+            description: 'Entry directories to create (optional)',
+            default: [],
+        )]
+        /** @var string[] */
         public array $entryDirs = [],
     ) {}
+
+    /**
+     * Get project name (using title field)
+     */
+    public function getName(): string
+    {
+        return $this->title;
+    }
+
+    /**
+     * Validate the request data
+     */
+    public function validate(): array
+    {
+        $errors = [];
+
+        if (empty($this->templateId)) {
+            $errors[] = 'Template ID cannot be empty';
+        }
+
+        if (empty($this->title)) {
+            $errors[] = 'Project title cannot be empty';
+        }
+
+        return $errors;
+    }
 }

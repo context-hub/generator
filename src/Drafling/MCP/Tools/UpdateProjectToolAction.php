@@ -1,0 +1,179 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Butschster\ContextGenerator\Drafling\MCP\Tools;
+
+use Butschster\ContextGenerator\Drafling\Domain\ValueObject\ProjectId;
+use Butschster\ContextGenerator\Drafling\Exception\DraflingException;
+use Butschster\ContextGenerator\Drafling\Exception\ProjectNotFoundException;
+use Butschster\ContextGenerator\Drafling\MCP\DTO\ProjectUpdateRequest;
+use Butschster\ContextGenerator\Drafling\Service\ProjectServiceInterface;
+use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
+use Butschster\ContextGenerator\McpServer\Attribute\Tool;
+use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
+use Mcp\Types\CallToolResult;
+use Mcp\Types\TextContent;
+use Psr\Log\LoggerInterface;
+
+#[Tool(
+    name: 'drafling_update_project',
+    description: 'Update existing project properties including title, description, status, tags, and entry directories',
+    title: 'Update Project',
+)]
+#[InputSchema(class: ProjectUpdateRequest::class)]
+final readonly class UpdateProjectToolAction
+{
+    public function __construct(
+        private LoggerInterface $logger,
+        private ProjectServiceInterface $projectService,
+    ) {}
+
+    #[Post(path: '/tools/call/drafling_update_project', name: 'tools.drafling.drafling_update_project')]
+    public function __invoke(ProjectUpdateRequest $request): CallToolResult
+    {
+        $this->logger->info('Updating project', [
+            'project_id' => $request->projectId,
+            'has_title' => $request->title !== null,
+            'has_description' => $request->description !== null,
+            'has_status' => $request->status !== null,
+            'has_tags' => $request->tags !== null,
+            'has_entry_dirs' => $request->entryDirs !== null,
+        ]);
+
+        try {
+            // Validate request
+            $validationErrors = $request->validate();
+            if (!empty($validationErrors)) {
+                return new CallToolResult([
+                    new TextContent(
+                        text: \json_encode([
+                            'success' => false,
+                            'error' => 'Validation failed',
+                            'details' => $validationErrors,
+                        ], JSON_PRETTY_PRINT),
+                    ),
+                ], isError: true);
+            }
+
+            // Verify project exists
+            $projectId = ProjectId::fromString($request->projectId);
+            if (!$this->projectService->projectExists($projectId)) {
+                return new CallToolResult([
+                    new TextContent(
+                        text: \json_encode([
+                            'success' => false,
+                            'error' => "Project '{$request->projectId}' not found",
+                        ], JSON_PRETTY_PRINT),
+                    ),
+                ], isError: true);
+            }
+
+            // Update project using domain service
+            $updatedProject = $this->projectService->updateProject($projectId, $request);
+
+            $this->logger->info('Project updated successfully', [
+                'project_id' => $request->projectId,
+                'title' => $updatedProject->name,
+                'status' => $updatedProject->status,
+            ]);
+
+            // Format successful response according to MCP specification
+            $response = [
+                'success' => true,
+                'project_id' => $updatedProject->id,
+                'title' => $updatedProject->name,
+                'status' => $updatedProject->status,
+                'project_type' => $updatedProject->template,
+                'updated_at' => (new \DateTime())->format('c'), // Would need actual update timestamp from domain
+                'metadata' => [
+                    'description' => $updatedProject->description,
+                    'tags' => $updatedProject->tags,
+                    'entry_dirs' => $updatedProject->entryDirs,
+                ],
+                'changes_applied' => $this->getAppliedChanges($request),
+            ];
+
+            return new CallToolResult([
+                new TextContent(
+                    text: \json_encode($response, JSON_PRETTY_PRINT),
+                ),
+            ]);
+
+        } catch (ProjectNotFoundException $e) {
+            $this->logger->error('Project not found', [
+                'project_id' => $request->projectId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return new CallToolResult([
+                new TextContent(
+                    text: \json_encode([
+                        'success' => false,
+                        'error' => $e->getMessage(),
+                    ], JSON_PRETTY_PRINT),
+                ),
+            ], isError: true);
+
+        } catch (DraflingException $e) {
+            $this->logger->error('Drafling error during project update', [
+                'project_id' => $request->projectId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return new CallToolResult([
+                new TextContent(
+                    text: \json_encode([
+                        'success' => false,
+                        'error' => $e->getMessage(),
+                    ], JSON_PRETTY_PRINT),
+                ),
+            ], isError: true);
+
+        } catch (\Throwable $e) {
+            $this->logger->error('Unexpected error updating project', [
+                'project_id' => $request->projectId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return new CallToolResult([
+                new TextContent(
+                    text: \json_encode([
+                        'success' => false,
+                        'error' => 'Failed to update project: ' . $e->getMessage(),
+                    ], JSON_PRETTY_PRINT),
+                ),
+            ], isError: true);
+        }
+    }
+
+    /**
+     * Get list of changes applied based on the request
+     */
+    private function getAppliedChanges(ProjectUpdateRequest $request): array
+    {
+        $changes = [];
+
+        if ($request->title !== null) {
+            $changes[] = 'title';
+        }
+
+        if ($request->description !== null) {
+            $changes[] = 'description';
+        }
+
+        if ($request->status !== null) {
+            $changes[] = 'status';
+        }
+
+        if ($request->tags !== null) {
+            $changes[] = 'tags';
+        }
+
+        if ($request->entryDirs !== null) {
+            $changes[] = 'entry_directories';
+        }
+
+        return $changes;
+    }
+}

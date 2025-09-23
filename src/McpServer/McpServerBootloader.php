@@ -7,6 +7,13 @@ namespace Butschster\ContextGenerator\McpServer;
 use Butschster\ContextGenerator\Application\Bootloader\ConsoleBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\HttpClientBootloader;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
+use Butschster\ContextGenerator\Drafling\MCP\Tools\CreateEntryToolAction;
+use Butschster\ContextGenerator\Drafling\MCP\Tools\CreateProjectToolAction;
+use Butschster\ContextGenerator\Drafling\MCP\Tools\GetProjectToolAction;
+use Butschster\ContextGenerator\Drafling\MCP\Tools\ListProjectsToolAction;
+use Butschster\ContextGenerator\Drafling\MCP\Tools\ListTemplatesToolAction;
+use Butschster\ContextGenerator\Drafling\MCP\Tools\UpdateEntryToolAction;
+use Butschster\ContextGenerator\Drafling\MCP\Tools\UpdateProjectToolAction;
 use Butschster\ContextGenerator\McpServer\Action\Prompts\FilesystemOperationsAction;
 use Butschster\ContextGenerator\McpServer\Action\Prompts\GetPromptAction;
 use Butschster\ContextGenerator\McpServer\Action\Prompts\ListPromptsAction;
@@ -241,6 +248,17 @@ final class McpServerBootloader extends Bootloader
                 ExecuteCustomToolAction::class,
             ];
         }
+
+        $actions = [
+            ...$actions,
+            ListTemplatesToolAction::class,
+            CreateProjectToolAction::class,
+            ListProjectsToolAction::class,
+            GetProjectToolAction::class,
+            CreateEntryToolAction::class,
+            UpdateEntryToolAction::class,
+            UpdateProjectToolAction::class,
+        ];
 
         return $actions;
     }

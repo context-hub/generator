@@ -11,7 +11,7 @@ use Spiral\Core\InjectableConfig;
  */
 final class DraflingConfig extends InjectableConfig implements DraflingConfigInterface
 {
-    public const CONFIG = 'drafling';
+    public const string CONFIG = 'drafling';
 
     protected array $config = [
         'enabled' => true,

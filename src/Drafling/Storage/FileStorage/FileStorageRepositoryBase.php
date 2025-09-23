@@ -17,7 +17,7 @@ abstract class FileStorageRepositoryBase
         protected readonly FilesInterface $files,
         protected readonly DraflingConfigInterface $config,
         protected readonly FrontmatterParser $frontmatterParser = new FrontmatterParser(),
-        protected readonly DirectoryScanner $directoryScanner,
+        protected readonly ?DirectoryScanner $directoryScanner = null,
         protected readonly ?LoggerInterface $logger = null,
     ) {}
 
@@ -117,8 +117,8 @@ abstract class FileStorageRepositoryBase
     {
         $slug = \strtolower($title);
         $slug = \preg_replace('/[^a-z0-9\s\-]/', '', $slug);
-        $slug = \preg_replace('/[\s\-]+/', '-', $slug);
-        $slug = \trim($slug, '-');
+        $slug = \preg_replace('/[\s\-]+/', '-', (string) $slug);
+        $slug = \trim((string) $slug, '-');
 
         return $slug . '.' . $extension;
     }

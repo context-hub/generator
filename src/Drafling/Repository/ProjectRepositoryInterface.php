@@ -14,7 +14,7 @@ interface ProjectRepositoryInterface
 {
     /**
      * Find all projects with optional filters
-     * 
+     *
      * @param array $filters Optional filters (status, template, tags, etc.)
      * @return Project[]
      */
