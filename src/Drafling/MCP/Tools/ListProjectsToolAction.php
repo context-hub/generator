@@ -27,7 +27,7 @@ final readonly class ListProjectsToolAction
         private ProjectServiceInterface $projectService,
     ) {}
 
-    #[Post(path: '/tools/call/drafling_list_projects', name: 'tools.drafling.drafling_list_projects')]
+    #[Post(path: '/tools/call/drafling_list_projects', name: 'tools.drafling_list_projects')]
     public function __invoke(ListProjectsRequest $request): CallToolResult
     {
         $this->logger->info('Listing projects', [
@@ -66,20 +66,8 @@ final readonly class ListProjectsToolAction
                 $request->limit,
             );
 
-            // Format projects for response
-            $projectData = \array_map(static fn($project) => [
-                'project_id' => $project->id,
-                'title' => $project->name,
-                'status' => $project->status,
-                'project_type' => $project->template,
-                'created_at' => (new \DateTime())->format('c'), // Would need actual creation date from domain
-                'updated_at' => (new \DateTime())->format('c'), // Would need actual update date from domain
-                'metadata' => [
-                    'description' => $project->description,
-                    'tags' => $project->tags,
-                    'entry_dirs' => $project->entryDirs,
-                ],
-            ], $paginatedProjects);
+            // Format projects for response (using JsonSerializable)
+            $projectData = $paginatedProjects;
 
             $response = [
                 'success' => true,

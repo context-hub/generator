@@ -4,9 +4,21 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Drafling;
 
-use Butschster\ContextGenerator\Application\Bootloader\ConfigurationBootloader;
+use Butschster\ContextGenerator\Application\Bootloader\ConsoleBootloader;
 use Butschster\ContextGenerator\Drafling\Config\DraflingConfig;
 use Butschster\ContextGenerator\Drafling\Config\DraflingConfigInterface;
+use Butschster\ContextGenerator\Drafling\Console\ProjectInfoCommand;
+use Butschster\ContextGenerator\Drafling\Console\ProjectListCommand;
+use Butschster\ContextGenerator\Drafling\Console\TemplateListCommand;
+use Butschster\ContextGenerator\Drafling\Service\DraflingService;
+use Butschster\ContextGenerator\Drafling\Service\DraflingServiceInterface;
+use Butschster\ContextGenerator\Drafling\Service\EntryService;
+use Butschster\ContextGenerator\Drafling\Service\EntryServiceInterface;
+use Butschster\ContextGenerator\Drafling\Service\ProjectService;
+use Butschster\ContextGenerator\Drafling\Service\ProjectServiceInterface;
+use Butschster\ContextGenerator\Drafling\Service\TemplateService;
+use Butschster\ContextGenerator\Drafling\Service\TemplateServiceInterface;
+use Butschster\ContextGenerator\Drafling\Storage\Config\FileStorageConfig;
 use Butschster\ContextGenerator\Drafling\Storage\StorageBootloader;
 use Butschster\ContextGenerator\Drafling\Storage\StorageDriverInterface;
 use Spiral\Boot\Bootloader\Bootloader;
@@ -26,13 +38,30 @@ final class DraflingBootloader extends Bootloader
     public function defineDependencies(): array
     {
         return [
-            ConfigurationBootloader::class,
             StorageBootloader::class,
         ];
     }
 
-    public function init(EnvironmentInterface $env): void
+    public function defineSingletons(): array
     {
+        return [
+            // Configuration
+            DraflingConfigInterface::class => DraflingConfig::class,
+            TemplateServiceInterface::class => TemplateService::class,
+            DraflingServiceInterface::class => DraflingService::class,
+            ProjectServiceInterface::class => ProjectService::class,
+            EntryServiceInterface::class => EntryService::class,
+        ];
+    }
+
+    public function init(ConsoleBootloader $console, EnvironmentInterface $env): void
+    {
+        $console->addCommand(
+            ProjectListCommand::class,
+            TemplateListCommand::class,
+            ProjectInfoCommand::class,
+        );
+
         // Initialize configuration from environment variables
         $this->config->setDefaults(
             DraflingConfig::CONFIG,
@@ -47,15 +76,6 @@ final class DraflingBootloader extends Bootloader
         );
     }
 
-    #[\Override]
-    public function defineSingletons(): array
-    {
-        return [
-            // Configuration
-            DraflingConfigInterface::class => DraflingConfig::class,
-        ];
-    }
-
     public function boot(
         DraflingConfigInterface $config,
         StorageDriverInterface $storageDriver,
@@ -66,11 +86,10 @@ final class DraflingBootloader extends Bootloader
         }
 
         // Initialize storage driver
-        $storageDriver->initialize([
-            'base_path' => $config->getProjectsPath(),
-            'templates_path' => $config->getTemplatesPath(),
-            'storage_driver' => $config->getStorageDriver(),
-            'default_entry_status' => $config->getDefaultEntryStatus(),
-        ]);
+        $storageDriver->initialize(new FileStorageConfig(
+            basePath: $config->getProjectsPath(),
+            templatesPath: $config->getTemplatesPath(),
+            defaultEntryStatus: $config->getDefaultEntryStatus(),
+        ));
     }
 }

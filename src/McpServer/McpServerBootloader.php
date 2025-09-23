@@ -10,8 +10,10 @@ use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
 use Butschster\ContextGenerator\Drafling\MCP\Tools\CreateEntryToolAction;
 use Butschster\ContextGenerator\Drafling\MCP\Tools\CreateProjectToolAction;
 use Butschster\ContextGenerator\Drafling\MCP\Tools\GetProjectToolAction;
+use Butschster\ContextGenerator\Drafling\MCP\Tools\ListEntriesToolAction;
 use Butschster\ContextGenerator\Drafling\MCP\Tools\ListProjectsToolAction;
 use Butschster\ContextGenerator\Drafling\MCP\Tools\ListTemplatesToolAction;
+use Butschster\ContextGenerator\Drafling\MCP\Tools\ReadEntryToolAction;
 use Butschster\ContextGenerator\Drafling\MCP\Tools\UpdateEntryToolAction;
 use Butschster\ContextGenerator\Drafling\MCP\Tools\UpdateProjectToolAction;
 use Butschster\ContextGenerator\McpServer\Action\Prompts\FilesystemOperationsAction;
@@ -236,19 +238,6 @@ final class McpServerBootloader extends Bootloader
             ];
         }
 
-        if ($config->isGitOperationsEnabled()) {
-            $actions[] = GitStatusAction::class;
-            $actions[] = GitAddAction::class;
-            $actions[] = GitCommitAction::class;
-        }
-
-        if ($config->isCustomToolsEnabled()) {
-            $actions = [
-                ...$actions,
-                ExecuteCustomToolAction::class,
-            ];
-        }
-
         $actions = [
             ...$actions,
             ListTemplatesToolAction::class,
@@ -256,10 +245,26 @@ final class McpServerBootloader extends Bootloader
             ListProjectsToolAction::class,
             GetProjectToolAction::class,
             CreateEntryToolAction::class,
+            ListEntriesToolAction::class,
+            ReadEntryToolAction::class,
             UpdateEntryToolAction::class,
             UpdateProjectToolAction::class,
         ];
 
-        return $actions;
+        if ($config->isGitOperationsEnabled()) {
+            $actions[] = GitStatusAction::class;
+            $actions[] = GitAddAction::class;
+            $actions[] = GitCommitAction::class;
+        }
+
+        // Should be last
+        if ($config->isCustomToolsEnabled()) {
+            $actions = [
+                ...$actions,
+                ExecuteCustomToolAction::class,
+            ];
+        }
+
+        return \array_unique($actions);
     }
 }

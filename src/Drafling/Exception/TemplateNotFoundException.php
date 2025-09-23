@@ -5,12 +5,8 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Drafling\Exception;
 
 /**
- * Exception thrown when template is not found
+ * Exception thrown when a template cannot be found
  */
-final class TemplateNotFoundException extends DraflingException
+class TemplateNotFoundException extends DraflingException
 {
-    public static function withKey(string $key): self
-    {
-        return new self("Template with key '{$key}' not found");
-    }
 }

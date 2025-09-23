@@ -9,7 +9,7 @@ use Butschster\ContextGenerator\Drafling\Domain\ValueObject\ProjectId;
 use Butschster\ContextGenerator\Drafling\Exception\DraflingException;
 use Butschster\ContextGenerator\Drafling\Exception\EntryNotFoundException;
 use Butschster\ContextGenerator\Drafling\Exception\ProjectNotFoundException;
-use Butschster\ContextGenerator\Drafling\MCP\DTO\EntryUpdateRequest;
+use Butschster\ContextGenerator\Drafling\MCP\DTO\ReadEntryRequest;
 use Butschster\ContextGenerator\Drafling\Service\EntryServiceInterface;
 use Butschster\ContextGenerator\Drafling\Service\ProjectServiceInterface;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
@@ -20,12 +20,12 @@ use Mcp\Types\TextContent;
 use Psr\Log\LoggerInterface;
 
 #[Tool(
-    name: 'drafling_update_entry',
-    description: 'Update existing content entries with new title, content, status, or tags while preserving entry metadata',
-    title: 'Update Entry',
+    name: 'drafling_read_entry',
+    description: 'Retrieve detailed information about a specific entry including content and metadata',
+    title: 'Read Entry',
 )]
-#[InputSchema(class: EntryUpdateRequest::class)]
-final readonly class UpdateEntryToolAction
+#[InputSchema(class: ReadEntryRequest::class)]
+final readonly class ReadEntryToolAction
 {
     public function __construct(
         private LoggerInterface $logger,
@@ -33,17 +33,14 @@ final readonly class UpdateEntryToolAction
         private ProjectServiceInterface $projectService,
     ) {}
 
-    #[Post(path: '/tools/call/drafling_update_entry', name: 'tools.drafling_update_entry')]
-    public function __invoke(EntryUpdateRequest $request): CallToolResult
+    #[Post(path: '/tools/call/drafling_read_entry', name: 'tools.drafling_read_entry')]
+    public function __invoke(ReadEntryRequest $request): CallToolResult
     {
-        $this->logger->info('Updating entry', [
+        $this->logger->info('Reading entry', [
             'project_id' => $request->projectId,
             'entry_id' => $request->entryId,
-            'has_title' => $request->title !== null,
-            'has_content' => $request->content !== null,
-            'has_status' => $request->status !== null,
-            'has_tags' => $request->tags !== null,
-            'has_text_replace' => $request->textReplace !== null,
+            'include_content' => $request->includeContent,
+            'include_metadata' => $request->includeMetadata,
         ]);
 
         try {
@@ -74,9 +71,11 @@ final readonly class UpdateEntryToolAction
                 ], isError: true);
             }
 
-            // Verify entry exists
+            // Get the entry
             $entryId = EntryId::fromString($request->entryId);
-            if (!$this->entryService->entryExists($projectId, $entryId)) {
+            $entry = $this->entryService->getEntry($projectId, $entryId);
+
+            if ($entry === null) {
                 return new CallToolResult([
                     new TextContent(
                         text: \json_encode([
@@ -87,28 +86,39 @@ final readonly class UpdateEntryToolAction
                 ], isError: true);
             }
 
-            // Update entry using domain service
-            $updatedEntry = $this->entryService->updateEntry($projectId, $entryId, $request);
-
-            $this->logger->info('Entry updated successfully', [
-                'project_id' => $request->projectId,
-                'entry_id' => $request->entryId,
-                'title' => $updatedEntry->title,
-            ]);
-
-            // Format successful response according to MCP specification
+            // Build response based on inclusion flags
             $response = [
                 'success' => true,
-                'entry_id' => $updatedEntry->entryId,
-                'title' => $updatedEntry->title,
-                'entry_type' => $updatedEntry->entryType,
-                'category' => $updatedEntry->category,
-                'status' => $updatedEntry->status,
-                'content_type' => 'markdown', // Default content type for Drafling
-                'updated_at' => $updatedEntry->updatedAt->format('c'),
-                'tags' => $updatedEntry->tags,
-                'changes_applied' => $this->getAppliedChanges($request),
+                'entry_id' => $entry->entryId,
+                'title' => $entry->title,
+                'entry_type' => $entry->entryType,
+                'category' => $entry->category,
+                'status' => $entry->status,
+                'content_type' => 'markdown',
+                'created_at' => $entry->createdAt->format('c'),
+                'updated_at' => $entry->updatedAt->format('c'),
             ];
+
+            // Include content if requested
+            if ($request->includeContent) {
+                $response['content'] = $entry->content ?? '';
+            }
+
+            // Include metadata if requested
+            if ($request->includeMetadata) {
+                $response['metadata'] = [
+                    'tags' => $entry->tags,
+                    'file_path' => $entry->filePath ?? null,
+                ];
+            }
+
+            $this->logger->info('Entry read successfully', [
+                'project_id' => $request->projectId,
+                'entry_id' => $request->entryId,
+                'title' => $entry->title,
+                'included_content' => $request->includeContent,
+                'included_metadata' => $request->includeMetadata,
+            ]);
 
             return new CallToolResult([
                 new TextContent(
@@ -148,7 +158,7 @@ final readonly class UpdateEntryToolAction
             ], isError: true);
 
         } catch (DraflingException $e) {
-            $this->logger->error('Drafling error during entry update', [
+            $this->logger->error('Drafling error reading entry', [
                 'project_id' => $request->projectId,
                 'entry_id' => $request->entryId,
                 'error' => $e->getMessage(),
@@ -164,7 +174,7 @@ final readonly class UpdateEntryToolAction
             ], isError: true);
 
         } catch (\Throwable $e) {
-            $this->logger->error('Unexpected error updating entry', [
+            $this->logger->error('Unexpected error reading entry', [
                 'project_id' => $request->projectId,
                 'entry_id' => $request->entryId,
                 'error' => $e->getMessage(),
@@ -174,40 +184,10 @@ final readonly class UpdateEntryToolAction
                 new TextContent(
                     text: \json_encode([
                         'success' => false,
-                        'error' => 'Failed to update entry: ' . $e->getMessage(),
+                        'error' => 'Failed to read entry: ' . $e->getMessage(),
                     ], JSON_PRETTY_PRINT),
                 ),
             ], isError: true);
         }
-    }
-
-    /**
-     * Get list of changes applied based on the request
-     */
-    private function getAppliedChanges(EntryUpdateRequest $request): array
-    {
-        $changes = [];
-
-        if ($request->title !== null) {
-            $changes[] = 'title';
-        }
-
-        if ($request->content !== null) {
-            $changes[] = 'content';
-        }
-
-        if ($request->status !== null) {
-            $changes[] = 'status';
-        }
-
-        if ($request->tags !== null) {
-            $changes[] = 'tags';
-        }
-
-        if ($request->textReplace !== null) {
-            $changes[] = 'text_replacement';
-        }
-
-        return $changes;
     }
 }

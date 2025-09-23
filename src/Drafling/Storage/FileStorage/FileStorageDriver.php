@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Drafling\Storage\FileStorage;
 
+use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\Drafling\Config\DraflingConfigInterface;
 use Butschster\ContextGenerator\Drafling\Domain\Model\Entry;
 use Butschster\ContextGenerator\Drafling\Domain\Model\Project;
+use Butschster\ContextGenerator\Drafling\Domain\Model\Template;
 use Butschster\ContextGenerator\Drafling\Domain\ValueObject\EntryId;
 use Butschster\ContextGenerator\Drafling\Domain\ValueObject\ProjectId;
 use Butschster\ContextGenerator\Drafling\Domain\ValueObject\TemplateKey;
@@ -22,6 +24,7 @@ use Butschster\ContextGenerator\Drafling\Storage\Config\FileStorageConfig;
 use Butschster\ContextGenerator\Drafling\Exception\ProjectNotFoundException;
 use Butschster\ContextGenerator\Drafling\Exception\EntryNotFoundException;
 use Butschster\ContextGenerator\Drafling\Exception\TemplateNotFoundException;
+use Psr\Log\LoggerInterface;
 use Spiral\Exceptions\ExceptionReporterInterface;
 use Spiral\Files\FilesInterface;
 
@@ -39,8 +42,9 @@ final class FileStorageDriver extends AbstractStorageDriver
     public function __construct(
         DraflingConfigInterface $draflingConfig,
         FilesInterface $files,
+        DirectoriesInterface $dirs,
         ExceptionReporterInterface $reporter,
-        ?\Psr\Log\LoggerInterface $logger = null,
+        ?LoggerInterface $logger = null,
     ) {
         parent::__construct($draflingConfig, $logger);
 
@@ -51,6 +55,7 @@ final class FileStorageDriver extends AbstractStorageDriver
         $this->templateRepository = new FileTemplateRepository(
             $files,
             $draflingConfig,
+            $dirs,
             $frontmatterParser,
             $directoryScanner,
             $logger,
@@ -59,6 +64,7 @@ final class FileStorageDriver extends AbstractStorageDriver
         $this->projectRepository = new FileProjectRepository(
             $files,
             $draflingConfig,
+            $dirs,
             $frontmatterParser,
             $directoryScanner,
             $logger,
@@ -67,6 +73,7 @@ final class FileStorageDriver extends AbstractStorageDriver
         $this->entryRepository = new FileEntryRepository(
             $files,
             $draflingConfig,
+            $dirs,
             $frontmatterParser,
             $directoryScanner,
             $logger,
@@ -318,7 +325,7 @@ final class FileStorageDriver extends AbstractStorageDriver
     /**
      * Get default entry directories from template
      */
-    private function getDefaultEntryDirs(\Butschster\ContextGenerator\Drafling\Domain\Model\Template $template): array
+    private function getDefaultEntryDirs(Template $template): array
     {
         $dirs = [];
         foreach ($template->categories as $category) {
@@ -332,7 +339,7 @@ final class FileStorageDriver extends AbstractStorageDriver
      */
     private function resolveEntryCreateRequestKeys(
         EntryCreateRequest $request,
-        \Butschster\ContextGenerator\Drafling\Domain\Model\Template $template,
+        Template $template,
     ): EntryCreateRequest {
         // Resolve category
         $resolvedCategory = $this->resolveCategoryKey($template, $request->category);
@@ -362,7 +369,7 @@ final class FileStorageDriver extends AbstractStorageDriver
      * Validate entry request against project template
      */
     private function validateEntryAgainstTemplate(
-        \Butschster\ContextGenerator\Drafling\Domain\Model\Template $template,
+        Template $template,
         EntryCreateRequest $request,
     ): void {
         // Validate category exists
@@ -393,7 +400,7 @@ final class FileStorageDriver extends AbstractStorageDriver
      * Resolve category display name to internal key
      */
     private function resolveCategoryKey(
-        \Butschster\ContextGenerator\Drafling\Domain\Model\Template $template,
+        Template $template,
         string $displayNameOrKey,
     ): ?string {
         foreach ($template->categories as $category) {
@@ -408,7 +415,7 @@ final class FileStorageDriver extends AbstractStorageDriver
      * Resolve entry type display name to internal key
      */
     private function resolveEntryTypeKey(
-        \Butschster\ContextGenerator\Drafling\Domain\Model\Template $template,
+        Template $template,
         string $displayNameOrKey,
     ): ?string {
         foreach ($template->entryTypes as $entryType) {
@@ -423,7 +430,7 @@ final class FileStorageDriver extends AbstractStorageDriver
      * Resolve status display name to internal value for specific entry type
      */
     private function resolveStatusForEntryType(
-        \Butschster\ContextGenerator\Drafling\Domain\Model\Template $template,
+        Template $template,
         string $entryTypeKey,
         string $displayNameOrValue,
     ): ?string {

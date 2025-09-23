@@ -31,7 +31,7 @@ final readonly class CreateProjectToolAction
         private TemplateServiceInterface $templateService,
     ) {}
 
-    #[Post(path: '/tools/call/drafling_create_project', name: 'tools.drafling.drafling_create_project')]
+    #[Post(path: '/tools/call/drafling_create_project', name: 'tools.drafling_create_project')]
     public function __invoke(ProjectCreateRequest $request): CallToolResult
     {
         $this->logger->info('Creating new project', [

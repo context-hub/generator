@@ -7,7 +7,8 @@ namespace Butschster\ContextGenerator\Drafling\MCP\Tools;
 use Butschster\ContextGenerator\Drafling\Domain\ValueObject\ProjectId;
 use Butschster\ContextGenerator\Drafling\Exception\DraflingException;
 use Butschster\ContextGenerator\Drafling\Exception\ProjectNotFoundException;
-use Butschster\ContextGenerator\Drafling\MCP\DTO\ProjectUpdateRequest;
+use Butschster\ContextGenerator\Drafling\MCP\DTO\ListEntriesRequest;
+use Butschster\ContextGenerator\Drafling\Service\EntryServiceInterface;
 use Butschster\ContextGenerator\Drafling\Service\ProjectServiceInterface;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
@@ -17,28 +18,28 @@ use Mcp\Types\TextContent;
 use Psr\Log\LoggerInterface;
 
 #[Tool(
-    name: 'drafling_update_project',
-    description: 'Update existing project properties including title, description, status, tags, and entry directories',
-    title: 'Update Project',
+    name: 'drafling_list_entries',
+    description: 'Retrieve a list of entries from a project with filtering, sorting, and pagination support',
+    title: 'List Entries',
 )]
-#[InputSchema(class: ProjectUpdateRequest::class)]
-final readonly class UpdateProjectToolAction
+#[InputSchema(class: ListEntriesRequest::class)]
+final readonly class ListEntriesToolAction
 {
     public function __construct(
         private LoggerInterface $logger,
+        private EntryServiceInterface $entryService,
         private ProjectServiceInterface $projectService,
     ) {}
 
-    #[Post(path: '/tools/call/drafling_update_project', name: 'tools.drafling_update_project')]
-    public function __invoke(ProjectUpdateRequest $request): CallToolResult
+    #[Post(path: '/tools/call/drafling_list_entries', name: 'tools.drafling_list_entries')]
+    public function __invoke(ListEntriesRequest $request): CallToolResult
     {
-        $this->logger->info('Updating project', [
+        $this->logger->info('Listing entries', [
             'project_id' => $request->projectId,
-            'has_title' => $request->title !== null,
-            'has_description' => $request->description !== null,
-            'has_status' => $request->status !== null,
-            'has_tags' => $request->tags !== null,
-            'has_entry_dirs' => $request->entryDirs !== null,
+            'has_filters' => $request->hasFilters(),
+            'filters' => $request->getFilters(),
+            'limit' => $request->limit,
+            'offset' => $request->offset,
         ]);
 
         try {
@@ -69,30 +70,38 @@ final readonly class UpdateProjectToolAction
                 ], isError: true);
             }
 
-            // Update project using domain service
-            $updatedProject = $this->projectService->updateProject($projectId, $request);
+            // Get entries with filters
+            $allEntries = $this->entryService->getEntries($projectId, $request->getFilters());
 
-            $this->logger->info('Project updated successfully', [
-                'project_id' => $request->projectId,
-                'title' => $updatedProject->name,
-                'status' => $updatedProject->status,
-            ]);
+            // Apply pagination
+            $paginatedEntries = \array_slice(
+                $allEntries,
+                $request->offset,
+                $request->limit,
+            );
 
-            // Format successful response according to MCP specification
+            // Format entries for response (using JsonSerializable)
+            $entryData = $paginatedEntries;
+
             $response = [
                 'success' => true,
-                'project_id' => $updatedProject->id,
-                'title' => $updatedProject->name,
-                'status' => $updatedProject->status,
-                'project_type' => $updatedProject->template,
-                'updated_at' => (new \DateTime())->format('c'), // Would need actual update timestamp from domain
-                'metadata' => [
-                    'description' => $updatedProject->description,
-                    'tags' => $updatedProject->tags,
-                    'entry_dirs' => $updatedProject->entryDirs,
+                'entries' => $entryData,
+                'count' => \count($paginatedEntries),
+                'total_count' => \count($allEntries),
+                'pagination' => [
+                    'limit' => $request->limit,
+                    'offset' => $request->offset,
+                    'has_more' => ($request->offset + \count($paginatedEntries)) < \count($allEntries),
                 ],
-                'changes_applied' => $this->getAppliedChanges($request),
+                'filters_applied' => $request->hasFilters() ? $request->getFilters() : null,
             ];
+
+            $this->logger->info('Entries listed successfully', [
+                'project_id' => $request->projectId,
+                'returned_count' => \count($paginatedEntries),
+                'total_available' => \count($allEntries),
+                'filters_applied' => $request->hasFilters(),
+            ]);
 
             return new CallToolResult([
                 new TextContent(
@@ -116,7 +125,7 @@ final readonly class UpdateProjectToolAction
             ], isError: true);
 
         } catch (DraflingException $e) {
-            $this->logger->error('Drafling error during project update', [
+            $this->logger->error('Drafling error listing entries', [
                 'project_id' => $request->projectId,
                 'error' => $e->getMessage(),
             ]);
@@ -131,7 +140,7 @@ final readonly class UpdateProjectToolAction
             ], isError: true);
 
         } catch (\Throwable $e) {
-            $this->logger->error('Unexpected error updating project', [
+            $this->logger->error('Unexpected error listing entries', [
                 'project_id' => $request->projectId,
                 'error' => $e->getMessage(),
             ]);
@@ -140,40 +149,10 @@ final readonly class UpdateProjectToolAction
                 new TextContent(
                     text: \json_encode([
                         'success' => false,
-                        'error' => 'Failed to update project: ' . $e->getMessage(),
+                        'error' => 'Failed to list entries: ' . $e->getMessage(),
                     ], JSON_PRETTY_PRINT),
                 ),
             ], isError: true);
         }
-    }
-
-    /**
-     * Get list of changes applied based on the request
-     */
-    private function getAppliedChanges(ProjectUpdateRequest $request): array
-    {
-        $changes = [];
-
-        if ($request->title !== null) {
-            $changes[] = 'title';
-        }
-
-        if ($request->description !== null) {
-            $changes[] = 'description';
-        }
-
-        if ($request->status !== null) {
-            $changes[] = 'status';
-        }
-
-        if ($request->tags !== null) {
-            $changes[] = 'tags';
-        }
-
-        if ($request->entryDirs !== null) {
-            $changes[] = 'entry_directories';
-        }
-
-        return $changes;
     }
 }

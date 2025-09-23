@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Drafling\Storage;
 
+use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\Drafling\Config\DraflingConfigInterface;
 use Butschster\ContextGenerator\Drafling\Repository\EntryRepositoryInterface;
 use Butschster\ContextGenerator\Drafling\Repository\ProjectRepositoryInterface;
@@ -30,8 +31,9 @@ final class StorageBootloader extends Bootloader
                 FilesInterface $files,
                 LoggerInterface $logger,
                 ExceptionReporterInterface $reporter,
+                DirectoriesInterface $dirs,
             ): StorageDriverInterface {
-                $driver = new FileStorageDriver($config, $files, $reporter, $logger);
+                $driver = new FileStorageDriver($config, $files, $dirs, $reporter, $logger);
 
                 // Initialize with typed configuration
                 $storageConfig = FileStorageConfig::fromArray([

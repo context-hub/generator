@@ -29,7 +29,7 @@ final readonly class GetProjectToolAction
         private ProjectServiceInterface $projectService,
     ) {}
 
-    #[Post(path: '/tools/call/drafling_get_project', name: 'tools.drafling.drafling_get_project')]
+    #[Post(path: '/tools/call/drafling_get_project', name: 'tools.drafling_get_project')]
     public function __invoke(GetProjectRequest $request): CallToolResult
     {
         $this->logger->info('Getting project', [

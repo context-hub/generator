@@ -7,7 +7,7 @@ namespace Butschster\ContextGenerator\Drafling\Domain\Model;
 /**
  * Project represents an instance of a template with its own configuration and entries
  */
-final readonly class Project
+final readonly class Project implements \JsonSerializable
 {
     /**
      * @param string $id Unique project identifier
@@ -76,6 +76,26 @@ final readonly class Project
                 'entries' => [
                     'dirs' => $this->entryDirs,
                 ],
+            ],
+        ];
+    }
+
+    /**
+     * Specify data which should be serialized to JSON
+     */
+    public function jsonSerialize(): array
+    {
+        return [
+            'project_id' => $this->id,
+            'title' => $this->name,
+            'status' => $this->status,
+            'project_type' => $this->template,
+            'created_at' => (new \DateTime())->format('c'), // Would need actual creation date from domain
+            'updated_at' => (new \DateTime())->format('c'), // Would need actual update date from domain
+            'metadata' => [
+                'description' => $this->description,
+                'tags' => $this->tags,
+                'entry_dirs' => $this->entryDirs,
             ],
         ];
     }

@@ -46,6 +46,17 @@ interface EntryServiceInterface
     public function entryExists(ProjectId $projectId, EntryId $entryId): bool;
 
     /**
+     * Get a specific entry by ID
+     *
+     * @param ProjectId $projectId
+     * @param EntryId $entryId
+     * @return Entry|null
+     * @throws \Butschster\ContextGenerator\Drafling\Exception\ProjectNotFoundException
+     * @throws \Butschster\ContextGenerator\Drafling\Exception\DraflingException
+     */
+    public function getEntry(ProjectId $projectId, EntryId $entryId): ?Entry;
+
+    /**
      * Get entries for a project with optional filtering
      *
      * @param ProjectId $projectId

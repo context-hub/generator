@@ -5,12 +5,8 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Drafling\Exception;
 
 /**
- * Exception thrown when project is not found
+ * Exception thrown when a project cannot be found
  */
-final class ProjectNotFoundException extends DraflingException
+class ProjectNotFoundException extends DraflingException
 {
-    public static function withId(string $id): self
-    {
-        return new self("Project with ID '{$id}' not found");
-    }
 }

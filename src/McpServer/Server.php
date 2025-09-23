@@ -21,6 +21,7 @@ use Mcp\Types\ReadResourceRequestParams;
 use Mcp\Types\ReadResourceResult;
 use Mcp\Types\TextContent;
 use Psr\Log\LoggerInterface;
+use Spiral\Exceptions\ExceptionReporterInterface;
 
 final readonly class Server
 {
@@ -28,6 +29,7 @@ final readonly class Server
         private Router $router,
         private LoggerInterface $logger,
         private ProjectServiceInterface $projectService,
+        private ExceptionReporterInterface $reporter,
         private Mcp2PsrRequestAdapter $requestFactory = new Mcp2PsrRequestAdapter(),
     ) {}
 
@@ -101,6 +103,7 @@ final readonly class Server
             // Convert the response back to appropriate MCP type
             return $this->projectService->processResponse($response->getPayload());
         } catch (\Throwable $e) {
+            $this->reporter->report($e);
             $this->logger->error('Route handling error', [
                 'method' => $method,
                 'error' => $e->getMessage(),

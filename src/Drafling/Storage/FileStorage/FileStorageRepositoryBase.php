@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Drafling\Storage\FileStorage;
 
+use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\Drafling\Config\DraflingConfigInterface;
 use Spiral\Files\FilesInterface;
 use Psr\Log\LoggerInterface;
@@ -16,6 +17,7 @@ abstract class FileStorageRepositoryBase
     public function __construct(
         protected readonly FilesInterface $files,
         protected readonly DraflingConfigInterface $config,
+        private readonly DirectoriesInterface $dirs,
         protected readonly FrontmatterParser $frontmatterParser = new FrontmatterParser(),
         protected readonly ?DirectoryScanner $directoryScanner = null,
         protected readonly ?LoggerInterface $logger = null,
@@ -26,7 +28,7 @@ abstract class FileStorageRepositoryBase
      */
     protected function getBasePath(): string
     {
-        return $this->config->getProjectsPath();
+        return (string) $this->dirs->getRootPath()->join($this->config->getProjectsPath());
     }
 
     /**
@@ -34,7 +36,7 @@ abstract class FileStorageRepositoryBase
      */
     protected function getTemplatesPath(): string
     {
-        return $this->config->getTemplatesPath();
+        return (string) $this->dirs->getRootPath()->join($this->config->getTemplatesPath());
     }
 
     /**

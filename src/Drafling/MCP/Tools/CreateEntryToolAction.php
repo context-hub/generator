@@ -31,7 +31,7 @@ final readonly class CreateEntryToolAction
         private ProjectServiceInterface $projectService,
     ) {}
 
-    #[Post(path: '/tools/call/drafling_create_entry', name: 'tools.drafling.drafling_create_entry')]
+    #[Post(path: '/tools/call/drafling_create_entry', name: 'tools.drafling_create_entry')]
     public function __invoke(EntryCreateRequest $request): CallToolResult
     {
         $this->logger->info('Creating new entry', [

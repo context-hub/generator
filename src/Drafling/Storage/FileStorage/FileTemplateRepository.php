@@ -10,27 +10,31 @@ use Butschster\ContextGenerator\Drafling\Domain\Model\Status;
 use Butschster\ContextGenerator\Drafling\Domain\Model\Template;
 use Butschster\ContextGenerator\Drafling\Domain\ValueObject\TemplateKey;
 use Butschster\ContextGenerator\Drafling\Repository\TemplateRepositoryInterface;
+use Symfony\Component\Finder\Finder;
 
 /**
  * File-based template repository implementation
  */
 final class FileTemplateRepository extends FileStorageRepositoryBase implements TemplateRepositoryInterface
 {
-    private array $templateCache = [];
-    private bool $cacheLoaded = false;
-
     #[\Override]
     public function findAll(): array
     {
-        $this->ensureCacheLoaded();
-        return \array_values($this->templateCache);
+        return $this->loadTemplatesFromFilesystem();
     }
 
     #[\Override]
     public function findByKey(TemplateKey $key): ?Template
     {
-        $this->ensureCacheLoaded();
-        return $this->templateCache[$key->value] ?? null;
+        $templates = $this->loadTemplatesFromFilesystem();
+
+        foreach ($templates as $template) {
+            if ($template->key === $key->value) {
+                return $template;
+            }
+        }
+
+        return null;
     }
 
     #[\Override]
@@ -42,55 +46,47 @@ final class FileTemplateRepository extends FileStorageRepositoryBase implements 
     #[\Override]
     public function refresh(): void
     {
-        $this->templateCache = [];
-        $this->cacheLoaded = false;
-        $this->logOperation('Template cache refreshed');
-    }
-
-    /**
-     * Load all templates from file system if not already cached
-     */
-    private function ensureCacheLoaded(): void
-    {
-        if ($this->cacheLoaded) {
-            return;
-        }
-
-        $this->loadTemplatesFromFilesystem();
-        $this->cacheLoaded = true;
+        // No-op since we don't cache anymore
+        $this->logOperation('Template refresh requested (no caching)');
     }
 
     /**
      * Load templates from YAML files in templates directory
      */
-    private function loadTemplatesFromFilesystem(): void
+    private function loadTemplatesFromFilesystem(): array
     {
         $templatesPath = $this->getTemplatesPath();
 
+        $templates = [];
+
         if (!$this->files->exists($templatesPath) || !$this->files->isDirectory($templatesPath)) {
             $this->logger?->warning('Templates directory not found', ['path' => $templatesPath]);
-            return;
+            return $templates;
         }
 
-        $templateFiles = $this->files->getFiles($templatesPath, '*.yaml');
+        $finder = new Finder();
+        $finder->files()
+            ->in($templatesPath)
+            ->name('*.yaml')
+            ->name('*.yml');
 
-        foreach ($templateFiles as $templateFile) {
-            $filePath = $this->files->normalizePath($templatesPath . '/' . $templateFile);
-
+        foreach ($finder as $file) {
             try {
-                $template = $this->loadTemplateFromFile($filePath);
+                $template = $this->loadTemplateFromFile($file->getRealPath());
                 if ($template !== null) {
-                    $this->templateCache[$template->key] = $template;
+                    $templates[] = $template;
                 }
             } catch (\Throwable $e) {
-                $this->logError('Failed to load template', ['file' => $filePath], $e);
+                $this->logError('Failed to load template', ['file' => $file->getRealPath()], $e);
             }
         }
 
         $this->logOperation('Loaded templates from filesystem', [
-            'count' => \count($this->templateCache),
+            'count' => \count($templates),
             'path' => $templatesPath,
         ]);
+
+        return $templates;
     }
 
     /**

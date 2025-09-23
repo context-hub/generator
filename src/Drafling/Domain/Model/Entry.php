@@ -7,7 +7,7 @@ namespace Butschster\ContextGenerator\Drafling\Domain\Model;
 /**
  * Entry represents an individual markdown document with structured metadata
  */
-final readonly class Entry
+final readonly class Entry implements \JsonSerializable
 {
     /**
      * @param string $entryId Unique entry identifier (UUID)
@@ -78,6 +78,24 @@ final readonly class Entry
             'entry_type' => $this->entryType,
             'category' => $this->category,
             'status' => $this->status,
+            'created_at' => $this->createdAt->format('c'),
+            'updated_at' => $this->updatedAt->format('c'),
+            'tags' => $this->tags,
+        ];
+    }
+
+    /**
+     * Specify data which should be serialized to JSON
+     */
+    public function jsonSerialize(): array
+    {
+        return [
+            'entry_id' => $this->entryId,
+            'title' => $this->title,
+            'entry_type' => $this->entryType,
+            'category' => $this->category,
+            'status' => $this->status,
+            'content_type' => 'markdown',
             'created_at' => $this->createdAt->format('c'),
             'updated_at' => $this->updatedAt->format('c'),
             'tags' => $this->tags,

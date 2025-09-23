@@ -27,7 +27,7 @@ final readonly class ListTemplatesToolAction
         private TemplateServiceInterface $templateService,
     ) {}
 
-    #[Post(path: '/tools/call/drafling_list_templates', name: 'tools.drafling.drafling_list_templates')]
+    #[Post(path: '/tools/call/drafling_list_templates', name: 'tools.drafling_list_templates')]
     public function __invoke(ListTemplatesRequest $request): CallToolResult
     {
         $this->logger->info('Listing templates', [
@@ -138,7 +138,7 @@ final readonly class ListTemplatesToolAction
                 $searchTerm = \strtolower(\trim($request->nameContains));
                 $templateName = \strtolower((string) $template->name);
 
-                if (!str_contains($templateName, $searchTerm)) {
+                if (!\str_contains($templateName, $searchTerm)) {
                     return false;
                 }
             }
