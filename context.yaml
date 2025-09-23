@@ -40,11 +40,11 @@ documents:
     sources:
       - type: file
         sourcePaths:
-          - src/Drafling
-          - vendor/spiral/files/src/FilesInterface.php
-        notPath:
-          - src/Drafling/Storage
-          - src/Drafling/MCP
+          - src/Drafling/Config
+          - src/Drafling/Domain
+          - src/Drafling/Repository
+          - src/Drafling/Service
+          - src/Drafling/Storage/StorageDriverInterface.php
 
   - description: Drafling FileStorage
     outputPath: drafling/file-storage.md

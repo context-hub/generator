@@ -9,6 +9,7 @@ use Butschster\ContextGenerator\Drafling\Domain\Model\Entry;
 use Butschster\ContextGenerator\Drafling\Domain\Model\Project;
 use Butschster\ContextGenerator\Drafling\Domain\ValueObject\EntryId;
 use Butschster\ContextGenerator\Drafling\Domain\ValueObject\ProjectId;
+use Butschster\ContextGenerator\Drafling\Domain\ValueObject\TemplateKey;
 use Butschster\ContextGenerator\Drafling\MCP\DTO\EntryCreateRequest;
 use Butschster\ContextGenerator\Drafling\MCP\DTO\EntryUpdateRequest;
 use Butschster\ContextGenerator\Drafling\MCP\DTO\ProjectCreateRequest;
@@ -104,7 +105,7 @@ final class FileStorageDriver extends AbstractStorageDriver
     public function createProject(ProjectCreateRequest $request): Project
     {
         // Validate template exists
-        $templateKey = \Butschster\ContextGenerator\Drafling\Domain\ValueObject\TemplateKey::fromString($request->templateId);
+        $templateKey = TemplateKey::fromString($request->templateId);
         $template = $this->templateRepository->findByKey($templateKey);
 
         if ($template === null) {
@@ -115,7 +116,7 @@ final class FileStorageDriver extends AbstractStorageDriver
         $projectId = $this->generateId('proj_');
         $project = new Project(
             id: $projectId,
-            name: $request->name,
+            name: $request->getName(), // Use getName() method for consistency
             description: $request->description,
             template: $request->templateId,
             status: $this->config->defaultEntryStatus,
@@ -124,7 +125,7 @@ final class FileStorageDriver extends AbstractStorageDriver
         );
 
         $this->projectRepository->save($project);
-        $this->logOperation('Created project', ['id' => $projectId, 'name' => $request->name]);
+        $this->logOperation('Created project', ['id' => $projectId, 'name' => $request->getName()]);
 
         return $project;
     }
@@ -142,7 +143,7 @@ final class FileStorageDriver extends AbstractStorageDriver
         }
 
         $updatedProject = $project->withUpdates(
-            name: $request->name,
+            name: $request->getName(), // Use getName() method for consistency
             description: $request->description,
             status: $request->status,
             tags: $request->tags,
@@ -179,8 +180,18 @@ final class FileStorageDriver extends AbstractStorageDriver
             throw ProjectNotFoundException::withId($projectId->value);
         }
 
-        // Validate against template
-        $this->validateEntryAgainstTemplate($project, $request);
+        // Get template for validation and key resolution
+        $templateKey = TemplateKey::fromString($project->template);
+        $template = $this->templateRepository->findByKey($templateKey);
+        if ($template === null) {
+            throw TemplateNotFoundException::withKey($project->template);
+        }
+
+        // Resolve display names to internal keys
+        $resolvedRequest = $this->resolveEntryCreateRequestKeys($request, $template);
+
+        // Validate resolved request against template
+        $this->validateEntryAgainstTemplate($template, $resolvedRequest);
 
         // Generate entry ID and create entry
         $entryId = $this->generateId('entry_');
@@ -188,21 +199,21 @@ final class FileStorageDriver extends AbstractStorageDriver
 
         $entry = new Entry(
             entryId: $entryId,
-            title: $request->title,
-            entryType: $request->entryType,
-            category: $request->category,
-            status: $request->status ?? $this->config->defaultEntryStatus,
+            title: $resolvedRequest->getProcessedTitle(), // Use processed title
+            entryType: $resolvedRequest->entryType,
+            category: $resolvedRequest->category,
+            status: $resolvedRequest->status ?? $this->config->defaultEntryStatus,
             createdAt: $now,
             updatedAt: $now,
-            tags: $request->tags,
-            content: $request->content,
+            tags: $resolvedRequest->tags,
+            content: $resolvedRequest->content,
         );
 
         $this->entryRepository->save($projectId, $entry);
         $this->logOperation('Created entry', [
             'project_id' => $projectId->value,
             'entry_id' => $entryId,
-            'title' => $request->title,
+            'title' => $entry->title,
         ]);
 
         return $entry;
@@ -220,11 +231,28 @@ final class FileStorageDriver extends AbstractStorageDriver
             return $entry;
         }
 
+        // Resolve status if provided
+        $resolvedRequest = $request;
+        if ($request->status !== null) {
+            $project = $this->projectRepository->findById($projectId);
+            if ($project !== null) {
+                $templateKey = TemplateKey::fromString($project->template);
+                $template = $this->templateRepository->findByKey($templateKey);
+                if ($template !== null) {
+                    $resolvedStatus = $this->resolveStatusForEntryType($template, $entry->entryType, $request->status);
+                    $resolvedRequest = $request->withResolvedStatus($resolvedStatus);
+                }
+            }
+        }
+
+        // Get final content considering text replacement
+        $finalContent = $resolvedRequest->getFinalContent($entry->content);
+
         $updatedEntry = $entry->withUpdates(
-            title: $request->title,
-            status: $request->status,
-            tags: $request->tags,
-            content: $request->content,
+            title: $resolvedRequest->title,
+            status: $resolvedRequest->status,
+            tags: $resolvedRequest->tags,
+            content: $finalContent, // Use processed content with text replacement
         );
 
         $this->entryRepository->save($projectId, $updatedEntry);
@@ -300,17 +328,43 @@ final class FileStorageDriver extends AbstractStorageDriver
     }
 
     /**
-     * Validate entry request against project template
+     * Resolve display names in entry create request to internal keys
      */
-    private function validateEntryAgainstTemplate(Project $project, EntryCreateRequest $request): void
-    {
-        $templateKey = \Butschster\ContextGenerator\Drafling\Domain\ValueObject\TemplateKey::fromString($project->template);
-        $template = $this->templateRepository->findByKey($templateKey);
-
-        if ($template === null) {
-            throw TemplateNotFoundException::withKey($project->template);
+    private function resolveEntryCreateRequestKeys(
+        EntryCreateRequest $request,
+        \Butschster\ContextGenerator\Drafling\Domain\Model\Template $template,
+    ): EntryCreateRequest {
+        // Resolve category
+        $resolvedCategory = $this->resolveCategoryKey($template, $request->category);
+        if ($resolvedCategory === null) {
+            throw new \InvalidArgumentException("Category '{$request->category}' not found in template '{$template->key}'");
         }
 
+        // Resolve entry type
+        $resolvedEntryType = $this->resolveEntryTypeKey($template, $request->entryType);
+        if ($resolvedEntryType === null) {
+            throw new \InvalidArgumentException("Entry type '{$request->entryType}' not found in template '{$template->key}'");
+        }
+
+        // Resolve status if provided
+        $resolvedStatus = null;
+        if ($request->status !== null) {
+            $resolvedStatus = $this->resolveStatusForEntryType($template, $resolvedEntryType, $request->status);
+            if ($resolvedStatus === null) {
+                throw new \InvalidArgumentException("Status '{$request->status}' not found for entry type '{$resolvedEntryType}' in template '{$template->key}'");
+            }
+        }
+
+        return $request->withResolvedKeys($resolvedCategory, $resolvedEntryType, $resolvedStatus);
+    }
+
+    /**
+     * Validate entry request against project template
+     */
+    private function validateEntryAgainstTemplate(
+        \Butschster\ContextGenerator\Drafling\Domain\Model\Template $template,
+        EntryCreateRequest $request,
+    ): void {
         // Validate category exists
         if (!$template->hasCategory($request->category)) {
             throw new \InvalidArgumentException("Category '{$request->category}' not found in template '{$template->key}'");
@@ -333,5 +387,57 @@ final class FileStorageDriver extends AbstractStorageDriver
                 throw new \InvalidArgumentException("Status '{$request->status}' is not valid for entry type '{$request->entryType}'");
             }
         }
+    }
+
+    /**
+     * Resolve category display name to internal key
+     */
+    private function resolveCategoryKey(
+        \Butschster\ContextGenerator\Drafling\Domain\Model\Template $template,
+        string $displayNameOrKey,
+    ): ?string {
+        foreach ($template->categories as $category) {
+            if ($category->name === $displayNameOrKey || $category->displayName === $displayNameOrKey) {
+                return $category->name;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Resolve entry type display name to internal key
+     */
+    private function resolveEntryTypeKey(
+        \Butschster\ContextGenerator\Drafling\Domain\Model\Template $template,
+        string $displayNameOrKey,
+    ): ?string {
+        foreach ($template->entryTypes as $entryType) {
+            if ($entryType->key === $displayNameOrKey || $entryType->displayName === $displayNameOrKey) {
+                return $entryType->key;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Resolve status display name to internal value for specific entry type
+     */
+    private function resolveStatusForEntryType(
+        \Butschster\ContextGenerator\Drafling\Domain\Model\Template $template,
+        string $entryTypeKey,
+        string $displayNameOrValue,
+    ): ?string {
+        $entryType = $template->getEntryType($entryTypeKey);
+        if ($entryType === null) {
+            return null;
+        }
+
+        foreach ($entryType->statuses as $status) {
+            if ($status->value === $displayNameOrValue || $status->displayName === $displayNameOrValue) {
+                return $status->value;
+            }
+        }
+
+        return null;
     }
 }

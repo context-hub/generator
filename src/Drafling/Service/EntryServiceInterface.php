@@ -11,41 +11,55 @@ use Butschster\ContextGenerator\Drafling\MCP\DTO\EntryCreateRequest;
 use Butschster\ContextGenerator\Drafling\MCP\DTO\EntryUpdateRequest;
 
 /**
- * Entry service contract for managing entry operations
+ * Service interface for entry operations
  */
 interface EntryServiceInterface
 {
     /**
+     * Create a new entry in the specified project
+     *
+     * @param ProjectId $projectId
+     * @param EntryCreateRequest $request
+     * @return Entry
+     * @throws \Butschster\ContextGenerator\Drafling\Exception\ProjectNotFoundException
+     * @throws \Butschster\ContextGenerator\Drafling\Exception\TemplateNotFoundException
+     * @throws \Butschster\ContextGenerator\Drafling\Exception\DraflingException
+     */
+    public function createEntry(ProjectId $projectId, EntryCreateRequest $request): Entry;
+
+    /**
+     * Update an existing entry
+     *
+     * @param ProjectId $projectId
+     * @param EntryId $entryId
+     * @param EntryUpdateRequest $request
+     * @return Entry
+     * @throws \Butschster\ContextGenerator\Drafling\Exception\ProjectNotFoundException
+     * @throws \Butschster\ContextGenerator\Drafling\Exception\EntryNotFoundException
+     * @throws \Butschster\ContextGenerator\Drafling\Exception\DraflingException
+     */
+    public function updateEntry(ProjectId $projectId, EntryId $entryId, EntryUpdateRequest $request): Entry;
+
+    /**
+     * Check if an entry exists
+     */
+    public function entryExists(ProjectId $projectId, EntryId $entryId): bool;
+
+    /**
      * Get entries for a project with optional filtering
      *
-     * @param ProjectId $projectId Project identifier
-     * @param array $filters Optional filters (category, status, tags, etc.)
+     * @param ProjectId $projectId
+     * @param array $filters
      * @return Entry[]
      */
     public function getEntries(ProjectId $projectId, array $filters = []): array;
 
     /**
-     * Get specific entry by ID
-     */
-    public function getEntry(ProjectId $projectId, EntryId $entryId): ?Entry;
-
-    /**
-     * Create new entry
-     */
-    public function createEntry(ProjectId $projectId, EntryCreateRequest $request): Entry;
-
-    /**
-     * Update existing entry
-     */
-    public function updateEntry(ProjectId $projectId, EntryId $entryId, EntryUpdateRequest $request): Entry;
-
-    /**
-     * Delete entry
+     * Delete an entry
+     *
+     * @param ProjectId $projectId
+     * @param EntryId $entryId
+     * @return bool
      */
     public function deleteEntry(ProjectId $projectId, EntryId $entryId): bool;
-
-    /**
-     * Check if entry exists
-     */
-    public function entryExists(ProjectId $projectId, EntryId $entryId): bool;
 }

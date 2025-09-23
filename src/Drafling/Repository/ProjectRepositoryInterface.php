@@ -8,14 +8,14 @@ use Butschster\ContextGenerator\Drafling\Domain\Model\Project;
 use Butschster\ContextGenerator\Drafling\Domain\ValueObject\ProjectId;
 
 /**
- * Project repository contract for persisting project data
+ * Repository interface for managing projects
  */
 interface ProjectRepositoryInterface
 {
     /**
-     * Find all projects with optional filters
+     * Find all projects with optional filtering
      *
-     * @param array $filters Optional filters (status, template, tags, etc.)
+     * @param array $filters Associative array of filters (status, template, tags, name_contains, etc.)
      * @return Project[]
      */
     public function findAll(array $filters = []): array;
@@ -26,12 +26,12 @@ interface ProjectRepositoryInterface
     public function findById(ProjectId $id): ?Project;
 
     /**
-     * Save project (create or update)
+     * Save project to storage
      */
     public function save(Project $project): void;
 
     /**
-     * Delete project
+     * Delete project from storage
      */
     public function delete(ProjectId $id): bool;
 

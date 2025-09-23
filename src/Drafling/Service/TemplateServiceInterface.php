@@ -8,7 +8,7 @@ use Butschster\ContextGenerator\Drafling\Domain\Model\Template;
 use Butschster\ContextGenerator\Drafling\Domain\ValueObject\TemplateKey;
 
 /**
- * Template service contract for managing template operations
+ * Service interface for template operations
  */
 interface TemplateServiceInterface
 {
@@ -20,20 +20,63 @@ interface TemplateServiceInterface
     public function getAllTemplates(): array;
 
     /**
-     * Get template by key
+     * Get a template by key
+     *
+     * @param TemplateKey $key
+     * @return Template|null
      */
     public function getTemplate(TemplateKey $key): ?Template;
 
     /**
      * Check if template exists
+     *
+     * @param TemplateKey $key
+     * @return bool
      */
     public function templateExists(TemplateKey $key): bool;
 
     /**
-     * Validate template configuration
+     * Resolve display name to internal category key
+     * Checks both internal key and display name for matches
      *
-     * @param array $templateData Raw template data
-     * @return array Array of validation errors (empty if valid)
+     * @param Template $template
+     * @param string $displayNameOrKey
+     * @return string|null Internal category key or null if not found
      */
-    public function validateTemplate(array $templateData): array;
+    public function resolveCategoryKey(Template $template, string $displayNameOrKey): ?string;
+
+    /**
+     * Resolve display name to internal entry type key
+     * Checks both internal key and display name for matches
+     *
+     * @param Template $template
+     * @param string $displayNameOrKey
+     * @return string|null Internal entry type key or null if not found
+     */
+    public function resolveEntryTypeKey(Template $template, string $displayNameOrKey): ?string;
+
+    /**
+     * Resolve display name to internal status value
+     * Checks both internal value and display name for matches
+     *
+     * @param Template $template
+     * @param string $entryTypeKey Internal entry type key
+     * @param string $displayNameOrValue
+     * @return string|null Internal status value or null if not found
+     */
+    public function resolveStatusValue(Template $template, string $entryTypeKey, string $displayNameOrValue): ?string;
+
+    /**
+     * Get available statuses for an entry type
+     *
+     * @param Template $template
+     * @param string $entryTypeKey
+     * @return array Array of status values
+     */
+    public function getAvailableStatuses(Template $template, string $entryTypeKey): array;
+
+    /**
+     * Refresh templates from storage
+     */
+    public function refreshTemplates(): void;
 }

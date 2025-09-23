@@ -9,31 +9,31 @@ use Butschster\ContextGenerator\Drafling\Domain\ValueObject\EntryId;
 use Butschster\ContextGenerator\Drafling\Domain\ValueObject\ProjectId;
 
 /**
- * Entry repository contract for persisting entry data
+ * Repository interface for managing entries
  */
 interface EntryRepositoryInterface
 {
     /**
-     * Find entries for a project with optional filters
+     * Find all entries for a project with optional filtering
      *
-     * @param ProjectId $projectId Project identifier
-     * @param array $filters Optional filters (category, status, tags, etc.)
+     * @param ProjectId $projectId
+     * @param array $filters Associative array of filters (category, status, entry_type, tags, etc.)
      * @return Entry[]
      */
     public function findByProject(ProjectId $projectId, array $filters = []): array;
 
     /**
-     * Find specific entry
+     * Find entry by project and entry ID
      */
     public function findById(ProjectId $projectId, EntryId $entryId): ?Entry;
 
     /**
-     * Save entry (create or update)
+     * Save entry to storage
      */
     public function save(ProjectId $projectId, Entry $entry): void;
 
     /**
-     * Delete entry
+     * Delete entry from storage
      */
     public function delete(ProjectId $projectId, EntryId $entryId): bool;
 

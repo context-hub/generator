@@ -11,6 +11,7 @@ use Butschster\ContextGenerator\Drafling\Repository\TemplateRepositoryInterface;
 use Butschster\ContextGenerator\Drafling\Storage\Config\FileStorageConfig;
 use Butschster\ContextGenerator\Drafling\Storage\FileStorage\FileStorageDriver;
 use Spiral\Boot\Bootloader\Bootloader;
+use Spiral\Exceptions\ExceptionReporterInterface;
 use Spiral\Files\FilesInterface;
 use Psr\Log\LoggerInterface;
 
@@ -28,8 +29,9 @@ final class StorageBootloader extends Bootloader
                 DraflingConfigInterface $config,
                 FilesInterface $files,
                 LoggerInterface $logger,
+                ExceptionReporterInterface $reporter,
             ): StorageDriverInterface {
-                $driver = new FileStorageDriver($config, $files, $logger);
+                $driver = new FileStorageDriver($config, $files, $reporter, $logger);
 
                 // Initialize with typed configuration
                 $storageConfig = FileStorageConfig::fromArray([

@@ -8,12 +8,12 @@ use Butschster\ContextGenerator\Drafling\Domain\Model\Template;
 use Butschster\ContextGenerator\Drafling\Domain\ValueObject\TemplateKey;
 
 /**
- * Template repository contract for accessing template data
+ * Repository interface for managing templates
  */
 interface TemplateRepositoryInterface
 {
     /**
-     * Find all templates
+     * Find all available templates
      *
      * @return Template[]
      */
@@ -30,7 +30,7 @@ interface TemplateRepositoryInterface
     public function exists(TemplateKey $key): bool;
 
     /**
-     * Refresh template cache/data from source
+     * Refresh template cache/data
      */
     public function refresh(): void;
 }

@@ -6,50 +6,61 @@ namespace Butschster\ContextGenerator\Drafling\Service;
 
 use Butschster\ContextGenerator\Drafling\Domain\Model\Project;
 use Butschster\ContextGenerator\Drafling\Domain\ValueObject\ProjectId;
-use Butschster\ContextGenerator\Drafling\Domain\ValueObject\TemplateKey;
 use Butschster\ContextGenerator\Drafling\MCP\DTO\ProjectCreateRequest;
 use Butschster\ContextGenerator\Drafling\MCP\DTO\ProjectUpdateRequest;
 
 /**
- * Project service contract for managing project lifecycle
+ * Service interface for project operations
  */
 interface ProjectServiceInterface
 {
     /**
-     * Get all projects with optional filtering
+     * Create a new project from template
      *
-     * @param array $filters Optional filters (status, tags, template, etc.)
+     * @param ProjectCreateRequest $request
+     * @return Project
+     * @throws \Butschster\ContextGenerator\Drafling\Exception\TemplateNotFoundException
+     * @throws \Butschster\ContextGenerator\Drafling\Exception\DraflingException
+     */
+    public function createProject(ProjectCreateRequest $request): Project;
+
+    /**
+     * Update an existing project
+     *
+     * @param ProjectId $projectId
+     * @param ProjectUpdateRequest $request
+     * @return Project
+     * @throws \Butschster\ContextGenerator\Drafling\Exception\ProjectNotFoundException
+     * @throws \Butschster\ContextGenerator\Drafling\Exception\DraflingException
+     */
+    public function updateProject(ProjectId $projectId, ProjectUpdateRequest $request): Project;
+
+    /**
+     * Check if a project exists
+     */
+    public function projectExists(ProjectId $projectId): bool;
+
+    /**
+     * Get a single project by ID
+     *
+     * @param ProjectId $projectId
+     * @return Project|null
+     */
+    public function getProject(ProjectId $projectId): ?Project;
+
+    /**
+     * List projects with optional filtering
+     *
+     * @param array $filters
      * @return Project[]
      */
     public function listProjects(array $filters = []): array;
 
     /**
-     * Get project by ID
+     * Delete a project
+     *
+     * @param ProjectId $projectId
+     * @return bool
      */
-    public function getProject(ProjectId $id): ?Project;
-
-    /**
-     * Create new project
-     */
-    public function createProject(ProjectCreateRequest $request): Project;
-
-    /**
-     * Update existing project
-     */
-    public function updateProject(ProjectId $id, ProjectUpdateRequest $request): Project;
-
-    /**
-     * Delete project
-     */
-    public function deleteProject(ProjectId $id): bool;
-
-    /**
-     * Check if project exists
-     */
-    public function projectExists(ProjectId $id): bool;
-
-    /**
-     * Get project template
-     */
-    public function getProjectTemplate(ProjectId $id): ?TemplateKey;
+    public function deleteProject(ProjectId $projectId): bool;
 }

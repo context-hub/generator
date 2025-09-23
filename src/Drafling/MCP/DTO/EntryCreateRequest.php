@@ -39,9 +39,10 @@ final readonly class EntryCreateRequest
     ) {}
 
     /**
-     * Get the entry title, generating from content if not provided
+     * Get the processed title for entry creation
+     * This should be called by the service layer to ensure consistent title handling
      */
-    public function getTitle(): string
+    public function getProcessedTitle(): string
     {
         if ($this->title !== null && !empty(\trim($this->title))) {
             return \trim($this->title);
@@ -67,6 +68,14 @@ final readonly class EntryCreateRequest
     }
 
     /**
+     * @deprecated Use getProcessedTitle() instead for consistency
+     */
+    public function getTitle(): string
+    {
+        return $this->getProcessedTitle();
+    }
+
+    /**
      * Validate the request data
      */
     public function validate(): array
@@ -89,6 +98,33 @@ final readonly class EntryCreateRequest
             $errors[] = 'Content cannot be empty';
         }
 
+        // Validate tags if provided
+        foreach ($this->tags as $tag) {
+            if (!\is_string($tag) || empty(\trim($tag))) {
+                $errors[] = 'All tags must be non-empty strings';
+                break;
+            }
+        }
+
         return $errors;
+    }
+
+    /**
+     * Create a copy with resolved internal keys (to be used by services after template lookup)
+     */
+    public function withResolvedKeys(
+        string $resolvedCategory,
+        string $resolvedEntryType,
+        ?string $resolvedStatus = null,
+    ): self {
+        return new self(
+            projectId: $this->projectId,
+            category: $resolvedCategory,
+            entryType: $resolvedEntryType,
+            content: $this->content,
+            title: $this->title,
+            status: $resolvedStatus ?? $this->status,
+            tags: $this->tags,
+        );
     }
 }

@@ -60,16 +60,38 @@ final readonly class EntryUpdateRequest
 
     /**
      * Get processed content applying text replacement if needed
+     * This method should be called by the service layer to ensure proper content handling
      */
     public function getProcessedContent(?string $existingContent = null): ?string
     {
-        $content = $this->content ?? $existingContent;
+        $baseContent = $this->content ?? $existingContent;
 
-        if ($content === null || $this->textReplace === null) {
+        if ($baseContent === null || $this->textReplace === null) {
             return $this->content;
         }
 
-        return \str_replace($this->textReplace->find, $this->textReplace->replace, $content);
+        return \str_replace($this->textReplace->find, $this->textReplace->replace, $baseContent);
+    }
+
+    /**
+     * Get the final content that should be saved
+     * Considers both direct content updates and text replacement operations
+     */
+    public function getFinalContent(?string $existingContent = null): ?string
+    {
+        // If we have direct content update, use it as base
+        if ($this->content !== null) {
+            $baseContent = $this->content;
+        } else {
+            $baseContent = $existingContent;
+        }
+
+        // Apply text replacement if specified
+        if ($this->textReplace !== null && $baseContent !== null) {
+            return \str_replace($this->textReplace->find, $this->textReplace->replace, $baseContent);
+        }
+
+        return $this->content; // Return direct content update or null
     }
 
     /**
@@ -91,12 +113,44 @@ final readonly class EntryUpdateRequest
             $errors[] = 'At least one field must be provided for update';
         }
 
+        // Validate tags if provided
+        if ($this->tags !== null) {
+            if (!\is_array($this->tags)) {
+                $errors[] = 'Tags must be an array';
+            } else {
+                foreach ($this->tags as $tag) {
+                    if (!\is_string($tag) || empty(\trim($tag))) {
+                        $errors[] = 'All tags must be non-empty strings';
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Validate text replace if provided
         if ($this->textReplace !== null) {
             $replaceErrors = $this->textReplace->validate();
             $errors = \array_merge($errors, $replaceErrors);
         }
 
         return $errors;
+    }
+
+    /**
+     * Create a copy with resolved internal keys (to be used by services after template lookup)
+     */
+    public function withResolvedStatus(?string $resolvedStatus): self
+    {
+        return new self(
+            projectId: $this->projectId,
+            entryId: $this->entryId,
+            title: $this->title,
+            content: $this->content,
+            status: $resolvedStatus,
+            contentType: $this->contentType,
+            tags: $this->tags,
+            textReplace: $this->textReplace,
+        );
     }
 }
 
@@ -122,6 +176,8 @@ final readonly class TextReplaceRequest
         if (empty($this->find)) {
             $errors[] = 'Find text cannot be empty for text replacement';
         }
+
+        // Note: replace text can be empty (for deletion)
 
         return $errors;
     }
