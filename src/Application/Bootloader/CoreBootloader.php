@@ -33,9 +33,6 @@ final class CoreBootloader extends Bootloader
                     $dirs = $container->get(DirectoriesInterface::class);
 
                     $jsonSchemaPath = $dirs->get('json-schema');
-                    if (\str_starts_with($jsonSchemaPath, 'phar://')) {
-                        $jsonSchemaPath = 'phar:///' . \substr($jsonSchemaPath, 7);
-                    }
 
                     return new Directories(
                         rootPath: $dirs->get('root'),

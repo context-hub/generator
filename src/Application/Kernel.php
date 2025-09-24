@@ -39,10 +39,28 @@ use Butschster\ContextGenerator\Source\Text\TextSourceBootloader;
 use Butschster\ContextGenerator\Source\Tree\TreeSourceBootloader;
 use Butschster\ContextGenerator\Source\Url\UrlSourceBootloader;
 use Spiral\Boot\AbstractKernel;
+use Spiral\Boot\BootloadManagerInterface;
+use Spiral\Boot\DirectoriesInterface;
 use Spiral\Boot\Exception\BootException;
+use Spiral\Core\Container;
+use Spiral\Exceptions\ExceptionHandlerInterface;
 
 class Kernel extends AbstractKernel
 {
+    protected function __construct(
+        Container $container,
+        ExceptionHandlerInterface $exceptionHandler,
+        BootloadManagerInterface $bootloader,
+        array $directories,
+    ) {
+        parent::__construct($container, $exceptionHandler, $bootloader, $directories);
+
+        $container->bindSingleton(
+            DirectoriesInterface::class,
+            new Directories($this->mapDirectories($directories)),
+        );
+    }
+
     #[\Override]
     protected function defineSystemBootloaders(): array
     {
