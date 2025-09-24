@@ -13,7 +13,7 @@ use Butschster\ContextGenerator\Template\Detection\TemplateMatchingService;
  */
 final readonly class TemplateBasedDetectionStrategy implements TemplateDetectionStrategy
 {
-    private const float CONFIDENCE_THRESHOLD = 0.90;
+    private const float CONFIDENCE_THRESHOLD = 0.7;
 
     public function __construct(
         private TemplateMatchingService $templateMatchingService,
@@ -29,6 +29,7 @@ final readonly class TemplateBasedDetectionStrategy implements TemplateDetection
 
         // Sort by confidence (highest first)
         \usort($templateMatches, static fn($a, $b) => $b->confidence <=> $a->confidence);
+
         $bestMatch = $templateMatches[0];
 
         // Only return result if confidence meets threshold

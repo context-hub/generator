@@ -79,6 +79,7 @@ abstract class AbstractTemplateDefinition implements TemplateDefinitionInterface
     protected function getDetectedSourcePaths(array $projectMetadata): array
     {
         $existingDirs = $projectMetadata['existingDirectories'] ?? $projectMetadata['directories'] ?? [];
+
         $sourceDirs = $this->getSourceDirectories();
 
         // Filter to only include directories that exist

@@ -55,8 +55,7 @@ final class TemplateSystemBootloader extends Bootloader
         return [
             // Core registries
             TemplateRegistry::class => TemplateRegistry::class,
-            TemplateDefinitionRegistry::class => static fn(
-            ): TemplateDefinitionRegistry => new TemplateDefinitionRegistry([
+            TemplateDefinitionRegistry::class => static fn(): TemplateDefinitionRegistry => new TemplateDefinitionRegistry([
                 // PHP Frameworks (ordered by priority)
                 new LaravelTemplateDefinition(),
                 new SpiralTemplateDefinition(),

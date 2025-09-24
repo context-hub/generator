@@ -35,19 +35,6 @@ final class AnalyzerChain
     }
 
     /**
-     * Remove an analyzer from the chain
-     */
-    public function removeAnalyzer(string $analyzerName): void
-    {
-        $this->analyzers = \array_filter(
-            $this->analyzers,
-            static fn($analyzer) => $analyzer->getName() !== $analyzerName,
-        );
-
-        $this->analyzers = \array_values($this->analyzers); // Re-index
-    }
-
-    /**
      * Execute the chain and collect all results
      *
      * @return array<AnalysisResult>
@@ -69,47 +56,6 @@ final class AnalyzerChain
         \usort($results, static fn($a, $b) => $b->confidence <=> $a->confidence);
 
         return $results;
-    }
-
-    /**
-     * Get the first analyzer that can handle the project
-     */
-    public function getFirstApplicableAnalyzer(FSPath $projectRoot): ?ProjectAnalyzerInterface
-    {
-        foreach ($this->analyzers as $analyzer) {
-            if ($analyzer->canAnalyze($projectRoot)) {
-                return $analyzer;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Get all analyzers that can handle the project
-     *
-     * @return array<ProjectAnalyzerInterface>
-     */
-    public function getApplicableAnalyzers(FSPath $projectRoot): array
-    {
-        return \array_filter(
-            $this->analyzers,
-            static fn($analyzer) => $analyzer->canAnalyze($projectRoot),
-        );
-    }
-
-    /**
-     * Get analyzer by name
-     */
-    public function getAnalyzer(string $name): ?ProjectAnalyzerInterface
-    {
-        foreach ($this->analyzers as $analyzer) {
-            if ($analyzer->getName() === $name) {
-                return $analyzer;
-            }
-        }
-
-        return null;
     }
 
     /**

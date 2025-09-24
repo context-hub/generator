@@ -31,57 +31,96 @@ final readonly class Template implements \JsonSerializable
     /**
      * Check if this template matches the given detection criteria
      */
-    public function matches(array $projectMetadata): bool
+    public function matches(array $projectMetadata): array
     {
-        if (empty($this->detectionCriteria)) {
-            return false;
-        }
+        $matching = [
+            'confidence' => 0.0,
+        ];
 
-        // Check if required files exist
+        // Check files
         if (isset($this->detectionCriteria['files'])) {
             foreach ($this->detectionCriteria['files'] as $file) {
-                if (!isset($projectMetadata['files']) || !\in_array($file, $projectMetadata['files'], true)) {
-                    return false;
+                if ($this->hasFile($projectMetadata, $file)) {
+                    $matching['files'][] = $file;
                 }
             }
         }
 
-        // Check if required directories exist
+        // Check directories
         if (isset($this->detectionCriteria['directories'])) {
-            foreach ($this->detectionCriteria['directories'] as $dir) {
-                if (!isset($projectMetadata['directories']) || !\in_array($dir, $projectMetadata['directories'], true)) {
-                    return false;
+            foreach ($this->detectionCriteria['directories'] as $directory) {
+                if ($this->hasDirectory($projectMetadata, $directory)) {
+                    $matching['directories'][] = $directory;
                 }
             }
         }
 
-        // Check if required patterns exist in composer.json
+        // Check patterns
         if (isset($this->detectionCriteria['patterns'])) {
-            if (!isset($projectMetadata['composer'])) {
-                return false; // Required patterns but no composer data
-            }
-
             foreach ($this->detectionCriteria['patterns'] as $pattern) {
-                $found = false;
-                $composer = $projectMetadata['composer'];
-
-                // Check in require section
-                if (isset($composer['require']) && \array_key_exists($pattern, $composer['require'])) {
-                    $found = true;
-                }
-
-                // Check in require-dev section
-                if (isset($composer['require-dev']) && \array_key_exists($pattern, $composer['require-dev'])) {
-                    $found = true;
-                }
-
-                if (!$found) {
-                    return false;
+                if ($this->hasPackagePattern($projectMetadata, $pattern)) {
+                    $matching['patterns'][] = $pattern;
                 }
             }
         }
 
-        return true;
+
+        if (empty($this->detectionCriteria)) {
+            return $matching;
+        }
+
+        $totalCriteria = 0;
+        $matchedCriteria = 0;
+        $confidence = 0.0;
+
+        // Check file criteria
+        if (isset($this->detectionCriteria['files'])) {
+            $files = $this->detectionCriteria['files'];
+            $totalCriteria += \count($files);
+
+            foreach ($files as $file) {
+                if ($this->hasFile($projectMetadata, $file)) {
+                    $matchedCriteria++;
+                    $confidence += 0.3; // Files are important indicators
+                }
+            }
+        }
+
+        // Check directory criteria
+        if (isset($this->detectionCriteria['directories'])) {
+            $directories = $this->detectionCriteria['directories'];
+            $totalCriteria += \count($directories);
+
+            foreach ($directories as $directory) {
+                if ($this->hasDirectory($projectMetadata, $directory)) {
+                    $matchedCriteria++;
+                    $confidence += 0.2; // Directories are moderate indicators
+                }
+            }
+        }
+
+        // Check package pattern criteria (composer.json or package.json)
+        if (isset($this->detectionCriteria['patterns'])) {
+            $patterns = $this->detectionCriteria['patterns'];
+            $totalCriteria += \count($patterns);
+
+            foreach ($patterns as $pattern) {
+                if ($this->hasPackagePattern($projectMetadata, $pattern)) {
+                    $matchedCriteria++;
+                    $confidence += 0.4; // Package patterns are strong indicators
+                }
+            }
+        }
+
+        // Normalize confidence based on how many criteria were met
+        if ($totalCriteria > 0) {
+            $matchRatio = $matchedCriteria / $totalCriteria;
+            $confidence = $confidence * (float) $matchRatio;
+        }
+
+        $matching['confidence'] = \min($confidence, 1.0);
+
+        return $matching;
     }
 
     public function jsonSerialize(): array
@@ -94,5 +133,43 @@ final readonly class Template implements \JsonSerializable
             'detectionCriteria' => $this->detectionCriteria,
             'config' => $this->config,
         ];
+    }
+
+    /**
+     * Check if project has a specific file
+     */
+    private function hasFile(array $projectMetadata, string $file): bool
+    {
+        return isset($projectMetadata['files']) && \in_array($file, $projectMetadata['files'], true);
+    }
+
+    /**
+     * Check if project has a specific directory
+     */
+    private function hasDirectory(array $projectMetadata, string $directory): bool
+    {
+        return isset($projectMetadata['directories']) && \in_array($directory, $projectMetadata['directories'], true);
+    }
+
+    /**
+     * Check if project has a specific package pattern in composer.json or package.json
+     */
+    private function hasPackagePattern(array $projectMetadata, string $pattern): bool
+    {
+        // Check composer.json packages
+        if (isset($projectMetadata['composer']['packages'])) {
+            if (\array_key_exists($pattern, $projectMetadata['composer']['packages'])) {
+                return true;
+            }
+        }
+
+        // Check package.json dependencies
+        if (isset($projectMetadata['packageJson']['dependencies'])) {
+            if (\array_key_exists($pattern, $projectMetadata['packageJson']['dependencies'])) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
