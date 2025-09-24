@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Console;
 
 use Butschster\ContextGenerator\Application\Application;
+use Butschster\ContextGenerator\Application\FSPath;
 use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\Lib\BinaryUpdater\BinaryUpdater;
 use Butschster\ContextGenerator\Lib\BinaryUpdater\UpdaterFactory;
@@ -77,7 +78,7 @@ final class SelfUpdateCommand extends BaseCommand
             return Command::FAILURE;
         }
 
-        $binaryPath = (string) $dirs->getRootPath()->join($this->binaryName);
+        $binaryPath = (string) FSPath::create($storeLocation)->join($this->binaryName);
 
         $this->output->title($app->name);
         $this->output->text('Current version: ' . $app->version);
