@@ -23,22 +23,6 @@ abstract class AbstractFrameworkAnalyzer implements ProjectAnalyzerInterface
         protected readonly ProjectStructureDetector $structureDetector,
     ) {}
 
-    /**
-     * Set the next analyzer in the chain
-     */
-    public function setNext(?ProjectAnalyzerInterface $analyzer): void
-    {
-        $this->nextAnalyzer = $analyzer;
-    }
-
-    /**
-     * Get the next analyzer in the chain
-     */
-    public function getNext(): ?ProjectAnalyzerInterface
-    {
-        return $this->nextAnalyzer;
-    }
-
     public function analyze(FSPath $projectRoot): ?AnalysisResult
     {
         if (!$this->canAnalyze($projectRoot)) {

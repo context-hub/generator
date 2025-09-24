@@ -35,19 +35,6 @@ final class CompositeDetectionStrategy implements TemplateDetectionStrategy
         $this->sortStrategiesByPriority();
     }
 
-    /**
-     * Remove a strategy by name
-     */
-    public function removeStrategy(string $strategyName): void
-    {
-        $this->strategies = \array_filter(
-            $this->strategies,
-            static fn($strategy) => $strategy->getName() !== $strategyName,
-        );
-
-        $this->strategies = \array_values($this->strategies); // Re-index
-    }
-
     public function detect(FSPath $projectRoot, array $projectMetadata): ?TemplateDetectionResult
     {
         foreach ($this->strategies as $strategy) {

@@ -25,14 +25,6 @@ final readonly class AnalysisResult
     ) {}
 
     /**
-     * Check if this result has high confidence (>= 0.8)
-     */
-    public function hasHighConfidence(): bool
-    {
-        return $this->confidence >= 0.8;
-    }
-
-    /**
      * Get the primary suggested template (first in the list)
      */
     public function getPrimaryTemplate(): ?string

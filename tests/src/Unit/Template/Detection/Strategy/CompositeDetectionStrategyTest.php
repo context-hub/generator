@@ -67,33 +67,6 @@ class CompositeDetectionStrategyTest extends TestCase
         $this->assertSame('low', $strategies[2]->getName());
     }
 
-    public function testRemoveStrategy(): void
-    {
-        $strategy1 = $this->createMockStrategy('strategy1');
-        $strategy2 = $this->createMockStrategy('strategy2');
-
-        $this->strategy->addStrategy($strategy1);
-        $this->strategy->addStrategy($strategy2);
-
-        $this->strategy->removeStrategy('strategy1');
-
-        $strategies = $this->strategy->getStrategies();
-        $this->assertCount(1, $strategies);
-        $this->assertSame('strategy2', $strategies[0]->getName());
-    }
-
-    public function testRemoveNonExistentStrategy(): void
-    {
-        $strategy1 = $this->createMockStrategy('strategy1');
-        $this->strategy->addStrategy($strategy1);
-
-        $this->strategy->removeStrategy('non-existent');
-
-        $strategies = $this->strategy->getStrategies();
-        $this->assertCount(1, $strategies);
-        $this->assertSame('strategy1', $strategies[0]->getName());
-    }
-
     public function testDetectReturnsFirstValidResult(): void
     {
         $projectRoot = FSPath::create('/path/to/project');

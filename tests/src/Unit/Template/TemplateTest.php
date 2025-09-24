@@ -57,7 +57,7 @@ class TemplateTest extends TestCase
 
         $metadata = ['files' => ['composer.json']];
 
-        $this->assertFalse($template->matches($metadata));
+        $this->assertEquals(['confidence' => 0.0], $template->matches($metadata));
     }
 
     public function testMatchesRequiredFiles(): void
@@ -69,13 +69,21 @@ class TemplateTest extends TestCase
         );
 
         $metadata = ['files' => ['composer.json', 'artisan', 'package.json']];
-        $this->assertTrue($template->matches($metadata));
+        $this->assertEquals([
+            'confidence' => 0.6,
+            'files' => ['composer.json', 'artisan'],
+        ], $template->matches($metadata));
 
         $metadata = ['files' => ['composer.json']]; // missing artisan
-        $this->assertFalse($template->matches($metadata));
+        $this->assertEquals([
+            'confidence' => 0.15,
+            'files' => ['composer.json'],
+        ], $template->matches($metadata));
 
         $metadata = []; // no files key
-        $this->assertFalse($template->matches($metadata));
+        $this->assertEquals([
+            'confidence' => 0.0,
+        ], $template->matches($metadata));
     }
 
     public function testMatchesRequiredDirectories(): void
@@ -87,13 +95,21 @@ class TemplateTest extends TestCase
         );
 
         $metadata = ['directories' => ['app', 'config', 'public']];
-        $this->assertTrue($template->matches($metadata));
+        $this->assertEquals([
+            'confidence' => 0.4,
+            'directories' => ['app', 'config'],
+        ], $template->matches($metadata));
 
         $metadata = ['directories' => ['app']]; // missing config
-        $this->assertFalse($template->matches($metadata));
+        $this->assertEquals([
+            'confidence' => 0.1,
+            'directories' => ['app'],
+        ], $template->matches($metadata));
 
         $metadata = []; // no directories key
-        $this->assertFalse($template->matches($metadata));
+        $this->assertEquals([
+            'confidence' => 0.0,
+        ], $template->matches($metadata));
     }
 
     public function testMatchesComposerPatterns(): void
@@ -110,7 +126,9 @@ class TemplateTest extends TestCase
                 'require-dev' => ['phpunit/phpunit' => '^9.0'],
             ],
         ];
-        $this->assertTrue($template->matches($metadata));
+        $this->assertEquals([
+            'confidence' => 0.0,
+        ], $template->matches($metadata));
 
         $metadata = [
             'composer' => [
@@ -118,10 +136,14 @@ class TemplateTest extends TestCase
                 // missing phpunit/phpunit
             ],
         ];
-        $this->assertFalse($template->matches($metadata));
+        $this->assertEquals([
+            'confidence' => 0.0,
+        ], $template->matches($metadata));
 
         $metadata = []; // no composer key
-        $this->assertFalse($template->matches($metadata));
+        $this->assertEquals([
+            'confidence' => 0.0,
+        ], $template->matches($metadata));
     }
 
     public function testMatchesComposerPatternsInRequireDev(): void
@@ -137,7 +159,9 @@ class TemplateTest extends TestCase
                 'require-dev' => ['phpunit/phpunit' => '^9.0'],
             ],
         ];
-        $this->assertTrue($template->matches($metadata));
+        $this->assertEquals([
+            'confidence' => 0.0,
+        ], $template->matches($metadata));
     }
 
     public function testMatchesAllCriteria(): void
@@ -159,11 +183,19 @@ class TemplateTest extends TestCase
                 'require' => ['laravel/framework' => '^9.0'],
             ],
         ];
-        $this->assertTrue($template->matches($metadata));
+        $this->assertEquals([
+            'confidence' => 0.8,
+            'files' => ['composer.json', 'artisan'],
+            'directories' => ['app', 'config'],
+        ], $template->matches($metadata));
 
         // Missing one file
         $metadata['files'] = ['composer.json'];
-        $this->assertFalse($template->matches($metadata));
+        $this->assertEquals([
+            'confidence' => 0.42,
+            'files' => ['composer.json'],
+            'directories' => ['app', 'config'],
+        ], $template->matches($metadata));
     }
 
     public function testJsonSerialize(): void

@@ -6,6 +6,7 @@ namespace Butschster\ContextGenerator\Template\Detection;
 
 use Butschster\ContextGenerator\Application\FSPath;
 use Butschster\ContextGenerator\Template\Detection\Strategy\CompositeDetectionStrategy;
+use Butschster\ContextGenerator\Template\Detection\Strategy\TemplateDetectionStrategy;
 
 /**
  * Improved template detection service using strategy pattern
@@ -63,43 +64,12 @@ final readonly class TemplateDetectionService
     }
 
     /**
-     * Add a new detection strategy
-     */
-    public function addStrategy(
-        \Butschster\ContextGenerator\Template\Detection\Strategy\TemplateDetectionStrategy $strategy,
-    ): void {
-        $this->detectionStrategy->addStrategy($strategy);
-    }
-
-    /**
-     * Remove a detection strategy by name
-     */
-    public function removeStrategy(string $strategyName): void
-    {
-        $this->detectionStrategy->removeStrategy($strategyName);
-    }
-
-    /**
      * Get all registered strategies
      *
-     * @return array<\Butschster\ContextGenerator\Template\Detection\Strategy\TemplateDetectionStrategy>
+     * @return array<TemplateDetectionStrategy>
      */
     public function getStrategies(): array
     {
         return $this->detectionStrategy->getStrategies();
-    }
-
-    /**
-     * Check if a specific strategy is registered
-     */
-    public function hasStrategy(string $strategyName): bool
-    {
-        foreach ($this->detectionStrategy->getStrategies() as $strategy) {
-            if ($strategy->getName() === $strategyName) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

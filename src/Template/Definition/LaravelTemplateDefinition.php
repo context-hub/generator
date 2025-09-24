@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Template\Definition;
 
 use Butschster\ContextGenerator\Document\Document;
+use Butschster\ContextGenerator\Lib\TreeBuilder\TreeViewConfig;
 use Butschster\ContextGenerator\Source\File\FileSource;
 
 /**
@@ -50,9 +51,9 @@ final class LaravelTemplateDefinition extends AbstractTemplateDefinition
      */
     #[\Override]
     protected function customizeTreeViewConfig(
-        \Butschster\ContextGenerator\Lib\TreeBuilder\TreeViewConfig $config,
-    ): \Butschster\ContextGenerator\Lib\TreeBuilder\TreeViewConfig {
-        return new \Butschster\ContextGenerator\Lib\TreeBuilder\TreeViewConfig(
+        TreeViewConfig $config,
+    ): TreeViewConfig {
+        return new TreeViewConfig(
             showCharCount: true,
             includeFiles: true,
             maxDepth: 3,

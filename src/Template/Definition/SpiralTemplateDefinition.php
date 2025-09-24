@@ -21,7 +21,6 @@ final class SpiralTemplateDefinition implements TemplateDefinitionInterface
      */
     private const array SPIRAL_DIRECTORIES = [
         'app',
-        'resources',
         'public',
     ];
 
@@ -30,8 +29,7 @@ final class SpiralTemplateDefinition implements TemplateDefinitionInterface
      */
     private const array SPIRAL_PACKAGES = [
         'spiral/framework',
-        'spiral/roadrunner-cli',
-        'spiral/nyholm-bridge',
+        'spiral/roadrunner-bridge',
     ];
 
     public function createTemplate(array $projectMetadata = []): Template
@@ -77,9 +75,9 @@ final class SpiralTemplateDefinition implements TemplateDefinitionInterface
     public function getDetectionCriteria(): array
     {
         return [
-            'files' => ['composer.json'],
+            'files' => ['composer.json', '.rr.yaml', 'rr', '.env.sample', 'app.php'],
             'patterns' => self::SPIRAL_PACKAGES,
-            'directories' => self::SPIRAL_DIRECTORIES,
+            'directories' => [...self::SPIRAL_DIRECTORIES, 'runtime'],
         ];
     }
 
