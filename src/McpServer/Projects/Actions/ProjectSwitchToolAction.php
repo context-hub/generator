@@ -12,9 +12,9 @@ use Butschster\ContextGenerator\McpServer\Projects\Actions\Dto\CurrentProjectRes
 use Butschster\ContextGenerator\McpServer\Projects\Actions\Dto\ProjectSwitchRequest;
 use Butschster\ContextGenerator\McpServer\Projects\Actions\Dto\ProjectSwitchResponse;
 use Butschster\ContextGenerator\McpServer\Projects\ProjectServiceInterface;
+use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
-use Mcp\Types\TextContent;
 use Psr\Log\LoggerInterface;
 
 #[Tool(
@@ -41,9 +41,7 @@ final readonly class ProjectSwitchToolAction
             $pathOrAlias = $request->alias;
 
             if (empty($pathOrAlias)) {
-                return new CallToolResult([
-                    new TextContent(text: 'Error: Missing pathOrAlias parameter'),
-                ], isError: true);
+                return ToolResult::error('Missing pathOrAlias parameter');
             }
 
             // Handle using an alias as the path
@@ -67,15 +65,13 @@ final readonly class ProjectSwitchToolAction
                     $suggestions[] = 'Available aliases: ' . \implode(', ', $availableAliases);
                 }
 
-                return new CallToolResult([
-                    new TextContent(
-                        text: \sprintf(
-                            "Error: Project '%s' is not registered.\n%s",
-                            $projectPath,
-                            \implode("\n", $suggestions),
-                        ),
+                return ToolResult::error(
+                    \sprintf(
+                        "Project '%s' is not registered.\n%s",
+                        $projectPath,
+                        \implode("\n", $suggestions),
                     ),
-                ], isError: true);
+                );
             }
 
             // Try to switch to this project
@@ -105,9 +101,7 @@ final readonly class ProjectSwitchToolAction
                     resolvedFromAlias: $aliasResolution,
                 );
 
-                return new CallToolResult([
-                    new TextContent(text: \json_encode($response, JSON_PRETTY_PRINT)),
-                ]);
+                return ToolResult::success($response);
             }
 
             $response = new ProjectSwitchResponse(
@@ -115,9 +109,7 @@ final readonly class ProjectSwitchToolAction
                 message: \sprintf("Failed to switch to project '%s'", $projectPath),
             );
 
-            return new CallToolResult([
-                new TextContent(text: \json_encode($response, JSON_PRETTY_PRINT)),
-            ], isError: true);
+            return ToolResult::error($response->message);
         } catch (\Throwable $e) {
             $this->logger->error('Error switching project', [
                 'pathOrAlias' => $request->alias,
@@ -125,9 +117,7 @@ final readonly class ProjectSwitchToolAction
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return new CallToolResult([
-                new TextContent(text: 'Error: ' . $e->getMessage()),
-            ], isError: true);
+            return ToolResult::error($e->getMessage());
         }
     }
 

@@ -10,6 +10,8 @@ vendor
 node_modules
 .php-cs-fixer.cache
 .context
+.templates
+.researches
 runtime
 mcp-*.log
 .env

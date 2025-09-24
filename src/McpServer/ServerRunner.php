@@ -13,6 +13,7 @@ use Spiral\Core\Attribute\Proxy;
 use Spiral\Core\Attribute\Singleton;
 use Spiral\Core\Scope;
 use Spiral\Core\ScopeInterface;
+use Spiral\Exceptions\ExceptionReporterInterface;
 
 #[Singleton]
 final class ServerRunner implements ServerRunnerInterface
@@ -47,6 +48,7 @@ final class ServerRunner implements ServerRunnerInterface
                 RouteRegistrar $registrar,
                 McpItemsRegistry $registry,
                 HasPrefixLoggerInterface $logger,
+                ExceptionReporterInterface $reporter,
             ) use ($name): void {
                 // Register all classes with MCP item attributes. Should be before registering controllers!
                 $registry->registerMany($this->actions);
@@ -59,6 +61,7 @@ final class ServerRunner implements ServerRunnerInterface
                     router: $registrar->router,
                     logger: $logger,
                     projectService: $this->projectService,
+                    reporter: $reporter,
                 ))->run($name);
             },
         );

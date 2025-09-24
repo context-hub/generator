@@ -36,6 +36,7 @@ final readonly class ActionCaller
                 json: (array) ($request->getParsedBody() ?? []),
                 class: $inputSchema->class,
             );
+
             $bindings[$inputSchema->class] = $input;
         }
 

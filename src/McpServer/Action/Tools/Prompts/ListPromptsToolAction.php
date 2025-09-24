@@ -8,9 +8,9 @@ use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
 use Butschster\ContextGenerator\McpServer\Prompt\PromptProviderInterface;
 use Butschster\ContextGenerator\McpServer\Registry\McpItemsRegistry;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
+use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
-use Mcp\Types\TextContent;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
@@ -54,13 +54,9 @@ final readonly class ListPromptsToolAction
                 ];
             }
 
-            return new CallToolResult([
-                new TextContent(
-                    text: \json_encode([
-                        'count' => \count($promptsList),
-                        'prompts' => $promptsList,
-                    ], JSON_PRETTY_PRINT),
-                ),
+            return ToolResult::success([
+                'count' => \count($promptsList),
+                'prompts' => $promptsList,
             ]);
         } catch (\Throwable $e) {
             $this->logger->error('Error listing prompts', [
@@ -68,11 +64,7 @@ final readonly class ListPromptsToolAction
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return new CallToolResult([
-                new TextContent(
-                    text: 'Error: ' . $e->getMessage(),
-                ),
-            ], isError: true);
+            return ToolResult::error($e->getMessage());
         }
     }
 }

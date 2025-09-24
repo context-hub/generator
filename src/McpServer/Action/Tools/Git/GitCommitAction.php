@@ -11,9 +11,9 @@ use Butschster\ContextGenerator\Lib\Git\Exception\GitCommandException;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Git\Dto\GitCommitRequest;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
+use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Types\CallToolResult;
-use Mcp\Types\TextContent;
 use Psr\Log\LoggerInterface;
 
 #[Tool(
@@ -39,20 +39,12 @@ final readonly class GitCommitAction
 
         // Check if we're in a valid git repository
         if (!$this->commandsExecutor->isValidRepository($repository)) {
-            return new CallToolResult([
-                new TextContent(
-                    text: 'Error: Not a git repository (or any of the parent directories)',
-                ),
-            ], isError: true);
+            return ToolResult::error('Not a git repository (or any of the parent directories)');
         }
 
         // Validate commit message
         if (empty(\trim($request->message))) {
-            return new CallToolResult([
-                new TextContent(
-                    text: 'Error: Commit message cannot be empty',
-                ),
-            ], isError: true);
+            return ToolResult::error('Commit message cannot be empty');
         }
 
         try {
@@ -69,21 +61,13 @@ final readonly class GitCommitAction
 
             // Check if there are changes to commit (unless allowEmpty is true)
             if (!$this->hasChangesToCommit($repository, $request->stageAll)) {
-                return new CallToolResult([
-                    new TextContent(
-                        text: 'Error: No changes to commit. Use git-add to stage files or enable stageAll option',
-                    ),
-                ], isError: true);
+                return ToolResult::error('No changes to commit. Use git-add to stage files or enable stageAll option');
             }
 
             $command = new Command($repository, $commandParts);
             $result = $this->commandsExecutor->executeString($command);
 
-            return new CallToolResult([
-                new TextContent(
-                    text: $result,
-                ),
-            ]);
+            return ToolResult::text($result);
         } catch (GitCommandException $e) {
             $this->logger->error('Error executing git commit', [
                 'repository' => $repository,
@@ -92,11 +76,7 @@ final readonly class GitCommitAction
                 'code' => $e->getCode(),
             ]);
 
-            return new CallToolResult([
-                new TextContent(
-                    text: 'Error: ' . $e->getMessage(),
-                ),
-            ], isError: true);
+            return ToolResult::error($e->getMessage());
         } catch (\Throwable $e) {
             $this->logger->error('Unexpected error during git commit', [
                 'repository' => $repository,
@@ -104,11 +84,7 @@ final readonly class GitCommitAction
                 'error' => $e->getMessage(),
             ]);
 
-            return new CallToolResult([
-                new TextContent(
-                    text: 'Error: ' . $e->getMessage(),
-                ),
-            ], isError: true);
+            return ToolResult::error($e->getMessage());
         }
     }
 

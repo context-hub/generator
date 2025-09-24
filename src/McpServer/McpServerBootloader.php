@@ -7,6 +7,15 @@ namespace Butschster\ContextGenerator\McpServer;
 use Butschster\ContextGenerator\Application\Bootloader\ConsoleBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\HttpClientBootloader;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
+use Butschster\ContextGenerator\Research\MCP\Tools\CreateEntryToolAction;
+use Butschster\ContextGenerator\Research\MCP\Tools\CreateResearchToolAction;
+use Butschster\ContextGenerator\Research\MCP\Tools\GetResearchToolAction;
+use Butschster\ContextGenerator\Research\MCP\Tools\ListEntriesToolAction;
+use Butschster\ContextGenerator\Research\MCP\Tools\ListResearchesToolAction;
+use Butschster\ContextGenerator\Research\MCP\Tools\ListTemplatesToolAction;
+use Butschster\ContextGenerator\Research\MCP\Tools\ReadEntryToolAction;
+use Butschster\ContextGenerator\Research\MCP\Tools\UpdateEntryToolAction;
+use Butschster\ContextGenerator\Research\MCP\Tools\UpdateResearchToolAction;
 use Butschster\ContextGenerator\McpServer\Action\Prompts\FilesystemOperationsAction;
 use Butschster\ContextGenerator\McpServer\Action\Prompts\GetPromptAction;
 use Butschster\ContextGenerator\McpServer\Action\Prompts\ListPromptsAction;
@@ -229,12 +238,26 @@ final class McpServerBootloader extends Bootloader
             ];
         }
 
+        $actions = [
+            ...$actions,
+            ListTemplatesToolAction::class,
+            CreateResearchToolAction::class,
+            ListResearchesToolAction::class,
+            GetResearchToolAction::class,
+            CreateEntryToolAction::class,
+            ListEntriesToolAction::class,
+            ReadEntryToolAction::class,
+            UpdateEntryToolAction::class,
+            UpdateResearchToolAction::class,
+        ];
+
         if ($config->isGitOperationsEnabled()) {
             $actions[] = GitStatusAction::class;
             $actions[] = GitAddAction::class;
             $actions[] = GitCommitAction::class;
         }
 
+        // Should be last
         if ($config->isCustomToolsEnabled()) {
             $actions = [
                 ...$actions,
@@ -242,6 +265,6 @@ final class McpServerBootloader extends Bootloader
             ];
         }
 
-        return $actions;
+        return \array_unique($actions);
     }
 }
