@@ -124,7 +124,8 @@ $app = Kernel::create(
     directories: [
         'root' => $appPath,
         'output' => $appPath . '/.context',
-        'config' => $appPath,
+        'config' => __DIR__ . '/config',
+        'runtime' => __DIR__ . '/runtime',
         'global-state' => $globalStateDir,
         'json-schema' => __DIR__,
     ],
