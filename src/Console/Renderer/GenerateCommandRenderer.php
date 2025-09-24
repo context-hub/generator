@@ -161,7 +161,7 @@ final readonly class GenerateCommandRenderer
                 '<fg=yellow>%s Warning:</> Could not read file statistics for %s: %s',
                 self::WARNING_SYMBOL,
                 $outputPath,
-                $e->getMessage()
+                $e->getMessage(),
             ));
             return null;
         }
@@ -176,14 +176,14 @@ final readonly class GenerateCommandRenderer
         $i = 0;
 
         while ($bytes >= 1024 && $i < \count($units) - 1) {
-            $bytes = (float) $bytes / 1024;
+            $bytes = (float) $bytes / 1024.0;
             $i++;
         }
 
         // Ensure $i is within bounds
         $i = \min($i, \count($units) - 1);
 
-        return \round($bytes, 1) . ' ' . $units[$i];
+        return (string) \round($bytes, 1) . ' ' . $units[$i];
     }
 
     /**
