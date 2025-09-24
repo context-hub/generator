@@ -7,18 +7,14 @@
 # GLOBALS
 
 # Colors
-RED='\033[31m'
-MUTED='\033[2m'
-GREEN='\033[32m'
-YELLOW='\033[33m'
-BLUE='\033[34m'
-BOLD='\033[1m'
-DEFAULT='\033[0m'
-
-# Symbols (ASCII compatible)
-CHECK_MARK="✓"
-CROSS_MARK="✗"
-ARROW="→"
+ESC=$(printf '\033')
+RED="${ESC}[31m"
+MUTED="${ESC}[2m"
+GREEN="${ESC}[32m"
+YELLOW="${ESC}[33m"
+BLUE="${ESC}[34m"
+BOLD="${ESC}[1m"
+DEFAULT="${ESC}[0m"
 
 # Project name
 PNAME='ctx'
@@ -374,7 +370,7 @@ download_and_install() {
   fi
 
   # Make executable (not necessary on Windows but doesn't hurt)
-  if ! chmod +x "$bin_dir/$binary_name"; then
+  if ! chmod 755 "$bin_dir/$binary_name"; then
     print_error "Failed to make $bin_dir/$binary_name executable"
     exit 1
   fi
