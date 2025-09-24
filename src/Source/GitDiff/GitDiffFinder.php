@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\GitDiff;
 
+use Butschster\ContextGenerator\Application\FSPath;
 use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Lib\Finder\FinderInterface;
 use Butschster\ContextGenerator\Lib\Finder\FinderResult;
@@ -60,7 +61,7 @@ final readonly class GitDiffFinder implements FinderInterface
         ]);
 
         // Create a temporary directory for the diffs
-        $tempDir = \sys_get_temp_dir() . '/git-diff-' . \uniqid();
+        $tempDir = FSPath::temp()->join('git-diff-' . \uniqid())->toString();
         $this->files->ensureDirectory($tempDir);
 
         try {
@@ -88,7 +89,8 @@ final readonly class GitDiffFinder implements FinderInterface
 
             // Get file paths for tree view
             $filePaths = \array_map(
-                static fn(SplFileInfo $fileInfo) => \method_exists($fileInfo, 'getOriginalPath')
+                static fn(SplFileInfo $fileInfo)
+                    => \method_exists($fileInfo, 'getOriginalPath')
                     ? $fileInfo->getOriginalPath()
                     : $fileInfo->getRelativePathname(),
                 $fileInfos,
@@ -161,13 +163,14 @@ final readonly class GitDiffFinder implements FinderInterface
         // Get the filtered files
         $filteredPaths = [];
         foreach ($finder as $file) {
-            $relativePath = \str_replace($tempDir . '/', '', $file->getPathname());
+            $relativePath = FSPath::create($file->getPathname())->trim($tempDir)->toString();
+
             $filteredPaths[$relativePath] = true;
         }
 
         // Filter the file infos
         $filtered = \array_filter($fileInfos, static function (SplFileInfo $fileInfo) use ($filteredPaths, $tempDir) {
-            $relativePath = \str_replace($tempDir . '/', '', $fileInfo->getPathname());
+            $relativePath = FSPath::create($fileInfo->getPathname())->trim($tempDir)->toString();
             return isset($filteredPaths[$relativePath]);
         });
 
