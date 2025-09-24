@@ -157,6 +157,12 @@ final readonly class GenerateCommandRenderer
             ];
         } catch (\Throwable $e) {
             // If we can't read the file, return null to avoid errors
+            $this->output->writeln(\sprintf(
+                '<fg=yellow>%s Warning:</> Could not read file statistics for %s: %s',
+                self::WARNING_SYMBOL,
+                $outputPath,
+                $e->getMessage()
+            ));
             return null;
         }
     }
@@ -170,7 +176,7 @@ final readonly class GenerateCommandRenderer
         $i = 0;
 
         while ($bytes >= 1024 && $i < \count($units) - 1) {
-            $bytes /= 1024;
+            $bytes = (float) $bytes / 1024;
             $i++;
         }
 
