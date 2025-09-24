@@ -312,7 +312,7 @@ final class InitCommand extends BaseCommand
                 $this->output->note('Please check directory permissions or run with appropriate privileges.');
                 return false;
             }
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             // If we can't check permissions, assume it's not writable
             $this->output->error(\sprintf('Cannot check directory permissions: %s', $directory));
             $this->output->note('Please ensure the directory is writable or run with appropriate privileges.');
