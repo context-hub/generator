@@ -12,6 +12,7 @@ use Butschster\ContextGenerator\Lib\Content\Block\SeparatorBlock;
 use Butschster\ContextGenerator\Lib\Content\Block\TextBlock;
 use Butschster\ContextGenerator\Lib\Content\Block\TitleBlock;
 use Butschster\ContextGenerator\Lib\Content\Block\TreeViewBlock;
+use Butschster\ContextGenerator\Lib\Content\Block\FileStatsBlock;
 use Butschster\ContextGenerator\Lib\Content\Renderer\MarkdownRenderer;
 use Butschster\ContextGenerator\Lib\Content\Renderer\RendererInterface;
 
@@ -121,6 +122,18 @@ final class ContentBuilder implements \Stringable
     public function addTreeView(string $treeView): self
     {
         return $this->addBlock(new TreeViewBlock($treeView));
+    }
+
+    /**
+     * Add a file stats block
+     *
+     * @param int $fileSize The file size in bytes
+     * @param int $lineCount The number of lines in the file
+     * @param string|null $filePath The file path (optional)
+     */
+    public function addFileStats(int $fileSize, int $lineCount, ?string $filePath = null): self
+    {
+        return $this->addBlock(new FileStatsBlock('', $fileSize, $lineCount, $filePath));
     }
 
     /**

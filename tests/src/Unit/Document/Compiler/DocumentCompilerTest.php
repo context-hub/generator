@@ -38,8 +38,10 @@ final class DocumentCompilerTest extends TestCase
         );
 
         $this->files
-            ->expects($this->never())
-            ->method('exists');
+            ->expects($this->once())
+            ->method('exists')
+            ->with('/base/path/output.txt')
+            ->willReturn(false);
 
         $this->files
             ->expects($this->once())
@@ -102,8 +104,10 @@ final class DocumentCompilerTest extends TestCase
         $document = $document->addSource($source);
 
         $this->files
-            ->expects($this->never())
-            ->method('exists');
+            ->expects($this->once())
+            ->method('exists')
+            ->with('/base/path/output.txt')
+            ->willReturn(false);
 
         $compiled = $this->compiler->compile($document);
 
@@ -122,7 +126,7 @@ final class DocumentCompilerTest extends TestCase
         )->addTag(...['tag1', 'tag2']);
 
         $this->files
-            ->expects($this->never())
+            ->expects($this->once())
             ->method('exists')
             ->with('/base/path/output.txt')
             ->willReturn(false);
@@ -163,8 +167,10 @@ final class DocumentCompilerTest extends TestCase
         $document = $document->addSource($source1)->addSource($source2);
 
         $this->files
-            ->expects($this->never())
-            ->method('exists');
+            ->expects($this->once())
+            ->method('exists')
+            ->with('/base/path/output.txt')
+            ->willReturn(false);
 
         $this->files
             ->expects($this->once())
