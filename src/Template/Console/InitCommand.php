@@ -292,12 +292,47 @@ final class InitCommand extends BaseCommand
         }
     }
 
+    private function validateDirectoryForWriting(FilesInterface $files, string $filePath): bool
+    {
+        $directory = \dirname($filePath);
+
+        if (!$files->exists($directory)) {
+            $this->output->error(\sprintf('Directory does not exist: %s', $directory));
+            $this->output->note('Please create the directory or use an existing one.');
+            return false;
+        }
+
+        // Check if directory is writable by checking permissions
+        try {
+            $permissions = $files->getPermissions($directory);
+            // Check if the directory has write permissions for owner, group, or others
+            $isWritable = ($permissions & 0o200) || ($permissions & 0o020) || ($permissions & 0o002);
+            if (!$isWritable) {
+                $this->output->error(\sprintf('Directory is not writable: %s', $directory));
+                $this->output->note('Please check directory permissions or run with appropriate privileges.');
+                return false;
+            }
+        } catch (\Throwable $e) {
+            // If we can't check permissions, assume it's not writable
+            $this->output->error(\sprintf('Cannot check directory permissions: %s', $directory));
+            $this->output->note('Please ensure the directory is writable or run with appropriate privileges.');
+            return false;
+        }
+
+        return true;
+    }
+
     private function writeConfig(
         FilesInterface $files,
         ConfigRegistry $config,
         ConfigType $type,
         string $filePath,
     ): int {
+        // Validate directory exists and is writable
+        if (!$this->validateDirectoryForWriting($files, $filePath)) {
+            return Command::FAILURE;
+        }
+
         try {
             // Create a new config registry with schema for output
             $outputConfig = new ConfigRegistry(JsonSchema::SCHEMA_URL);
