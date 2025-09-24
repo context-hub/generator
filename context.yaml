@@ -35,30 +35,30 @@ documents:
           - vendor/spiral/files/src/FilesInterface.php
         showTreeView: true
 
-  - description: Drafling Templates
+  - description: Research Templates
     outputPath: core/drafling.md
     sources:
       - type: file
         sourcePaths:
-          - src/Drafling/Config
-          - src/Drafling/Domain
-          - src/Drafling/Repository
-          - src/Drafling/Service
-          - src/Drafling/Storage/StorageDriverInterface.php
+          - src/Research/Config
+          - src/Research/Domain
+          - src/Research/Repository
+          - src/Research/Service
+          - src/Research/Storage/StorageDriverInterface.php
 
-  - description: Drafling FileStorage
+  - description: Research FileStorage
     outputPath: drafling/file-storage.md
     sources:
       - type: file
         sourcePaths:
-          - src/Drafling/Storage
+          - src/Research/Storage
 
-  - description: Drafling MCP
+  - description: Research MCP
     outputPath: drafling/mcp.md
     sources:
       - type: file
         sourcePaths:
-          - src/Drafling/MCP
+          - src/Research/MCP
           - src/McpServer/McpServerBootloader.php
 
 

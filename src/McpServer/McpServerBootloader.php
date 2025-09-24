@@ -7,15 +7,15 @@ namespace Butschster\ContextGenerator\McpServer;
 use Butschster\ContextGenerator\Application\Bootloader\ConsoleBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\HttpClientBootloader;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
-use Butschster\ContextGenerator\Drafling\MCP\Tools\CreateEntryToolAction;
-use Butschster\ContextGenerator\Drafling\MCP\Tools\CreateProjectToolAction;
-use Butschster\ContextGenerator\Drafling\MCP\Tools\GetProjectToolAction;
-use Butschster\ContextGenerator\Drafling\MCP\Tools\ListEntriesToolAction;
-use Butschster\ContextGenerator\Drafling\MCP\Tools\ListProjectsToolAction;
-use Butschster\ContextGenerator\Drafling\MCP\Tools\ListTemplatesToolAction;
-use Butschster\ContextGenerator\Drafling\MCP\Tools\ReadEntryToolAction;
-use Butschster\ContextGenerator\Drafling\MCP\Tools\UpdateEntryToolAction;
-use Butschster\ContextGenerator\Drafling\MCP\Tools\UpdateProjectToolAction;
+use Butschster\ContextGenerator\Research\MCP\Tools\CreateEntryToolAction;
+use Butschster\ContextGenerator\Research\MCP\Tools\CreateResearchToolAction;
+use Butschster\ContextGenerator\Research\MCP\Tools\GetResearchToolAction;
+use Butschster\ContextGenerator\Research\MCP\Tools\ListEntriesToolAction;
+use Butschster\ContextGenerator\Research\MCP\Tools\ListResearchesToolAction;
+use Butschster\ContextGenerator\Research\MCP\Tools\ListTemplatesToolAction;
+use Butschster\ContextGenerator\Research\MCP\Tools\ReadEntryToolAction;
+use Butschster\ContextGenerator\Research\MCP\Tools\UpdateEntryToolAction;
+use Butschster\ContextGenerator\Research\MCP\Tools\UpdateResearchToolAction;
 use Butschster\ContextGenerator\McpServer\Action\Prompts\FilesystemOperationsAction;
 use Butschster\ContextGenerator\McpServer\Action\Prompts\GetPromptAction;
 use Butschster\ContextGenerator\McpServer\Action\Prompts\ListPromptsAction;
@@ -241,14 +241,14 @@ final class McpServerBootloader extends Bootloader
         $actions = [
             ...$actions,
             ListTemplatesToolAction::class,
-            CreateProjectToolAction::class,
-            ListProjectsToolAction::class,
-            GetProjectToolAction::class,
+            CreateResearchToolAction::class,
+            ListResearchesToolAction::class,
+            GetResearchToolAction::class,
             CreateEntryToolAction::class,
             ListEntriesToolAction::class,
             ReadEntryToolAction::class,
             UpdateEntryToolAction::class,
-            UpdateProjectToolAction::class,
+            UpdateResearchToolAction::class,
         ];
 
         if ($config->isGitOperationsEnabled()) {

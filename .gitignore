@@ -11,7 +11,7 @@ node_modules
 .php-cs-fixer.cache
 .context
 .templates
-.projects
+.researches
 runtime
 mcp-*.log
 .env

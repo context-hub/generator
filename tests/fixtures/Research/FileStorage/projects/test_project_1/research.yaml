@@ -1,0 +1,10 @@
+name: "Test Project 1"
+description: "A test project for file storage testing"
+template: "basic"
+status: "active"
+tags: [ "test", "feature" ]
+memory:
+  - "Project initialization completed"
+  - "Basic structure set up"
+entries:
+  dirs: [ "features", "docs", "tests" ]

@@ -20,7 +20,7 @@ use Butschster\ContextGenerator\Application\Bootloader\ModifierBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\SchemaMapperBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\SourceFetcherBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\VariableBootloader;
-use Butschster\ContextGenerator\Drafling\DraflingBootloader;
+use Butschster\ContextGenerator\Research\ResearchBootloader;
 use Butschster\ContextGenerator\McpServer\McpServerBootloader;
 use Butschster\ContextGenerator\Template\TemplateSystemBootloader;
 use Butschster\ContextGenerator\Modifier\PhpContentFilter\PhpContentFilterBootloader;
@@ -75,8 +75,8 @@ class Kernel extends AbstractKernel
             // Template System
             TemplateSystemBootloader::class,
 
-            // Drafling
-            DraflingBootloader::class,
+            // Research
+            ResearchBootloader::class,
 
             // Sources
             TextSourceBootloader::class,
