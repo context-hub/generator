@@ -71,8 +71,11 @@ final readonly class DocumentCompiler
         $this->logger?->debug('Ensuring directory exists', ['directory' => $directory]);
         $this->files->ensureDirectory($directory);
 
+        // Add file statistics to the generated content before writing
+        $finalContent = $this->addFileStatistics($compiledDocument->content, $resultPath, $outputPath);
+
         $this->logger?->debug('Writing compiled document to file', ['path' => $resultPath]);
-        $this->files->write($resultPath, (string) $compiledDocument->content);
+        $this->files->write($resultPath, $finalContent);
 
         $errorCount = \count($errors);
         if ($errorCount > 0) {
@@ -80,7 +83,8 @@ final readonly class DocumentCompiler
         } else {
             $this->logger?->info('Document compiled successfully', [
                 'path' => $resultPath,
-                'contentLength' => \strlen((string) $compiledDocument->content),
+                'contentLength' => \strlen($finalContent),
+                'fileSize' => $this->files->size($resultPath),
             ]);
         }
 
@@ -166,5 +170,50 @@ final readonly class DocumentCompiler
             content: $builder,
             errors: $errors,
         );
+    }
+
+    /**
+     * Add file statistics to the generated content
+     *
+     * @param string|\Stringable $content The original content
+     * @param string $resultPath The actual file path where content was written
+     * @param string $outputPath The configured output path
+     * @return string The content with file statistics added
+     */
+    private function addFileStatistics(string|\Stringable $content, string $resultPath, string $outputPath): string
+    {
+        try {
+            // Check if file exists before attempting to read it
+            if (!$this->files->exists($resultPath)) {
+                $this->logger?->debug('File does not exist, skipping statistics', ['path' => $resultPath]);
+                return (string) $content;
+            }
+
+            $fileSize = $this->files->size($resultPath);
+            $fileContent = $this->files->read($resultPath);
+            $lineCount = \substr_count($fileContent, "\n") + 1; // Count lines including the last line
+
+            // Create a new content builder with the original content
+            $builder = $this->builderFactory->create();
+            $builder->addText((string) $content);
+
+            // Add file statistics
+            $this->logger?->debug('Adding file statistics', [
+                'fileSize' => $fileSize,
+                'lineCount' => $lineCount,
+                'filePath' => $outputPath,
+            ]);
+
+            $builder->addFileStats($fileSize, $lineCount, $outputPath);
+
+            return $builder->build();
+        } catch (\Throwable $e) {
+            $this->logger?->warning('Failed to add file statistics', [
+                'path' => $resultPath,
+                'error' => $e->getMessage(),
+            ]);
+            // Return original content if statistics calculation fails
+            return (string) $content;
+        }
     }
 }

@@ -7,6 +7,7 @@ namespace Butschster\ContextGenerator\Console\Renderer;
 use Butschster\ContextGenerator\Config\Import\ImportRegistry;
 use Butschster\ContextGenerator\Document\Compiler\CompiledDocument;
 use Butschster\ContextGenerator\Document\Document;
+use Spiral\Files\FilesInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -37,6 +38,8 @@ final readonly class GenerateCommandRenderer
 
     public function __construct(
         private OutputInterface $output,
+        private ?FilesInterface $files = null,
+        private ?string $basePath = null,
     ) {}
 
     public function renderImports(ImportRegistry $imports): void
@@ -78,6 +81,7 @@ final readonly class GenerateCommandRenderer
         $outputPath = $document->outputPath;
 
         // Calculate padding to align the document descriptions
+        $stats = $this->getFileStatistics($outputPath);
         $padding = $this->calculatePadding($description, $outputPath);
 
         if ($hasErrors) {
@@ -99,17 +103,81 @@ final readonly class GenerateCommandRenderer
 
             $this->output->newLine();
         } else {
-            // Render success line with document info
-            $this->output->writeln(
-                \sprintf(
-                    ' <fg=green>%s</> %s <fg=cyan>[%s]</><fg=gray>%s</>',
-                    $this->padRight(self::SUCCESS_SYMBOL, 2),
-                    $description,
-                    $outputPath,
-                    $padding,
-                ),
-            );
+            // Render success line with document info and file statistics
+            $this->renderSuccessWithStats($description, $outputPath, $stats, $padding);
         }
+    }
+
+    /**
+     * Render success message with file statistics
+     */
+    private function renderSuccessWithStats(string $description, string $outputPath, ?array $stats, string $padding): void
+    {
+        $statsInfo = '';
+        if ($stats !== null) {
+            $statsInfo = \sprintf(' <fg=gray>(%s, %d lines)</>', $stats['size'], $stats['lines']);
+        }
+
+        $this->output->writeln(
+            \sprintf(
+                ' <fg=green>%s</> %s <fg=cyan>[%s]</><fg=gray>%s</>%s',
+                $this->padRight(self::SUCCESS_SYMBOL, 2),
+                $description,
+                $outputPath,
+                $padding,
+                $statsInfo,
+            ),
+        );
+    }
+
+    /**
+     * Get file statistics for a given output path
+     */
+    private function getFileStatistics(string $outputPath): ?array
+    {
+        if ($this->files === null || $this->basePath === null) {
+            return null;
+        }
+
+        try {
+            $fullPath = $this->basePath . '/' . $outputPath;
+            $fullPath = \str_replace('//', '/', $fullPath);
+
+            if (!$this->files->exists($fullPath)) {
+                return null;
+            }
+
+            $fileSize = $this->files->size($fullPath);
+            $fileContent = $this->files->read($fullPath);
+            $lineCount = \substr_count($fileContent, "\n") + 1;
+
+            return [
+                'size' => $this->formatSize($fileSize),
+                'lines' => $lineCount,
+            ];
+        } catch (\Throwable $e) {
+            // If we can't read the file, return null to avoid errors
+            return null;
+        }
+    }
+
+    /**
+     * Format file size in human-readable format
+     */
+    private function formatSize(int $bytes): string
+    {
+        $units = ['B', 'KB', 'MB', 'GB'];
+        $i = 0;
+
+        while ($bytes >= 1024 && $i < \count($units) - 1) {
+            $bytes /= 1024;
+            $i++;
+        }
+
+        // Ensure $i is within bounds
+        $i = \min($i, \count($units) - 1);
+
+        return \round($bytes, 1) . ' ' . $units[$i];
     }
 
     /**

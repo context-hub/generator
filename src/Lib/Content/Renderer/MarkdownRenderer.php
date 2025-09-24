@@ -11,6 +11,7 @@ use Butschster\ContextGenerator\Lib\Content\Block\SeparatorBlock;
 use Butschster\ContextGenerator\Lib\Content\Block\TextBlock;
 use Butschster\ContextGenerator\Lib\Content\Block\TitleBlock;
 use Butschster\ContextGenerator\Lib\Content\Block\TreeViewBlock;
+use Butschster\ContextGenerator\Lib\Content\Block\FileStatsBlock;
 
 /**
  * Renderer for Markdown format
@@ -75,6 +76,22 @@ final class MarkdownRenderer extends AbstractRenderer
             return '';
         }
         return \sprintf("```\n// Structure of documents\n%s\n```\n\n", $content);
+    }
+
+    public function renderFileStatsBlock(FileStatsBlock $block): string
+    {
+        $filePath = $block->getFilePath() ? "File: `{$block->getFilePath()}`\n" : '';
+        $size = $block->formatSize($block->getFileSize());
+        $lineCount = $block->getLineCount();
+
+        return <<<STATS
+        ---
+        **File Statistics**
+        - **Size**: {$size}
+        - **Lines**: {$lineCount}
+        {$filePath}
+        \n\n
+        STATS;
     }
 
     public function renderSeparatorBlock(SeparatorBlock $block): string

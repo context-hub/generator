@@ -11,6 +11,7 @@ use Butschster\ContextGenerator\Config\Registry\ConfigRegistryAccessor;
 use Butschster\ContextGenerator\Console\Renderer\GenerateCommandRenderer;
 use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
+use Spiral\Files\FilesInterface;
 use Spiral\Console\Attribute\Option;
 use Spiral\Core\Container;
 use Spiral\Core\Scope;
@@ -88,6 +89,7 @@ final class GenerateCommand extends BaseCommand
                     DocumentCompiler $compiler,
                     ConfigurationProvider $configProvider,
                     DirectoriesInterface $dirs,
+                    FilesInterface $files,
                 ): int {
                     try {
                         // Get the appropriate loader based on options provided
@@ -120,7 +122,11 @@ final class GenerateCommand extends BaseCommand
                     }
 
                     // Create the renderer for consistent output formatting
-                    $renderer = new GenerateCommandRenderer($this->output);
+                    $renderer = new GenerateCommandRenderer(
+                        output: $this->output,
+                        files: $files,
+                        basePath: $dirs->getOutputPath()->toString(),
+                    );
 
                     // Display summary header
                     $this->output->writeln('');

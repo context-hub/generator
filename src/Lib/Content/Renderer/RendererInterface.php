@@ -11,6 +11,7 @@ use Butschster\ContextGenerator\Lib\Content\Block\SeparatorBlock;
 use Butschster\ContextGenerator\Lib\Content\Block\TextBlock;
 use Butschster\ContextGenerator\Lib\Content\Block\TitleBlock;
 use Butschster\ContextGenerator\Lib\Content\Block\TreeViewBlock;
+use Butschster\ContextGenerator\Lib\Content\Block\FileStatsBlock;
 
 /**
  * Interface for content renderers
@@ -41,6 +42,11 @@ interface RendererInterface
      * Render a tree view block
      */
     public function renderTreeViewBlock(TreeViewBlock $block): string;
+
+    /**
+     * Render a file stats block
+     */
+    public function renderFileStatsBlock(FileStatsBlock $block): string;
 
     /**
      * Render a separator block
