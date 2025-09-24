@@ -35,6 +35,14 @@ final class FSPath implements \Stringable
     }
 
     /**
+     * Create temporary directory
+     */
+    public static function temp(): self
+    {
+        return new self(\sys_get_temp_dir());
+    }
+
+    /**
      * Get the directory separator - can be overridden for testing
      */
     public static function getDirectorySeparator(): string
@@ -323,6 +331,14 @@ final class FSPath implements \Stringable
         }
 
         return self::cwd()->join($this->path);
+    }
+
+    /**
+     * Trim the path to the given path
+     */
+    public function trim(string $path): self
+    {
+        return self::create(\substr(\str_replace($path, '', $this->toString()), 1));
     }
 
     /**
