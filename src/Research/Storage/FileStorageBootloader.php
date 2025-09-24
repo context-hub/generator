@@ -33,29 +33,18 @@ final class FileStorageBootloader extends Bootloader
             EntryRepositoryInterface::class => FileEntryRepository::class,
 
             // Storage driver
-            StorageDriverInterface::class => static function (
-                ResearchConfigInterface $config,
-                FilesInterface $files,
-                LoggerInterface $logger,
-                ExceptionReporterInterface $reporter,
-                DirectoriesInterface $dirs,
-                TemplateRepositoryInterface $templateRepository,
-                ResearchRepositoryInterface $researchRepository,
-                EntryRepositoryInterface $entryRepository,
-            ): StorageDriverInterface {
-                return new FileStorageDriver(
-                    driverConfig: FileStorageConfig::fromArray([
-                        'base_path' => $config->getResearchesPath(),
-                        'templates_path' => $config->getTemplatesPath(),
-                        'default_entry_status' => $config->getDefaultEntryStatus(),
-                    ]),
-                    templateRepository: $templateRepository,
-                    researchRepository: $researchRepository,
-                    entryRepository: $entryRepository,
-                    slugify: new Slugify(),
-                    logger: $logger,
-                );
-            },
+            StorageDriverInterface::class => static fn(ResearchConfigInterface $config, FilesInterface $files, LoggerInterface $logger, ExceptionReporterInterface $reporter, DirectoriesInterface $dirs, TemplateRepositoryInterface $templateRepository, ResearchRepositoryInterface $researchRepository, EntryRepositoryInterface $entryRepository): StorageDriverInterface => new FileStorageDriver(
+                driverConfig: FileStorageConfig::fromArray([
+                    'base_path' => $config->getResearchesPath(),
+                    'templates_path' => $config->getTemplatesPath(),
+                    'default_entry_status' => $config->getDefaultEntryStatus(),
+                ]),
+                templateRepository: $templateRepository,
+                researchRepository: $researchRepository,
+                entryRepository: $entryRepository,
+                slugify: new Slugify(),
+                logger: $logger,
+            ),
         ];
     }
 }
