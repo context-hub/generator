@@ -7,7 +7,6 @@ namespace Butschster\ContextGenerator\McpServer\Action\Prompts;
 use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
 use Butschster\ContextGenerator\McpServer\Prompt\PromptProviderInterface;
-use Butschster\ContextGenerator\McpServer\Registry\McpItemsRegistry;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Get;
 use Mcp\Server\Contracts\ReferenceProviderInterface;
 use PhpMcp\Schema\Result\ListPromptsResult;
