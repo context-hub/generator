@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Application\Bootloader;
+namespace Butschster\ContextGenerator\Config;
 
 use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
+use Butschster\ContextGenerator\Config\ConfigLoaderBootloader;
 use Butschster\ContextGenerator\Config\Import\ImportParserPlugin;
 use Butschster\ContextGenerator\Config\Import\ImportResolver;
 use Butschster\ContextGenerator\Config\Import\Source\ImportSourceProvider;

@@ -7,7 +7,7 @@ namespace Butschster\ContextGenerator\McpServer\Action\Prompts;
 use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\McpServer\Prompt\PromptProviderInterface;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Get;
-use Mcp\Types\GetPromptResult;
+use PhpMcp\Schema\Result\GetPromptResult;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
@@ -26,7 +26,7 @@ final readonly class GetPromptAction
         $this->logger->info('Getting prompt', ['id' => $id]);
 
         if (!$this->prompts->has($id)) {
-            return new GetPromptResult([]);
+            return new GetPromptResult(messages: []);
         }
 
         $prompt = $this->prompts->get($id, $request->getAttributes());

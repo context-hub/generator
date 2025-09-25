@@ -6,9 +6,9 @@ namespace Butschster\ContextGenerator\McpServer\Console;
 
 use Butschster\ContextGenerator\Console\BaseCommand;
 use Butschster\ContextGenerator\DirectoriesInterface;
-use Butschster\ContextGenerator\McpServer\Console\McpConfig\ConfigGeneratorInterface;
-use Butschster\ContextGenerator\McpServer\Console\McpConfig\Renderer\McpConfigRenderer;
-use Butschster\ContextGenerator\McpServer\Console\McpConfig\Service\OsDetectionService;
+use Butschster\ContextGenerator\McpServer\McpConfig\ConfigGeneratorInterface;
+use Butschster\ContextGenerator\McpServer\McpConfig\Renderer\McpConfigRenderer;
+use Butschster\ContextGenerator\McpServer\McpConfig\Service\OsDetectionService;
 use Spiral\Console\Attribute\Option;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;

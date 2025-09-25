@@ -13,7 +13,7 @@ use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\McpServer\Prompt\Extension\PromptDefinition;
 use Butschster\ContextGenerator\McpServer\Prompt\PromptProviderInterface;
 use Butschster\ContextGenerator\McpServer\Prompt\PromptType;
-use Mcp\Types\Prompt;
+use PhpMcp\Schema\Prompt;
 use Spiral\Console\Attribute\Argument;
 use Spiral\Console\Attribute\Option;
 use Spiral\Core\Container;

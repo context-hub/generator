@@ -9,8 +9,8 @@ use Butschster\ContextGenerator\McpServer\Action\Resources\Service\JsonSchemaSer
 use Butschster\ContextGenerator\McpServer\Attribute\Resource;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Get;
 use Butschster\ContextGenerator\Template\Detection\TemplateDetectionService;
-use Mcp\Types\ReadResourceResult;
-use Mcp\Types\TextResourceContents;
+use PhpMcp\Schema\Content\TextResourceContents;
+use PhpMcp\Schema\Result\ReadResourceResult;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
@@ -82,9 +82,9 @@ final readonly class GenerateConfigAction
 
             return new ReadResourceResult([
                 new TextResourceContents(
-                    text: $response,
                     uri: 'ctx://schema-builder-instructions',
                     mimeType: 'application/json',
+                    text: $response,
                 ),
             ]);
 
@@ -96,9 +96,9 @@ final readonly class GenerateConfigAction
 
             return new ReadResourceResult([
                 new TextResourceContents(
-                    text: 'Error: ' . $e->getMessage(),
                     uri: 'ctx://schema-builder-instructions',
                     mimeType: 'application/json',
+                    text: 'Error: ' . $e->getMessage(),
                 ),
             ]);
         }

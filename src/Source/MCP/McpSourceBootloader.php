@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\MCP;
 
-use Butschster\ContextGenerator\Application\Bootloader\ConfigLoaderBootloader;
+use Butschster\ContextGenerator\Config\ConfigLoaderBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\SourceFetcherBootloader;
 use Butschster\ContextGenerator\Source\MCP\Config\McpServerParserPlugin;
 use Butschster\ContextGenerator\Source\Registry\SourceRegistryInterface;

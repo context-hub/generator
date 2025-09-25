@@ -7,10 +7,10 @@ namespace Butschster\ContextGenerator\McpServer\Action\Prompts;
 use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\McpServer\Attribute\Prompt;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Get;
-use Mcp\Types\GetPromptResult;
-use Mcp\Types\PromptMessage;
-use Mcp\Types\Role;
-use Mcp\Types\TextContent;
+use PhpMcp\Schema\Content\PromptMessage;
+use PhpMcp\Schema\Content\TextContent;
+use PhpMcp\Schema\Enum\Role;
+use PhpMcp\Schema\Result\GetPromptResult;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
@@ -40,7 +40,7 @@ final readonly class FilesystemOperationsAction
         return new GetPromptResult(
             messages: [
                 new PromptMessage(
-                    role: Role::USER,
+                    role: Role::User,
                     content: new TextContent(
                         text: \implode("\n", $rules),
                     ),

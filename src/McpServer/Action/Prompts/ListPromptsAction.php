@@ -9,7 +9,8 @@ use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
 use Butschster\ContextGenerator\McpServer\Prompt\PromptProviderInterface;
 use Butschster\ContextGenerator\McpServer\Registry\McpItemsRegistry;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Get;
-use Mcp\Types\ListPromptsResult;
+use Mcp\Server\Contracts\ReferenceProviderInterface;
+use PhpMcp\Schema\Result\ListPromptsResult;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
@@ -18,7 +19,7 @@ final readonly class ListPromptsAction
     public function __construct(
         #[LoggerPrefix(prefix: 'prompts.list')]
         private LoggerInterface $logger,
-        private McpItemsRegistry $registry,
+        private ReferenceProviderInterface $provider,
         private PromptProviderInterface $prompts,
         private ConfigLoaderInterface $configLoader,
     ) {}
@@ -30,7 +31,7 @@ final readonly class ListPromptsAction
         $this->logger->info('Listing available prompts');
 
         $prompts = [];
-        foreach ($this->registry->getPrompts() as $prompt) {
+        foreach ($this->provider->getPrompts() as $prompt) {
             $prompts[] = $prompt;
         }
 

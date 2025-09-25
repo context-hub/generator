@@ -10,8 +10,8 @@ use Butschster\ContextGenerator\Config\Registry\ConfigRegistryAccessor;
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
 use Butschster\ContextGenerator\Document\Compiler\Error\ErrorCollection;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Get;
-use Mcp\Types\ReadResourceResult;
-use Mcp\Types\TextResourceContents;
+use PhpMcp\Schema\Content\TextResourceContents;
+use PhpMcp\Schema\Result\ReadResourceResult;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
@@ -36,9 +36,9 @@ final readonly class GetDocumentContentResourceAction
         foreach ($config->getDocuments() as $document) {
             if ($document->outputPath === $path) {
                 $contents[] = new TextResourceContents(
-                    text: (string) $this->compiler->buildContent(new ErrorCollection(), $document)->content,
                     uri: 'ctx://document/' . $document->outputPath,
                     mimeType: 'text/markdown',
+                    text: (string) $this->compiler->buildContent(new ErrorCollection(), $document)->content,
                 );
 
                 break;

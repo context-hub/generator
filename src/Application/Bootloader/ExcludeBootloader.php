@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Application\Bootloader;
 
+use Butschster\ContextGenerator\Config\ConfigLoaderBootloader;
 use Butschster\ContextGenerator\Config\Exclude\ExcludeParserPlugin;
 use Butschster\ContextGenerator\Config\Exclude\ExcludeRegistry;
 use Butschster\ContextGenerator\Config\Exclude\ExcludeRegistryInterface;

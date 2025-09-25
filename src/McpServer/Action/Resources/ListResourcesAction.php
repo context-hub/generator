@@ -8,10 +8,10 @@ use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
 use Butschster\ContextGenerator\Config\Registry\ConfigRegistryAccessor;
 use Butschster\ContextGenerator\McpServer\McpConfig;
-use Butschster\ContextGenerator\McpServer\Registry\McpItemsRegistry;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Get;
-use Mcp\Types\ListResourcesResult;
-use Mcp\Types\Resource;
+use Mcp\Server\Contracts\ReferenceProviderInterface;
+use PhpMcp\Schema\Resource;
+use PhpMcp\Schema\Result\ListResourcesResult;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
@@ -21,7 +21,7 @@ final readonly class ListResourcesAction
         #[LoggerPrefix(prefix: 'resources.list')]
         private LoggerInterface $logger,
         private ConfigLoaderInterface $configLoader,
-        private McpItemsRegistry $registry,
+        private ReferenceProviderInterface $provider,
         private McpConfig $config,
     ) {}
 
@@ -33,7 +33,7 @@ final readonly class ListResourcesAction
         $resources = [];
 
         // Get resources from registry
-        foreach ($this->registry->getResources() as $resource) {
+        foreach ($this->provider->getResources() as $resource) {
             $resources[] = $resource;
         }
 
@@ -44,12 +44,12 @@ final readonly class ListResourcesAction
             $tags = \implode(', ', $document->getTags());
 
             $resources[] = new Resource(
+                uri: 'ctx://document/' . $document->outputPath,
                 name: $this->config->getDocumentNameFormat(
                     path: $document->outputPath,
                     description: $document->description,
                     tags: $tags,
                 ),
-                uri: 'ctx://document/' . $document->outputPath,
                 description: \sprintf(
                     '%s. Tags: %s',
                     $document->description,

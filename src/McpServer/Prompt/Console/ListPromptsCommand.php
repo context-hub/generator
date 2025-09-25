@@ -16,7 +16,7 @@ use Butschster\ContextGenerator\McpServer\Prompt\Filter\PromptFilterFactory;
 use Butschster\ContextGenerator\McpServer\Prompt\Filter\PromptFilterInterface;
 use Butschster\ContextGenerator\McpServer\Prompt\PromptProviderInterface;
 use Butschster\ContextGenerator\McpServer\Prompt\PromptType;
-use Mcp\Types\Prompt;
+use PhpMcp\Schema\Prompt;
 use Spiral\Console\Attribute\Option;
 use Spiral\Core\Container;
 use Spiral\Core\Scope;

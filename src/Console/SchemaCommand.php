@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Console;
 
-use Butschster\ContextGenerator\Application\JsonSchema;
 use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\Lib\HttpClient\Exception\HttpException;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
@@ -20,6 +19,8 @@ use Symfony\Component\Console\Command\Command;
 )]
 final class SchemaCommand extends BaseCommand
 {
+    private const string SCHEMA_URL = 'https://raw.githubusercontent.com/context-hub/generator/refs/heads/main/json-schema.json';
+
     #[Option(
         name: 'download',
         shortcut: 'd',
@@ -45,7 +46,7 @@ final class SchemaCommand extends BaseCommand
         $outputPath = (string) $dirs->getRootPath()->join($this->outputPath);
 
         // Always show the URL where the schema is hosted
-        $this->output->info('JSON schema URL: ' . JsonSchema::SCHEMA_URL);
+        $this->output->info('JSON schema URL: ' . self::SCHEMA_URL);
 
         // If no download requested, exit early
         if (!$this->download) {
@@ -55,7 +56,7 @@ final class SchemaCommand extends BaseCommand
 
         // Download and save the schema
         try {
-            $response = $httpClient->get(JsonSchema::SCHEMA_URL, [
+            $response = $httpClient->get(self::SCHEMA_URL, [
                 'User-Agent' => 'Context-Generator-Schema-Download',
                 'Accept' => 'application/json',
             ]);

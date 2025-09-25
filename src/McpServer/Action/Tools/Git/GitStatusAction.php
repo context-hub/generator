@@ -14,7 +14,7 @@ use Butschster\ContextGenerator\McpServer\Action\Tools\Git\Dto\GitStatusRequest;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
-use Mcp\Types\CallToolResult;
+use PhpMcp\Schema\Result\CallToolResult;
 use Psr\Log\LoggerInterface;
 
 #[Tool(

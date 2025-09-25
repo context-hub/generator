@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer\Action\Tools;
 
-use Butschster\ContextGenerator\McpServer\Registry\McpItemsRegistry;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Get;
 use Butschster\ContextGenerator\McpServer\Tool\Config\ToolDefinition;
 use Butschster\ContextGenerator\McpServer\Tool\ToolProviderInterface;
-use Mcp\Types\ListToolsResult;
-use Mcp\Types\Tool;
-use Mcp\Types\ToolInputSchema;
+use Mcp\Server\Contracts\ReferenceProviderInterface;
+use PhpMcp\Schema\Result\ListToolsResult;
+use PhpMcp\Schema\Tool;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
@@ -18,7 +17,7 @@ final readonly class ListToolsAction
 {
     public function __construct(
         private LoggerInterface $logger,
-        private McpItemsRegistry $registry,
+        private ReferenceProviderInterface $provider,
         private ToolProviderInterface $toolProvider,
     ) {}
 
@@ -27,15 +26,13 @@ final readonly class ListToolsAction
     {
         $this->logger->info('Listing available tools');
 
-        $tools = $this->registry->getTools();
+        $tools = \array_values($this->provider->getTools());
         foreach ($this->toolProvider->all() as $toolDefinition) {
-            // Create the input schema object based on the tool's schema
-            $inputSchema = $this->buildInputSchema($toolDefinition);
-
             $tools[] = new Tool(
                 name: $toolDefinition->id,
-                inputSchema: $inputSchema,
+                inputSchema: $this->buildInputSchema($toolDefinition),
                 description: $toolDefinition->description,
+                annotations: null,
             );
         }
 
@@ -45,11 +42,14 @@ final readonly class ListToolsAction
     /**
      * Build a ToolInputSchema object from the tool definition's schema.
      */
-    private function buildInputSchema(ToolDefinition $toolDefinition): ToolInputSchema
+    private function buildInputSchema(ToolDefinition $toolDefinition): array
     {
         // If no schema is defined, return an empty schema
         if ($toolDefinition->schema === null) {
-            return new ToolInputSchema();
+            return [
+                'type' => 'object',
+                'properties' => new \stdClass(),
+            ];
         }
 
         // Convert the tool's schema to array format expected by ToolInputSchema
@@ -64,6 +64,6 @@ final readonly class ListToolsAction
         }
 
         // Use the fromArray method to create the ToolInputSchema
-        return ToolInputSchema::fromArray($schemaData);
+        return $schemaData;
     }
 }

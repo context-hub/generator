@@ -5,8 +5,15 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\McpServer;
 
 use Butschster\ContextGenerator\Application\Bootloader\ConsoleBootloader;
-use Butschster\ContextGenerator\Application\Bootloader\HttpClientBootloader;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
+use Butschster\ContextGenerator\McpServer\Console\McpConfigCommand;
+use Butschster\ContextGenerator\McpServer\Projects\Console\ProjectAddCommand;
+use Butschster\ContextGenerator\McpServer\Projects\Console\ProjectCommand;
+use Butschster\ContextGenerator\McpServer\Projects\Console\ProjectListCommand;
+use Butschster\ContextGenerator\McpServer\Prompt\Console\ListPromptsCommand;
+use Butschster\ContextGenerator\McpServer\Prompt\Console\ShowPromptCommand;
+use Butschster\ContextGenerator\McpServer\Tool\Console\ToolListCommand;
+use Butschster\ContextGenerator\McpServer\Tool\Console\ToolRunCommand;
 use Butschster\ContextGenerator\Research\MCP\Tools\CreateEntryToolAction;
 use Butschster\ContextGenerator\Research\MCP\Tools\CreateResearchToolAction;
 use Butschster\ContextGenerator\Research\MCP\Tools\GetResearchToolAction;
@@ -42,41 +49,22 @@ use Butschster\ContextGenerator\McpServer\Action\Tools\ListToolsAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Prompts\GetPromptToolAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Prompts\ListPromptsToolAction;
 use Butschster\ContextGenerator\McpServer\Console\MCPServerCommand;
-use Butschster\ContextGenerator\McpServer\Console\McpConfigCommand;
-use Butschster\ContextGenerator\McpServer\Console\McpConfig\McpConfigBootloader;
 use Butschster\ContextGenerator\McpServer\Projects\Actions\ProjectsListToolAction;
 use Butschster\ContextGenerator\McpServer\Projects\Actions\ProjectSwitchToolAction;
-use Butschster\ContextGenerator\McpServer\Projects\McpProjectsBootloader;
-use Butschster\ContextGenerator\McpServer\ProjectService\ProjectServiceInterface;
-use Butschster\ContextGenerator\McpServer\Prompt\McpPromptBootloader;
-use Butschster\ContextGenerator\McpServer\Registry\McpItemsRegistry;
-use Butschster\ContextGenerator\McpServer\Routing\McpResponseStrategy;
-use Butschster\ContextGenerator\McpServer\Routing\RouteRegistrar;
-use Butschster\ContextGenerator\McpServer\Tool\McpToolBootloader;
-use League\Route\Router;
-use League\Route\Strategy\StrategyInterface;
-use Psr\Container\ContainerInterface;
 use Spiral\Boot\Bootloader\Bootloader;
 use Spiral\Boot\EnvironmentInterface;
 use Spiral\Config\ConfiguratorInterface;
-use Spiral\Core\Attribute\Proxy;
-use Spiral\Core\Config\Proxy as ConfigProxy;
 
-final class McpServerBootloader extends Bootloader
+final class ActionsBootloader extends Bootloader
 {
     public function __construct(
         private readonly ConfiguratorInterface $config,
     ) {}
 
-    #[\Override]
     public function defineDependencies(): array
     {
         return [
-            HttpClientBootloader::class,
-            McpToolBootloader::class,
-            McpPromptBootloader::class,
-            McpProjectsBootloader::class,
-            McpConfigBootloader::class,
+            McpServerBootloader::class,
         ];
     }
 
@@ -122,8 +110,20 @@ final class McpServerBootloader extends Bootloader
 
     public function boot(ConsoleBootloader $console): void
     {
+        $console->addCommand(ToolListCommand::class);
+        $console->addCommand(ToolRunCommand::class);
+
         $console->addCommand(MCPServerCommand::class);
         $console->addCommand(McpConfigCommand::class);
+
+        $console->addCommand(ListPromptsCommand::class);
+        $console->addCommand(ShowPromptCommand::class);
+
+        $console->addCommand(
+            ProjectCommand::class,
+            ProjectAddCommand::class,
+            ProjectListCommand::class,
+        );
     }
 
     #[\Override]
@@ -142,20 +142,6 @@ final class McpServerBootloader extends Bootloader
                 }
 
                 return $factory;
-            },
-            RouteRegistrar::class => RouteRegistrar::class,
-            McpItemsRegistry::class => McpItemsRegistry::class,
-            StrategyInterface::class => McpResponseStrategy::class,
-            ProjectServiceInterface::class => new ConfigProxy(
-                interface: ProjectServiceInterface::class,
-            ),
-            Router::class => static function (StrategyInterface $strategy, #[Proxy] ContainerInterface $container) {
-                $router = new Router();
-                \assert($strategy instanceof McpResponseStrategy);
-                $strategy->setContainer($container);
-                $router->setStrategy($strategy);
-
-                return $router;
             },
         ];
     }

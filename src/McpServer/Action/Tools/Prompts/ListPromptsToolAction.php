@@ -6,11 +6,11 @@ namespace Butschster\ContextGenerator\McpServer\Action\Tools\Prompts;
 
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
 use Butschster\ContextGenerator\McpServer\Prompt\PromptProviderInterface;
-use Butschster\ContextGenerator\McpServer\Registry\McpItemsRegistry;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
-use Mcp\Types\CallToolResult;
+use Mcp\Server\Contracts\ReferenceProviderInterface;
+use PhpMcp\Schema\Result\CallToolResult;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
@@ -23,7 +23,7 @@ final readonly class ListPromptsToolAction
 {
     public function __construct(
         private LoggerInterface $logger,
-        private McpItemsRegistry $registry,
+        private ReferenceProviderInterface $provider,
         private PromptProviderInterface $prompts,
         private ConfigLoaderInterface $configLoader,
     ) {}
@@ -39,7 +39,7 @@ final readonly class ListPromptsToolAction
             $promptsList = [];
 
             // Get prompts from registry
-            foreach ($this->registry->getPrompts() as $prompt) {
+            foreach ($this->provider->getPrompts() as $prompt) {
                 $promptsList[] = [
                     'id' => $prompt->name,
                     'description' => $prompt->description,
