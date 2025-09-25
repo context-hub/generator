@@ -10,7 +10,7 @@ use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
-use Mcp\Types\CallToolResult;
+use PhpMcp\Schema\Result\CallToolResult;
 use Psr\Log\LoggerInterface;
 use Spiral\Files\FilesInterface;
 

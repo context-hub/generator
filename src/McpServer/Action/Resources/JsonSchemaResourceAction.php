@@ -8,8 +8,8 @@ use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\McpServer\Action\Resources\Service\JsonSchemaService;
 use Butschster\ContextGenerator\McpServer\Attribute\Resource;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Get;
-use Mcp\Types\ReadResourceResult;
-use Mcp\Types\TextResourceContents;
+use PhpMcp\Schema\Content\TextResourceContents;
+use PhpMcp\Schema\Result\ReadResourceResult;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
@@ -34,9 +34,9 @@ final readonly class JsonSchemaResourceAction
 
         return new ReadResourceResult([
             new TextResourceContents(
-                text: \json_encode($this->jsonSchema->getSimplifiedSchema()),
                 uri: 'ctx://json-schema',
                 mimeType: 'application/json',
+                text: \json_encode($this->jsonSchema->getSimplifiedSchema()),
             ),
         ]);
     }

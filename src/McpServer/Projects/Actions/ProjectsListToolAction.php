@@ -13,7 +13,7 @@ use Butschster\ContextGenerator\McpServer\Projects\Actions\Dto\ProjectsListRespo
 use Butschster\ContextGenerator\McpServer\Projects\ProjectServiceInterface;
 use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
-use Mcp\Types\CallToolResult;
+use PhpMcp\Schema\Result\CallToolResult;
 use Psr\Log\LoggerInterface;
 
 #[Tool(

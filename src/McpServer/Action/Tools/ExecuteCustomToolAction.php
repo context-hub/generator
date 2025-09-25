@@ -8,8 +8,8 @@ use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Butschster\ContextGenerator\McpServer\Tool\Exception\ToolExecutionException;
 use Butschster\ContextGenerator\McpServer\Tool\ToolHandlerFactory;
 use Butschster\ContextGenerator\McpServer\Tool\ToolProviderInterface;
-use Mcp\Types\CallToolResult;
-use Mcp\Types\TextContent;
+use PhpMcp\Schema\Content\TextContent;
+use PhpMcp\Schema\Result\CallToolResult;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 

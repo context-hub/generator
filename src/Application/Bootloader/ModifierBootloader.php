@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Application\Bootloader;
 
+use Butschster\ContextGenerator\Config\ConfigLoaderBootloader;
 use Butschster\ContextGenerator\Modifier\Alias\ModifierAliasesParserPlugin;
 use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
 use Spiral\Boot\Bootloader\Bootloader;

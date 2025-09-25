@@ -9,8 +9,8 @@ use Butschster\ContextGenerator\Config\Registry\ConfigRegistryAccessor;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
-use Mcp\Types\CallToolResult;
-use Mcp\Types\TextContent;
+use PhpMcp\Schema\Content\TextContent;
+use PhpMcp\Schema\Result\CallToolResult;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 

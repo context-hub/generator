@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Application;
 
 use Butschster\ContextGenerator\Application\Bootloader\ComposerClientBootloader;
-use Butschster\ContextGenerator\Application\Bootloader\ConfigLoaderBootloader;
+use Butschster\ContextGenerator\Config\ConfigLoaderBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\ConfigurationBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\ConsoleBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\ContentRendererBootloader;
@@ -17,11 +17,10 @@ use Butschster\ContextGenerator\Application\Bootloader\GitlabClientBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\HttpClientBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\LoggerBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\ModifierBootloader;
-use Butschster\ContextGenerator\Application\Bootloader\SchemaMapperBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\SourceFetcherBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\VariableBootloader;
 use Butschster\ContextGenerator\Research\ResearchBootloader;
-use Butschster\ContextGenerator\McpServer\McpServerBootloader;
+use Butschster\ContextGenerator\McpServer\ActionsBootloader;
 use Butschster\ContextGenerator\Template\TemplateSystemBootloader;
 use Butschster\ContextGenerator\Modifier\PhpContentFilter\PhpContentFilterBootloader;
 use Butschster\ContextGenerator\Modifier\PhpDocs\PhpDocsModifierBootloader;
@@ -33,7 +32,6 @@ use Butschster\ContextGenerator\Source\File\FileSourceBootloader;
 use Butschster\ContextGenerator\Source\GitDiff\GitDiffSourceBootloader;
 use Butschster\ContextGenerator\Source\Github\GithubSourceBootloader;
 use Butschster\ContextGenerator\Source\Gitlab\GitlabSourceBootloader;
-use Butschster\ContextGenerator\Source\MCP\McpSourceBootloader;
 use Butschster\ContextGenerator\Source\Registry\SourceRegistryBootloader;
 use Butschster\ContextGenerator\Source\Text\TextSourceBootloader;
 use Butschster\ContextGenerator\Source\Tree\TreeSourceBootloader;
@@ -88,7 +86,6 @@ class Kernel extends AbstractKernel
             ContentRendererBootloader::class,
             SourceFetcherBootloader::class,
             SourceRegistryBootloader::class,
-            SchemaMapperBootloader::class,
 
             // Template System
             TemplateSystemBootloader::class,
@@ -105,7 +102,6 @@ class Kernel extends AbstractKernel
             GitlabSourceBootloader::class,
             GitDiffSourceBootloader::class,
             TreeSourceBootloader::class,
-            McpSourceBootloader::class,
             DocsSourceBootloader::class,
 
             // Modifiers
@@ -115,7 +111,7 @@ class Kernel extends AbstractKernel
             SanitizerModifierBootloader::class,
 
             // MCP Server
-            McpServerBootloader::class,
+            ActionsBootloader::class,
         ];
     }
 

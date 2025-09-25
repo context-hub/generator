@@ -13,7 +13,7 @@ use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\McpServer\Prompt\Extension\PromptDefinition;
 use Butschster\ContextGenerator\McpServer\Prompt\PromptProviderInterface;
 use Butschster\ContextGenerator\McpServer\Prompt\PromptType;
-use Mcp\Types\Prompt;
+use PhpMcp\Schema\Prompt;
 use Spiral\Console\Attribute\Argument;
 use Spiral\Console\Attribute\Option;
 use Spiral\Core\Container;
@@ -204,7 +204,8 @@ final class ShowPromptCommand extends BaseCommand
             );
 
             // Show content preview (first few lines)
-            $content = $message->content->text ?? '';
+            /** @psalm-suppress UndefinedPropertyFetch */
+            $content = $message->content->text;
             $lines = \explode("\n", $content);
 
             $this->output->writeln('     ' . Style::property('Content:'));

@@ -7,8 +7,8 @@ documents:
           - .
           - ../Document
           - ../Fetcher
-          - ../Application/Bootloader/ConfigLoaderBootloader.php
-          - ../Application/Bootloader/ImportBootloader.php
+          - ./ConfigLoaderBootloader.php
+          - ./ImportBootloader.php
 
   - description: Configuration Import
     outputPath: core/config-import.md

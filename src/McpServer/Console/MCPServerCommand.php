@@ -14,8 +14,6 @@ use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
 use Butschster\ContextGenerator\Console\BaseCommand;
 use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\McpServer\Projects\ProjectServiceInterface as ProjectService;
-use Butschster\ContextGenerator\McpServer\ProjectService\ProjectServiceFactory;
-use Butschster\ContextGenerator\McpServer\ProjectService\ProjectServiceInterface;
 use Butschster\ContextGenerator\McpServer\ServerRunnerInterface;
 use Butschster\ContextGenerator\McpServer\Tool\Command\CommandExecutor;
 use Butschster\ContextGenerator\McpServer\Tool\Command\CommandExecutorInterface;
@@ -102,7 +100,6 @@ final class MCPServerCommand extends BaseCommand
             scope: static function (
                 Container $container,
                 ConfigurationProvider $configProvider,
-                ProjectServiceFactory $projectServiceFactory,
             ) use ($logger, $dirs, $app) {
                 $rootPathStr = (string) $dirs->getRootPath();
                 $logger->info(\sprintf('Using root path: %s', $rootPathStr));
@@ -134,7 +131,6 @@ final class MCPServerCommand extends BaseCommand
                         name: AppScope::Mcp,
                         bindings: [
                             DirectoriesInterface::class => $dirs,
-                            ProjectServiceInterface::class => $projectServiceFactory->create(),
                             HasPrefixLoggerInterface::class => $logger,
                             ConfigLoaderInterface::class => $loader,
                             CommandExecutorInterface::class => $container->make(CommandExecutor::class, [

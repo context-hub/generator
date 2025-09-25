@@ -11,8 +11,9 @@ use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
-use Mcp\Types\CallToolResult;
-use Mcp\Types\TextContent;
+use PhpMcp\Schema\Content\PromptMessage;
+use PhpMcp\Schema\Content\TextContent;
+use PhpMcp\Schema\Result\CallToolResult;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
@@ -81,7 +82,7 @@ final readonly class GetPromptToolAction
     /**
      * Processes message templates with the given arguments.
      *
-     * @param array<\Mcp\Types\PromptMessage> $messages The messages to process
+     * @param array<PromptMessage> $messages The messages to process
      * @param array $arguments The arguments to use
      * @return array The processed messages
      */
@@ -103,7 +104,7 @@ final readonly class GetPromptToolAction
                 $content = new TextContent($text);
             }
 
-            return new \Mcp\Types\PromptMessage(
+            return new PromptMessage(
                 role: $message->role,
                 content: $content,
             );
