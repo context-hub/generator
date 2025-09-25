@@ -204,7 +204,8 @@ final class ShowPromptCommand extends BaseCommand
             );
 
             // Show content preview (first few lines)
-            $content = $message->content->text ?? '';
+            /** @psalm-suppress UndefinedPropertyFetch */
+            $content = $message->content->text;
             $lines = \explode("\n", $content);
 
             $this->output->writeln('     ' . Style::property('Content:'));
