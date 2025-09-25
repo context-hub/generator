@@ -61,6 +61,7 @@ final class ActionsBootloader extends Bootloader
         private readonly ConfiguratorInterface $config,
     ) {}
 
+    #[\Override]
     public function defineDependencies(): array
     {
         return [
