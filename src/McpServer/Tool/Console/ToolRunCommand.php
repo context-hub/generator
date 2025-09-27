@@ -333,6 +333,9 @@ final class ToolRunCommand extends BaseCommand
     {
         $required = $schema->getRequiredProperties();
         $properties = $schema->getProperties();
+        if (\is_object($properties)) {
+            return [];
+        }
 
         // Check all required properties are provided
         foreach ($required as $prop) {

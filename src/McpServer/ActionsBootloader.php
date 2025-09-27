@@ -66,6 +66,7 @@ final class ActionsBootloader extends Bootloader
     {
         return [
             McpServerBootloader::class,
+            HttpTransportBootloader::class,
         ];
     }
 
