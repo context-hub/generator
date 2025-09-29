@@ -2,9 +2,8 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Application\Bootloader;
+namespace Butschster\ContextGenerator\Lib\Content;
 
-use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
 use Butschster\ContextGenerator\Lib\Content\Renderer\MarkdownRenderer;
 use Butschster\ContextGenerator\Lib\Content\Renderer\RendererInterface;
 use Spiral\Boot\Bootloader\Bootloader;

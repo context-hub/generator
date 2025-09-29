@@ -2,10 +2,8 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Application\Bootloader;
+namespace Butschster\ContextGenerator\Lib\Git;
 
-use Butschster\ContextGenerator\Lib\Git\CommandsExecutor;
-use Butschster\ContextGenerator\Lib\Git\CommandsExecutorInterface;
 use Spiral\Boot\Bootloader\Bootloader;
 
 final class GitClientBootloader extends Bootloader

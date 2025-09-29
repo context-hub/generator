@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\GitDiff;
 
-use Butschster\ContextGenerator\Application\Bootloader\GitClientBootloader;
-use Butschster\ContextGenerator\Application\Bootloader\SourceFetcherBootloader;
+use Butschster\ContextGenerator\Lib\Git\GitClientBootloader;
+use Butschster\ContextGenerator\Source\Fetcher\SourceFetcherBootloader;
 use Butschster\ContextGenerator\Source\GitDiff\Fetcher\GitSourceFactory;
 use Butschster\ContextGenerator\Source\GitDiff\Fetcher\GitSourceInterface;
 use Butschster\ContextGenerator\Source\GitDiff\Fetcher\Source\CommitGitSource;

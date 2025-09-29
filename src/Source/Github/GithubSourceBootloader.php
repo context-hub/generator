@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\Github;
 
-use Butschster\ContextGenerator\Application\Bootloader\GithubClientBootloader;
-use Butschster\ContextGenerator\Application\Bootloader\SourceFetcherBootloader;
+use Butschster\ContextGenerator\Lib\GithubClient\GithubClientBootloader;
+use Butschster\ContextGenerator\Source\Fetcher\SourceFetcherBootloader;
 use Butschster\ContextGenerator\Source\Registry\SourceRegistryInterface;
 use Spiral\Boot\Bootloader\Bootloader;
 

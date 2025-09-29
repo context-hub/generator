@@ -2,10 +2,8 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Application\Bootloader;
+namespace Butschster\ContextGenerator\Source\Fetcher;
 
-use Butschster\ContextGenerator\Source\Fetcher\SourceFetcherInterface;
-use Butschster\ContextGenerator\Source\Fetcher\SourceFetcherProvider;
 use Butschster\ContextGenerator\SourceParserInterface;
 use Spiral\Boot\Bootloader\Bootloader;
 use Spiral\Core\Attribute\Singleton;
