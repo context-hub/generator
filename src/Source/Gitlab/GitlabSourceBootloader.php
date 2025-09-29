@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Source\Gitlab;
 
 use Butschster\ContextGenerator\Config\ConfigLoaderBootloader;
-use Butschster\ContextGenerator\Application\Bootloader\SourceFetcherBootloader;
+use Butschster\ContextGenerator\Source\Fetcher\SourceFetcherBootloader;
 use Butschster\ContextGenerator\Source\Gitlab\Config\GitlabServerParserPlugin;
 use Butschster\ContextGenerator\Source\Gitlab\Config\ServerRegistry;
 use Butschster\ContextGenerator\Source\Registry\SourceRegistryInterface;

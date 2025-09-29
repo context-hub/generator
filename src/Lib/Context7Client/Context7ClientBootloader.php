@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Application\Bootloader;
+namespace Butschster\ContextGenerator\Lib\Context7Client;
 
-use Butschster\ContextGenerator\Lib\Context7Client\Context7Client;
-use Butschster\ContextGenerator\Lib\Context7Client\Context7ClientInterface;
+use Butschster\ContextGenerator\Application\Bootloader\LoggerBootloader;
+use Butschster\ContextGenerator\Lib\HttpClient\HttpClientBootloader;
 use Spiral\Boot\Bootloader\Bootloader;
 
 final class Context7ClientBootloader extends Bootloader

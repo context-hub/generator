@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Application\Bootloader;
+namespace Butschster\ContextGenerator\Lib\GitlabClient;
 
-use Butschster\ContextGenerator\Lib\GitlabClient\GitlabClient;
-use Butschster\ContextGenerator\Lib\GitlabClient\GitlabClientInterface;
+use Butschster\ContextGenerator\Lib\HttpClient\HttpClientBootloader;
 use Spiral\Boot\Bootloader\Bootloader;
 
 /**

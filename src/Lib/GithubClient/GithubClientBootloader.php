@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\Application\Bootloader;
+namespace Butschster\ContextGenerator\Lib\GithubClient;
 
-use Butschster\ContextGenerator\Lib\GithubClient\GithubClient;
-use Butschster\ContextGenerator\Lib\GithubClient\GithubClientInterface;
+use Butschster\ContextGenerator\Lib\HttpClient\HttpClientBootloader;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 use Spiral\Boot\Bootloader\Bootloader;
 use Spiral\Boot\EnvironmentInterface;
