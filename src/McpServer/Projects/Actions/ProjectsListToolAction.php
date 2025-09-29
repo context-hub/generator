@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer\Projects\Actions;
 
-use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Projects\Actions\Dto\CurrentProjectResponse;
 use Butschster\ContextGenerator\McpServer\Projects\Actions\Dto\ProjectInfoResponse;
-use Butschster\ContextGenerator\McpServer\Projects\Actions\Dto\ProjectListRequest;
 use Butschster\ContextGenerator\McpServer\Projects\Actions\Dto\ProjectsListResponse;
 use Butschster\ContextGenerator\McpServer\Projects\ProjectServiceInterface;
 use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use PhpMcp\Schema\Result\CallToolResult;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
 #[Tool(
@@ -21,7 +20,6 @@ use Psr\Log\LoggerInterface;
     description: 'List all registered projects with their paths, aliases, and configuration details',
     title: 'Projects List',
 )]
-#[InputSchema(class: ProjectListRequest::class)]
 final readonly class ProjectsListToolAction
 {
     public function __construct(
@@ -30,7 +28,7 @@ final readonly class ProjectsListToolAction
     ) {}
 
     #[Post(path: '/tools/call/projects-list', name: 'tools.projects-list')]
-    public function __invoke(ProjectListRequest $request): CallToolResult
+    public function __invoke(ServerRequestInterface $request): CallToolResult
     {
         $this->logger->info('Processing projects-list tool');
 

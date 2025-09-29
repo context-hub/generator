@@ -6,6 +6,7 @@ namespace Butschster\ContextGenerator\Console;
 
 use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
 use Butschster\ContextGenerator\Application\Logger\LoggerFactory;
+use Butschster\ContextGenerator\DirectoriesInterface;
 use Psr\Log\LoggerInterface;
 use Spiral\Console\Command;
 use Spiral\Core\BinderInterface;
@@ -30,7 +31,12 @@ abstract class BaseCommand extends Command
         $this->input = $input;
         $this->output = $output;
 
+        $logsPath = $this->container
+            ->get(DirectoriesInterface::class)
+            ->getRootPath();
+
         $logger = LoggerFactory::create(
+            logsPath: $logsPath,
             output: $output,
             loggingEnabled: $output->isVerbose() || $output->isDebug() || $output->isVeryVerbose(),
         );
