@@ -13,5 +13,5 @@ node_modules
 .templates
 .researches
 runtime
-mcp-*.log
+ctx-*.log
 .env

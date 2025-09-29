@@ -6,7 +6,6 @@ namespace Butschster\ContextGenerator\McpServer\Console;
 
 use Butschster\ContextGenerator\Application\Application;
 use Butschster\ContextGenerator\Application\AppScope;
-use Butschster\ContextGenerator\Application\Logger\FileLogger;
 use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
 use Butschster\ContextGenerator\Config\ConfigurationProvider;
 use Butschster\ContextGenerator\Config\Exception\ConfigLoaderException;
@@ -17,7 +16,7 @@ use Butschster\ContextGenerator\McpServer\Projects\ProjectServiceInterface as Pr
 use Butschster\ContextGenerator\McpServer\ServerRunnerInterface;
 use Butschster\ContextGenerator\McpServer\Tool\Command\CommandExecutor;
 use Butschster\ContextGenerator\McpServer\Tool\Command\CommandExecutorInterface;
-use Monolog\Level;
+use Psr\Log\LoggerInterface;
 use Spiral\Console\Attribute\Option;
 use Spiral\Core\Container;
 use Spiral\Core\Scope;
@@ -68,28 +67,13 @@ final class MCPServerCommand extends BaseCommand
             ->determineRootPath($this->configPath)
             ->withEnvFile($this->envFileName);
 
-        $logger = new FileLogger(
-            name: 'mcp',
-            filePath: (string) $dirs->getRootPath()->join('mcp.log'),
-            level: match (true) {
-                $this->output->isVeryVerbose() => Level::Debug,
-                $this->output->isVerbose() => Level::Info,
-                $this->output->isQuiet() => Level::Error,
-                default => Level::Warning,
-            },
-        );
-
         $binder = $container->getBinder('root');
-        $binder->bind(
-            HasPrefixLoggerInterface::class,
-            $logger,
-        );
         $binder->bind(
             DirectoriesInterface::class,
             $dirs,
         );
 
-        $logger->info('Starting MCP server...');
+        $this->logger->info('Starting MCP server...');
 
         return $container->runScope(
             bindings: new Scope(
@@ -100,7 +84,8 @@ final class MCPServerCommand extends BaseCommand
             scope: static function (
                 Container $container,
                 ConfigurationProvider $configProvider,
-            ) use ($logger, $dirs, $app) {
+                LoggerInterface $logger,
+            ) use ($dirs, $app) {
                 $rootPathStr = (string) $dirs->getRootPath();
                 $logger->info(\sprintf('Using root path: %s', $rootPathStr));
 
