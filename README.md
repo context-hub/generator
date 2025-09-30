@@ -85,8 +85,16 @@ You know your code better than any AI. CTX puts you in control:
 
 Download and install the tool using our installation script:
 
+### Linux / Wsl
+
 ```bash
 curl -sSL https://raw.githubusercontent.com/context-hub/generator/main/download-latest.sh | sh
+```
+
+### Windows
+
+```bash
+powershell -c "& ([ScriptBlock]::Create((irm 'https://raw.githubusercontent.com/context-hub/generator/main/download-latest.ps1'))) -AddToPath"
 ```
 
 This installs the `ctx` command to your system (typically in `/usr/local/bin`).
