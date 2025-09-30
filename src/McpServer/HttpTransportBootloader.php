@@ -32,12 +32,18 @@ use Mcp\Server\Authentication\Router\McpAuthRouter;
 use Mcp\Server\Authentication\Storage\InMemoryClientRepository;
 use Mcp\Server\Transports\Middleware\CorsMiddleware;
 use Mcp\Server\Transports\Middleware\ProxyAwareMiddleware;
+use Psr\Container\ContainerInterface;
 use Spiral\Boot\Bootloader\Bootloader;
 use Spiral\Boot\EnvironmentInterface;
+use Spiral\Config\ConfiguratorInterface;
 use Spiral\McpServer\MiddlewareRegistryInterface;
 
 final class HttpTransportBootloader extends Bootloader
 {
+    public function __construct(
+        private readonly ConfiguratorInterface $configurator,
+    ) {}
+
     #[\Override]
     public function defineSingletons(): array
     {
@@ -177,13 +183,23 @@ final class HttpTransportBootloader extends Bootloader
         ];
     }
 
+    public function init(EnvironmentInterface $env): void
+    {
+        $this->configurator->setDefaults(OauthConfig::CONFIG, [
+            'enabled' => (bool) $env->get('OAUTH_ENABLED', false),
+            'client_id' => $env->get('OAUTH_CLIENT_ID'),
+            'client_secret' => $env->get('OAUTH_CLIENT_SECRET'),
+        ]);
+    }
+
     public function boot(
         MiddlewareRegistryInterface $registry,
         EnvironmentInterface $env,
-        McpAuthRouter $oauthRouter,
         ExceptionHandlerMiddleware $exceptionHandler,
         LoggerMiddleware $logger,
         AuthMiddleware $authMiddleware,
+        OauthConfig $oauthConfig,
+        ContainerInterface $container,
     ): void {
         $convertValues = static fn(
             string|null|bool $values,
@@ -212,8 +228,8 @@ final class HttpTransportBootloader extends Bootloader
         );
 
         // Register OAuth router middleware if enabled
-        if ((bool) $env->get('OAUTH_ENABLED', false)) {
-            $registry->register($oauthRouter);
+        if ($oauthConfig->isEnabled() && $oauthConfig->hasCredentials()) {
+            $registry->register($container->get(McpAuthRouter::class));
         }
 
         $registry->register($authMiddleware);
