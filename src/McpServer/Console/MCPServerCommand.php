@@ -17,6 +17,7 @@ use Butschster\ContextGenerator\McpServer\ServerRunnerInterface;
 use Butschster\ContextGenerator\McpServer\Tool\Command\CommandExecutor;
 use Butschster\ContextGenerator\McpServer\Tool\Command\CommandExecutorInterface;
 use Psr\Log\LoggerInterface;
+use Spiral\Boot\EnvironmentInterface;
 use Spiral\Console\Attribute\Option;
 use Spiral\Core\Container;
 use Spiral\Core\Scope;
@@ -35,6 +36,24 @@ final class MCPServerCommand extends BaseCommand
         description: 'Path to configuration file (absolute or relative to current directory).',
     )]
     protected ?string $configPath = null;
+
+    #[Option(
+        name: 'sse',
+        description: 'Enable SSE (Server-Sent Events) support',
+    )]
+    protected bool $isSse = false;
+
+    #[Option(
+        name: 'host',
+        description: 'Sse host to bind to',
+    )]
+    protected string $host = '127.0.0.1';
+
+    #[Option(
+        name: 'port',
+        description: 'Sse port to bind to',
+    )]
+    protected string $port = '8080';
 
     #[Option(
         name: 'env',
@@ -75,6 +94,19 @@ final class MCPServerCommand extends BaseCommand
 
         $this->logger->info('Starting MCP server...');
 
+        $envs = [];
+        if ($this->isSse) {
+            $envs['MCP_TRANSPORT'] = 'http';
+        }
+
+        if ($this->host) {
+            $envs['MCP_HOST'] = $this->host;
+        }
+
+        if ($this->port) {
+            $envs['MCP_PORT'] = $this->port;
+        }
+
         return $container->runScope(
             bindings: new Scope(
                 bindings: [
@@ -85,9 +117,14 @@ final class MCPServerCommand extends BaseCommand
                 Container $container,
                 ConfigurationProvider $configProvider,
                 LoggerInterface $logger,
-            ) use ($dirs, $app) {
+                EnvironmentInterface $env,
+            ) use ($dirs, $app, $envs) {
                 $rootPathStr = (string) $dirs->getRootPath();
                 $logger->info(\sprintf('Using root path: %s', $rootPathStr));
+
+                foreach ($envs as $key => $value) {
+                    $env->set($key, $value);
+                }
 
                 try {
                     // Get the appropriate loader based on options provided
@@ -121,6 +158,7 @@ final class MCPServerCommand extends BaseCommand
                             CommandExecutorInterface::class => $container->make(CommandExecutor::class, [
                                 'projectRoot' => (string) $dirs->getRootPath(),
                             ]),
+                            EnvironmentInterface::class => $env,
                         ],
                     ),
                     scope: static function (ServerRunnerInterface $factory) use ($app): void {
