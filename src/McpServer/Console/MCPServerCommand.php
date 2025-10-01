@@ -45,15 +45,15 @@ final class MCPServerCommand extends BaseCommand
 
     #[Option(
         name: 'host',
-        description: 'Sse host to bind to',
+        description: 'SSE host to bind to (default: 127.0.0.1)',
     )]
     protected string $host = '127.0.0.1';
 
     #[Option(
         name: 'port',
-        description: 'Sse port to bind to',
+        description: 'SSE port to bind to (default: 8080)',
     )]
-    protected string $port = '8080';
+    protected int $port = 8080;
 
     #[Option(
         name: 'env',
