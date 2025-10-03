@@ -24,18 +24,18 @@ final class ExcludePathFilter extends AbstractFilter
             return $items;
         }
 
-        return \array_filter($items, function (array $item): bool {
+        return \array_filter(array: $items, callback: function (array $item): bool {
             $path = $item['path'] ?? '';
-            $filename = $item['name'] ?? \basename($path);
+            $filename = $item['name'] ?? \basename(path: $path);
 
             foreach ($this->excludePatterns as $pattern) {
                 // Check against full path
-                if ($this->matchesPattern($path, $pattern)) {
+                if ($this->matchesPattern(string: $path, pattern: $pattern)) {
                     return false;
                 }
 
                 // Also check against just the filename
-                if ($this->matchesPattern($filename, $pattern)) {
+                if ($this->matchesPattern(string: $filename, pattern: $pattern)) {
                     return false;
                 }
             }
@@ -53,16 +53,16 @@ final class ExcludePathFilter extends AbstractFilter
      */
     private function matchesPattern(string $string, string $pattern): bool
     {
-        if (\str_contains($string, $pattern)) {
+        if (\str_contains(haystack: $string, needle: $pattern)) {
             return true;
         }
 
-        if (FileHelper::isRegex($pattern)) {
-            return (bool) \preg_match($pattern, $string);
+        if (FileHelper::isRegex(str: $pattern)) {
+            return (bool) \preg_match(pattern: $pattern, subject: $string);
         }
 
         // Convert to regex if it's not already
-        $regex = FileHelper::toRegex($pattern);
-        return (bool) \preg_match($regex, $string);
+        $regex = FileHelper::toRegex(glob: $pattern);
+        return (bool) \preg_match(pattern: $regex, subject: $string);
     }
 }

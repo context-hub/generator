@@ -36,8 +36,8 @@ final class ServerRegistry
 
     public function get(string $name): ServerConfig
     {
-        if (!$this->has($name)) {
-            throw new \InvalidArgumentException(\sprintf('GitLab server "%s" not found in registry', $name));
+        if (!$this->has(name: $name)) {
+            throw new \InvalidArgumentException(message: \sprintf('GitLab server "%s" not found in registry', $name));
         }
 
         return $this->servers[$name];

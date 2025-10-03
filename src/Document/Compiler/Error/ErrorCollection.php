@@ -40,7 +40,7 @@ final class ErrorCollection implements \Countable, \IteratorAggregate, \JsonSeri
      */
     public function count(): int
     {
-        return \count($this->errors);
+        return \count(value: $this->errors);
     }
 
     /**
@@ -48,14 +48,14 @@ final class ErrorCollection implements \Countable, \IteratorAggregate, \JsonSeri
      */
     public function getIterator(): \Traversable
     {
-        return new \ArrayIterator($this->errors);
+        return new \ArrayIterator(array: $this->errors);
     }
 
     public function jsonSerialize(): array
     {
         return \array_map(
-            static fn(\Stringable|string $error): string => (string) $error,
-            $this->errors,
+            callback: static fn(\Stringable|string $error): string => (string) $error,
+            array: $this->errors,
         );
     }
 }

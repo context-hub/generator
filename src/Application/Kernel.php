@@ -54,8 +54,8 @@ class Kernel extends AbstractKernel
         parent::__construct($container, $exceptionHandler, $bootloader, $directories);
 
         $container->bindSingleton(
-            DirectoriesInterface::class,
-            new Directories($this->mapDirectories($directories)),
+            alias: DirectoriesInterface::class,
+            resolver: new Directories(directories: $this->mapDirectories(directories: $directories)),
         );
     }
 
@@ -126,7 +126,7 @@ class Kernel extends AbstractKernel
     protected function mapDirectories(array $directories): array
     {
         if (!isset($directories['root'])) {
-            throw new BootException('Missing required directory `root`');
+            throw new BootException(message: 'Missing required directory `root`');
         }
 
         return \array_merge(

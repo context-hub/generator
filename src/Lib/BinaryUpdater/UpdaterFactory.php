@@ -30,8 +30,8 @@ final readonly class UpdaterFactory
     {
         // Create the appropriate strategy based on the operating system
         return match (\PHP_OS_FAMILY) {
-            'Windows' => new WindowsUpdateStrategy($this->files, $this->logger),
-            default => new UnixUpdateStrategy($this->files, $this->logger),
+            'Windows' => new WindowsUpdateStrategy(files: $this->files, logger: $this->logger),
+            default => new UnixUpdateStrategy(files: $this->files, logger: $this->logger),
         };
     }
 }

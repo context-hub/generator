@@ -15,7 +15,7 @@ final readonly class VariableResolver
 
     public function with(VariableReplacementProcessorInterface $processor): self
     {
-        return new self(new CompositeProcessor([
+        return new self(new CompositeProcessor(processors: [
             $this->processor,
             $processor,
         ]));
@@ -30,8 +30,8 @@ final readonly class VariableResolver
             return null;
         }
 
-        if (\is_array($strings)) {
-            return \array_map($this->resolve(...), $strings);
+        if (\is_array(value: $strings)) {
+            return \array_map(callback: $this->resolve(...), array: $strings);
         }
 
         return $this->processor->process($strings);

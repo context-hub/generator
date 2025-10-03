@@ -13,7 +13,7 @@ class CommentInsertionRuleTest extends TestCase
     #[Test]
     public function it_should_return_correct_name(): void
     {
-        $rule = new CommentInsertionRule('test-rule');
+        $rule = new CommentInsertionRule(name: 'test-rule');
         $this->assertEquals('test-rule', $rule->getName());
     }
 
@@ -28,7 +28,7 @@ class CommentInsertionRuleTest extends TestCase
         $content = "<?php\n\necho 'Hello World';";
         $expected = "// This is a header comment\n\n<?php\n\necho 'Hello World';";
 
-        $this->assertEquals($expected, $rule->apply($content));
+        $this->assertEquals($expected, $rule->apply(content: $content));
     }
 
     #[Test]
@@ -42,7 +42,7 @@ class CommentInsertionRuleTest extends TestCase
         $content = "<?php\n\necho 'Hello World';";
         $expected = "/**\n * This is a header comment\n * With multiple lines\n */\n\n<?php\n\necho 'Hello World';";
 
-        $this->assertEquals($expected, $rule->apply($content));
+        $this->assertEquals($expected, $rule->apply(content: $content));
     }
 
     #[Test]
@@ -56,7 +56,7 @@ class CommentInsertionRuleTest extends TestCase
         $content = "<?php\n\nclass TestClass {\n}";
         $expected = "<?php\n\n\n// This is a class comment\nclass TestClass {\n}";
 
-        $this->assertEquals($expected, $rule->apply($content));
+        $this->assertEquals($expected, $rule->apply(content: $content));
     }
 
     #[Test]
@@ -70,7 +70,7 @@ class CommentInsertionRuleTest extends TestCase
         $content = "<?php\n\nclass TestClass {\n    public function test() {\n    }\n}";
         $expected = "<?php\n\nclass TestClass {\n    \n\n    // This is a method comment\n\n    \n    public function test() {\n    }\n}";
 
-        $this->assertEquals($expected, $rule->apply($content));
+        $this->assertEquals($expected, $rule->apply(content: $content));
     }
 
     #[Test]
@@ -83,11 +83,11 @@ class CommentInsertionRuleTest extends TestCase
         );
 
         $content = "Line 1\nLine 2\nLine 3\nLine 4";
-        $result = $rule->apply($content);
+        $result = $rule->apply(content: $content);
 
         // Since the random comment selection is non-deterministic, we can only check
         // that the number of lines has increased as expected
-        $this->assertGreaterThan(\strlen($content), \strlen($result));
+        $this->assertGreaterThan(\strlen(string: $content), \strlen(string: $result));
         $this->assertStringContainsString('// Random comment', $result);
     }
 
@@ -104,7 +104,7 @@ class CommentInsertionRuleTest extends TestCase
         );
 
         $content = "<?php\n\nclass TestClass {\n    public function test() {\n    }\n}";
-        $result = $rule->apply($content);
+        $result = $rule->apply(content: $content);
 
         $this->assertStringContainsString('// File header', $result);
         $this->assertStringContainsString('// Class comment', $result);

@@ -52,51 +52,51 @@ final class GithubFinder implements FinderInterface
     public function find(FilterableSourceInterface $source, string $basePath = '', array $options = []): FinderResult
     {
         if (!$source instanceof GithubSource) {
-            throw new \InvalidArgumentException('Source must be an instance of GithubSource');
+            throw new \InvalidArgumentException(message: 'Source must be an instance of GithubSource');
         }
 
         if ($source->githubToken) {
-            $this->githubClient->setToken($this->variableResolver->resolve($source->githubToken));
+            $this->githubClient->setToken($this->variableResolver->resolve(strings: $source->githubToken));
         }
 
         // Parse repository from string
-        $repository = new GithubRepository($source->repository, $source->branch);
+        $repository = new GithubRepository(repository: $source->repository, branch: $source->branch);
 
         // Initialize path filters based on source configuration
-        $this->initializePathFilters($source);
+        $this->initializePathFilters(source: $source);
 
         // Get source paths
         $sourcePaths = $source->sourcePaths;
-        if (\is_string($sourcePaths)) {
+        if (\is_string(value: $sourcePaths)) {
             $sourcePaths = [$sourcePaths];
         }
 
         // Recursively discover all files from repository paths
-        $discoveredItems = $this->discoverRepositoryItems($repository, $sourcePaths);
+        $discoveredItems = $this->discoverRepositoryItems(repository: $repository, sourcePaths: $sourcePaths);
 
         // Apply path-based filters
-        $filteredItems = $this->applyFilters($discoveredItems);
+        $filteredItems = $this->applyFilters(items: $discoveredItems);
 
         // Build result structure
         $files = [];
-        $this->buildResultStructure($filteredItems, $repository, $files);
+        $this->buildResultStructure(items: $filteredItems, repository: $repository, files: $files);
 
         // Apply content filters
         $files = (new ContentsFilter(
             contains: $source->contains(),
             notContains: $source->notContains(),
-        ))->apply($files);
+        ))->apply(items: $files);
 
         // Apply global exclusion registry
-        $files = $this->applyGlobalExclusions($files);
+        $files = $this->applyGlobalExclusions(files: $files);
 
         /** @psalm-suppress InvalidArgument */
-        $tree = \array_map(static fn(GithubFileInfo $file): string => $file->getRelativePathname(), $files);
+        $tree = \array_map(callback: static fn(GithubFileInfo $file): string => $file->getRelativePathname(), array: $files);
 
         // Create the result
         return new FinderResult(
-            \array_values($files),
-            $this->fileTreeBuilder->buildTree($tree, '', $options),
+            files: \array_values(array: $files),
+            treeView: $this->fileTreeBuilder->buildTree(files: $tree, basePath: '', options: $options),
         );
     }
 
@@ -117,7 +117,7 @@ final class GithubFinder implements FinderInterface
      */
     private function applyGlobalExclusions(array $files): array
     {
-        return \array_filter($files, function (GithubFileInfo $file): bool {
+        return \array_filter(array: $files, callback: function (GithubFileInfo $file): bool {
             $path = $file->getRelativePathname();
 
             if ($this->excludeRegistry->shouldExclude($path)) {
@@ -144,19 +144,19 @@ final class GithubFinder implements FinderInterface
         // Add file name pattern filter
         $filePattern = $source->name();
         if ($filePattern) {
-            $this->filters[] = new FilePatternFilter($filePattern);
+            $this->filters[] = new FilePatternFilter(pattern: $filePattern);
         }
 
         // Add path inclusion filter
         $path = $source->path();
         if ($path) {
-            $this->filters[] = new PathFilter($path);
+            $this->filters[] = new PathFilter(pathPattern: $path);
         }
 
         // Add path exclusion filter
         $excludePatterns = $source->notPath();
         if ($excludePatterns) {
-            $this->filters[] = new ExcludePathFilter($excludePatterns);
+            $this->filters[] = new ExcludePathFilter(excludePatterns: $excludePatterns);
         }
     }
 
@@ -172,8 +172,8 @@ final class GithubFinder implements FinderInterface
         $allItems = [];
 
         foreach ($sourcePaths as $path) {
-            $items = $this->fetchDirectoryContents($repository, $path);
-            $allItems = \array_merge($allItems, $this->traverseDirectoryRecursively($items, $repository));
+            $items = $this->fetchDirectoryContents(repository: $repository, path: $path);
+            $allItems = \array_merge($allItems, $this->traverseDirectoryRecursively(items: $items, repository: $repository));
         }
 
         return $allItems;
@@ -188,8 +188,8 @@ final class GithubFinder implements FinderInterface
 
         foreach ($items as $item) {
             if (($item['type'] ?? '') === 'dir') {
-                $subItems = $this->fetchDirectoryContents($repository, $item['path']);
-                $result = \array_merge($result, $this->traverseDirectoryRecursively($subItems, $repository));
+                $subItems = $this->fetchDirectoryContents(repository: $repository, path: $item['path']);
+                $result = \array_merge($result, $this->traverseDirectoryRecursively(items: $subItems, repository: $repository));
             } else {
                 $result[] = $item;
             }
@@ -210,17 +210,17 @@ final class GithubFinder implements FinderInterface
             $path = $item['path'];
 
             try {
-                $relativePath = \dirname((string) $path);
+                $relativePath = \dirname(path: (string) $path);
                 if ($relativePath === '.') {
                     $relativePath = '';
                 }
 
                 // Add to files array
                 $files[] = new GithubFileInfo(
-                    $relativePath,
-                    $path,
-                    $item,
-                    fn() => $this->fetchFileContent($repository, $path),
+                    relativePath: $relativePath,
+                    relativePathname: $path,
+                    metadata: $item,
+                    content: fn() => $this->fetchFileContent(repository: $repository, path: $path),
                 );
             } catch (\Exception) {
                 // Skip files that can't be processed

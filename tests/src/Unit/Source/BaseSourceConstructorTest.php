@@ -48,7 +48,7 @@ class BaseSourceConstructorTest extends TestCase
             ->with($source)
             ->willReturn('Parsed content');
 
-        $this->assertEquals('Parsed content', $source->parseContent($parser, new ModifiersApplier([])));
+        $this->assertEquals('Parsed content', $source->parseContent(parser: $parser, modifiersApplier: new ModifiersApplier(modifiers: [])));
     }
 
     /**

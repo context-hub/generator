@@ -20,7 +20,7 @@ final readonly class MarkdownToResourceTransformer
      */
     public function transform(array $markdownData): array
     {
-        if (!isset($markdownData['markdownFiles']) || !\is_array($markdownData['markdownFiles'])) {
+        if (!isset($markdownData['markdownFiles']) || !\is_array(value: $markdownData['markdownFiles'])) {
             $this->logger?->warning('Invalid markdown data structure');
             return [];
         }
@@ -32,7 +32,7 @@ final readonly class MarkdownToResourceTransformer
         ];
 
         foreach ($markdownData['markdownFiles'] as $fileData) {
-            $resource = $this->transformSingleFile($fileData);
+            $resource = $this->transformSingleFile(fileData: $fileData);
             if ($resource !== null) {
                 $resourceType = $resource['_type'];
                 unset($resource['_type']);
@@ -42,12 +42,12 @@ final readonly class MarkdownToResourceTransformer
         }
 
         // Remove empty sections
-        $config = \array_filter($config, static fn(array $section) => !empty($section));
+        $config = \array_filter(array: $config, callback: static fn(array $section) => !empty($section));
 
         $this->logger?->debug('Transformation completed', [
-            'documentsCount' => \count($config['documents'] ?? []),
-            'promptsCount' => \count($config['prompts'] ?? []),
-            'resourcesCount' => \count($config['resources'] ?? []),
+            'documentsCount' => \count(value: $config['documents'] ?? []),
+            'promptsCount' => \count(value: $config['prompts'] ?? []),
+            'resourcesCount' => \count(value: $config['resources'] ?? []),
         ]);
 
         return $config;
@@ -64,17 +64,17 @@ final readonly class MarkdownToResourceTransformer
         $relativePath = $fileData['relativePath'] ?? '';
 
         // Determine resource type from metadata or default to 'resource'
-        $resourceType = $this->determineResourceType($metadata);
+        $resourceType = $this->determineResourceType(metadata: $metadata);
 
         // Generate ID from filename if not provided in metadata
-        $id = $metadata['id'] ?? $this->generateIdFromFilename($name);
+        $id = $metadata['id'] ?? $this->generateIdFromFilename(filename: $name);
 
         // Get description with fallback hierarchy
-        $description = $this->getDescription($metadata, $relativePath);
+        $description = $this->getDescription(metadata: $metadata, relativePath: $relativePath);
 
         return match ($resourceType) {
-            'prompt' => $this->createPromptResource($id, $metadata, $content, $relativePath, $description),
-            default => $this->createGenericResource($id, $metadata, $content, $relativePath, $description),
+            'prompt' => $this->createPromptResource(id: $id, metadata: $metadata, content: $content, relativePath: $relativePath, description: $description),
+            default => $this->createGenericResource(id: $id, metadata: $metadata, content: $content, relativePath: $relativePath, description: $description),
         };
     }
 
@@ -102,8 +102,8 @@ final readonly class MarkdownToResourceTransformer
     {
         // Check explicit type declaration
         if (isset($metadata['type'])) {
-            $type = \strtolower($metadata['type']);
-            if (\in_array($type, ['prompt', 'resource'], true)) {
+            $type = \strtolower(string: $metadata['type']);
+            if (\in_array(needle: $type, haystack: ['prompt', 'resource'], strict: true)) {
                 return $type;
             }
         }
@@ -136,7 +136,7 @@ final readonly class MarkdownToResourceTransformer
 
         // Add tags if present
         if (!empty($metadata['tags'])) {
-            $prompt['tags'] = $this->normalizeTagsArray($metadata['tags']);
+            $prompt['tags'] = $this->normalizeTagsArray(tags: $metadata['tags']);
         }
 
         // Add schema if present
@@ -157,7 +157,7 @@ final readonly class MarkdownToResourceTransformer
             'description' => $description,
             'type' => $prompt['type'],
             'hasSchema' => isset($prompt['schema']),
-            'messagesCount' => \count($prompt['messages']),
+            'messagesCount' => \count(value: $prompt['messages']),
             'hasTitle' => !empty($metadata['title']),
         ]);
 
@@ -182,11 +182,11 @@ final readonly class MarkdownToResourceTransformer
 
         // Add tags if present
         if (!empty($metadata['tags'])) {
-            $document['tags'] = $this->normalizeTagsArray($metadata['tags']);
+            $document['tags'] = $this->normalizeTagsArray(tags: $metadata['tags']);
         }
 
         // Create sources - either from metadata or convert content to text source
-        if (!empty($metadata['sources']) && \is_array($metadata['sources'])) {
+        if (!empty($metadata['sources']) && \is_array(value: $metadata['sources'])) {
             $document['sources'] = $metadata['sources'];
         } else {
             // Convert content to a text source
@@ -207,7 +207,7 @@ final readonly class MarkdownToResourceTransformer
         $this->logger?->debug('Created document resource', [
             'description' => $description,
             'outputPath' => $document['outputPath'],
-            'sourcesCount' => \count($document['sources']),
+            'sourcesCount' => \count(value: $document['sources']),
             'hasTitle' => !empty($metadata['title']),
         ]);
 
@@ -221,7 +221,7 @@ final readonly class MarkdownToResourceTransformer
     {
         // For now, convert generic resources to documents
         // This provides a sensible default behavior
-        return $this->createDocumentResource($id, $metadata, $content, $relativePath, $description);
+        return $this->createDocumentResource(id: $id, metadata: $metadata, content: $content, relativePath: $relativePath, description: $description);
     }
 
     /**
@@ -230,9 +230,9 @@ final readonly class MarkdownToResourceTransformer
     private function generateIdFromFilename(string $filename): string
     {
         // Convert filename to a valid identifier
-        $id = \strtolower($filename);
-        $id = \preg_replace('/[^a-z0-9]+/', '-', $id);
-        $id = \trim((string) $id, '-');
+        $id = \strtolower(string: $filename);
+        $id = \preg_replace(pattern: '/[^a-z0-9]+/', replacement: '-', subject: $id);
+        $id = \trim(string: (string) $id, characters: '-');
 
         return $id ?: 'unknown';
     }
@@ -242,14 +242,14 @@ final readonly class MarkdownToResourceTransformer
      */
     private function normalizeTagsArray(mixed $tags): array
     {
-        if (\is_string($tags)) {
+        if (\is_string(value: $tags)) {
             // Handle comma-separated string
-            return \array_map(\trim(...), \explode(',', $tags));
+            return \array_map(callback: \trim(...), array: \explode(separator: ',', string: $tags));
         }
 
-        if (\is_array($tags)) {
+        if (\is_array(value: $tags)) {
             // Filter to ensure all elements are strings
-            return \array_filter(\array_map(\strval(...), $tags));
+            return \array_filter(array: \array_map(callback: \strval(...), array: $tags));
         }
 
         return [];

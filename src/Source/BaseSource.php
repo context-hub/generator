@@ -19,7 +19,7 @@ abstract class BaseSource implements SourceInterface
 
     public function getDescription(): string
     {
-        return \trim($this->description);
+        return \trim(string: $this->description);
     }
 
     public function hasDescription(): bool
@@ -29,7 +29,7 @@ abstract class BaseSource implements SourceInterface
 
     public function getTags(): array
     {
-        return \array_values(\array_unique($this->tags));
+        return \array_values(array: \array_unique(array: $this->tags));
     }
 
     public function hasTags(): bool
@@ -46,9 +46,9 @@ abstract class BaseSource implements SourceInterface
 
     public function jsonSerialize(): array
     {
-        return \array_filter([
+        return \array_filter(array: [
             'description' => $this->getDescription(),
             'tags' => $this->getTags(),
-        ], static fn($value) => $value !== null && $value !== '' && $value !== []);
+        ], callback: static fn($value) => $value !== null && $value !== '' && $value !== []);
     }
 }

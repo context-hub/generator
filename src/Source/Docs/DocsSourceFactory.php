@@ -25,16 +25,16 @@ final readonly class DocsSourceFactory extends AbstractSourceFactory
             'config' => $config,
         ]);
 
-        if (!isset($config['library']) || !\is_string($config['library'])) {
-            throw new \RuntimeException('Docs source must have a "library" string property');
+        if (!isset($config['library']) || !\is_string(value: $config['library'])) {
+            throw new \RuntimeException(message: 'Docs source must have a "library" string property');
         }
 
-        if (!isset($config['topic']) || !\is_string($config['topic'])) {
-            throw new \RuntimeException('Docs source must have a "topic" string property');
+        if (!isset($config['topic']) || !\is_string(value: $config['topic'])) {
+            throw new \RuntimeException(message: 'Docs source must have a "topic" string property');
         }
 
         $tokens = 2000;
-        if (isset($config['tokens']) && (\is_int($config['tokens']) || \is_string($config['tokens']))) {
+        if (isset($config['tokens']) && (\is_int(value: $config['tokens']) || \is_string(value: $config['tokens']))) {
             $tokens = (int) $config['tokens'];
         }
 

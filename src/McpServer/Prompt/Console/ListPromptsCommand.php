@@ -87,7 +87,7 @@ final class ListPromptsCommand extends BaseCommand
                     // Get the appropriate loader based on options provided
                     if ($this->configPath !== null) {
                         $this->logger->info(\sprintf('Loading configuration from %s...', $this->configPath));
-                        $loader = $configProvider->fromPath($this->configPath);
+                        $loader = $configProvider->fromPath(configPath: $this->configPath);
                     } else {
                         $this->logger->info('Loading configuration from default location...');
                         $loader = $configProvider->fromDefaultLocation();
@@ -109,7 +109,7 @@ final class ListPromptsCommand extends BaseCommand
                 $prompts = $promptProvider->all();
 
                 // Create filter based on command options
-                $filter = $this->createFilter($filterFactory);
+                $filter = $this->createFilter(filterFactory: $filterFactory);
 
                 // Apply filter if needed
                 if ($filter !== null) {
@@ -133,7 +133,7 @@ final class ListPromptsCommand extends BaseCommand
                 }
 
                 // Display prompts based on the selected format
-                return $this->displayAsTable($prompts);
+                return $this->displayAsTable(prompts: $prompts);
             },
         );
     }
@@ -164,7 +164,7 @@ final class ListPromptsCommand extends BaseCommand
             }
         }
 
-        return $filterFactory->createFromConfig($filterConfig);
+        return $filterFactory->createFromConfig(filterConfig: $filterConfig);
     }
 
     /**
@@ -176,44 +176,44 @@ final class ListPromptsCommand extends BaseCommand
         $title = 'Available Prompts';
         $this->output->title($title);
 
-        $table = new Table($this->output);
+        $table = new Table(output: $this->output);
 
         if ($this->detailed) {
-            $table->setHeaders(['ID', 'Type', 'Description', 'Tags', 'Arguments']);
+            $table->setHeaders(headers: ['ID', 'Type', 'Description', 'Tags', 'Arguments']);
         } else {
-            $table->setHeaders(['ID', 'Type', 'Description', 'Tags']);
+            $table->setHeaders(headers: ['ID', 'Type', 'Description', 'Tags']);
         }
 
         foreach ($prompts as $promptDef) {
             $row = [
-                new TableCell($promptDef->id, ['style' => new TableCellStyle(['fg' => 'cyan'])]),
+                new TableCell(value: $promptDef->id, options: ['style' => new TableCellStyle(options: ['fg' => 'cyan'])]),
                 new TableCell(
-                    $promptDef->type->value,
-                    [
+                    value: $promptDef->type->value,
+                    options: [
                         'style' => new TableCellStyle(
-                            ['fg' => $promptDef->type === PromptType::Prompt ? 'green' : 'blue'],
+                            options: ['fg' => $promptDef->type === PromptType::Prompt ? 'green' : 'blue'],
                         ),
                     ],
                 ),
                 $promptDef->prompt->description ?? '-',
-                \implode(', ', $promptDef->tags),
+                \implode(separator: ', ', array: $promptDef->tags),
             ];
 
             if ($this->detailed) {
-                $args = $this->formatArguments($promptDef->prompt);
+                $args = $this->formatArguments(prompt: $promptDef->prompt);
                 $row[] = $args;
             }
 
-            $table->addRow($row);
+            $table->addRow(row: $row);
             if ($this->detailed) {
-                $table->addRow(new TableSeparator());
+                $table->addRow(row: new TableSeparator());
             }
         }
 
         $table->render();
 
         $this->output->writeln('');
-        $this->output->writeln(\sprintf('%s: %s', Style::property('Total prompts'), Style::count(\count($prompts))));
+        $this->output->writeln(\sprintf('%s: %s', Style::property(text: 'Total prompts'), Style::count(count: \count(value: $prompts))));
 
         return Command::SUCCESS;
     }
@@ -241,6 +241,6 @@ final class ListPromptsCommand extends BaseCommand
             $args[] = $name;
         }
 
-        return \implode("\n", $args);
+        return \implode(separator: "\n", array: $args);
     }
 }

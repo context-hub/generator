@@ -21,7 +21,7 @@ final readonly class GitSourceFactory
 
     public function create(string $commitReference): GitSourceInterface
     {
-        return $this->createForSingleReference($commitReference);
+        return $this->createForSingleReference(commitReference: $commitReference);
     }
 
     /**

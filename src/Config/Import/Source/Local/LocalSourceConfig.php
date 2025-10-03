@@ -38,18 +38,18 @@ final class LocalSourceConfig extends AbstractSourceConfig
     public static function fromArray(array $config, string $basePath): self
     {
         if (!isset($config['path'])) {
-            throw new \InvalidArgumentException("Source configuration must have a 'path' property");
+            throw new \InvalidArgumentException(message: "Source configuration must have a 'path' property");
         }
 
         $path = $config['path'];
         $pathPrefix = $config['pathPrefix'] ?? null;
         $selectiveDocuments = $config['docs'] ?? null;
-        $filter = FilterConfig::fromArray($config['filter'] ?? null);
+        $filter = FilterConfig::fromArray(config: $config['filter'] ?? null);
         $format = $config['format'] ?? 'config';
 
         // Validate format
-        if (!\in_array($format, ['config', 'md', 'markdown'], true)) {
-            throw new \InvalidArgumentException("Unsupported format: {$format}. Supported formats: config, md, markdown");
+        if (!\in_array(needle: $format, haystack: ['config', 'md', 'markdown'], strict: true)) {
+            throw new \InvalidArgumentException(message: "Unsupported format: {$format}. Supported formats: config, md, markdown");
         }
 
         // Normalize markdown format
@@ -58,10 +58,10 @@ final class LocalSourceConfig extends AbstractSourceConfig
         }
 
         // Check if the path contains wildcards
-        $hasWildcard = PathMatcher::containsWildcard($path);
+        $hasWildcard = PathMatcher::containsWildcard(path: $path);
 
         // Resolve relative path to absolute path
-        $absolutePath = (string) FSPath::create($basePath)->join($path);
+        $absolutePath = (string) FSPath::create(path: $basePath)->join($path);
 
         return new self(
             path: $path,
@@ -114,7 +114,7 @@ final class LocalSourceConfig extends AbstractSourceConfig
     #[\Override]
     public function getConfigDirectory(): string
     {
-        return \dirname($this->absolutePath);
+        return \dirname(path: $this->absolutePath);
     }
 
     public function jsonSerialize(): array

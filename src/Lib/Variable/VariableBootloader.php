@@ -55,7 +55,7 @@ final class VariableBootloader extends Bootloader
 
             VariableReplacementProcessorInterface::class => static fn(
                 VariableReplacementProcessor $replacementProcessor,
-            ) => new CompositeProcessor([
+            ) => new CompositeProcessor(processors: [
                 $replacementProcessor,
             ]),
 
@@ -68,6 +68,6 @@ final class VariableBootloader extends Bootloader
         VariablesParserPlugin $variablesParserPlugin,
     ): void {
         // Register the variables parser plugin with the config loader
-        $configLoaderBootloader->registerParserPlugin($variablesParserPlugin);
+        $configLoaderBootloader->registerParserPlugin(plugin: $variablesParserPlugin);
     }
 }

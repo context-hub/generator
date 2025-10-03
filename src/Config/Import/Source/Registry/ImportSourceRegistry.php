@@ -50,8 +50,8 @@ final class ImportSourceRegistry
      */
     public function get(string $name): ImportSourceInterface
     {
-        if (!$this->has($name)) {
-            throw new \InvalidArgumentException("Import source not found: {$name}");
+        if (!$this->has(name: $name)) {
+            throw new \InvalidArgumentException(message: "Import source not found: {$name}");
         }
 
         return $this->sources[$name];

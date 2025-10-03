@@ -20,7 +20,7 @@ abstract class AbstractRenderer implements RendererInterface
                 continue;
             }
 
-            $content .= \preg_replace("/(\r\n|\n)+$/", "\n", $block->render($this));
+            $content .= \preg_replace(pattern: "/(\r\n|\n)+$/", replacement: "\n", subject: $block->render($this));
         }
 
         return $content;

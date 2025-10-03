@@ -39,7 +39,7 @@ final class DocsSourceBootloader extends Bootloader
         SourceRegistryInterface $sourceRegistry,
         DocsSourceFactory $factory,
     ): void {
-        $registry->register(DocsSourceFetcher::class);
+        $registry->register(fetcher: DocsSourceFetcher::class);
         $sourceRegistry->register($factory);
     }
 }

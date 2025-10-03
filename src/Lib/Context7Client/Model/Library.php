@@ -39,7 +39,7 @@ final readonly class Library implements \JsonSerializable
     {
         return \sprintf(
             "Use in your context config: { type: 'docs', library: '%s', topic: 'your-topic' }",
-            \ltrim($this->id, '/'),
+            \ltrim(string: $this->id, characters: '/'),
         );
     }
 

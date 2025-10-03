@@ -23,7 +23,7 @@ abstract readonly class AbstractGitSource implements GitSourceInterface
 
     public function createFileInfos(string $repository, string $commitReference, string $tempDir): array
     {
-        $changedFiles = $this->getChangedFiles($repository, $commitReference);
+        $changedFiles = $this->getChangedFiles(repository: $repository, commitReference: $commitReference);
 
         if (empty($changedFiles)) {
             return [];
@@ -36,14 +36,14 @@ abstract readonly class AbstractGitSource implements GitSourceInterface
 
         foreach ($changedFiles as $file) {
             // Get the diff for this file
-            $diff = $this->getFileDiff($repository, $commitReference, $file);
+            $diff = $this->getFileDiff(repository: $repository, commitReference: $commitReference, file: $file);
 
             if (empty($diff)) {
                 continue;
             }
 
             // Create the temporary file
-            $tempFile = FSPath::create($tempDir)->join($file);
+            $tempFile = FSPath::create(path: $tempDir)->join($file);
             $tempDirname = (string) $tempFile->parent();
 
             $this->files->ensureDirectory($tempDirname, 0777);
@@ -58,7 +58,7 @@ abstract readonly class AbstractGitSource implements GitSourceInterface
                     string $originalPath,
                     private readonly string $diffContent,
                 ) {
-                    parent::__construct($tempFile, \dirname($originalPath), $originalPath);
+                    parent::__construct($tempFile, \dirname(path: $originalPath), $originalPath);
                     $this->originalPath = $originalPath;
                 }
 
@@ -94,9 +94,9 @@ abstract readonly class AbstractGitSource implements GitSourceInterface
         try {
             $result = $this->executeGitCommandString(repository: $repository, command: $command);
             // Normalize line endings to Unix format
-            $result = \str_replace("\r\n", "\n", $result);
+            $result = \str_replace(search: "\r\n", replace: "\n", subject: $result);
 
-            return \array_map(\trim(...), \array_filter(\explode("\n", $result)));
+            return \array_map(callback: \trim(...), array: \array_filter(array: \explode(separator: "\n", string: $result)));
         } catch (GitCommandException $e) {
             $this->logger?->warning('Git command failed, returning empty result', [
                 'command' => $command,

@@ -34,7 +34,7 @@ final readonly class Release
         $assets = [];
 
         // Process assets to create a map of filename => download URL
-        if (isset($data['assets']) && \is_array($data['assets'])) {
+        if (isset($data['assets']) && \is_array(value: $data['assets'])) {
             foreach ($data['assets'] as $asset) {
                 if (isset($asset['name'], $asset['browser_download_url'])) {
                     $assets[(string) $asset['name']] = (string) $asset['browser_download_url'];
@@ -56,7 +56,7 @@ final readonly class Release
      */
     public function getVersion(): string
     {
-        return \ltrim($this->tagName, 'v');
+        return \ltrim(string: $this->tagName, characters: 'v');
     }
 
     /**
@@ -65,7 +65,7 @@ final readonly class Release
     public function isNewerThan(string $currentVersion): bool
     {
         // Clean up versions for comparison
-        $currentVersion = \ltrim($currentVersion, 'v');
+        $currentVersion = \ltrim(string: $currentVersion, characters: 'v');
         $releaseVersion = $this->getVersion();
 
         return \version_compare($currentVersion, $releaseVersion, '<');

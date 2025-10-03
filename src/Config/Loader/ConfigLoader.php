@@ -38,7 +38,7 @@ final readonly class ConfigLoader implements ConfigLoaderInterface
             $configRegistry = $this->parser->parse($config);
 
             // Log the available registry types
-            $registryTypes = \array_keys($configRegistry->all());
+            $registryTypes = \array_keys(array: $configRegistry->all());
             $this->logger?->info('Configuration loaded successfully', [
                 'registryTypes' => $registryTypes,
             ]);

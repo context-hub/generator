@@ -32,7 +32,7 @@ final readonly class SourceFetcherProvider implements SourceParserInterface
         }
 
         throw new \RuntimeException(
-            \sprintf(
+            message: \sprintf(
                 'No fetcher found for source of type %s',
                 $source::class,
             ),
@@ -41,6 +41,6 @@ final readonly class SourceFetcherProvider implements SourceParserInterface
 
     public function parse(SourceInterface $source, ModifiersApplierInterface $modifiersApplier): string
     {
-        return $this->findFetcher($source)->fetch($source, $modifiersApplier);
+        return $this->findFetcher(source: $source)->fetch($source, $modifiersApplier);
     }
 }

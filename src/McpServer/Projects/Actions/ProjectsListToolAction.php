@@ -45,7 +45,7 @@ final readonly class ProjectsListToolAction
                     message: 'No projects registered. Use project:add command to add projects.',
                 );
 
-                return ToolResult::success($response);
+                return ToolResult::success(data: $response);
             }
 
             // Create inverse alias map for quick lookups
@@ -84,17 +84,17 @@ final readonly class ProjectsListToolAction
             $response = new ProjectsListResponse(
                 projects: $projectInfos,
                 currentProject: $currentProjectResponse,
-                totalProjects: \count($projects),
+                totalProjects: \count(value: $projects),
             );
 
-            return ToolResult::success($response);
+            return ToolResult::success(data: $response);
         } catch (\Throwable $e) {
             $this->logger->error('Error listing projects', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return ToolResult::error($e->getMessage());
+            return ToolResult::error(error: $e->getMessage());
         }
     }
 }

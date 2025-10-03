@@ -16,7 +16,7 @@ final readonly class PathMatcher
      */
     public function __construct(private string $pattern)
     {
-        $this->regex = $this->isRegex($this->pattern) ? $this->pattern : $this->globToRegex($this->pattern);
+        $this->regex = $this->isRegex(str: $this->pattern) ? $this->pattern : $this->globToRegex(pattern: $this->pattern);
     }
 
     /**
@@ -24,8 +24,8 @@ final readonly class PathMatcher
      */
     public static function containsWildcard(string $path): bool
     {
-        return \str_contains($path, '*') || \str_contains($path, '?') ||
-            \str_contains($path, '[') || \str_contains($path, '{');
+        return \str_contains(haystack: $path, needle: '*') || \str_contains(haystack: $path, needle: '?') ||
+            \str_contains(haystack: $path, needle: '[') || \str_contains(haystack: $path, needle: '{');
     }
 
     /**
@@ -33,7 +33,7 @@ final readonly class PathMatcher
      */
     public function isMatch(string $path): bool
     {
-        return (bool) \preg_match($this->regex, $path);
+        return (bool) \preg_match(pattern: $this->regex, subject: $path);
     }
 
     /**
@@ -72,7 +72,7 @@ final readonly class PathMatcher
         // Start at the beginning of the string
         $regex = '~^';
 
-        $length = \strlen($pattern);
+        $length = \strlen(string: $pattern);
         for ($i = 0; $i < $length; $i++) {
             $char = $pattern[$i];
             $nextChar = $i + 1 < $length ? $pattern[$i + 1] : null;
@@ -90,7 +90,7 @@ final readonly class PathMatcher
 
             // If we are escaping, add the escaped character
             if ($escaping) {
-                $regex .= \preg_quote($char, '~');
+                $regex .= \preg_quote(str: $char, delimiter: '~');
                 $escaping = false;
                 continue;
             }
@@ -114,7 +114,7 @@ final readonly class PathMatcher
                 } elseif ($char === ',') {
                     $regex .= '|';
                 } else {
-                    $regex .= \preg_quote($char, '~');
+                    $regex .= \preg_quote(str: $char, delimiter: '~');
                 }
                 continue;
             }
@@ -176,12 +176,12 @@ final readonly class PathMatcher
     {
         $availableModifiers = 'imsxuADUn';
 
-        if (\preg_match('/^(.{3,}?)[' . $availableModifiers . ']*$/', $str, $m)) {
-            $start = \substr($m[1], 0, 1);
-            $end = \substr($m[1], -1);
+        if (\preg_match(pattern: '/^(.{3,}?)[' . $availableModifiers . ']*$/', subject: $str, matches: $m)) {
+            $start = \substr(string: $m[1], offset: 0, length: 1);
+            $end = \substr(string: $m[1], offset: -1);
 
             if ($start === $end) {
-                return !\preg_match('/[*?[:alnum:] \\\\]/', $start);
+                return !\preg_match(pattern: '/[*?[:alnum:] \\\\]/', subject: $start);
             }
 
             foreach ([['{', '}'], ['(', ')'], ['[', ']'], ['<', '>']] as $delimiters) {

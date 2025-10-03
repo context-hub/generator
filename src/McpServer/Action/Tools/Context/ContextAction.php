@@ -32,24 +32,24 @@ final readonly class ContextAction
         $this->logger->info('Processing context tool');
 
         try {
-            $config = new ConfigRegistryAccessor($this->configLoader->load());
+            $config = new ConfigRegistryAccessor(registry: $this->configLoader->load());
 
             $content = [];
             foreach ($config->getDocuments() as $document) {
                 $content[] = new TextContent(
-                    text: \json_encode($document->jsonSerialize()),
+                    text: \json_encode(value: $document->jsonSerialize()),
                 );
             }
 
             // Return all documents in JSON format
-            return new CallToolResult($content);
+            return new CallToolResult(content: $content);
         } catch (\Throwable $e) {
             $this->logger->error('Error listing contexts', [
                 'error' => $e->getMessage(),
             ]);
 
             // Return all documents in JSON format
-            return ToolResult::error($e->getMessage());
+            return ToolResult::error(error: $e->getMessage());
         }
     }
 }

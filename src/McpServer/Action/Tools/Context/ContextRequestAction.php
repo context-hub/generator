@@ -40,28 +40,28 @@ final readonly class ContextRequestAction
         $json = $request->json;
 
         if (empty($json)) {
-            return ToolResult::error('Missing JSON parameter');
+            return ToolResult::error(error: 'Missing JSON parameter');
         }
 
         try {
-            $loader = $this->provider->fromString($json);
-            $config = new ConfigRegistryAccessor($loader->load());
+            $loader = $this->provider->fromString(jsonConfig: $json);
+            $config = new ConfigRegistryAccessor(registry: $loader->load());
             $compiledDocuments = [];
 
             foreach ($config->getDocuments() as $document) {
                 $compiledDocuments[] = new TextContent(
-                    text: (string) $this->documentCompiler->buildContent(new ErrorCollection(), $document)->content,
+                    text: (string) $this->documentCompiler->buildContent(errors: new ErrorCollection(), document: $document)->content,
                 );
             }
 
-            return new CallToolResult($compiledDocuments);
+            return new CallToolResult(content: $compiledDocuments);
         } catch (\Throwable $e) {
             $this->logger->error('Error processing context request', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return ToolResult::error($e->getMessage());
+            return ToolResult::error(error: $e->getMessage());
         }
     }
 }

@@ -49,7 +49,7 @@ final class ComposerSourceBootloader extends Bootloader
         SourceRegistryInterface $sourceRegistry,
         ComposerSourceFactory $factory,
     ): void {
-        $registry->register(ComposerSourceFetcher::class);
+        $registry->register(fetcher: ComposerSourceFetcher::class);
         $sourceRegistry->register($factory);
     }
 }

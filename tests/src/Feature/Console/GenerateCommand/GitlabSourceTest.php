@@ -461,7 +461,7 @@ final class GitlabSourceTest extends ConsoleTestCase
         $this->mockGitlabClient = new MockGitlabClient();
 
         // Register mock GitLab client in the container
-        $this->getContainer()->bindSingleton(GitlabClientInterface::class, $this->mockGitlabClient);
+        $this->getContainer()->bindSingleton(alias: GitlabClientInterface::class, resolver: $this->mockGitlabClient);
     }
 
     protected function buildContext(
@@ -472,7 +472,7 @@ final class GitlabSourceTest extends ConsoleTestCase
         string $command = 'generate',
         bool $asJson = true,
     ): CompilingResult {
-        return (new ContextBuilder($this->getConsole()))->build(
+        return (new ContextBuilder(console: $this->getConsole()))->build(
             workDir: $workDir,
             configPath: $configPath,
             inlineJson: $inlineJson,

@@ -37,8 +37,8 @@ final class SourceFetcherBootloader extends Bootloader
                 $fetchers = $bootloader->getFetchers();
                 return new SourceFetcherProvider(
                     fetchers: \array_map(
-                        static fn(string $fetcher) => $container->get($fetcher),
-                        $fetchers,
+                        callback: static fn(string $fetcher) => $container->get(id: $fetcher),
+                        array: $fetchers,
                     ),
                 );
             },

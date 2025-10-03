@@ -42,11 +42,11 @@ final readonly class GitDiffFinder implements FinderInterface
     public function find(FilterableSourceInterface $source, string $basePath = '', array $options = []): FinderResult
     {
         if (!$source instanceof GitDiffSource) {
-            throw new \InvalidArgumentException('Source must be an instance of CommitDiffSource');
+            throw new \InvalidArgumentException(message: 'Source must be an instance of CommitDiffSource');
         }
 
         // Get the commit range from the source
-        $commitRange = $this->rangeParser->resolve($source->commit);
+        $commitRange = $this->rangeParser->resolve(commitRange: $source->commit);
 
         $this->logger?->debug('Resolved commit range', [
             'original' => $source->commit,
@@ -54,7 +54,7 @@ final readonly class GitDiffFinder implements FinderInterface
         ]);
 
         // Get the appropriate Git source for this commit range
-        $gitSource = $this->sourceFactory->create($commitRange);
+        $gitSource = $this->sourceFactory->create(commitReference: $commitRange);
 
         $this->logger?->debug('Selected Git source', [
             'source' => $gitSource::class,
@@ -73,33 +73,33 @@ final readonly class GitDiffFinder implements FinderInterface
                 $this->logger?->info('No changes found for the commit range', [
                     'commitRange' => $commitRange,
                 ]);
-                return new FinderResult([], 'No changes found');
+                return new FinderResult(files: [], treeView: 'No changes found');
             }
 
             $this->logger?->debug('Found files', [
-                'count' => \count($fileInfos),
+                'count' => \count(value: $fileInfos),
             ]);
 
             // Apply filters if needed
-            $fileInfos = $this->applyFilters($fileInfos, $source, $tempDir);
+            $fileInfos = $this->applyFilters(fileInfos: $fileInfos, source: $source, tempDir: $tempDir);
 
             $this->logger?->debug('After applying filters', [
-                'count' => \count($fileInfos),
+                'count' => \count(value: $fileInfos),
             ]);
 
             // Get file paths for tree view
             $filePaths = \array_map(
-                static fn(SplFileInfo $fileInfo)
-                    => \method_exists($fileInfo, 'getOriginalPath')
+                callback: static fn(SplFileInfo $fileInfo)
+                    => \method_exists(object_or_class: $fileInfo, method: 'getOriginalPath')
                     ? $fileInfo->getOriginalPath()
                     : $fileInfo->getRelativePathname(),
-                $fileInfos,
+                array: $fileInfos,
             );
 
             // Generate tree view
-            $treeView = $this->generateTreeView($filePaths, $gitSource, $commitRange, $options);
+            $treeView = $this->generateTreeView(files: $filePaths, gitSource: $gitSource, commitRange: $commitRange, options: $options);
 
-            return new FinderResult(\array_values($fileInfos), $treeView);
+            return new FinderResult(files: \array_values(array: $fileInfos), treeView: $treeView);
         } catch (\Throwable $e) {
             $this->logger?->error('Error finding git diffs', [
                 'error' => $e->getMessage(),
@@ -124,7 +124,7 @@ final readonly class GitDiffFinder implements FinderInterface
         }
 
         $this->logger?->debug('Applying filters to file infos', [
-            'fileCount' => \count($fileInfos),
+            'fileCount' => \count(value: $fileInfos),
             'name' => $source->name(),
             'path' => $source->path(),
             'notPath' => $source->notPath(),
@@ -133,50 +133,50 @@ final readonly class GitDiffFinder implements FinderInterface
         ]);
 
         $finder = new Finder();
-        $finder->in($tempDir);
+        $finder->in(dirs: $tempDir);
 
         // Apply name filter
         if ($source->name() !== null) {
-            $finder->name($source->name());
+            $finder->name(patterns: $source->name());
         }
 
         // Apply path filter
         if ($source->path() !== null) {
-            $finder->path($source->path());
+            $finder->path(patterns: $source->path());
         }
 
         // Apply notPath filter
         if ($source->notPath() !== null) {
-            $finder->notPath($source->notPath());
+            $finder->notPath(patterns: $source->notPath());
         }
 
         // Apply contains filter
         if ($source->contains() !== null) {
-            $finder->contains($source->contains());
+            $finder->contains(patterns: $source->contains());
         }
 
         // Apply notContains filter
         if ($source->notContains() !== null) {
-            $finder->notContains($source->notContains());
+            $finder->notContains(patterns: $source->notContains());
         }
 
         // Get the filtered files
         $filteredPaths = [];
         foreach ($finder as $file) {
-            $relativePath = FSPath::create($file->getPathname())->trim($tempDir)->toString();
+            $relativePath = FSPath::create(path: $file->getPathname())->trim(path: $tempDir)->toString();
 
             $filteredPaths[$relativePath] = true;
         }
 
         // Filter the file infos
-        $filtered = \array_filter($fileInfos, static function (SplFileInfo $fileInfo) use ($filteredPaths, $tempDir) {
-            $relativePath = FSPath::create($fileInfo->getPathname())->trim($tempDir)->toString();
+        $filtered = \array_filter(array: $fileInfos, callback: static function (SplFileInfo $fileInfo) use ($filteredPaths, $tempDir) {
+            $relativePath = FSPath::create(path: $fileInfo->getPathname())->trim(path: $tempDir)->toString();
             return isset($filteredPaths[$relativePath]);
         });
 
         $this->logger?->debug('Filter results', [
-            'originalCount' => \count($fileInfos),
-            'filteredCount' => \count($filtered),
+            'originalCount' => \count(value: $fileInfos),
+            'filteredCount' => \count(value: $filtered),
         ]);
 
         return $filtered;
@@ -204,7 +204,7 @@ final readonly class GitDiffFinder implements FinderInterface
         $treeHeader = $gitSource->formatReferenceForDisplay($commitRange) . "\n";
 
         // Build the tree
-        $tree = $this->fileTreeBuilder->buildTree($files, '', $options);
+        $tree = $this->fileTreeBuilder->buildTree(files: $files, basePath: '', options: $options);
 
         return $treeHeader . $tree;
     }

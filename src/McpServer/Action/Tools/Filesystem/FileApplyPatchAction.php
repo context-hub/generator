@@ -36,22 +36,22 @@ final readonly class FileApplyPatchAction
         $patch = $request->patch;
 
         // Validate patch format
-        if (!\str_starts_with($patch, 'diff --git a/')) {
-            return ToolResult::error('Invalid patch format. The patch must start with "diff --git a/".');
+        if (!\str_starts_with(haystack: $patch, needle: 'diff --git a/')) {
+            return ToolResult::error(error: 'Invalid patch format. The patch must start with "diff --git a/".');
         }
 
         if (empty($path)) {
-            return ToolResult::error('Missing path parameter');
+            return ToolResult::error(error: 'Missing path parameter');
         }
 
         if (empty($patch)) {
-            return ToolResult::error('Missing patch parameter');
+            return ToolResult::error(error: 'Missing patch parameter');
         }
 
         try {
             $result = $this->commandsExecutor->applyPatch($path, $patch);
 
-            return ToolResult::text($result);
+            return ToolResult::text(text: $result);
         } catch (GitCommandException $e) {
             $this->logger->error('Error applying git patch', [
                 'path' => $path,
@@ -59,14 +59,14 @@ final readonly class FileApplyPatchAction
                 'code' => $e->getCode(),
             ]);
 
-            return ToolResult::error($e->getMessage());
+            return ToolResult::error(error: $e->getMessage());
         } catch (\Throwable $e) {
             $this->logger->error('Unexpected error applying git patch', [
                 'path' => $path,
                 'error' => $e->getMessage(),
             ]);
 
-            return ToolResult::error($e->getMessage());
+            return ToolResult::error(error: $e->getMessage());
         }
     }
 }

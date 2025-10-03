@@ -18,11 +18,11 @@ final readonly class ProjectSwitchResponse implements \JsonSerializable
 
     public function jsonSerialize(): array
     {
-        return \array_filter([
+        return \array_filter(array: [
             'success' => $this->success,
             'message' => $this->message,
             'current_project' => $this->currentProject,
             'resolved_from_alias' => $this->resolvedFromAlias,
-        ], static fn($value) => $value !== null);
+        ], callback: static fn($value) => $value !== null);
     }
 }

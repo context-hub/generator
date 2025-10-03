@@ -30,7 +30,7 @@ final readonly class ImportSourceProvider
      */
     public function getSource(string $name): ImportSourceInterface
     {
-        return $this->getSourceRegistry()->get($name);
+        return $this->getSourceRegistry()->get(name: $name);
     }
 
     /**
@@ -43,8 +43,8 @@ final readonly class ImportSourceProvider
     {
         // First try to find source by type
         $sourceName = $config->getType();
-        if ($this->getSourceRegistry()->has($sourceName)) {
-            $source = $this->getSourceRegistry()->get($sourceName);
+        if ($this->getSourceRegistry()->has(name: $sourceName)) {
+            $source = $this->getSourceRegistry()->get(name: $sourceName);
             if ($source->supports($config)) {
                 return clone $source;
             }
@@ -67,6 +67,6 @@ final readonly class ImportSourceProvider
 
     private function getSourceRegistry(): ImportSourceRegistry
     {
-        return $this->container->get(ImportSourceRegistry::class);
+        return $this->container->get(id: ImportSourceRegistry::class);
     }
 }

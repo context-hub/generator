@@ -20,7 +20,7 @@ final readonly class ImportedConfig implements \ArrayAccess
 
     public function offsetExists(mixed $offset): bool
     {
-        return \array_key_exists($offset, $this->config);
+        return \array_key_exists(key: $offset, array: $this->config);
     }
 
     public function offsetGet(mixed $offset): mixed
@@ -30,11 +30,11 @@ final readonly class ImportedConfig implements \ArrayAccess
 
     public function offsetSet(mixed $offset, mixed $value): void
     {
-        throw new \RuntimeException('Cannot set value in imported config');
+        throw new \RuntimeException(message: 'Cannot set value in imported config');
     }
 
     public function offsetUnset(mixed $offset): void
     {
-        throw new \RuntimeException('Cannot unset value in imported config');
+        throw new \RuntimeException(message: 'Cannot unset value in imported config');
     }
 }

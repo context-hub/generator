@@ -67,7 +67,7 @@ final class ShowPromptCommand extends BaseCommand
                     // Get the appropriate loader based on options provided
                     if ($this->configPath !== null) {
                         $this->logger->info(\sprintf('Loading configuration from %s...', $this->configPath));
-                        $loader = $configProvider->fromPath($this->configPath);
+                        $loader = $configProvider->fromPath(configPath: $this->configPath);
                     } else {
                         $this->logger->info('Loading configuration from default location...');
                         $loader = $configProvider->fromDefaultLocation();
@@ -90,7 +90,7 @@ final class ShowPromptCommand extends BaseCommand
                     $this->output->error(\sprintf('Prompt with ID "%s" not found.', $this->promptId));
 
                     // Suggest similar prompts
-                    $this->suggestSimilarPrompts($promptProvider);
+                    $this->suggestSimilarPrompts(promptProvider: $promptProvider);
 
                     return Command::FAILURE;
                 }
@@ -99,7 +99,7 @@ final class ShowPromptCommand extends BaseCommand
                 $prompt = $promptProvider->get($this->promptId);
 
                 // Display prompt details
-                return $this->displayPromptDetails($prompt);
+                return $this->displayPromptDetails(prompt: $prompt);
             },
         );
     }
@@ -112,16 +112,16 @@ final class ShowPromptCommand extends BaseCommand
         $this->output->title(\sprintf('Prompt: %s', $prompt->id));
 
         // Basic information table
-        $this->displayBasicInfo($prompt);
+        $this->displayBasicInfo(prompt: $prompt);
 
         // Arguments table
         if (!empty($prompt->prompt->arguments)) {
-            $this->displayArguments($prompt->prompt);
+            $this->displayArguments(prompt: $prompt->prompt);
         }
 
         // Messages
         if ($this->withMessages && !empty($prompt->messages)) {
-            $this->displayMessages($prompt);
+            $this->displayMessages(prompt: $prompt);
         }
 
         return Command::SUCCESS;
@@ -133,14 +133,14 @@ final class ShowPromptCommand extends BaseCommand
     private function displayBasicInfo(PromptDefinition $prompt): void
     {
         $this->output->writeln('');
-        $this->output->writeln(Style::section('Basic Information'));
+        $this->output->writeln(Style::section(text: 'Basic Information'));
 
-        $table = new Table($this->output);
-        $table->setStyle('box');
+        $table = new Table(output: $this->output);
+        $table->setStyle(name: 'box');
 
         $rows = [
             ['ID', $prompt->id],
-            ['Type', $this->formatPromptType($prompt->type)],
+            ['Type', $this->formatPromptType(type: $prompt->type)],
         ];
 
         if ($prompt->prompt->description !== null) {
@@ -148,16 +148,16 @@ final class ShowPromptCommand extends BaseCommand
         }
 
         if (!empty($prompt->tags)) {
-            $rows[] = ['Tags', \implode(', ', $prompt->tags)];
+            $rows[] = ['Tags', \implode(separator: ', ', array: $prompt->tags)];
         }
 
-        $rows[] = ['Messages', \count($prompt->messages)];
-        $rows[] = ['Arguments', \count($prompt->prompt->arguments)];
-        $rows[] = ['Extensions', \count($prompt->extensions)];
+        $rows[] = ['Messages', \count(value: $prompt->messages)];
+        $rows[] = ['Arguments', \count(value: $prompt->prompt->arguments)];
+        $rows[] = ['Extensions', \count(value: $prompt->extensions)];
 
         foreach ($rows as $row) {
-            $table->addRow([
-                new TableCell($row[0], ['style' => new TableCellStyle(['fg' => 'yellow'])]),
+            $table->addRow(row: [
+                new TableCell(value: $row[0], options: ['style' => new TableCellStyle(options: ['fg' => 'yellow'])]),
                 $row[1],
             ]);
         }
@@ -171,17 +171,17 @@ final class ShowPromptCommand extends BaseCommand
     private function displayArguments(Prompt $prompt): void
     {
         $this->output->writeln('');
-        $this->output->writeln(Style::section('Arguments'));
+        $this->output->writeln(Style::section(text: 'Arguments'));
 
-        $table = new Table($this->output);
-        $table->setHeaders(['Name', 'Required', 'Description']);
-        $table->setStyle('box');
+        $table = new Table(output: $this->output);
+        $table->setHeaders(headers: ['Name', 'Required', 'Description']);
+        $table->setStyle(name: 'box');
 
         foreach ($prompt->arguments as $arg) {
-            $table->addRow([
-                new TableCell($arg->name, ['style' => new TableCellStyle(['fg' => 'cyan'])]),
-                $arg->required ? Style::success('Yes') : Style::muted('No'),
-                $arg->description ?? Style::muted('(no description)'),
+            $table->addRow(row: [
+                new TableCell(value: $arg->name, options: ['style' => new TableCellStyle(options: ['fg' => 'cyan'])]),
+                $arg->required ? Style::success(text: 'Yes') : Style::muted(text: 'No'),
+                $arg->description ?? Style::muted(text: '(no description)'),
             ]);
         }
 
@@ -194,38 +194,38 @@ final class ShowPromptCommand extends BaseCommand
     private function displayMessages(PromptDefinition $prompt): void
     {
         $this->output->writeln('');
-        $this->output->writeln(Style::section('Messages'));
+        $this->output->writeln(Style::section(text: 'Messages'));
 
         foreach ($prompt->messages as $index => $message) {
             $index = (int) $index; // Ensure index is an integer for display
             $this->output->writeln('');
             $this->output->writeln(
-                \sprintf('  %s. %s', $index + 1, Style::property('Role:') . ' ' . Style::value($message->role->value)),
+                \sprintf('  %s. %s', $index + 1, Style::property(text: 'Role:') . ' ' . Style::value(text: $message->role->value)),
             );
 
             // Show content preview (first few lines)
             /** @psalm-suppress UndefinedPropertyFetch */
             $content = $message->content->text;
-            $lines = \explode("\n", $content);
+            $lines = \explode(separator: "\n", string: $content);
 
-            $this->output->writeln('     ' . Style::property('Content:'));
+            $this->output->writeln('     ' . Style::property(text: 'Content:'));
 
             // Show first 10 lines or all if less
-            $displayLines = \array_slice($lines, 0, 10);
+            $displayLines = \array_slice(array: $lines, offset: 0, length: 10);
             foreach ($displayLines as $line) {
-                $this->output->writeln('       ' . Style::muted($line));
+                $this->output->writeln('       ' . Style::muted(text: $line));
             }
 
             // Show truncation indicator if there are more lines
-            if (\count($lines) > 10) {
-                $this->output->writeln('       ' . Style::muted(\sprintf('... (%d more lines)', \count($lines) - 10)));
+            if (\count(value: $lines) > 10) {
+                $this->output->writeln('       ' . Style::muted(text: \sprintf('... (%d more lines)', \count(value: $lines) - 10)));
             }
 
             $this->output->writeln('');
-            $this->output->writeln('     ' . Style::property('Statistics:'));
-            $this->output->writeln(\sprintf('       • Lines: %s', Style::count(\count($lines))));
-            $this->output->writeln(\sprintf('       • Characters: %s', Style::count(\strlen($content))));
-            $this->output->writeln(\sprintf('       • Words: %s', Style::count(\str_word_count($content))));
+            $this->output->writeln('     ' . Style::property(text: 'Statistics:'));
+            $this->output->writeln(\sprintf('       • Lines: %s', Style::count(count: \count(value: $lines))));
+            $this->output->writeln(\sprintf('       • Characters: %s', Style::count(count: \strlen(string: $content))));
+            $this->output->writeln(\sprintf('       • Words: %s', Style::count(count: \str_word_count(string: $content))));
         }
     }
 
@@ -245,34 +245,34 @@ final class ShowPromptCommand extends BaseCommand
         $suggestions = [];
         foreach ($allPrompts as $id => $_prompt) {
             $similarity = 0;
-            \similar_text($this->promptId, $id, $similarity);
+            \similar_text(string1: $this->promptId, string2: $id, percent: $similarity);
             if ($similarity > 30) { // 30% similarity threshold
                 $suggestions[] = ['id' => $id, 'similarity' => $similarity];
             }
         }
 
         // Sort by similarity
-        \usort($suggestions, static fn($a, $b) => $b['similarity'] <=> $a['similarity']);
+        \usort(array: $suggestions, callback: static fn($a, $b) => $b['similarity'] <=> $a['similarity']);
 
         if (!empty($suggestions)) {
             $this->output->writeln('');
             $this->output->writeln('Did you mean one of these?');
-            foreach (\array_slice($suggestions, 0, 3) as $suggestion) {
-                $this->output->writeln(\sprintf('  • %s', Style::value($suggestion['id'])));
+            foreach (\array_slice(array: $suggestions, offset: 0, length: 3) as $suggestion) {
+                $this->output->writeln(\sprintf('  • %s', Style::value(text: $suggestion['id'])));
             }
         } else {
             $this->output->writeln('');
             $this->output->writeln('Available prompts:');
-            $promptIds = \array_keys($allPrompts);
-            \sort($promptIds);
-            foreach (\array_slice($promptIds, 0, 5) as $id) {
-                $this->output->writeln(\sprintf('  • %s', Style::value($id)));
+            $promptIds = \array_keys(array: $allPrompts);
+            \sort(array: $promptIds);
+            foreach (\array_slice(array: $promptIds, offset: 0, length: 5) as $id) {
+                $this->output->writeln(\sprintf('  • %s', Style::value(text: $id)));
             }
 
-            if (\count($promptIds) > 5) {
-                $this->output->writeln(\sprintf('  ... and %d more', \count($promptIds) - 5));
+            if (\count(value: $promptIds) > 5) {
+                $this->output->writeln(\sprintf('  ... and %d more', \count(value: $promptIds) - 5));
                 $this->output->writeln('');
-                $this->output->writeln('Use ' . Style::command('prompts:list') . ' to see all available prompts.');
+                $this->output->writeln('Use ' . Style::command(text: 'prompts:list') . ' to see all available prompts.');
             }
         }
     }
@@ -283,8 +283,8 @@ final class ShowPromptCommand extends BaseCommand
     private function formatPromptType(PromptType $type): string
     {
         return match ($type) {
-            PromptType::Prompt => Style::success('Prompt'),
-            PromptType::Template => Style::info('Template'),
+            PromptType::Prompt => Style::success(text: 'Prompt'),
+            PromptType::Template => Style::info(text: 'Template'),
         };
     }
 }

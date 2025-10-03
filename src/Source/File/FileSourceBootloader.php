@@ -35,7 +35,7 @@ final class FileSourceBootloader extends Bootloader
         SourceRegistryInterface $sourceRegistry,
         FileSourceFactory $factory,
     ): void {
-        $registry->register(FileSourceFetcher::class);
+        $registry->register(fetcher: FileSourceFetcher::class);
         $sourceRegistry->register($factory);
     }
 }

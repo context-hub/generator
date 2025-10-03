@@ -68,7 +68,7 @@ final class HttpTransportBootloader extends Bootloader
             ) {
                 $store = new InMemoryClientRepository();
                 $store->registerClient(
-                    new OAuthClientInformation(
+                    client: new OAuthClientInformation(
                         clientId: $env->get('OAUTH_CLIENT_ID'),
                         clientSecret: $env->get('OAUTH_CLIENT_SECRET'),
                         clientIdIssuedAt: \time(),
@@ -203,7 +203,7 @@ final class HttpTransportBootloader extends Bootloader
     ): void {
         $convertValues = static fn(
             string|null|bool $values,
-        ) => \is_string($values) ? \array_map(\trim(...), \explode(',', $values)) : [];
+        ) => \is_string(value: $values) ? \array_map(callback: \trim(...), array: \explode(separator: ',', string: $values)) : [];
 
         // Get allowed origins from env or use wildcard
         $allowedOrigins = $convertValues($env->get('MCP_CORS_ALLOWED_ORIGINS', '*'));

@@ -14,16 +14,16 @@ enum RenderStrategyEnum: string
      */
     public static function fromString(string $value): self
     {
-        $normalizedValue = \strtolower(\trim($value));
+        $normalizedValue = \strtolower(string: \trim(string: $value));
 
         return match ($normalizedValue) {
             'raw' => self::Raw,
             'llm' => self::LLM,
             default => throw new \InvalidArgumentException(
-                \sprintf(
+                message: \sprintf(
                     'Invalid render strategy "%s". Valid strategies are: %s',
                     $value,
-                    \implode(', ', \array_column(self::cases(), 'value')),
+                    \implode(separator: ', ', array: \array_column(array: self::cases(), column_key: 'value')),
                 ),
             ),
         };

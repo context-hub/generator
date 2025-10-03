@@ -28,7 +28,7 @@ final readonly class FileTreeBuilder
         string $basePath,
         array $options = [],
     ): string {
-        $files = DirectorySorter::sortPreservingSeparators($files);
+        $files = DirectorySorter::sortPreservingSeparators(directories: $files);
 
 
         // Get or create a renderer
@@ -38,19 +38,19 @@ final readonly class FileTreeBuilder
         $normalizedFiles = [];
         foreach ($files as $file) {
             // Normalize both file and base path consistently across all platforms
-            $normalizedFile = $this->normalizePath($file);
-            $normalizedBasePath = $this->normalizePath($basePath);
+            $normalizedFile = $this->normalizePath(path: $file);
+            $normalizedBasePath = $this->normalizePath(path: $basePath);
 
             // Remove base path from file path to get the relative path
-            $normalizedPath = \trim(\str_replace($normalizedBasePath, '', $normalizedFile));
+            $normalizedPath = \trim(string: \str_replace(search: $normalizedBasePath, replace: '', subject: $normalizedFile));
 
             // Additional cleaning (Windows can produce paths with mixed separators)
-            if (!\str_starts_with($normalizedPath, '/')) {
+            if (!\str_starts_with(haystack: $normalizedPath, needle: '/')) {
                 $normalizedPath = '/' . $normalizedPath;
             }
 
-            $ext = \pathinfo($normalizedPath, PATHINFO_EXTENSION);
-            $isDirectory = \is_dir($file) || $ext === '';
+            $ext = \pathinfo(path: $normalizedPath, flags: PATHINFO_EXTENSION);
+            $isDirectory = \is_dir(filename: $file) || $ext === '';
 
             $normalizedFiles[] = [
                 'path' => $normalizedPath,
@@ -61,18 +61,18 @@ final readonly class FileTreeBuilder
 
 
         // Sort files for consistent display
-        \usort($normalizedFiles, static fn($a, $b) => $a['path'] <=> $b['path']);
+        \usort(array: $normalizedFiles, callback: static fn($a, $b) => $a['path'] <=> $b['path']);
 
         // Build tree structure with all files and directories
         $tree = [];
         foreach ($normalizedFiles as $fileInfo) {
-            $parts = \array_filter(\explode('/', \trim($fileInfo['path'], '/')), strlen(...));
+            $parts = \array_filter(array: \explode(separator: '/', string: \trim(string: $fileInfo['path'], characters: '/')), callback: strlen(...));
 
             $this->addToTree(
-                $tree,
-                $parts,
-                $fileInfo['fullPath'],
-                $fileInfo['isDirectory'],
+                tree: $tree,
+                parts: $parts,
+                fullPath: $fileInfo['fullPath'],
+                isDirectoryPath: $fileInfo['isDirectory'],
             );
         }
 
@@ -98,7 +98,7 @@ final readonly class FileTreeBuilder
                 // Determine if it's a directory:
                 // - Either it's not the last segment of the path
                 // - Or the entire path represents a directory
-                $isDirectory = $index < \count($parts) - 1 || $isDirectoryPath;
+                $isDirectory = $index < \count(value: $parts) - 1 || $isDirectoryPath;
 
                 // For directories, create an array for children
                 // For files, store the full path for metadata access
@@ -106,7 +106,7 @@ final readonly class FileTreeBuilder
             }
 
             // Only continue traversing if this is a directory (array)
-            if (\is_array($_current[$part])) {
+            if (\is_array(value: $_current[$part])) {
                 $_current = &$_current[$part];
             }
         }
@@ -123,11 +123,11 @@ final readonly class FileTreeBuilder
     private function normalizePath(string $path): string
     {
         // Replace Windows backslashes with forward slashes
-        $path = \str_replace('\\', '/', $path);
+        $path = \str_replace(search: '\\', replace: '/', subject: $path);
 
         // Normalize Windows drive letter format (if present)
-        if (\preg_match('/^[A-Z]:\//i', $path)) {
-            $path = \substr($path, 2); // Remove drive letter and colon (e.g., "C:")
+        if (\preg_match(pattern: '/^[A-Z]:\//i', subject: $path)) {
+            $path = \substr(string: $path, offset: 2); // Remove drive letter and colon (e.g., "C:")
         }
 
         return $path;

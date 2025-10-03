@@ -21,7 +21,7 @@ final readonly class BinaryNameBuilder
     public function buildPlatformSpecificName(string $baseName, string $version, string $type): string
     {
         if ($type === 'phar') {
-            return $this->buildGenericName($baseName, $type);
+            return $this->buildGenericName(baseName: $baseName, type: $type);
         }
 
         try {
@@ -39,10 +39,10 @@ final readonly class BinaryNameBuilder
                     $architecture->value,
                     $extension,
                 ),
-                default => throw new \InvalidArgumentException('Invalid type provided: ' . $type),
+                default => throw new \InvalidArgumentException(message: 'Invalid type provided: ' . $type),
             };
         } catch (\Throwable $e) {
-            throw new \RuntimeException("Failed to build platform-specific binary name: {$e->getMessage()}", 0, $e);
+            throw new \RuntimeException(message: "Failed to build platform-specific binary name: {$e->getMessage()}", previous: $e);
         }
     }
 
@@ -58,7 +58,7 @@ final readonly class BinaryNameBuilder
         return match ($type) {
             'phar' => "{$baseName}.phar",
             'bin' => $baseName,
-            default => throw new \InvalidArgumentException('Invalid type provided: ' . $type),
+            default => throw new \InvalidArgumentException(message: 'Invalid type provided: ' . $type),
         };
     }
 

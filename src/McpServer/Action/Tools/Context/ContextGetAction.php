@@ -39,23 +39,23 @@ final readonly class ContextGetAction
         $path = $request->path;
 
         if (empty($path)) {
-            return ToolResult::error('Missing path parameter');
+            return ToolResult::error(error: 'Missing path parameter');
         }
 
         try {
-            $config = new ConfigRegistryAccessor($this->configLoader->load());
+            $config = new ConfigRegistryAccessor(registry: $this->configLoader->load());
 
             foreach ($config->getDocuments() as $document) {
                 if ($document->outputPath === $path) {
-                    $content = (string) $this->documentCompiler->buildContent(new ErrorCollection(), $document)->content;
+                    $content = (string) $this->documentCompiler->buildContent(errors: new ErrorCollection(), document: $document)->content;
 
                     // Return all documents in JSON format
-                    return ToolResult::text($content);
+                    return ToolResult::text(text: $content);
                 }
             }
 
             // Return all documents in JSON format
-            return ToolResult::error(\sprintf("Document with path '%s' not found", $path));
+            return ToolResult::error(error: \sprintf("Document with path '%s' not found", $path));
         } catch (\Throwable $e) {
             $this->logger->error('Error getting context', [
                 'path' => $path,
@@ -63,7 +63,7 @@ final readonly class ContextGetAction
             ]);
 
             // Return all documents in JSON format
-            return ToolResult::error($e->getMessage());
+            return ToolResult::error(error: $e->getMessage());
         }
     }
 }

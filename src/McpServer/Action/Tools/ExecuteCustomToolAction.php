@@ -30,7 +30,7 @@ final readonly class ExecuteCustomToolAction
         // Get params from the parsed body for POST requests
         $parsedBody = (array) $request->getParsedBody();
 
-        if (empty($toolId) || !\is_string($toolId)) {
+        if (empty($toolId) || !\is_string(value: $toolId)) {
             $this->logger->warning('No tool ID provided');
             return new CallToolResult(
                 content: [new TextContent(text: 'No tool ID provided')],
@@ -52,7 +52,7 @@ final readonly class ExecuteCustomToolAction
             $tool = $this->toolProvider->get($toolId);
 
             // Execute the tool
-            $result = $this->toolHandler->createHandlerForTool($tool)->execute($tool, $parsedBody);
+            $result = $this->toolHandler->createHandlerForTool(tool: $tool)->execute($tool, $parsedBody);
 
             // Format the result
             $output = \sprintf(
@@ -61,7 +61,7 @@ final readonly class ExecuteCustomToolAction
                 $result['output'] ?? 'No output',
             );
 
-            if (isset($result['commands']) && \is_array($result['commands'])) {
+            if (isset($result['commands']) && \is_array(value: $result['commands'])) {
                 $commandsOutput = [];
                 foreach ($result['commands'] as $commandResult) {
                     $commandsOutput[] = \sprintf(
@@ -74,7 +74,7 @@ final readonly class ExecuteCustomToolAction
                 }
 
                 if (!empty($commandsOutput)) {
-                    $output .= "\n\n## Command Details\n\n" . \implode("\n---\n", $commandsOutput);
+                    $output .= "\n\n## Command Details\n\n" . \implode(separator: "\n---\n", array: $commandsOutput);
                 }
             }
 

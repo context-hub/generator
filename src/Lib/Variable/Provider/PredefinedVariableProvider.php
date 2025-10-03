@@ -11,7 +11,7 @@ final readonly class PredefinedVariableProvider implements VariableProviderInter
 {
     public function has(string $name): bool
     {
-        return \array_key_exists($name, $this->getPredefinedVariables());
+        return \array_key_exists(key: $name, array: $this->getPredefinedVariables());
     }
 
     public function get(string $name): ?string
@@ -27,9 +27,9 @@ final readonly class PredefinedVariableProvider implements VariableProviderInter
     private function getPredefinedVariables(): array
     {
         return [
-            'DATETIME' => \date('Y-m-d H:i:s'),
-            'DATE' => \date('Y-m-d'),
-            'TIME' => \date('H:i:s'),
+            'DATETIME' => \date(format: 'Y-m-d H:i:s'),
+            'DATE' => \date(format: 'Y-m-d'),
+            'TIME' => \date(format: 'H:i:s'),
             'TIMESTAMP' => (string) \time(),
             'USER' => \get_current_user(),
             'HOME_DIR' => \getenv('HOME') ?: (\getenv('USERPROFILE') ?: '/'),

@@ -38,44 +38,44 @@ final readonly class CommentInsertionRule implements RuleInterface
     {
         // Add file header comment
         if (!empty($this->fileHeaderComment)) {
-            $comment = $this->formatPhpComment($this->fileHeaderComment);
+            $comment = $this->formatPhpComment(comment: $this->fileHeaderComment);
             $content = $comment . PHP_EOL . PHP_EOL . $content;
         }
 
         // Add class comments
         if (!empty($this->classComment)) {
-            $comment = $this->formatPhpComment($this->classComment);
+            $comment = $this->formatPhpComment(comment: $this->classComment);
             $content = (string) \preg_replace(
-                '/(class|interface|trait|enum)\s+([a-zA-Z0-9_]+)/',
-                PHP_EOL . $comment . PHP_EOL . '$1 $2',
-                $content,
+                pattern: '/(class|interface|trait|enum)\s+([a-zA-Z0-9_]+)/',
+                replacement: PHP_EOL . $comment . PHP_EOL . '$1 $2',
+                subject: $content,
             );
         }
 
         // Add method comments
         if (!empty($this->methodComment)) {
-            $comment = $this->formatPhpComment($this->methodComment);
+            $comment = $this->formatPhpComment(comment: $this->methodComment);
             $content = (string) \preg_replace(
-                '/(\s+)public|private|protected\s+function/',
-                '$1' . PHP_EOL . '$1' . $comment . PHP_EOL . '$1$0',
-                (string) $content,
+                pattern: '/(\s+)public|private|protected\s+function/',
+                replacement: '$1' . PHP_EOL . '$1' . $comment . PHP_EOL . '$1$0',
+                subject: (string) $content,
             );
         }
 
         // Add random comments
         if ($this->frequency > 0 && !empty($this->randomComments)) {
-            $lines = \explode(PHP_EOL, (string) $content);
+            $lines = \explode(separator: PHP_EOL, string: (string) $content);
             $result = [];
 
             foreach ($lines as $i => $line) {
                 $result[] = $line;
 
-                if ($i % $this->frequency === 0 && \trim($line) !== '') {
+                if ($i % $this->frequency === 0 && \trim(string: $line) !== '') {
                     $randomComment = $this->randomComments[\array_rand($this->randomComments)];
                     $indentation = '';
 
                     // Try to detect indentation level
-                    if (\preg_match('/^(\s+)/', $line, $matches)) {
+                    if (\preg_match(pattern: '/^(\s+)/', subject: $line, matches: $matches)) {
                         $indentation = $matches[1];
                     }
 
@@ -83,7 +83,7 @@ final readonly class CommentInsertionRule implements RuleInterface
                 }
             }
 
-            $content = \implode(PHP_EOL, $result);
+            $content = \implode(separator: PHP_EOL, array: $result);
         }
 
         return $content;
@@ -94,9 +94,9 @@ final readonly class CommentInsertionRule implements RuleInterface
      */
     private function formatPhpComment(string $comment): string
     {
-        if (\str_contains($comment, PHP_EOL)) {
+        if (\str_contains(haystack: $comment, needle: PHP_EOL)) {
             // Multi-line comment
-            $lines = \explode(PHP_EOL, $comment);
+            $lines = \explode(separator: PHP_EOL, string: $comment);
             $result = "/**" . PHP_EOL;
 
             foreach ($lines as $line) {

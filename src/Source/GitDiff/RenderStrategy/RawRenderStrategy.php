@@ -24,13 +24,13 @@ final readonly class RawRenderStrategy implements RenderStrategyInterface
             // Only show stats if configured to do so
             if ($config->showStats && !empty($diffData['stats'])) {
                 $builder
-                    ->addTitle("Stats for {$file}", 2)
-                    ->addCodeBlock($diffData['stats']);
+                    ->addTitle(title: "Stats for {$file}", level: 2)
+                    ->addCodeBlock(code: $diffData['stats']);
             }
 
             $builder
-                ->addTitle("Diff for {$file}", 2)
-                ->addCodeBlock($diffData['diff'], 'diff');
+                ->addTitle(title: "Diff for {$file}", level: 2)
+                ->addCodeBlock(code: $diffData['diff'], language: 'diff');
         }
 
         return $builder;

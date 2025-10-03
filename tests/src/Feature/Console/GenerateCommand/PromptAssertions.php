@@ -94,7 +94,7 @@ trait PromptAssertions
         foreach ($prompt['messages'] as $message) {
             if (isset($message['content']['text'])) {
                 $messagesContent .= $message['content']['text'] . "\n";
-            } elseif (\is_string($message['content'])) {
+            } elseif (\is_string(value: $message['content'])) {
                 $messagesContent .= $message['content'] . "\n";
             }
         }
@@ -249,7 +249,7 @@ trait PromptAssertions
                     \sprintf('Schema for prompt [%s] does not have property [%s]', $id, $propName),
                 );
 
-                if (\is_array($propData)) {
+                if (\is_array(value: $propData)) {
                     foreach ($propData as $key => $value) {
                         TestCase::assertArrayHasKey(
                             $key,
@@ -307,7 +307,7 @@ trait PromptAssertions
         TestCase::assertCount(
             $count,
             $this->result['prompts'] ?? [],
-            \sprintf('Expected %d prompts, got %d', $count, \count($this->result['prompts'] ?? [])),
+            \sprintf('Expected %d prompts, got %d', $count, \count(value: $this->result['prompts'] ?? [])),
         );
 
         return $this;

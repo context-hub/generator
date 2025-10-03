@@ -11,13 +11,13 @@ enum Architecture: string
 
     public static function detect(): self
     {
-        $arch = \php_uname('m');
+        $arch = \php_uname(mode: 'm');
 
-        return match (\strtolower($arch)) {
+        return match (\strtolower(string: $arch)) {
             'x86_64', 'amd64' => self::Amd64,
             'aarch64', 'arm64' => self::Arm64,
             // Add more mappings as needed
-            default => throw new \RuntimeException('Unsupported architecture: ' . $arch),
+            default => throw new \RuntimeException(message: 'Unsupported architecture: ' . $arch),
         };
     }
 }

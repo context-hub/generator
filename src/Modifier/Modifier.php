@@ -38,7 +38,7 @@ final readonly class Modifier implements \JsonSerializable, \Stringable
         }
 
         // If string, treat as modifier name with empty context
-        if (\is_string($data)) {
+        if (\is_string(value: $data)) {
             return new self(name: $data);
         }
 
@@ -51,7 +51,7 @@ final readonly class Modifier implements \JsonSerializable, \Stringable
         }
 
         throw new \InvalidArgumentException(
-            'Invalid modifier format. Expected string, array with "name" key, or ModifierDto instance.',
+            message: 'Invalid modifier format. Expected string, array with "name" key, or ModifierDto instance.',
         );
     }
 
@@ -73,6 +73,6 @@ final readonly class Modifier implements \JsonSerializable, \Stringable
 
     public function __toString(): string
     {
-        return \json_encode($this->jsonSerialize(), JSON_THROW_ON_ERROR);
+        return \json_encode(value: $this->jsonSerialize(), flags: JSON_THROW_ON_ERROR);
     }
 }

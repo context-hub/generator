@@ -22,6 +22,6 @@ final class ModifierBootloader extends Bootloader
         ConfigLoaderBootloader $parserRegistry,
         ModifierAliasesParserPlugin $plugin,
     ): void {
-        $parserRegistry->registerParserPlugin($plugin);
+        $parserRegistry->registerParserPlugin(plugin: $plugin);
     }
 }

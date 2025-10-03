@@ -20,12 +20,12 @@ final class DirectoryScannerTest extends TestCase
     public function it_scans_projects_correctly(): void
     {
         $projectsPath = $this->tempPath . '/projects';
-        $projects = $this->scanner->scanResearches($projectsPath);
+        $projects = $this->scanner->scanResearches(path: $projectsPath);
 
         $this->assertCount(2, $projects);
 
         // Verify project paths
-        $projectNames = \array_map('basename', $projects);
+        $projectNames = \array_map(callback: 'basename', array: $projects);
         $this->assertContains('test_project_1', $projectNames);
         $this->assertContains('test_project_2', $projectNames);
 
@@ -39,7 +39,7 @@ final class DirectoryScannerTest extends TestCase
     public function it_returns_empty_array_for_nonexistent_projects_path(): void
     {
         $nonexistentPath = $this->tempPath . '/nonexistent';
-        $projects = $this->scanner->scanResearches($nonexistentPath);
+        $projects = $this->scanner->scanResearches(path: $nonexistentPath);
 
         $this->assertEmpty($projects);
     }
@@ -49,16 +49,16 @@ final class DirectoryScannerTest extends TestCase
     {
         // Create a directory without project.yaml
         $invalidProjectPath = $this->tempPath . '/projects/invalid_project';
-        \mkdir($invalidProjectPath, 0755, true);
-        \file_put_contents($invalidProjectPath . '/readme.txt', 'Not a project');
+        \mkdir(directory: $invalidProjectPath, permissions: 0755, recursive: true);
+        \file_put_contents(filename: $invalidProjectPath . '/readme.txt', data: 'Not a project');
 
         $projectsPath = $this->tempPath . '/projects';
-        $projects = $this->scanner->scanResearches($projectsPath);
+        $projects = $this->scanner->scanResearches(path: $projectsPath);
 
         // Should still only find the 2 valid projects
         $this->assertCount(2, $projects);
 
-        $projectNames = \array_map('basename', $projects);
+        $projectNames = \array_map(callback: 'basename', array: $projects);
         $this->assertNotContains('invalid_project', $projectNames);
     }
 
@@ -67,12 +67,12 @@ final class DirectoryScannerTest extends TestCase
     {
         $projectPath = $this->tempPath . '/projects/test_project_1';
 
-        $entries = $this->scanner->scanEntries($projectPath);
+        $entries = $this->scanner->scanEntries(path: $projectPath);
 
         $this->assertCount(3, $entries);
 
         // Verify entry file paths
-        $entryFiles = \array_map('basename', $entries);
+        $entryFiles = \array_map(callback: 'basename', array: $entries);
         $this->assertContains('sample_story.md', $entryFiles);
         $this->assertContains('api_design.md', $entryFiles);
     }
@@ -82,7 +82,7 @@ final class DirectoryScannerTest extends TestCase
     {
         $projectPath = $this->tempPath . '/projects/test_project_1';
 
-        $entries = $this->scanner->scanEntries($projectPath);
+        $entries = $this->scanner->scanEntries(path: $projectPath);
 
         $this->assertCount(3, $entries);
 
@@ -95,7 +95,7 @@ final class DirectoryScannerTest extends TestCase
     public function it_returns_empty_array_for_nonexistent_project_path(): void
     {
         $nonexistentPath = $this->tempPath . '/projects/nonexistent_project';
-        $entries = $this->scanner->scanEntries($nonexistentPath);
+        $entries = $this->scanner->scanEntries(path: $nonexistentPath);
 
         $this->assertEmpty($entries);
     }
@@ -104,7 +104,7 @@ final class DirectoryScannerTest extends TestCase
     public function it_handles_project_with_no_entries(): void
     {
         $projectPath = $this->tempPath . '/projects/test_project_2';
-        $entries = $this->scanner->scanEntries($projectPath);
+        $entries = $this->scanner->scanEntries(path: $projectPath);
 
         $this->assertEmpty($entries);
     }
@@ -113,9 +113,9 @@ final class DirectoryScannerTest extends TestCase
     public function it_gets_entry_directories(): void
     {
         $projectPath = $this->tempPath . '/projects/test_project_1';
-        $directories = $this->scanner->getEntryDirectories($projectPath);
+        $directories = $this->scanner->getEntryDirectories(path: $projectPath);
 
-        $this->assertGreaterThan(0, \count($directories));
+        $this->assertGreaterThan(0, \count(value: $directories));
         $this->assertContains('features', $directories);
         $this->assertContains('docs', $directories);
     }
@@ -129,12 +129,12 @@ final class DirectoryScannerTest extends TestCase
 
         foreach ($specialDirs as $specialDir) {
             $dirPath = $projectPath . '/' . $specialDir;
-            if (!\is_dir($dirPath)) {
-                \mkdir($dirPath, 0755, true);
+            if (!\is_dir(filename: $dirPath)) {
+                \mkdir(directory: $dirPath, permissions: 0755, recursive: true);
             }
         }
 
-        $directories = $this->scanner->getEntryDirectories($projectPath);
+        $directories = $this->scanner->getEntryDirectories(path: $projectPath);
 
         foreach ($specialDirs as $specialDir) {
             $this->assertNotContains($specialDir, $directories);
@@ -145,7 +145,7 @@ final class DirectoryScannerTest extends TestCase
     public function it_returns_empty_array_for_nonexistent_directory(): void
     {
         $nonexistentPath = $this->tempPath . '/nonexistent_directory';
-        $directories = $this->scanner->getEntryDirectories($nonexistentPath);
+        $directories = $this->scanner->getEntryDirectories(path: $nonexistentPath);
 
         $this->assertEmpty($directories);
     }
@@ -156,7 +156,7 @@ final class DirectoryScannerTest extends TestCase
         // Create nested entry structure
         $projectPath = $this->tempPath . '/projects/test_project_1';
         $nestedPath = $projectPath . '/features/user_story/nested';
-        \mkdir($nestedPath, 0755, true);
+        \mkdir(directory: $nestedPath, permissions: 0755, recursive: true);
 
         $nestedEntryContent = <<<'MARKDOWN'
 ---
@@ -172,16 +172,16 @@ status: "draft"
 This is a nested entry for testing.
 MARKDOWN;
 
-        \file_put_contents($nestedPath . '/nested_entry.md', $nestedEntryContent);
+        \file_put_contents(filename: $nestedPath . '/nested_entry.md', data: $nestedEntryContent);
 
-        $entries = $this->scanner->scanEntries($projectPath);
+        $entries = $this->scanner->scanEntries(path: $projectPath);
 
         // Should include the nested entry
         $this->assertCount(4, $entries); // Original 2 + new nested one
 
         $nestedEntryFound = false;
         foreach ($entries as $entryPath) {
-            if (\str_contains((string) $entryPath, 'nested_entry.md')) {
+            if (\str_contains(haystack: (string) $entryPath, needle: 'nested_entry.md')) {
                 $nestedEntryFound = true;
                 break;
             }
@@ -195,11 +195,11 @@ MARKDOWN;
     {
         // Create non-markdown files
         $projectPath = $this->tempPath . '/projects/test_project_1';
-        \file_put_contents($projectPath . '/features/readme.txt', 'Not an entry');
-        \file_put_contents($projectPath . '/docs/config.json', '{"not": "an entry"}');
-        \file_put_contents($projectPath . '/notes.html', '<p>Not an entry</p>');
+        \file_put_contents(filename: $projectPath . '/features/readme.txt', data: 'Not an entry');
+        \file_put_contents(filename: $projectPath . '/docs/config.json', data: '{"not": "an entry"}');
+        \file_put_contents(filename: $projectPath . '/notes.html', data: '<p>Not an entry</p>');
 
-        $entries = $this->scanner->scanEntries($projectPath);
+        $entries = $this->scanner->scanEntries(path: $projectPath);
 
         // Should only find .md files
         foreach ($entries as $entryPath) {
@@ -215,12 +215,12 @@ MARKDOWN;
     {
         // Create completely empty project directory
         $emptyProjectPath = $this->tempPath . '/projects/empty_project';
-        \mkdir($emptyProjectPath, 0755, true);
+        \mkdir(directory: $emptyProjectPath, permissions: 0755, recursive: true);
 
-        $entries = $this->scanner->scanEntries($emptyProjectPath);
+        $entries = $this->scanner->scanEntries(path: $emptyProjectPath);
         $this->assertEmpty($entries);
 
-        $directories = $this->scanner->getEntryDirectories($emptyProjectPath);
+        $directories = $this->scanner->getEntryDirectories(path: $emptyProjectPath);
         $this->assertEmpty($directories);
     }
 
@@ -228,7 +228,7 @@ MARKDOWN;
     {
         parent::setUp();
 
-        $this->testDataPath = \dirname(__DIR__, 5) . '/fixtures/Research/FileStorage';
+        $this->testDataPath = \dirname(path: __DIR__, levels: 5) . '/fixtures/Research/FileStorage';
         $this->tempPath = \sys_get_temp_dir() . '/scanner_test_' . \uniqid();
 
         // Copy fixture data to temp directory
@@ -242,13 +242,13 @@ MARKDOWN;
             }
         };
 
-        $this->scanner = new DirectoryScanner($files, $reporter);
+        $this->scanner = new DirectoryScanner(files: $files, reporter: $reporter);
     }
 
     protected function tearDown(): void
     {
         // Clean up temp directory
-        if (\is_dir($this->tempPath)) {
+        if (\is_dir(filename: $this->tempPath)) {
             $this->removeDirectory($this->tempPath);
         }
 
@@ -257,8 +257,8 @@ MARKDOWN;
 
     private function copyFixturesToTemp(): void
     {
-        if (!\is_dir($this->tempPath)) {
-            \mkdir($this->tempPath, 0755, true);
+        if (!\is_dir(filename: $this->tempPath)) {
+            \mkdir(directory: $this->tempPath, permissions: 0755, recursive: true);
         }
 
         $this->copyDirectory($this->testDataPath, $this->tempPath);
@@ -266,47 +266,47 @@ MARKDOWN;
 
     private function copyDirectory(string $source, string $destination): void
     {
-        if (!\is_dir($destination)) {
-            \mkdir($destination, 0755, true);
+        if (!\is_dir(filename: $destination)) {
+            \mkdir(directory: $destination, permissions: 0755, recursive: true);
         }
 
         $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($source, \RecursiveDirectoryIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::SELF_FIRST,
+            iterator: new \RecursiveDirectoryIterator(directory: $source, flags: \RecursiveDirectoryIterator::SKIP_DOTS),
+            mode: \RecursiveIteratorIterator::SELF_FIRST,
         );
 
         foreach ($iterator as $item) {
             $destPath = $destination . DIRECTORY_SEPARATOR . $iterator->getSubPathName();
 
             if ($item->isDir()) {
-                if (!\is_dir($destPath)) {
-                    \mkdir($destPath, 0755, true);
+                if (!\is_dir(filename: $destPath)) {
+                    \mkdir(directory: $destPath, permissions: 0755, recursive: true);
                 }
             } else {
-                \copy($item->getRealPath(), $destPath);
+                \copy(from: $item->getRealPath(), to: $destPath);
             }
         }
     }
 
     private function removeDirectory(string $directory): void
     {
-        if (!\is_dir($directory)) {
+        if (!\is_dir(filename: $directory)) {
             return;
         }
 
         $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($directory, \RecursiveDirectoryIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::CHILD_FIRST,
+            iterator: new \RecursiveDirectoryIterator(directory: $directory, flags: \RecursiveDirectoryIterator::SKIP_DOTS),
+            mode: \RecursiveIteratorIterator::CHILD_FIRST,
         );
 
         foreach ($iterator as $item) {
             if ($item->isDir()) {
-                \rmdir($item->getRealPath());
+                \rmdir(directory: $item->getRealPath());
             } else {
-                \unlink($item->getRealPath());
+                \unlink(filename: $item->getRealPath());
             }
         }
 
-        \rmdir($directory);
+        \rmdir(directory: $directory);
     }
 }

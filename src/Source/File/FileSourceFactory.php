@@ -28,35 +28,35 @@ final readonly class FileSourceFactory extends AbstractSourceFactory
         ]);
 
         if (isset($config['modifiers'])) {
-            $config['modifiers'] = $this->parseModifiers($config['modifiers']);
+            $config['modifiers'] = $this->parseModifiers(modifiersConfig: $config['modifiers']);
         }
 
         if (!isset($config['sourcePaths'])) {
-            throw new \RuntimeException('File source must have a "sourcePaths" property');
+            throw new \RuntimeException(message: 'File source must have a "sourcePaths" property');
         }
 
         $sourcePaths = $config['sourcePaths'];
-        if (!\is_string($sourcePaths) && !\is_array($sourcePaths)) {
-            throw new \RuntimeException('"sourcePaths" must be a string or array in source');
+        if (!\is_string(value: $sourcePaths) && !\is_array(value: $sourcePaths)) {
+            throw new \RuntimeException(message: '"sourcePaths" must be a string or array in source');
         }
 
-        $sourcePaths = \is_string($sourcePaths) ? [$sourcePaths] : $sourcePaths;
+        $sourcePaths = \is_string(value: $sourcePaths) ? [$sourcePaths] : $sourcePaths;
         $sourcePaths = \array_map(
-            fn(string $sourcePath): string => (string) $this->dirs->getRootPath()->join($sourcePath),
-            $sourcePaths,
+            callback: fn(string $sourcePath): string => (string) $this->dirs->getRootPath()->join($sourcePath),
+            array: $sourcePaths,
         );
 
         // Validate filePattern if present
         if (isset($config['filePattern'])) {
-            if (!\is_string($config['filePattern']) && !\is_array($config['filePattern'])) {
-                throw new \RuntimeException('filePattern must be a string or an array of strings');
+            if (!\is_string(value: $config['filePattern']) && !\is_array(value: $config['filePattern'])) {
+                throw new \RuntimeException(message: 'filePattern must be a string or an array of strings');
             }
 
             // If it's an array, make sure all elements are strings
-            if (\is_array($config['filePattern'])) {
+            if (\is_array(value: $config['filePattern'])) {
                 foreach ($config['filePattern'] as $pattern) {
-                    if (!\is_string($pattern)) {
-                        throw new \RuntimeException('All elements in filePattern must be strings');
+                    if (!\is_string(value: $pattern)) {
+                        throw new \RuntimeException(message: 'All elements in filePattern must be strings');
                     }
                 }
             }
@@ -64,12 +64,12 @@ final readonly class FileSourceFactory extends AbstractSourceFactory
 
         // Validate maxFiles if present
         if (isset($config['maxFiles']) && $config['maxFiles'] !== null) {
-            if (!\is_int($config['maxFiles'])) {
-                throw new \RuntimeException('maxFiles must be an integer or null');
+            if (!\is_int(value: $config['maxFiles'])) {
+                throw new \RuntimeException(message: 'maxFiles must be an integer or null');
             }
 
             if ($config['maxFiles'] < 0) {
-                throw new \RuntimeException('maxFiles cannot be negative');
+                throw new \RuntimeException(message: 'maxFiles cannot be negative');
             }
         }
 
@@ -91,7 +91,7 @@ final readonly class FileSourceFactory extends AbstractSourceFactory
             size: $config['size'] ?? [],
             date: $config['date'] ?? [],
             ignoreUnreadableDirs: $config['ignoreUnreadableDirs'] ?? false,
-            treeView: TreeViewConfig::fromArray($config),
+            treeView: TreeViewConfig::fromArray(data: $config),
             maxFiles: $config['maxFiles'] ?? 0,
             modifiers: $config['modifiers'] ?? [],
             tags: $config['tags'] ?? [],

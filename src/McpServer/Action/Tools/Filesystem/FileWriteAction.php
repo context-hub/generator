@@ -37,38 +37,38 @@ final readonly class FileWriteAction
         $path = (string) $this->dirs->getRootPath()->join($request->path);
 
         if (empty($path)) {
-            return ToolResult::error('Missing path parameter');
+            return ToolResult::error(error: 'Missing path parameter');
         }
 
         try {
             // Ensure directory exists if requested
             if ($request->createDirectory) {
-                $directory = \dirname($path);
+                $directory = \dirname(path: $path);
                 if (!$this->files->exists($directory)) {
                     if (!$this->files->ensureDirectory($directory)) {
-                        return ToolResult::error(\sprintf("Could not create directory '%s'", $directory));
+                        return ToolResult::error(error: \sprintf("Could not create directory '%s'", $directory));
                     }
                 }
             }
 
-            if (\is_dir($path)) {
-                return ToolResult::error(\sprintf("'%s' is a directory", $path));
+            if (\is_dir(filename: $path)) {
+                return ToolResult::error(error: \sprintf("'%s' is a directory", $path));
             }
 
             $success = $this->files->write($path, $request->content);
 
             if (!$success) {
-                return ToolResult::error(\sprintf("Could not write to file '%s'", $path));
+                return ToolResult::error(error: \sprintf("Could not write to file '%s'", $path));
             }
 
-            return ToolResult::text(\sprintf("Successfully wrote %d bytes to file '%s'", \strlen($request->content), $path));
+            return ToolResult::text(text: \sprintf("Successfully wrote %d bytes to file '%s'", \strlen(string: $request->content), $path));
         } catch (\Throwable $e) {
             $this->logger->error('Error writing file', [
                 'path' => $path,
                 'error' => $e->getMessage(),
             ]);
 
-            return ToolResult::error($e->getMessage());
+            return ToolResult::error(error: $e->getMessage());
         }
     }
 }

@@ -38,8 +38,8 @@ final readonly class LocalComposerProvider extends AbstractComposerProvider
         $composerData = $this->client->loadComposerData($composerPath);
 
         // Try to load composer.lock for more accurate version information
-        $lockData = $this->client->tryLoadComposerLock(\dirname($this->basePath . '/composer.json'));
-        $packageVersions = $this->extractPackageVersionsFromLock($lockData, $includeDevDependencies);
+        $lockData = $this->client->tryLoadComposerLock(\dirname(path: $this->basePath . '/composer.json'));
+        $packageVersions = $this->extractPackageVersionsFromLock(lockData: $lockData, includeDevDependencies: $includeDevDependencies);
 
         // Get vendor directory
         $vendorDir = $this->client->getVendorDir($composerData, $this->basePath);
@@ -49,20 +49,20 @@ final readonly class LocalComposerProvider extends AbstractComposerProvider
 
         // Process regular dependencies
         $this->processPackages(
-            $packages,
-            $composerData['require'] ?? [],
-            $packageVersions,
-            $vendorDir,
+            packages: $packages,
+            dependencies: $composerData['require'] ?? [],
+            packageVersions: $packageVersions,
+            vendorDir: $vendorDir,
         );
 
         // Process dev dependencies if requested
-        if ($includeDevDependencies && isset($composerData['require-dev']) && \is_array($composerData['require-dev'])) {
+        if ($includeDevDependencies && isset($composerData['require-dev']) && \is_array(value: $composerData['require-dev'])) {
             $this->processPackages(
-                $packages,
-                $composerData['require-dev'],
-                $packageVersions,
-                $vendorDir,
-                true,
+                packages: $packages,
+                dependencies: $composerData['require-dev'],
+                packageVersions: $packageVersions,
+                vendorDir: $vendorDir,
+                isDev: true,
             );
         }
 
@@ -91,18 +91,18 @@ final readonly class LocalComposerProvider extends AbstractComposerProvider
     ): void {
         foreach ($dependencies as $packageName => $constraintVersion) {
             // Skip php and ext-* dependencies
-            if ($packageName === 'php' || \str_starts_with($packageName, 'ext-')) {
+            if ($packageName === 'php' || \str_starts_with(haystack: $packageName, needle: 'ext-')) {
                 continue;
             }
 
             // Skip if already included in regular dependencies (for dev deps)
-            if ($isDev && $packages->has($packageName)) {
+            if ($isDev && $packages->has(name: $packageName)) {
                 continue;
             }
 
             $packagePath = $this->basePath . '/' . $vendorDir . '/' . $packageName;
 
-            if (!\is_dir($packagePath)) {
+            if (!\is_dir(filename: $packagePath)) {
                 $this->logger->warning('Package directory not found', [
                     'package' => $packageName,
                     'path' => $packagePath,
@@ -125,7 +125,7 @@ final readonly class LocalComposerProvider extends AbstractComposerProvider
                 }
 
                 $packages->add(
-                    new ComposerPackageInfo(
+                    package: new ComposerPackageInfo(
                         name: $packageName,
                         path: $packagePath,
                         version: $version,
@@ -142,7 +142,7 @@ final readonly class LocalComposerProvider extends AbstractComposerProvider
 
                 // Add the package with minimal info
                 $packages->add(
-                    new ComposerPackageInfo(
+                    package: new ComposerPackageInfo(
                         name: $packageName,
                         path: $packagePath,
                         version: $version,

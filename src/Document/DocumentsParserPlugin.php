@@ -31,7 +31,7 @@ final readonly class DocumentsParserPlugin implements ConfigParserPluginInterfac
 
     public function supports(array $config): bool
     {
-        return isset($config['documents']) && \is_array($config['documents']);
+        return isset($config['documents']) && \is_array(value: $config['documents']);
     }
 
     public function updateConfig(array $config, string $rootPath): array
@@ -42,7 +42,7 @@ final readonly class DocumentsParserPlugin implements ConfigParserPluginInterfac
 
     public function parse(array $config, string $rootPath): ?RegistryInterface
     {
-        if (!$this->supports($config)) {
+        if (!$this->supports(config: $config)) {
             return null;
         }
 
@@ -51,20 +51,20 @@ final readonly class DocumentsParserPlugin implements ConfigParserPluginInterfac
         foreach ($config['documents'] as $index => $docData) {
             if (!isset($docData['description'], $docData['outputPath'])) {
                 throw new \RuntimeException(
-                    \sprintf('Document at index %d must have "description" and "outputPath"', $index),
+                    message: \sprintf('Document at index %d must have "description" and "outputPath"', $index),
                 );
             }
 
             // Parse document modifiers if present
             $documentModifiers = [];
-            if (isset($docData['modifiers']) && \is_array($docData['modifiers'])) {
-                $documentModifiers = $this->parseModifiers($docData['modifiers']);
+            if (isset($docData['modifiers']) && \is_array(value: $docData['modifiers'])) {
+                $documentModifiers = $this->parseModifiers(modifiersConfig: $docData['modifiers']);
             }
 
             // Parse document tags if present
             $documentTags = [];
-            if (isset($docData['tags']) && \is_array($docData['tags'])) {
-                $documentTags = \array_map(\strval(...), $docData['tags']);
+            if (isset($docData['tags']) && \is_array(value: $docData['tags'])) {
+                $documentTags = \array_map(callback: \strval(...), array: $docData['tags']);
             }
 
             $document = Document::create(
@@ -75,7 +75,7 @@ final readonly class DocumentsParserPlugin implements ConfigParserPluginInterfac
                 tags: $documentTags,
             );
 
-            if (isset($docData['sources']) && \is_array($docData['sources'])) {
+            if (isset($docData['sources']) && \is_array(value: $docData['sources'])) {
                 foreach ($docData['sources'] as $sourceIndex => $sourceData) {
                     try {
                         $this->logger?->debug(
@@ -102,7 +102,7 @@ final readonly class DocumentsParserPlugin implements ConfigParserPluginInterfac
 
                         $document->addSource($this->sources->create($type, $sourceData));
                     } catch (\RuntimeException $e) {
-                        $document->addError($e->getMessage());
+                        $document->addError(error: $e->getMessage());
                         $this->logger?->error(
                             \sprintf('Failed to create source at index %d: %s', $sourceIndex, $e->getMessage()),
                             [
@@ -114,7 +114,7 @@ final readonly class DocumentsParserPlugin implements ConfigParserPluginInterfac
                 }
             }
 
-            $registry->register($document);
+            $registry->register(document: $document);
         }
 
         return $registry;
@@ -127,6 +127,6 @@ final readonly class DocumentsParserPlugin implements ConfigParserPluginInterfac
      */
     private function parseModifiers(array $modifiersConfig): array
     {
-        return $this->modifierResolver->resolveAll($modifiersConfig);
+        return $this->modifierResolver->resolveAll(references: $modifiersConfig);
     }
 }

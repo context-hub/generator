@@ -86,7 +86,7 @@ final class MCPServerCommand extends BaseCommand
             ->determineRootPath($this->configPath)
             ->withEnvFile($this->envFileName);
 
-        $binder = $container->getBinder('root');
+        $binder = $container->getBinder(scope: 'root');
         $binder->bind(
             DirectoriesInterface::class,
             $dirs,
@@ -128,14 +128,14 @@ final class MCPServerCommand extends BaseCommand
 
                 try {
                     // Get the appropriate loader based on options provided
-                    if (!\is_dir($rootPathStr)) {
+                    if (!\is_dir(filename: $rootPathStr)) {
                         $logger->info(
                             'Loading configuration from provided path...',
                             [
                                 'path' => $rootPathStr,
                             ],
                         );
-                        $loader = $configProvider->fromPath((string) $dirs->getConfigPath());
+                        $loader = $configProvider->fromPath(configPath: (string) $dirs->getConfigPath());
                     } else {
                         $logger->info('Using default configuration location...');
                         $loader = $configProvider->fromDefaultLocation();
@@ -155,7 +155,7 @@ final class MCPServerCommand extends BaseCommand
                             DirectoriesInterface::class => $dirs,
                             HasPrefixLoggerInterface::class => $logger,
                             ConfigLoaderInterface::class => $loader,
-                            CommandExecutorInterface::class => $container->make(CommandExecutor::class, [
+                            CommandExecutorInterface::class => $container->make(alias: CommandExecutor::class, parameters: [
                                 'projectRoot' => (string) $dirs->getRootPath(),
                             ]),
                             EnvironmentInterface::class => $env,

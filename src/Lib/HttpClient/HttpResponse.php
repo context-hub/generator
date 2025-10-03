@@ -31,9 +31,9 @@ final readonly class HttpResponse
 
     public function getHeader(string $name): ?string
     {
-        $normalizedName = \strtolower($name);
+        $normalizedName = \strtolower(string: $name);
         foreach ($this->headers as $key => $value) {
-            if (\strtolower((string) $key) === $normalizedName) {
+            if (\strtolower(string: (string) $key) === $normalizedName) {
                 return $value;
             }
         }
@@ -64,11 +64,11 @@ final readonly class HttpResponse
      */
     public function getJson(bool $assoc = true, int $depth = 512, int $options = 0): mixed
     {
-        $data = \json_decode($this->body, $assoc, $depth, $options);
+        $data = \json_decode(json: $this->body, associative: $assoc, depth: $depth, flags: $options);
 
         if (\json_last_error() !== JSON_ERROR_NONE) {
             throw new HttpException(
-                \sprintf(
+                message: \sprintf(
                     'Failed to parse JSON response: %s',
                     \json_last_error_msg(),
                 ),
@@ -90,18 +90,18 @@ final readonly class HttpResponse
      */
     public function getJsonValue(string $key, mixed $default = null): mixed
     {
-        $data = $this->getJson(true);
+        $data = $this->getJson();
 
-        if (!\str_contains($key, '.')) {
+        if (!\str_contains(haystack: $key, needle: '.')) {
             return $data[$key] ?? $default;
         }
 
         // Handle dot notation for nested values
-        $segments = \explode('.', $key);
+        $segments = \explode(separator: '.', string: $key);
         $current = $data;
 
         foreach ($segments as $segment) {
-            if (!\is_array($current) || !\array_key_exists($segment, $current)) {
+            if (!\is_array(value: $current) || !\array_key_exists(key: $segment, array: $current)) {
                 return $default;
             }
 
@@ -122,18 +122,18 @@ final readonly class HttpResponse
      */
     public function hasJsonKey(string $key): bool
     {
-        $data = $this->getJson(true);
+        $data = $this->getJson();
 
-        if (!\str_contains($key, '.')) {
-            return \array_key_exists($key, $data);
+        if (!\str_contains(haystack: $key, needle: '.')) {
+            return \array_key_exists(key: $key, array: $data);
         }
 
         // Handle dot notation for nested values
-        $segments = \explode('.', $key);
+        $segments = \explode(separator: '.', string: $key);
         $current = $data;
 
         foreach ($segments as $segment) {
-            if (!\is_array($current) || !\array_key_exists($segment, $current)) {
+            if (!\is_array(value: $current) || !\array_key_exists(key: $segment, array: $current)) {
                 return false;
             }
 

@@ -27,13 +27,13 @@ final readonly class ComposerSourceFactory extends AbstractSourceFactory
         ]);
 
         if (isset($config['modifiers'])) {
-            $config['modifiers'] = $this->parseModifiers($config['modifiers']);
+            $config['modifiers'] = $this->parseModifiers(modifiersConfig: $config['modifiers']);
         }
 
         $composerPath = $config['composerPath'] ?? '.';
 
         // If the path is relative, make it absolute using the root path
-        if (!\str_starts_with($composerPath, '/')) {
+        if (!\str_starts_with(haystack: $composerPath, needle: '/')) {
             $composerPath = $this->dirs->getRootPath()->join($composerPath);
         }
 
@@ -47,7 +47,7 @@ final readonly class ComposerSourceFactory extends AbstractSourceFactory
             contains: $config['contains'] ?? [],
             notContains: $config['notContains'] ?? [],
             includeDevDependencies: $config['includeDevDependencies'] ?? false,
-            treeView: TreeViewConfig::fromArray($config),
+            treeView: TreeViewConfig::fromArray(data: $config),
             modifiers: $config['modifiers'] ?? [],
             tags: $config['tags'] ?? [],
         );

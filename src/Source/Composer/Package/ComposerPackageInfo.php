@@ -61,11 +61,11 @@ final readonly class ComposerPackageInfo
             }
 
             if (!empty($authorParts)) {
-                $formattedAuthors[] = \implode(' ', $authorParts);
+                $formattedAuthors[] = \implode(separator: ' ', array: $authorParts);
             }
         }
 
-        return \implode(', ', $formattedAuthors);
+        return \implode(separator: ', ', array: $formattedAuthors);
     }
 
     /**
@@ -83,8 +83,8 @@ final readonly class ComposerPackageInfo
     {
         $license = $this->getLicense();
 
-        if (\is_array($license)) {
-            return \implode(', ', $license);
+        if (\is_array(value: $license)) {
+            return \implode(separator: ', ', array: $license);
         }
 
         return $license;
@@ -109,7 +109,7 @@ final readonly class ComposerPackageInfo
         $psr4Dirs = [];
         if (isset($this->composerConfig['autoload']['psr-4'])) {
             foreach ($this->composerConfig['autoload']['psr-4'] as $dirs) {
-                if (\is_array($dirs)) {
+                if (\is_array(value: $dirs)) {
                     foreach ($dirs as $dir) {
                         $psr4Dirs[] = $dir;
                     }
@@ -121,14 +121,14 @@ final readonly class ComposerPackageInfo
 
         // If we have PSR-4 directories, return them
         if (!empty($psr4Dirs)) {
-            return \array_unique($psr4Dirs);
+            return \array_unique(array: $psr4Dirs);
         }
 
         // Check PSR-0 autoload configuration as fallback
         $psr0Dirs = [];
         if (isset($this->composerConfig['autoload']['psr-0'])) {
             foreach ($this->composerConfig['autoload']['psr-0'] as $dirs) {
-                if (\is_array($dirs)) {
+                if (\is_array(value: $dirs)) {
                     foreach ($dirs as $dir) {
                         $psr0Dirs[] = $dir;
                     }
@@ -140,16 +140,16 @@ final readonly class ComposerPackageInfo
 
         // If we have PSR-0 directories, return them
         if (!empty($psr0Dirs)) {
-            return \array_unique($psr0Dirs);
+            return \array_unique(array: $psr0Dirs);
         }
 
         // Check classmap autoload configuration as fallback
         $classmapDirs = [];
         if (isset($this->composerConfig['autoload']['classmap'])
-            && \is_array($this->composerConfig['autoload']['classmap'])
+            && \is_array(value: $this->composerConfig['autoload']['classmap'])
         ) {
             foreach ($this->composerConfig['autoload']['classmap'] as $dir) {
-                if (\is_string($dir)) {
+                if (\is_string(value: $dir)) {
                     $classmapDirs[] = $dir;
                 }
             }
@@ -157,13 +157,13 @@ final readonly class ComposerPackageInfo
 
         // If we have classmap directories, return them
         if (!empty($classmapDirs)) {
-            return \array_unique($classmapDirs);
+            return \array_unique(array: $classmapDirs);
         }
 
         // Fallback to common source directories
         $commonDirs = ['src', 'lib', 'library'];
         foreach ($commonDirs as $dir) {
-            if (\is_dir($this->path . '/' . $dir)) {
+            if (\is_dir(filename: $this->path . '/' . $dir)) {
                 return [$dir];
             }
         }
@@ -192,7 +192,7 @@ final readonly class ComposerPackageInfo
             return '';
         }
 
-        return \implode(', ', $keywords);
+        return \implode(separator: ', ', array: $keywords);
     }
 
     /**
@@ -209,7 +209,7 @@ final readonly class ComposerPackageInfo
     public function isAbandoned(): bool
     {
         return isset($this->composerConfig['abandoned']) &&
-            ($this->composerConfig['abandoned'] === true || \is_string($this->composerConfig['abandoned']));
+            ($this->composerConfig['abandoned'] === true || \is_string(value: $this->composerConfig['abandoned']));
     }
 
     /**
@@ -217,7 +217,7 @@ final readonly class ComposerPackageInfo
      */
     public function getReplacementPackage(): ?string
     {
-        if ($this->isAbandoned() && \is_string($this->composerConfig['abandoned'])) {
+        if ($this->isAbandoned() && \is_string(value: $this->composerConfig['abandoned'])) {
             return $this->composerConfig['abandoned'];
         }
 
@@ -270,6 +270,6 @@ final readonly class ComposerPackageInfo
             $result[] = "IRC: {$support['irc']}";
         }
 
-        return \implode("\n", $result);
+        return \implode(separator: "\n", array: $result);
     }
 }

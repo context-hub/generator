@@ -54,11 +54,11 @@ final readonly class SanitizerModifier implements SourceModifierInterface
 
         // Apply each rule to the sanitizer
         foreach ($rules as $ruleConfig) {
-            $rule = $this->ruleFactory->createFromConfig($ruleConfig);
-            $sanitizer->addRule($rule);
+            $rule = $this->ruleFactory->createFromConfig(config: $ruleConfig);
+            $sanitizer->addRule(rule: $rule);
         }
 
         // Apply sanitization rules to the content
-        return $sanitizer->sanitize($content);
+        return $sanitizer->sanitize(content: $content);
     }
 }

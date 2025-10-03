@@ -17,14 +17,14 @@ final readonly class StringJsonReader implements ReaderInterface
     public function read(string $path): array
     {
         $this->logger?->debug('Reading JSON configuration from string', [
-            'contentLength' => \strlen($this->jsonContent),
+            'contentLength' => \strlen(string: $this->jsonContent),
         ]);
 
         try {
             $config = \json_decode($this->jsonContent, true, flags: JSON_THROW_ON_ERROR);
 
-            if (!\is_array($config)) {
-                throw new ReaderException('JSON configuration must decode to an array');
+            if (!\is_array(value: $config)) {
+                throw new ReaderException(message: 'JSON configuration must decode to an array');
             }
 
             $this->logger?->debug('JSON string successfully parsed');

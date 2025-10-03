@@ -54,8 +54,8 @@ final readonly class ListPromptsToolAction
                 ];
             }
 
-            return ToolResult::success([
-                'count' => \count($promptsList),
+            return ToolResult::success(data: [
+                'count' => \count(value: $promptsList),
                 'prompts' => $promptsList,
             ]);
         } catch (\Throwable $e) {
@@ -64,7 +64,7 @@ final readonly class ListPromptsToolAction
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return ToolResult::error($e->getMessage());
+            return ToolResult::error(error: $e->getMessage());
         }
     }
 }

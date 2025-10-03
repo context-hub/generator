@@ -21,7 +21,7 @@ final readonly class CompositeConfigLoader implements ConfigLoaderInterface
     public function load(): ConfigRegistry
     {
         $this->logger?->debug('Trying to load with composite loader', [
-            'loaderCount' => \count($this->loaders),
+            'loaderCount' => \count(value: $this->loaders),
         ]);
 
         $compositeRegistry = new ConfigRegistry();
@@ -36,8 +36,8 @@ final readonly class CompositeConfigLoader implements ConfigLoaderInterface
 
                 // Merge all registry types from this loader
                 foreach ($registry->all() as $type => $typeRegistry) {
-                    if (!$compositeRegistry->has($type)) {
-                        $compositeRegistry->register($typeRegistry);
+                    if (!$compositeRegistry->has(type: $type)) {
+                        $compositeRegistry->register(registry: $typeRegistry);
                         $this->logger?->debug('Registered registry type', [
                             'type' => $type,
                         ]);
@@ -50,7 +50,7 @@ final readonly class CompositeConfigLoader implements ConfigLoaderInterface
 
                 $this->logger?->debug('Successfully loaded with a loader', [
                     'loaderClass' => $loader::class,
-                    'registryTypes' => \array_keys($registry->all()),
+                    'registryTypes' => \array_keys(array: $registry->all()),
                 ]);
             } catch (\Throwable $e) {
                 $this->logger?->warning('Failed to load with a loader', [
@@ -67,7 +67,7 @@ final readonly class CompositeConfigLoader implements ConfigLoaderInterface
     public function loadRawConfig(): array
     {
         $this->logger?->debug('Trying to load raw config with composite loader', [
-            'loaderCount' => \count($this->loaders),
+            'loaderCount' => \count(value: $this->loaders),
         ]);
 
         foreach ($this->loaders as $loader) {

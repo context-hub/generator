@@ -31,16 +31,16 @@ abstract readonly class AbstractReader implements ReaderInterface
         } catch (FilesException) {
             $errorMessage = \sprintf('Unable to read configuration file: %s', $path);
             $this->logger?->error($errorMessage);
-            throw new ReaderException($errorMessage);
+            throw new ReaderException(message: $errorMessage);
         }
 
         $this->logger?->debug('Parsing content', [
-            'contentLength' => \strlen($content),
+            'contentLength' => \strlen(string: $content),
             'reader' => static::class,
         ]);
 
         try {
-            $config = $this->parseContent($content);
+            $config = $this->parseContent(content: $content);
             $this->logger?->debug('Content successfully parsed', [
                 'reader' => static::class,
             ]);
@@ -62,8 +62,8 @@ abstract readonly class AbstractReader implements ReaderInterface
             return false;
         }
 
-        $extension = \pathinfo($path, PATHINFO_EXTENSION);
-        $isSupported = \in_array($extension, $this->getSupportedExtensions(), true);
+        $extension = \pathinfo(path: $path, flags: PATHINFO_EXTENSION);
+        $isSupported = \in_array(needle: $extension, haystack: $this->getSupportedExtensions(), strict: true);
 
         $this->logger?->debug('Checking if config file is supported', [
             'path' => $path,

@@ -58,8 +58,7 @@ final class ConfigurationBootloader extends Bootloader
     private function createConfigManager(): ConfigManager
     {
         return new ConfigManager(
-            new DirectoryLoader($this->directories->get('config'), $this->loaders),
-            true,
+            loader: new DirectoryLoader(directory: $this->directories->get('config'), loaders: $this->loaders),
         );
     }
 

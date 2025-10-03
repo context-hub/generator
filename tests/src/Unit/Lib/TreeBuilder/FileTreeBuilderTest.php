@@ -28,7 +28,7 @@ final class FileTreeBuilderTest extends TestCase
             $this->tempDir . '/dir1/file2.txt',
         ];
 
-        $result = $builder->buildTree($files, $this->tempDir);
+        $result = $builder->buildTree(files: $files, basePath: $this->tempDir);
 
         // Use the heredoc syntax for clear assertion of the expected tree structure
         $expectedTree = <<<TREE
@@ -44,14 +44,14 @@ final class FileTreeBuilderTest extends TestCase
     public function it_should_use_custom_renderer(): void
     {
         $renderer = $this->createMockRenderer('custom-tree-output');
-        $builder = new FileTreeBuilder($renderer);
+        $builder = new FileTreeBuilder(renderer: $renderer);
 
         $files = [
             $this->tempDir . '/file1.txt',
             $this->tempDir . '/dir1',
         ];
 
-        $result = $builder->buildTree($files, $this->tempDir);
+        $result = $builder->buildTree(files: $files, basePath: $this->tempDir);
 
         $this->assertSame('custom-tree-output', $result);
     }
@@ -75,14 +75,14 @@ final class FileTreeBuilderTest extends TestCase
             )
             ->willReturn('tree-with-options');
 
-        $builder = new FileTreeBuilder($renderer);
+        $builder = new FileTreeBuilder(renderer: $renderer);
 
         $files = [
             $this->tempDir . '/file1.txt',
             $this->tempDir . '/dir1',
         ];
 
-        $result = $builder->buildTree($files, $this->tempDir, $options);
+        $result = $builder->buildTree(files: $files, basePath: $this->tempDir, options: $options);
 
         $this->assertSame('tree-with-options', $result);
     }
@@ -91,7 +91,7 @@ final class FileTreeBuilderTest extends TestCase
     public function it_should_handle_empty_file_list(): void
     {
         $builder = new FileTreeBuilder();
-        $result = $builder->buildTree([], $this->tempDir);
+        $result = $builder->buildTree(files: [], basePath: $this->tempDir);
 
         // Empty tree should be an empty string
         $this->assertSame('', $result);
@@ -103,15 +103,15 @@ final class FileTreeBuilderTest extends TestCase
         $builder = new FileTreeBuilder();
 
         // Create simple test files in fixed locations for consistent testing
-        \mkdir($this->tempDir . '/windows/path', 0777, true);
-        \file_put_contents($this->tempDir . '/windows/path/file.txt', 'content');
+        \mkdir(directory: $this->tempDir . '/windows/path', recursive: true);
+        \file_put_contents(filename: $this->tempDir . '/windows/path/file.txt', data: 'content');
 
         $windowsPaths = [
-            \str_replace('/', '\\', $this->tempDir . '/windows/path/file.txt'),
-            \str_replace('/', '\\', $this->tempDir . '/windows/path'),
+            \str_replace(search: '/', replace: '\\', subject: $this->tempDir . '/windows/path/file.txt'),
+            \str_replace(search: '/', replace: '\\', subject: $this->tempDir . '/windows/path'),
         ];
 
-        $result = $builder->buildTree($windowsPaths, \str_replace('/', '\\', $this->tempDir));
+        $result = $builder->buildTree(files: $windowsPaths, basePath: \str_replace(search: '/', replace: '\\', subject: $this->tempDir));
 
         $expectedTree = <<<TREE
             └── windows/
@@ -128,20 +128,20 @@ final class FileTreeBuilderTest extends TestCase
         $builder = new FileTreeBuilder();
 
         // Create files and directories for testing
-        \mkdir($this->tempDir . '/mixed/unix/path', 0777, true);
-        \mkdir($this->tempDir . '/mixed/windows/path', 0777, true);
-        \file_put_contents($this->tempDir . '/mixed/unix/path/unix-file.txt', 'content');
-        \file_put_contents($this->tempDir . '/mixed/windows/path/windows-file.txt', 'content');
+        \mkdir(directory: $this->tempDir . '/mixed/unix/path', recursive: true);
+        \mkdir(directory: $this->tempDir . '/mixed/windows/path', recursive: true);
+        \file_put_contents(filename: $this->tempDir . '/mixed/unix/path/unix-file.txt', data: 'content');
+        \file_put_contents(filename: $this->tempDir . '/mixed/windows/path/windows-file.txt', data: 'content');
 
         // Create a mix of Windows and Unix paths
         $mixedPaths = [
             $this->tempDir . '/mixed/unix/path/unix-file.txt',
-            \str_replace('/', '\\', $this->tempDir . '/mixed/windows/path/windows-file.txt'),
+            \str_replace(search: '/', replace: '\\', subject: $this->tempDir . '/mixed/windows/path/windows-file.txt'),
             $this->tempDir . '/mixed/unix/path',
-            \str_replace('/', '\\', $this->tempDir . '/mixed/windows/path'),
+            \str_replace(search: '/', replace: '\\', subject: $this->tempDir . '/mixed/windows/path'),
         ];
 
-        $result = $builder->buildTree($mixedPaths, $this->tempDir);
+        $result = $builder->buildTree(files: $mixedPaths, basePath: $this->tempDir);
 
         $expectedTree = <<<TREE
             └── mixed/
@@ -166,7 +166,7 @@ final class FileTreeBuilderTest extends TestCase
             $this->tempDir . '/file1.txt',      // File
         ];
 
-        $result = $builder->buildTree($files, $this->tempDir);
+        $result = $builder->buildTree(files: $files, basePath: $this->tempDir);
 
         $expectedTree = <<<TREE
             └── dir1/
@@ -186,7 +186,7 @@ final class FileTreeBuilderTest extends TestCase
             $this->tempDir . '/dir1',
         ];
 
-        $result = $builder->buildTree($files, $this->tempDir);
+        $result = $builder->buildTree(files: $files, basePath: $this->tempDir);
 
         $expectedTree = <<<TREE
             └── dir1/
@@ -207,7 +207,7 @@ final class FileTreeBuilderTest extends TestCase
             $this->tempDir . '/dir2/subdir/file4.txt',
         ];
 
-        $result = $builder->buildTree($files, $basePath);
+        $result = $builder->buildTree(files: $files, basePath: $basePath);
 
         $expectedTree = <<<TREE
             └── file3.txt
@@ -230,7 +230,7 @@ final class FileTreeBuilderTest extends TestCase
         ];
 
         // Test with includeFiles=false option
-        $result = $builder->buildTree($files, $this->tempDir, ['includeFiles' => false]);
+        $result = $builder->buildTree(files: $files, basePath: $this->tempDir, options: ['includeFiles' => false]);
 
         $expectedTree = <<<TREE
             └── dir1/
@@ -241,24 +241,24 @@ final class FileTreeBuilderTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->fixturesDir = \dirname(__DIR__, 3) . '/fixtures/TreeBuilder';
+        $this->fixturesDir = \dirname(path: __DIR__, levels: 3) . '/fixtures/TreeBuilder';
 
         // Create fixtures directory if it doesn't exist
-        if (!\is_dir($this->fixturesDir)) {
-            \mkdir($this->fixturesDir, 0777, true);
+        if (!\is_dir(filename: $this->fixturesDir)) {
+            \mkdir(directory: $this->fixturesDir, recursive: true);
         }
 
         // Create temp directory for file operations
         $this->tempDir = \sys_get_temp_dir() . '/test-tree-builder-' . \uniqid();
-        \mkdir($this->tempDir, 0777, true);
+        \mkdir(directory: $this->tempDir, recursive: true);
 
         // Create some test files and directories
-        \mkdir($this->tempDir . '/dir1', 0777, true);
-        \mkdir($this->tempDir . '/dir2/subdir', 0777, true);
-        \file_put_contents($this->tempDir . '/file1.txt', 'content');
-        \file_put_contents($this->tempDir . '/dir1/file2.txt', 'content');
-        \file_put_contents($this->tempDir . '/dir2/file3.txt', 'content');
-        \file_put_contents($this->tempDir . '/dir2/subdir/file4.txt', 'content');
+        \mkdir(directory: $this->tempDir . '/dir1', recursive: true);
+        \mkdir(directory: $this->tempDir . '/dir2/subdir', recursive: true);
+        \file_put_contents(filename: $this->tempDir . '/file1.txt', data: 'content');
+        \file_put_contents(filename: $this->tempDir . '/dir1/file2.txt', data: 'content');
+        \file_put_contents(filename: $this->tempDir . '/dir2/file3.txt', data: 'content');
+        \file_put_contents(filename: $this->tempDir . '/dir2/subdir/file4.txt', data: 'content');
     }
 
     protected function tearDown(): void
@@ -268,23 +268,23 @@ final class FileTreeBuilderTest extends TestCase
 
     private function removeDirectory(string $dir): void
     {
-        if (!\is_dir($dir)) {
+        if (!\is_dir(filename: $dir)) {
             return;
         }
 
-        $files = \array_diff(\scandir($dir), ['.', '..']);
+        $files = \array_diff(\scandir(directory: $dir), ['.', '..']);
 
         foreach ($files as $file) {
             $path = "$dir/$file";
 
-            if (\is_dir($path)) {
+            if (\is_dir(filename: $path)) {
                 $this->removeDirectory($path);
             } else {
-                \unlink($path);
+                \unlink(filename: $path);
             }
         }
 
-        \rmdir($dir);
+        \rmdir(directory: $dir);
     }
 
     /**

@@ -23,13 +23,13 @@ final readonly class YamlReader extends AbstractReader
     protected function parseContent(string $content): array
     {
         try {
-            if (!\class_exists(Yaml::class)) {
+            if (!\class_exists(class: Yaml::class)) {
                 throw new ReaderException(
-                    'Symfony Yaml component is required to parse YAML files. Please install symfony/yaml package.',
+                    message: 'Symfony Yaml component is required to parse YAML files. Please install symfony/yaml package.',
                 );
             }
 
-            return (array) Yaml::parse($content);
+            return (array) Yaml::parse(input: $content);
         } catch (ParseException $e) {
             throw new ReaderException('Invalid YAML in configuration file', previous: $e);
         }

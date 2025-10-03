@@ -19,7 +19,7 @@ final class CircularImportDetector implements CircularImportDetectorInterface
      */
     public function wouldCreateCircularDependency(string $path): bool
     {
-        return \in_array($path, $this->importStack, true);
+        return \in_array(needle: $path, haystack: $this->importStack, strict: true);
     }
 
     /**
@@ -27,12 +27,12 @@ final class CircularImportDetector implements CircularImportDetectorInterface
      */
     public function beginProcessing(string $path): void
     {
-        if ($this->wouldCreateCircularDependency($path)) {
+        if ($this->wouldCreateCircularDependency(path: $path)) {
             throw new \RuntimeException(
-                \sprintf(
+                message: \sprintf(
                     'Circular import detected: %s is already being processed. Import stack: %s',
                     $path,
-                    \implode(' -> ', $this->importStack),
+                    \implode(separator: ' -> ', array: $this->importStack),
                 ),
             );
         }
@@ -46,10 +46,10 @@ final class CircularImportDetector implements CircularImportDetectorInterface
     public function endProcessing(string $path): void
     {
         // Find the path in the stack and remove it and anything after it
-        $index = \array_search($path, $this->importStack, true);
+        $index = \array_search(needle: $path, haystack: $this->importStack, strict: true);
 
         if ($index !== false) {
-            \array_splice($this->importStack, $index);
+            \array_splice(array: $this->importStack, offset: $index);
         }
     }
 }

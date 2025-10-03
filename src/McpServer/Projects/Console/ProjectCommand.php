@@ -30,7 +30,7 @@ final class ProjectCommand extends BaseCommand
     {
         // If no path provided, show interactive selection or current project
         if ($this->path === null) {
-            return $this->selectProjectInteractively($projectService);
+            return $this->selectProjectInteractively(projectService: $projectService);
         }
 
         // Handle using an alias as the path
@@ -41,7 +41,7 @@ final class ProjectCommand extends BaseCommand
         }
 
         // Normalize path to absolute path
-        $projectPath = $this->normalizePath($this->path, $dirs);
+        $projectPath = $this->normalizePath(path: $this->path, dirs: $dirs);
 
         // First, try to switch to this project if it exists
         if ($projectService->switchToProject($projectPath)) {
@@ -82,7 +82,7 @@ final class ProjectCommand extends BaseCommand
 
             $aliases = $projectService->getAliasesForPath($currentProject->path);
             if (!empty($aliases)) {
-                $this->output->text(\sprintf("Aliases: %s", \implode(', ', $aliases)));
+                $this->output->text(\sprintf("Aliases: %s", \implode(separator: ', ', array: $aliases)));
             }
 
             $this->output->newLine();
@@ -95,7 +95,7 @@ final class ProjectCommand extends BaseCommand
 
         foreach ($projects as $path => $_) {
             $aliases = $projectService->getAliasesForPath($path);
-            $aliasString = !empty($aliases) ? ' [' . \implode(', ', $aliases) . ']' : '';
+            $aliasString = !empty($aliases) ? ' [' . \implode(separator: ', ', array: $aliases) . ']' : '';
             $isCurrent = ($currentProject && $currentProject->path === $path) ? ' (CURRENT)' : '';
 
             $displayString = \sprintf(
@@ -115,16 +115,16 @@ final class ProjectCommand extends BaseCommand
         $choices[] = $cancelOption;
 
         // Create the question with all choices
-        $helper = $this->getHelper('question');
-        \assert($helper instanceof QuestionHelper);
+        $helper = $this->getHelper(name: 'question');
+        \assert(assertion: $helper instanceof QuestionHelper);
         $question = new ChoiceQuestion(
-            'Select a project to switch to:',
-            $choices,
-            0, // Default to first option
+            question: 'Select a project to switch to:',
+            choices: $choices,
+            default: 0, // Default to first option
         );
-        $question->setErrorMessage('Invalid selection.');
+        $question->setErrorMessage(errorMessage: 'Invalid selection.');
 
-        $selectedChoice = $helper->ask($this->input, $this->output, $question);
+        $selectedChoice = $helper->ask(input: $this->input, output: $this->output, question: $question);
 
         // Handle cancel option
         if ($selectedChoice === $cancelOption) {
@@ -156,7 +156,7 @@ final class ProjectCommand extends BaseCommand
             return (string) FSPath::cwd();
         }
 
-        $pathObj = FSPath::create($path);
+        $pathObj = FSPath::create(path: $path);
 
         // If path is relative, make it absolute from the current directory
         if ($pathObj->isRelative()) {

@@ -21,7 +21,7 @@ final readonly class SourceError implements \Stringable
      */
     public function getSourceDescription(): string
     {
-        $source = new \ReflectionClass($this->source);
+        $source = new \ReflectionClass(objectOrClass: $this->source);
         return $this->source->hasDescription()
             ? $this->source->getDescription()
             : $source->getShortName();

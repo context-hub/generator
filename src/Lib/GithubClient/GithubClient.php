@@ -26,11 +26,11 @@ final class GithubClient implements GithubClientInterface
         $url = \sprintf(
             '/repos/%s/contents/%s?ref=%s',
             $repository->repository,
-            $path ? \urlencode($path) : '',
-            \urlencode($repository->branch),
+            $path ? \urlencode(string: $path) : '',
+            \urlencode(string: $repository->branch),
         );
 
-        $response = $this->sendRequest('GET', $url);
+        $response = $this->sendRequest(method: 'GET', path: $url);
 
         /**
          * Check if we got a single file or a directory
@@ -47,14 +47,14 @@ final class GithubClient implements GithubClientInterface
         $url = \sprintf(
             '/repos/%s/contents/%s?ref=%s',
             $repository->repository,
-            \urlencode($path),
-            \urlencode($repository->branch),
+            \urlencode(string: $path),
+            \urlencode(string: $repository->branch),
         );
 
-        $response = $this->sendRequest('GET', $url);
+        $response = $this->sendRequest(method: 'GET', path: $url);
 
         if (!isset($response['content'])) {
-            throw new \RuntimeException("Could not get content for file: $path");
+            throw new \RuntimeException(message: "Could not get content for file: $path");
         }
 
         // GitHub API returns base64 encoded content
@@ -69,9 +69,9 @@ final class GithubClient implements GithubClientInterface
     public function getReleaseManager(GithubRepository $repository): ReleaseManager
     {
         return new ReleaseManager(
-            $this->httpClient,
-            $repository,
-            $this->token,
+            httpClient: $this->httpClient,
+            repository: $repository,
+            token: $this->token,
         );
     }
 
@@ -105,14 +105,14 @@ final class GithubClient implements GithubClientInterface
             // Check for success status code
             if (!$response->isSuccess()) {
                 throw new \RuntimeException(
-                    "GitHub API request failed with status code " . $response->getStatusCode(),
+                    message: "GitHub API request failed with status code " . $response->getStatusCode(),
                 );
             }
 
             // Parse JSON response
             return $response->getJson();
         } catch (\Throwable $e) {
-            throw new \RuntimeException('GitHub API request failed: ' . $e->getMessage(), 0, $e);
+            throw new \RuntimeException(message: 'GitHub API request failed: ' . $e->getMessage(), previous: $e);
         }
     }
 }

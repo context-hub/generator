@@ -46,6 +46,6 @@ final class ImportRegistry implements RegistryInterface
 
     public function getIterator(): \Traversable
     {
-        return new \ArrayIterator($this->getItems());
+        return new \ArrayIterator(array: $this->getItems());
     }
 }

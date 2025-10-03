@@ -100,7 +100,7 @@ final class GithubSource extends SourceWithModifiers implements FilterableSource
     #[\Override]
     public function jsonSerialize(): array
     {
-        return \array_filter([
+        return \array_filter(array: [
             'type' => 'github',
             ...parent::jsonSerialize(),
             'repository' => $this->repository,
@@ -113,6 +113,6 @@ final class GithubSource extends SourceWithModifiers implements FilterableSource
             'notContains' => $this->notContains,
             'showTreeView' => $this->showTreeView,
             'githubToken' => $this->githubToken,
-        ], static fn($value) => $value !== null && (!\is_array($value) || !empty($value)));
+        ], callback: static fn($value) => $value !== null && (!\is_array(value: $value) || !empty($value)));
     }
 }

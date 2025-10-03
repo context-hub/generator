@@ -33,12 +33,12 @@ final readonly class FetchLibraryDocsAction
         $this->logger->info('Processing find-docs tool');
 
         // Get params from the parsed body for POST requests
-        $libraryId = \trim($request->id);
+        $libraryId = \trim(string: $request->id);
         $tokens = $request->tokens;
-        $topic = $request->topic !== null ? \trim($request->topic) : null;
+        $topic = $request->topic !== null ? \trim(string: $request->topic) : null;
 
         if (empty($libraryId)) {
-            return ToolResult::error('Missing id parameter');
+            return ToolResult::error(error: 'Missing id parameter');
         }
 
         try {
@@ -48,9 +48,9 @@ final readonly class FetchLibraryDocsAction
                 topic: $topic,
             );
 
-            return ToolResult::text($documentation);
+            return ToolResult::text(text: $documentation);
         } catch (Context7ClientException $e) {
-            return ToolResult::error($e->getMessage());
+            return ToolResult::error(error: $e->getMessage());
         } catch (\Throwable $e) {
             $this->logger->error('Unexpected error in fetch-library-docs tool', [
                 'libraryId' => $libraryId,
@@ -58,7 +58,7 @@ final readonly class FetchLibraryDocsAction
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return ToolResult::error('Error fetching library documentation. Please try again later. ' . $e->getMessage());
+            return ToolResult::error(error: 'Error fetching library documentation. Please try again later. ' . $e->getMessage());
         }
     }
 }

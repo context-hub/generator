@@ -24,7 +24,7 @@ final readonly class UnixUpdateStrategy implements UpdateStrategyInterface
 
         // Create the update script
         $this->logger?->info("Creating Unix update script...");
-        $scriptPath = $this->createUpdateScript($sourcePath, $targetPath);
+        $scriptPath = $this->createUpdateScript(sourcePath: $sourcePath, targetPath: $targetPath);
 
         if ($scriptPath === null) {
             $this->logger?->error("Failed to create Unix update script");
@@ -35,7 +35,7 @@ final readonly class UnixUpdateStrategy implements UpdateStrategyInterface
 
         // Make the script executable
         $this->logger?->info("Setting executable permissions on script");
-        if (!\chmod($scriptPath, 0755)) {
+        if (!\chmod(filename: $scriptPath, permissions: 0755)) {
             $this->logger?->error("Failed to set executable permissions on script");
             return false;
         }
@@ -43,7 +43,7 @@ final readonly class UnixUpdateStrategy implements UpdateStrategyInterface
         // Run the script in the background and continue after PHP exits
         $command = \sprintf(
             'nohup %s > /dev/null 2>&1 & echo $!',
-            \escapeshellarg($scriptPath),
+            \escapeshellarg(arg: $scriptPath),
         );
 
         $this->logger?->info("Executing update script in background with command: {$command}");
@@ -51,10 +51,10 @@ final readonly class UnixUpdateStrategy implements UpdateStrategyInterface
         // Execute the command and capture the process ID
         $output = [];
         $resultCode = 0;
-        \exec($command, $output, $resultCode);
+        \exec(command: $command, output: $output, result_code: $resultCode);
 
         // If we got a process ID and the command executed successfully, consider it a success
-        $success = $resultCode === 0 && !empty($output[0]) && \is_numeric($output[0]);
+        $success = $resultCode === 0 && !empty($output[0]) && \is_numeric(value: $output[0]);
 
         if ($success) {
             $this->logger?->info("Successfully started background update process with PID: {$output[0]}");
@@ -78,29 +78,29 @@ final readonly class UnixUpdateStrategy implements UpdateStrategyInterface
 
             $scriptContent = <<<BASH
                 #!/bin/bash
-                
+
                 # Wait for the parent process to exit
                 sleep 1
-                
+
                 # Define paths
                 SOURCE="{$sourcePath}"
                 TARGET="{$targetPath}"
                 TARGET_DIR="\$(dirname "\$TARGET")"
-                
+
                 # Set up retry logic
                 MAX_ATTEMPTS=10
                 ATTEMPT=1
                 SUCCESS=0
-                
+
                 echo "Starting update process for \$TARGET"
-                
+
                 # Create the target directory if it doesn't exist
                 mkdir -p "\$TARGET_DIR"
-                
+
                 # Try to update the file with multiple attempts
                 while [ \$ATTEMPT -le \$MAX_ATTEMPTS ] && [ \$SUCCESS -eq 0 ]; do
                     echo "Attempt \$ATTEMPT: Trying to update \$TARGET"
-                
+
                     # Try to copy the file
                     if cp "\$SOURCE" "\$TARGET" 2>/dev/null; then
                         # Make the file executable
@@ -113,17 +113,17 @@ final readonly class UnixUpdateStrategy implements UpdateStrategyInterface
                         ATTEMPT=\$((ATTEMPT+1))
                     fi
                 done
-                
+
                 # Clean up the temporary source file
                 rm -f "\$SOURCE"
                 rm -f "$scriptPath"
-                
+
                 # Exit with the appropriate status
                 if [ \$SUCCESS -eq 0 ]; then
                     echo "Update failed after \$MAX_ATTEMPTS attempts."
                     exit 1
                 fi
-                
+
                 exit 0
                 BASH;
 

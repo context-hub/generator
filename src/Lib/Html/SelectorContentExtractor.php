@@ -16,23 +16,23 @@ final class SelectorContentExtractor implements SelectorContentExtractorInterfac
         }
 
         $dom = new \DOMDocument();
-        \libxml_use_internal_errors(true);
-        $dom->loadHTML($html, LIBXML_NOWARNING | LIBXML_NOERROR);
+        \libxml_use_internal_errors(use_errors: true);
+        $dom->loadHTML(source: $html, options: LIBXML_NOWARNING | LIBXML_NOERROR);
         \libxml_clear_errors();
 
-        $xpath = new \DOMXPath($dom);
+        $xpath = new \DOMXPath(document: $dom);
 
         // Convert CSS selector to XPath
-        $xpathSelector = $this->cssToXPath($selector);
+        $xpathSelector = $this->cssToXPath(selector: $selector);
 
-        $elements = $xpath->query($xpathSelector);
+        $elements = $xpath->query(expression: $xpathSelector);
         if ($elements === false || $elements->length === 0) {
             return '';
         }
 
         $result = '';
         foreach ($elements as $element) {
-            $result .= $dom->saveHTML($element) . "\n";
+            $result .= $dom->saveHTML(node: $element) . "\n";
         }
 
         return $result;
@@ -45,13 +45,13 @@ final class SelectorContentExtractor implements SelectorContentExtractorInterfac
     private function cssToXPath(string $selector): string
     {
         // Handle ID selector (#id)
-        if (\str_starts_with($selector, '#')) {
-            return "//*[@id='" . \substr($selector, 1) . "']";
+        if (\str_starts_with(haystack: $selector, needle: '#')) {
+            return "//*[@id='" . \substr(string: $selector, offset: 1) . "']";
         }
 
         // Handle class selector (.class)
-        if (\str_starts_with($selector, '.')) {
-            return "//*[contains(@class, '" . \substr($selector, 1) . "')]";
+        if (\str_starts_with(haystack: $selector, needle: '.')) {
+            return "//*[contains(@class, '" . \substr(string: $selector, offset: 1) . "')]";
         }
 
         // Handle element selector (div, p, etc.)

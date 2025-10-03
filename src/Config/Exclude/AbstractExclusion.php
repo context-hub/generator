@@ -34,9 +34,9 @@ abstract readonly class AbstractExclusion implements ExclusionPatternInterface
      */
     protected function normalizePattern(string $pattern): string
     {
-        $pattern = \preg_replace('#^\./#', '', $pattern);
+        $pattern = \preg_replace(pattern: '#^\./#', replacement: '', subject: $pattern);
 
         // Remove trailing slash
-        return \rtrim((string) $pattern, '/');
+        return \rtrim(string: (string) $pattern, characters: '/');
     }
 }

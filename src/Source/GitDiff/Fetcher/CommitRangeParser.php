@@ -64,11 +64,11 @@ final readonly class CommitRangeParser
      */
     public function resolve(string|array $commitRange): string|array
     {
-        if (\is_array($commitRange)) {
-            return \array_map(fn(string $range): string => $this->resolveExpression($range), $commitRange);
+        if (\is_array(value: $commitRange)) {
+            return \array_map(callback: fn(string $range): string => $this->resolveExpression(expression: $range), array: $commitRange);
         }
 
-        return $this->resolveExpression($commitRange);
+        return $this->resolveExpression(expression: $commitRange);
     }
 
     /**
@@ -90,50 +90,50 @@ final readonly class CommitRangeParser
 
         // Handle specific commit patterns
         // 1. Check for a specific commit hash (must be at least 7 chars)
-        if (\preg_match('/^[0-9a-f]{7,40}$/', $expression)) {
+        if (\preg_match(pattern: '/^[0-9a-f]{7,40}$/', subject: $expression)) {
             return $expression . '~1..' . $expression;
         }
 
         // 2. Check for specific commit with file pattern: abc1234:path/to/file.php
-        if (\preg_match('/^([0-9a-f]{7,40}):(.+)$/', $expression, $matches)) {
+        if (\preg_match(pattern: '/^([0-9a-f]{7,40}):(.+)$/', subject: $expression, matches: $matches)) {
             return $matches[1] . ' -- ' . $matches[2];
         }
 
         // 3. Check for tag or branch comparison: tag:v1.0.0 or branch:feature/name
-        if (\preg_match('/^(tag|branch):(.+)$/', $expression, $matches)) {
+        if (\preg_match(pattern: '/^(tag|branch):(.+)$/', subject: $expression, matches: $matches)) {
             $ref = $matches[2];
             return $ref . '~1..' . $ref;
         }
 
         // 4. Check for branch comparison: main..feature
-        if (\preg_match('/^([^\.]+)\.\.([^\.]+)$/', $expression)) {
+        if (\preg_match(pattern: '/^([^\.]+)\.\.([^\.]+)$/', subject: $expression)) {
             // This is already a valid git range - return as is
             return $expression;
         }
 
         // 5. Check for 'since:' pattern to specify a starting point
-        if (\preg_match('/^since:(.+)$/', $expression, $matches)) {
+        if (\preg_match(pattern: '/^since:(.+)$/', subject: $expression, matches: $matches)) {
             return $matches[1] . '..HEAD';
         }
 
         // 6. Handle stash pattern: stash@{n} or stash@{/message}
-        if (\preg_match('/^stash@\{.+\}$/', $expression)) {
+        if (\preg_match(pattern: '/^stash@\{.+\}$/', subject: $expression)) {
             // This is already a valid stash reference - return as is
             return $expression;
         }
 
         // 7. Handle numeric stash pattern: stash:0, stash:1, etc.
-        if (\preg_match('/^stash:(\d+)$/', $expression, $matches)) {
+        if (\preg_match(pattern: '/^stash:(\d+)$/', subject: $expression, matches: $matches)) {
             return 'stash@{' . $matches[1] . '}';
         }
 
         // 8. Handle stash message pattern: stash:/message
-        if (\preg_match('/^stash:\/(.+)$/', $expression, $matches)) {
+        if (\preg_match(pattern: '/^stash:\/(.+)$/', subject: $expression, matches: $matches)) {
             return 'stash@{/' . $matches[1] . '}';
         }
 
         // Handle ISO-8601 date format: @2023-01-15 or date:2023-01-15
-        if (\preg_match('/^(?:@|date:)(\d{4}-\d{2}-\d{2})$/', $expression, $matches)) {
+        if (\preg_match(pattern: '/^(?:@|date:)(\d{4}-\d{2}-\d{2})$/', subject: $expression, matches: $matches)) {
             return '--since=' . $matches[1] . ' --until=' . $matches[1] . ' 23:59:59';
         }
 

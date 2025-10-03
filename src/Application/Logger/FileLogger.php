@@ -39,7 +39,7 @@ final class FileLogger extends Logger implements HasPrefixLoggerInterface
         }
 
         $this->pushProcessor(
-            (new TagProcessor())->addTags([$prefix]),
+            callback: (new TagProcessor())->addTags(tags: [$prefix]),
         );
 
         return $this;

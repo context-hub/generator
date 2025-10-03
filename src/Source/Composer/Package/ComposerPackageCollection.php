@@ -22,7 +22,7 @@ final class ComposerPackageCollection implements \IteratorAggregate, \ArrayAcces
     public function __construct(array $packages = [])
     {
         foreach ($packages as $package) {
-            $this->add($package);
+            $this->add(package: $package);
         }
     }
 
@@ -76,7 +76,7 @@ final class ComposerPackageCollection implements \IteratorAggregate, \ArrayAcces
 
         foreach ($this->packages as $name => $package) {
             foreach ($patterns as $pattern) {
-                if (\fnmatch($pattern, $name)) {
+                if (\fnmatch(pattern: $pattern, filename: $name)) {
                     $filtered[$name] = $package;
                     break;
                 }
@@ -103,7 +103,7 @@ final class ComposerPackageCollection implements \IteratorAggregate, \ArrayAcces
      */
     public function getIterator(): \Traversable
     {
-        return new \ArrayIterator($this->packages);
+        return new \ArrayIterator(array: $this->packages);
     }
 
     /**
@@ -129,7 +129,7 @@ final class ComposerPackageCollection implements \IteratorAggregate, \ArrayAcces
     {
         if (!$value instanceof ComposerPackageInfo) {
             throw new \InvalidArgumentException(
-                \sprintf('Value must be an instance of %s', ComposerPackageInfo::class),
+                message: \sprintf('Value must be an instance of %s', ComposerPackageInfo::class),
             );
         }
 
@@ -149,7 +149,7 @@ final class ComposerPackageCollection implements \IteratorAggregate, \ArrayAcces
      */
     public function count(): int
     {
-        return \count($this->packages);
+        return \count(value: $this->packages);
     }
 
     /**
@@ -169,15 +169,15 @@ final class ComposerPackageCollection implements \IteratorAggregate, \ArrayAcces
             // Add description if available
             if ($description = $package->getDescription()) {
                 // Truncate long descriptions
-                if (\strlen($description) > 60) {
-                    $description = \substr($description, 0, 57) . '...';
+                if (\strlen(string: $description) > 60) {
+                    $description = \substr(string: $description, offset: 0, length: 57) . '...';
                 }
                 $tree .= "│   └── {$description}\n";
             }
 
             // Add source directories if available
             $sourceDirs = $package->getSourceDirectories();
-            $lastSourceDirIndex = \count($sourceDirs) - 1;
+            $lastSourceDirIndex = \count(value: $sourceDirs) - 1;
 
             foreach ($sourceDirs as $index => $dir) {
                 $isLast = $index === $lastSourceDirIndex;
@@ -191,10 +191,10 @@ final class ComposerPackageCollection implements \IteratorAggregate, \ArrayAcces
 
     public function jsonSerialize(): array
     {
-        return \array_map(static fn($package) => [
+        return \array_map(callback: static fn($package) => [
             'version' => $package->version,
             'description' => $package->getDescription(),
             'path' => $package->path,
-        ], $this->packages);
+        ], array: $this->packages);
     }
 }

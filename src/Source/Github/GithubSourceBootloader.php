@@ -30,7 +30,7 @@ final class GithubSourceBootloader extends Bootloader
         SourceRegistryInterface $sourceRegistry,
         GithubSourceFactory $factory,
     ): void {
-        $registry->register(GithubSourceFetcher::class);
+        $registry->register(fetcher: GithubSourceFetcher::class);
         $sourceRegistry->register($factory);
     }
 }

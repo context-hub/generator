@@ -103,7 +103,7 @@ final class ComposerSource extends SourceWithModifiers implements FilterableSour
     #[\Override]
     public function jsonSerialize(): array
     {
-        return \array_filter([
+        return \array_filter(array: [
             'type' => 'composer',
             ...parent::jsonSerialize(),
             'composerPath' => $this->composerPath,
@@ -115,6 +115,6 @@ final class ComposerSource extends SourceWithModifiers implements FilterableSour
             'notContains' => $this->notContains,
             'includeDevDependencies' => $this->includeDevDependencies,
             'treeView' => $this->treeView,
-        ], static fn($value) => $value !== null && $value !== '' && $value !== []);
+        ], callback: static fn($value) => $value !== null && $value !== '' && $value !== []);
     }
 }

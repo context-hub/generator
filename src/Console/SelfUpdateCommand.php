@@ -67,8 +67,8 @@ final class SelfUpdateCommand extends BaseCommand
     public function __invoke(Application $app, EnvironmentInterface $env, DirectoriesInterface $dirs): int
     {
         $this->output->title('CTX Self Update');
-        $storeLocation = \trim($this->storeLocation ?: $env->get('CTX_BINARY_PATH', (string) $dirs->getBinaryPath()));
-        $type = \trim($this->type ?: ($app->isBinary ? 'bin' : 'phar'));
+        $storeLocation = \trim(string: $this->storeLocation ?: $env->get('CTX_BINARY_PATH', (string) $dirs->getBinaryPath()));
+        $type = \trim(string: $this->type ?: ($app->isBinary ? 'bin' : 'phar'));
 
         // Check if we have a valid store location
         if (empty($storeLocation)) {
@@ -78,7 +78,7 @@ final class SelfUpdateCommand extends BaseCommand
             return Command::FAILURE;
         }
 
-        $binaryPath = (string) FSPath::create($storeLocation)->join($this->binaryName);
+        $binaryPath = (string) FSPath::create(path: $storeLocation)->join($this->binaryName);
 
         $this->output->title($app->name);
         $this->output->text('Current version: ' . $app->version);
@@ -87,7 +87,7 @@ final class SelfUpdateCommand extends BaseCommand
         $this->output->section('Checking for updates...');
 
         // Create repository and get standard release manager
-        $repository = new GithubRepository($this->repository);
+        $repository = new GithubRepository(repository: $this->repository);
         $baseReleaseManager = $this->githubClient->getReleaseManager($repository);
 
         try {
@@ -95,7 +95,7 @@ final class SelfUpdateCommand extends BaseCommand
             $release = $baseReleaseManager->getLatestRelease();
 
             // Check if an update is available
-            if (!$release->isNewerThan($app->version)) {
+            if (!$release->isNewerThan(currentVersion: $app->version)) {
                 $this->output->success("You're already using the latest version ({$app->version})");
                 return Command::SUCCESS;
             }
@@ -119,25 +119,24 @@ final class SelfUpdateCommand extends BaseCommand
 
             // Create an enhanced release manager with the binary name builder
             $releaseManager = new ReleaseManager(
-                $this->httpClient,
-                $repository,
-                null, // token
-                $binaryNameBuilder,
-                $this->logger,
+                httpClient: $this->httpClient,
+                repository: $repository, // token
+                binaryNameBuilder: $binaryNameBuilder,
+                logger: $this->logger,
             );
 
             // Attempt to download the binary with platform awareness
             try {
                 $this->output->text("Attempting to download platform-specific binary...");
                 $downloadSuccess = $releaseManager->downloadBinary(
-                    $release->getVersion(),
-                    $this->binaryName,
-                    $type,
-                    $tempFile,
+                    version: $release->getVersion(),
+                    binaryName: $this->binaryName,
+                    type: $type,
+                    destinationPath: $tempFile,
                 );
 
                 if (!$downloadSuccess) {
-                    throw new \RuntimeException("Failed to download binary");
+                    throw new \RuntimeException(message: "Failed to download binary");
                 }
             } catch (\Throwable $e) {
                 $this->output->error("Failed to download platform-specific binary: {$e->getMessage()}");
@@ -147,10 +146,10 @@ final class SelfUpdateCommand extends BaseCommand
             $this->output->section('Installing the update...');
 
             // Use our BinaryUpdater to handle the update safely
-            $updaterFactory = new UpdaterFactory($this->files, $this->logger);
-            $binaryUpdater = new BinaryUpdater($this->files, $updaterFactory->createStrategy(), $this->logger);
+            $updaterFactory = new UpdaterFactory(files: $this->files, logger: $this->logger);
+            $binaryUpdater = new BinaryUpdater(files: $this->files, strategy: $updaterFactory->createStrategy(), logger: $this->logger);
 
-            if ($binaryUpdater->update($tempFile, $binaryPath)) {
+            if ($binaryUpdater->update(sourcePath: $tempFile, targetPath: $binaryPath)) {
                 $this->output->success("Update process started successfully for version {$release->getVersion()}");
 
                 // Add a note about how the update works

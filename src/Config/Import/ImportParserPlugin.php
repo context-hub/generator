@@ -42,7 +42,7 @@ final readonly class ImportParserPlugin implements ConfigParserPluginInterface
     public function updateConfig(array $config, string $rootPath): array
     {
         // If no imports, return the original config
-        if (!$this->supports($config)) {
+        if (!$this->supports(config: $config)) {
             return $config;
         }
 
@@ -50,7 +50,7 @@ final readonly class ImportParserPlugin implements ConfigParserPluginInterface
             return $config;
         }
 
-        if (!\is_array($config['import'])) {
+        if (!\is_array(value: $config['import'])) {
             $this->logger?->warning('Invalid import configuration', [
                 'config' => $config['import'],
             ]);
@@ -60,14 +60,14 @@ final readonly class ImportParserPlugin implements ConfigParserPluginInterface
 
         $this->logger?->debug('Processing imports', [
             'rootPath' => $rootPath,
-            'importCount' => \count($config['import']),
+            'importCount' => \count(value: $config['import']),
         ]);
 
         // Process imports and return the merged configuration
-        $processedConfig = $this->importResolver->resolveImports($config, $rootPath);
+        $processedConfig = $this->importResolver->resolveImports(config: $config, basePath: $rootPath);
 
         foreach ($processedConfig->imports as $import) {
-            $this->registry->register($import);
+            $this->registry->register(import: $import);
         }
 
         $this->logger?->debug('Imports processed successfully');

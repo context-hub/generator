@@ -63,7 +63,7 @@ final class AstDocTransformer implements SourceModifierInterface
 
     public function supports(string $contentType): bool
     {
-        return \str_ends_with($contentType, '.php');
+        return \str_ends_with(haystack: $contentType, needle: '.php');
     }
 
     public function modify(string $content, array $context = []): string
@@ -72,7 +72,7 @@ final class AstDocTransformer implements SourceModifierInterface
         $this->config = \array_merge($this->config, $context);
 
         try {
-            $file = PhpFile::fromCode($content);
+            $file = PhpFile::fromCode(code: $content);
             $output = '';
 
             foreach ($file->getNamespaces() as $namespace) {
@@ -85,13 +85,13 @@ final class AstDocTransformer implements SourceModifierInterface
 
                     // Process the appropriate type
                     if ($class instanceof InterfaceType) {
-                        $output .= $this->processInterface($class, $fullClassName);
+                        $output .= $this->processInterface(interface: $class, fullInterfaceName: $fullClassName);
                     } elseif ($class instanceof TraitType) {
-                        $output .= $this->processTrait($class, $fullClassName);
+                        $output .= $this->processTrait(trait: $class, fullTraitName: $fullClassName);
                     } elseif (PHP_VERSION_ID >= 80100 && $class instanceof EnumType) {
-                        $output .= $this->processEnum($class, $fullClassName);
+                        $output .= $this->processEnum(enum: $class, fullEnumName: $fullClassName);
                     } else {
-                        $output .= $this->processClass($class, $fullClassName);
+                        $output .= $this->processClass(class: $class, fullClassName: $fullClassName);
                     }
                 }
             }
@@ -108,11 +108,11 @@ final class AstDocTransformer implements SourceModifierInterface
     private function processClass(ClassType $class, string $fullClassName): string
     {
         $headingLevel = $this->config['class_heading_level'];
-        $output = \str_repeat('#', $headingLevel) . " Class: $fullClassName\n\n";
+        $output = \str_repeat(string: '#', times: $headingLevel) . " Class: $fullClassName\n\n";
 
         // Add class docblock if available and enabled
         if ($this->config['keep_doc_comments'] && $class->getComment()) {
-            $docComment = $this->formatDocComment($class->getComment());
+            $docComment = $this->formatDocComment(docComment: $class->getComment());
             $output .= "$docComment\n\n";
         }
 
@@ -124,19 +124,19 @@ final class AstDocTransformer implements SourceModifierInterface
         }
 
         if ($class->getImplements()) {
-            $implements = \array_map(static fn($i) => "`$i`", $class->getImplements());
-            $metadata[] = "**Implements:** " . \implode(', ', $implements);
+            $implements = \array_map(callback: static fn($i) => "`$i`", array: $class->getImplements());
+            $metadata[] = "**Implements:** " . \implode(separator: ', ', array: $implements);
         }
 
         if (!empty($metadata)) {
-            $output .= \implode("\n", $metadata) . "\n\n";
+            $output .= \implode(separator: "\n", array: $metadata) . "\n\n";
         }
 
         // Process constants if enabled
         if ($this->config['include_constants'] && !empty($class->getConstants())) {
             $output .= "## Constants\n\n";
             foreach ($class->getConstants() as $constant) {
-                $output .= $this->processConstant($constant);
+                $output .= $this->processConstant(constant: $constant);
             }
         }
 
@@ -145,7 +145,7 @@ final class AstDocTransformer implements SourceModifierInterface
         if (!empty($properties)) {
             $output .= "## Properties\n\n";
             foreach ($properties as $property) {
-                $output .= $this->processProperty($property);
+                $output .= $this->processProperty(property: $property);
             }
         }
 
@@ -154,7 +154,7 @@ final class AstDocTransformer implements SourceModifierInterface
         if (!empty($methods)) {
             $output .= "## Methods\n\n";
             foreach ($methods as $method) {
-                $output .= $this->processMethod($method);
+                $output .= $this->processMethod(method: $method);
             }
         }
 
@@ -167,25 +167,25 @@ final class AstDocTransformer implements SourceModifierInterface
     private function processInterface(InterfaceType $interface, string $fullInterfaceName): string
     {
         $headingLevel = $this->config['class_heading_level'];
-        $output = \str_repeat('#', $headingLevel) . " Interface: $fullInterfaceName\n\n";
+        $output = \str_repeat(string: '#', times: $headingLevel) . " Interface: $fullInterfaceName\n\n";
 
         // Add interface docblock if available and enabled
         if ($this->config['keep_doc_comments'] && $interface->getComment()) {
-            $docComment = $this->formatDocComment($interface->getComment());
+            $docComment = $this->formatDocComment(docComment: $interface->getComment());
             $output .= "$docComment\n\n";
         }
 
         // Process interface metadata
         if ($interface->getExtends()) {
-            $extends = \array_map(static fn($e) => "`$e`", $interface->getExtends());
-            $output .= "**Extends:** " . \implode(', ', $extends) . "\n\n";
+            $extends = \array_map(callback: static fn($e) => "`$e`", array: $interface->getExtends());
+            $output .= "**Extends:** " . \implode(separator: ', ', array: $extends) . "\n\n";
         }
 
         // Process constants if enabled
         if ($this->config['include_constants'] && !empty($interface->getConstants())) {
             $output .= "## Constants\n\n";
             foreach ($interface->getConstants() as $constant) {
-                $output .= $this->processConstant($constant);
+                $output .= $this->processConstant(constant: $constant);
             }
         }
 
@@ -194,7 +194,7 @@ final class AstDocTransformer implements SourceModifierInterface
         if (!empty($methods)) {
             $output .= "## Methods\n\n";
             foreach ($methods as $method) {
-                $output .= $this->processMethod($method);
+                $output .= $this->processMethod(method: $method);
             }
         }
 
@@ -207,11 +207,11 @@ final class AstDocTransformer implements SourceModifierInterface
     private function processTrait(TraitType $trait, string $fullTraitName): string
     {
         $headingLevel = $this->config['class_heading_level'];
-        $output = \str_repeat('#', $headingLevel) . " Trait: $fullTraitName\n\n";
+        $output = \str_repeat(string: '#', times: $headingLevel) . " Trait: $fullTraitName\n\n";
 
         // Add trait docblock if available and enabled
         if ($this->config['keep_doc_comments'] && $trait->getComment()) {
-            $docComment = $this->formatDocComment($trait->getComment());
+            $docComment = $this->formatDocComment(docComment: $trait->getComment());
             $output .= "$docComment\n\n";
         }
 
@@ -220,7 +220,7 @@ final class AstDocTransformer implements SourceModifierInterface
         if (!empty($properties)) {
             $output .= "## Properties\n\n";
             foreach ($properties as $property) {
-                $output .= $this->processProperty($property);
+                $output .= $this->processProperty(property: $property);
             }
         }
 
@@ -229,7 +229,7 @@ final class AstDocTransformer implements SourceModifierInterface
         if (!empty($methods)) {
             $output .= "## Methods\n\n";
             foreach ($methods as $method) {
-                $output .= $this->processMethod($method);
+                $output .= $this->processMethod(method: $method);
             }
         }
 
@@ -242,11 +242,11 @@ final class AstDocTransformer implements SourceModifierInterface
     private function processEnum(EnumType $enum, string $fullEnumName): string
     {
         $headingLevel = $this->config['class_heading_level'];
-        $output = \str_repeat('#', $headingLevel) . " Enum: $fullEnumName\n\n";
+        $output = \str_repeat(string: '#', times: $headingLevel) . " Enum: $fullEnumName\n\n";
 
         // Add enum docblock if available and enabled
         if ($this->config['keep_doc_comments'] && $enum->getComment()) {
-            $docComment = $this->formatDocComment($enum->getComment());
+            $docComment = $this->formatDocComment(docComment: $enum->getComment());
             $output .= "$docComment\n\n";
         }
 
@@ -263,7 +263,7 @@ final class AstDocTransformer implements SourceModifierInterface
                 }
 
                 if ($this->config['keep_doc_comments'] && $case->getComment()) {
-                    $caseComment = \trim($this->formatDocComment($case->getComment()));
+                    $caseComment = \trim(string: $this->formatDocComment(docComment: $case->getComment()));
                     $output .= " - $caseComment";
                 }
 
@@ -277,7 +277,7 @@ final class AstDocTransformer implements SourceModifierInterface
         if (!empty($methods)) {
             $output .= "## Methods\n\n";
             foreach ($methods as $method) {
-                $output .= $this->processMethod($method);
+                $output .= $this->processMethod(method: $method);
             }
         }
 
@@ -307,7 +307,7 @@ final class AstDocTransformer implements SourceModifierInterface
 
         // Add readonly flag if available (PHP 8.1+)
         $readonlyFlag = '';
-        if (\method_exists($property, 'isReadonly') && $property->isReadonly()) {
+        if (\method_exists(object_or_class: $property, method: 'isReadonly') && $property->isReadonly()) {
             $readonlyFlag = ' readonly';
         }
 
@@ -315,7 +315,7 @@ final class AstDocTransformer implements SourceModifierInterface
 
         // Add property docblock if available and enabled
         if ($this->config['keep_doc_comments'] && $property->getComment()) {
-            $docComment = $this->formatDocComment($property->getComment());
+            $docComment = $this->formatDocComment(docComment: $property->getComment());
             $output .= "$docComment\n\n";
         }
 
@@ -327,7 +327,7 @@ final class AstDocTransformer implements SourceModifierInterface
 
         // Add default value if available and enabled
         if ($this->config['include_property_defaults'] && $property->getValue() !== null) {
-            $defaultValue = \var_export($property->getValue(), true);
+            $defaultValue = \var_export(value: $property->getValue(), return: true);
             $output .= "**Default:** `$defaultValue`\n\n";
         }
 
@@ -361,12 +361,12 @@ final class AstDocTransformer implements SourceModifierInterface
 
         // Add method docblock if available and enabled
         if ($this->config['keep_doc_comments'] && $method->getComment()) {
-            $docComment = $this->formatDocComment($method->getComment());
+            $docComment = $this->formatDocComment(docComment: $method->getComment());
             $output .= "$docComment\n\n";
 
             // Extract route information if enabled
             if ($this->config['extract_routes']) {
-                $routeInfo = $this->extractRouteInfo($method->getComment());
+                $routeInfo = $this->extractRouteInfo(docComment: $method->getComment());
                 if ($routeInfo) {
                     $output .= "**Route:** $routeInfo\n\n";
                 }
@@ -385,7 +385,7 @@ final class AstDocTransformer implements SourceModifierInterface
 
                 // Add default value if available
                 if ($param->hasDefaultValue()) {
-                    $defaultValue = \var_export($param->getDefaultValue(), true);
+                    $defaultValue = \var_export(value: $param->getDefaultValue(), return: true);
                     $output .= " = $defaultValue";
                 }
 
@@ -406,7 +406,7 @@ final class AstDocTransformer implements SourceModifierInterface
             $output .= "```{$this->config['code_block_format']}\n$methodCode\n```\n\n";
         } else {
             // Just show the method signature
-            $signature = $this->getMethodSignature($method);
+            $signature = $this->getMethodSignature(method: $method);
             $output .= "```{$this->config['code_block_format']}\n$signature\n```\n\n";
         }
 
@@ -424,13 +424,13 @@ final class AstDocTransformer implements SourceModifierInterface
         $output = "### $constName\n\n";
 
         // Add constant docblock if available and enabled
-        if ($this->config['keep_doc_comments'] && \method_exists($constant, 'getComment') && $constant->getComment()) {
-            $docComment = $this->formatDocComment($constant->getComment());
+        if ($this->config['keep_doc_comments'] && \method_exists(object_or_class: $constant, method: 'getComment') && $constant->getComment()) {
+            $docComment = $this->formatDocComment(docComment: $constant->getComment());
             $output .= "$docComment\n\n";
         }
 
         // Get constant value
-        $constValue = \var_export($constant->getValue(), true);
+        $constValue = \var_export(value: $constant->getValue(), return: true);
         $output .= "**Value:** `$constValue`\n\n";
 
         return $output;
@@ -443,18 +443,18 @@ final class AstDocTransformer implements SourceModifierInterface
     {
         // Look for Symfony style route annotations
         if (\preg_match(
-            '/@Route\s*\(\s*["\']([^"\']+)["\'](?:.*?methods\s*=\s*\{([^}]+)\})?/s',
-            $docComment,
-            $matches,
+            pattern: '/@Route\s*\(\s*["\']([^"\']+)["\'](?:.*?methods\s*=\s*\{([^}]+)\})?/s',
+            subject: $docComment,
+            matches: $matches,
         )) {
             $path = $matches[1];
-            $methods = isset($matches[2]) ? \trim(\str_replace(['"', "'"], '', $matches[2])) : 'GET';
+            $methods = isset($matches[2]) ? \trim(string: \str_replace(search: ['"', "'"], replace: '', subject: $matches[2])) : 'GET';
             return "`$path` ($methods)";
         }
 
         // Look for Laravel style route annotations
-        if (\preg_match('/@(Get|Post|Put|Delete|Patch)\s*\(\s*["\']([^"\']+)["\']/', $docComment, $matches)) {
-            $method = \strtoupper($matches[1]);
+        if (\preg_match(pattern: '/@(Get|Post|Put|Delete|Patch)\s*\(\s*["\']([^"\']+)["\']/', subject: $docComment, matches: $matches)) {
+            $method = \strtoupper(string: $matches[1]);
             $path = $matches[2];
             return "`$path` ($method)";
         }
@@ -482,14 +482,14 @@ final class AstDocTransformer implements SourceModifierInterface
             $paramStr = $paramType . $paramName;
 
             if ($param->hasDefaultValue()) {
-                $defaultValue = \var_export($param->getDefaultValue(), true);
+                $defaultValue = \var_export(value: $param->getDefaultValue(), return: true);
                 $paramStr .= ' = ' . $defaultValue;
             }
 
             $params[] = $paramStr;
         }
 
-        $paramsStr = \implode(', ', $params);
+        $paramsStr = \implode(separator: ', ', array: $params);
         $returnType = $method->getReturnType() ? ': ' . (string) $method->getReturnType() : '';
 
         return "{$visibility}{$staticFlag}{$abstractFlag}{$finalFlag}function {$methodName}({$paramsStr}){$returnType}";
@@ -501,18 +501,18 @@ final class AstDocTransformer implements SourceModifierInterface
     private function formatDocComment(string $docComment): string
     {
         // Remove comment start and end markers
-        $docComment = \preg_replace(['#^\s*/\*+#', '#\*+/\s*$#'], '', $docComment);
+        $docComment = \preg_replace(pattern: ['#^\s*/\*+#', '#\*+/\s*$#'], replacement: '', subject: $docComment);
 
         // Split into lines
-        $lines = \explode("\n", (string) $docComment);
+        $lines = \explode(separator: "\n", string: (string) $docComment);
         $result = [];
 
         foreach ($lines as $line) {
             // Remove leading asterisks and whitespace
-            $line = \preg_replace('#^\s*\*\s?#', '', $line);
+            $line = \preg_replace(pattern: '#^\s*\*\s?#', replacement: '', subject: $line);
 
             // Skip empty lines at the beginning
-            if (empty($result) && \trim((string) $line) === '') {
+            if (empty($result) && \trim(string: (string) $line) === '') {
                 continue;
             }
 
@@ -520,6 +520,6 @@ final class AstDocTransformer implements SourceModifierInterface
         }
 
         // Join lines back together
-        return \implode("\n", $result);
+        return \implode(separator: "\n", array: $result);
     }
 }

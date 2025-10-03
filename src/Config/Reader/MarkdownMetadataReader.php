@@ -32,8 +32,8 @@ final readonly class MarkdownMetadataReader implements ReaderInterface
             return false;
         }
 
-        $extension = \pathinfo($path, PATHINFO_EXTENSION);
-        $isSupported = \in_array($extension, $this->getSupportedExtensions(), true);
+        $extension = \pathinfo(path: $path, flags: PATHINFO_EXTENSION);
+        $isSupported = \in_array(needle: $extension, haystack: $this->getSupportedExtensions(), strict: true);
 
         $this->logger?->debug('Checking if markdown file is supported', [
             'path' => $path,
@@ -57,22 +57,22 @@ final readonly class MarkdownMetadataReader implements ReaderInterface
         } catch (FilesException) {
             $errorMessage = \sprintf('Unable to read markdown file: %s', $path);
             $this->logger?->error($errorMessage);
-            throw new ReaderException($errorMessage);
+            throw new ReaderException(message: $errorMessage);
         }
 
         $this->logger?->debug('Parsing markdown content', [
             'path' => $path,
-            'contentLength' => \strlen($content),
+            'contentLength' => \strlen(string: $content),
             'reader' => self::class,
         ]);
 
         try {
-            $result = $this->parseContent($content);
+            $result = $this->parseContent(content: $content);
             $this->logger?->debug('Markdown content successfully parsed', [
                 'path' => $path,
                 'hasMetadata' => !empty($result['metadata']),
-                'metadataKeys' => \array_keys($result['metadata'] ?? []),
-                'contentLength' => \strlen($result['content'] ?? ''),
+                'metadataKeys' => \array_keys(array: $result['metadata'] ?? []),
+                'contentLength' => \strlen(string: $result['content'] ?? ''),
                 'reader' => self::class,
             ]);
 
@@ -102,14 +102,14 @@ final readonly class MarkdownMetadataReader implements ReaderInterface
     private function parseContent(string $content): array
     {
         // Check if content starts with frontmatter delimiter
-        if (\str_starts_with(\trim($content), '---')) {
-            return $this->parseWithFrontmatter($content);
+        if (\str_starts_with(haystack: \trim(string: $content), needle: '---')) {
+            return $this->parseWithFrontmatter(content: $content);
         }
 
         // No frontmatter - check for title from first header
         $this->logger?->debug('No frontmatter found, checking for header title');
 
-        return $this->parseWithoutFrontmatter($content);
+        return $this->parseWithoutFrontmatter(content: $content);
     }
 
     /**
@@ -118,16 +118,16 @@ final readonly class MarkdownMetadataReader implements ReaderInterface
     private function parseWithFrontmatter(string $content): array
     {
         // Split content by frontmatter delimiters
-        $parts = \preg_split('/^---\s*$/m', $content, 3);
+        $parts = \preg_split(pattern: '/^---\s*$/m', subject: $content, limit: 3);
 
-        if (\count($parts) < 3) {
+        if (\count(value: $parts) < 3) {
             $this->logger?->debug('Invalid frontmatter format, falling back to header extraction');
-            return $this->parseWithoutFrontmatter($content);
+            return $this->parseWithoutFrontmatter(content: $content);
         }
 
         // Extract frontmatter (second part, first part is empty)
-        $frontmatter = \trim($parts[1]);
-        $markdownContent = \trim($parts[2]);
+        $frontmatter = \trim(string: $parts[1]);
+        $markdownContent = \trim(string: $parts[2]);
 
         $result = [
             'metadata' => [],
@@ -137,9 +137,9 @@ final readonly class MarkdownMetadataReader implements ReaderInterface
         // Parse YAML frontmatter
         try {
             if (!empty($frontmatter)) {
-                $metadata = Yaml::parse($frontmatter) ?: [];
-                if (!\is_array($metadata)) {
-                    throw new \InvalidArgumentException('Frontmatter must be a YAML object');
+                $metadata = Yaml::parse(input: $frontmatter) ?: [];
+                if (!\is_array(value: $metadata)) {
+                    throw new \InvalidArgumentException(message: 'Frontmatter must be a YAML object');
                 }
                 $result['metadata'] = $metadata;
             }
@@ -152,7 +152,7 @@ final readonly class MarkdownMetadataReader implements ReaderInterface
 
         // If no title in metadata, try to extract from first header in content
         if (empty($result['metadata']['title'])) {
-            $headerTitle = $this->extractTitleFromContent($markdownContent);
+            $headerTitle = $this->extractTitleFromContent(content: $markdownContent);
             if ($headerTitle !== null) {
                 $result['metadata']['title'] = $headerTitle;
                 $this->logger?->debug('Extracted title from content header', [
@@ -162,8 +162,8 @@ final readonly class MarkdownMetadataReader implements ReaderInterface
         }
 
         $this->logger?->debug('Parsed markdown with frontmatter', [
-            'metadataKeys' => \array_keys($result['metadata']),
-            'contentLength' => \strlen($markdownContent),
+            'metadataKeys' => \array_keys(array: $result['metadata']),
+            'contentLength' => \strlen(string: $markdownContent),
             'hasTitle' => !empty($result['metadata']['title']),
         ]);
 
@@ -181,7 +181,7 @@ final readonly class MarkdownMetadataReader implements ReaderInterface
         ];
 
         // Try to extract title from first header
-        $title = $this->extractTitleFromContent($content);
+        $title = $this->extractTitleFromContent(content: $content);
         if ($title !== null) {
             $result['metadata']['title'] = $title;
             $this->logger?->debug('Extracted title from header', [
@@ -190,7 +190,7 @@ final readonly class MarkdownMetadataReader implements ReaderInterface
         }
 
         $this->logger?->debug('Parsed markdown without frontmatter', [
-            'contentLength' => \strlen($content),
+            'contentLength' => \strlen(string: $content),
             'hasTitle' => $title !== null,
         ]);
 
@@ -207,10 +207,10 @@ final readonly class MarkdownMetadataReader implements ReaderInterface
         }
 
         // Split content into lines
-        $lines = \explode("\n", $content);
+        $lines = \explode(separator: "\n", string: $content);
 
         foreach ($lines as $line) {
-            $line = \trim($line);
+            $line = \trim(string: $line);
 
             // Skip empty lines
             if (empty($line)) {
@@ -218,10 +218,10 @@ final readonly class MarkdownMetadataReader implements ReaderInterface
             }
 
             // Check if line starts with # (header)
-            if (\str_starts_with($line, '#')) {
+            if (\str_starts_with(haystack: $line, needle: '#')) {
                 // Extract the title part after the # symbols
-                $title = \preg_replace('/^#+\s*/', '', $line);
-                $title = \trim((string) $title);
+                $title = \preg_replace(pattern: '/^#+\s*/', replacement: '', subject: $line);
+                $title = \trim(string: (string) $title);
 
                 if (!empty($title)) {
                     return $title;

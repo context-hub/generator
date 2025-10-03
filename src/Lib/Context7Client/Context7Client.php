@@ -23,11 +23,11 @@ final readonly class Context7Client implements Context7ClientInterface
 
     public function searchLibraries(string $query, int $maxResults = 2): LibrarySearchResult
     {
-        if (empty(\trim($query))) {
-            throw new \InvalidArgumentException('Search query cannot be empty');
+        if (empty(\trim(string: $query))) {
+            throw new \InvalidArgumentException(message: 'Search query cannot be empty');
         }
 
-        $url = self::API_BASE_URL . '/search?' . \http_build_query(['query' => $query]);
+        $url = self::API_BASE_URL . '/search?' . \http_build_query(data: ['query' => $query]);
 
         $this->logger->debug('Sending request to Context7 search API', [
             'url' => $url,
@@ -42,17 +42,17 @@ final readonly class Context7Client implements Context7ClientInterface
             ]);
 
             if (!$response->isSuccess()) {
-                $this->handleErrorResponse($response->getStatusCode(), $query);
+                $this->handleErrorResponse(statusCode: $response->getStatusCode(), query: $query);
             }
 
-            $data = $response->getJson(true);
+            $data = $response->getJson();
 
             $this->logger->info('Documentation libraries found', [
-                'count' => \count($data['results'] ?? []),
+                'count' => \count(value: $data['results'] ?? []),
                 'query' => $query,
             ]);
 
-            return LibrarySearchResult::fromArray($data, $maxResults);
+            return LibrarySearchResult::fromArray(data: $data, maxResults: $maxResults);
         } catch (Context7ClientException $e) {
             // Re-throw our own exceptions
             throw $e;
@@ -63,20 +63,20 @@ final readonly class Context7Client implements Context7ClientInterface
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            throw Context7ClientException::searchFailed($query, 0);
+            throw Context7ClientException::searchFailed(query: $query, statusCode: 0);
         }
     }
 
     public function fetchLibraryDocumentation(string $libraryId, ?int $tokens = null, ?string $topic = null): string
     {
-        if (empty(\trim($libraryId))) {
-            throw new \InvalidArgumentException('Library ID cannot be empty');
+        if (empty(\trim(string: $libraryId))) {
+            throw new \InvalidArgumentException(message: 'Library ID cannot be empty');
         }
 
         // Remove leading slash from libraryId if present (as per JS reference)
-        $libraryId = \ltrim($libraryId, '/');
+        $libraryId = \ltrim(string: $libraryId, characters: '/');
 
-        $url = $this->buildDocumentationUrl($libraryId, $tokens, $topic);
+        $url = $this->buildDocumentationUrl(libraryId: $libraryId, tokens: $tokens, topic: $topic);
 
         $this->logger->debug('Fetching library documentation from Context7 API', [
             'libraryId' => $libraryId,
@@ -93,21 +93,21 @@ final readonly class Context7Client implements Context7ClientInterface
             ]);
 
             if (!$response->isSuccess()) {
-                $this->handleDocumentationErrorResponse($response->getStatusCode(), $libraryId);
+                $this->handleDocumentationErrorResponse(statusCode: $response->getStatusCode(), libraryId: $libraryId);
             }
 
             $documentation = $response->getBody();
 
-            if ($this->isEmptyDocumentation($documentation)) {
+            if ($this->isEmptyDocumentation(documentation: $documentation)) {
                 $this->logger->warning('No documentation found for library', [
                     'libraryId' => $libraryId,
                 ]);
-                throw Context7ClientException::noDocumentationFound($libraryId);
+                throw Context7ClientException::noDocumentationFound(libraryId: $libraryId);
             }
 
             $this->logger->info('Library documentation fetched successfully', [
                 'libraryId' => $libraryId,
-                'documentationLength' => \strlen($documentation),
+                'documentationLength' => \strlen(string: $documentation),
             ]);
 
             return $documentation;
@@ -121,7 +121,7 @@ final readonly class Context7Client implements Context7ClientInterface
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            throw Context7ClientException::documentationFetchFailed($libraryId, 0);
+            throw Context7ClientException::documentationFetchFailed(libraryId: $libraryId, statusCode: 0);
         }
     }
 
@@ -138,7 +138,7 @@ final readonly class Context7Client implements Context7ClientInterface
             $params['topic'] = $topic;
         }
 
-        return $url . '?' . \http_build_query($params);
+        return $url . '?' . \http_build_query(data: $params);
     }
 
     private function handleErrorResponse(int $statusCode, string $query): void
@@ -151,7 +151,7 @@ final readonly class Context7Client implements Context7ClientInterface
         match ($statusCode) {
             429 => throw Context7ClientException::rateLimited(),
             401 => throw Context7ClientException::unauthorized(),
-            default => throw Context7ClientException::searchFailed($query, $statusCode),
+            default => throw Context7ClientException::searchFailed(query: $query, statusCode: $statusCode),
         };
     }
 
@@ -165,8 +165,8 @@ final readonly class Context7Client implements Context7ClientInterface
         match ($statusCode) {
             429 => throw Context7ClientException::rateLimited(),
             401 => throw Context7ClientException::unauthorized(),
-            404 => throw Context7ClientException::libraryNotFound($libraryId),
-            default => throw Context7ClientException::documentationFetchFailed($libraryId, $statusCode),
+            404 => throw Context7ClientException::libraryNotFound(libraryId: $libraryId),
+            default => throw Context7ClientException::documentationFetchFailed(libraryId: $libraryId, statusCode: $statusCode),
         };
     }
 

@@ -20,7 +20,7 @@ final class LLMFriendlyRenderStrategyTest extends TestCase
     #[Test]
     public function it_should_handle_empty_diffs(): void
     {
-        $result = $this->strategy->render([], new RenderConfig(strategy: RenderStrategyEnum::LLM));
+        $result = $this->strategy->render(diffs: [], config: new RenderConfig(strategy: RenderStrategyEnum::LLM));
 
         $this->assertInstanceOf(ContentBuilder::class, $result);
         $this->assertStringContainsString(
@@ -40,7 +40,7 @@ final class LLMFriendlyRenderStrategyTest extends TestCase
             ],
         ];
 
-        $result = $this->strategy->render($diffs, new RenderConfig(strategy: RenderStrategyEnum::LLM));
+        $result = $this->strategy->render(diffs: $diffs, config: new RenderConfig(strategy: RenderStrategyEnum::LLM));
         $content = $this->getContentFromBuilder($result);
 
         $this->assertInstanceOf(ContentBuilder::class, $result);
@@ -74,7 +74,7 @@ final class LLMFriendlyRenderStrategyTest extends TestCase
             ],
         ];
 
-        $result = $this->strategy->render($diffs, new RenderConfig(strategy: RenderStrategyEnum::LLM));
+        $result = $this->strategy->render(diffs: $diffs, config: new RenderConfig(strategy: RenderStrategyEnum::LLM));
         $content = $this->getContentFromBuilder($result);
 
         $this->assertInstanceOf(ContentBuilder::class, $result);
@@ -95,7 +95,7 @@ final class LLMFriendlyRenderStrategyTest extends TestCase
             ],
         ];
 
-        $result = $this->strategy->render($diffs, new RenderConfig(strategy: RenderStrategyEnum::LLM));
+        $result = $this->strategy->render(diffs: $diffs, config: new RenderConfig(strategy: RenderStrategyEnum::LLM));
         $content = $this->getContentFromBuilder($result);
 
         $this->assertInstanceOf(ContentBuilder::class, $result);

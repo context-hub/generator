@@ -139,8 +139,8 @@ final class ActionsBootloader extends Bootloader
             ) {
                 $loader->load();
 
-                foreach ($this->actions($config) as $action) {
-                    $factory->registerAction($action);
+                foreach ($this->actions(config: $config) as $action) {
+                    $factory->registerAction(class: $action);
                 }
 
                 return $factory;
@@ -253,6 +253,6 @@ final class ActionsBootloader extends Bootloader
             ];
         }
 
-        return \array_unique($actions);
+        return \array_unique(array: $actions);
     }
 }

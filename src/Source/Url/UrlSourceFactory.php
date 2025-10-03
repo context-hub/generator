@@ -26,13 +26,13 @@ final readonly class UrlSourceFactory extends AbstractSourceFactory
         ]);
 
 
-        if (!isset($config['urls']) || !\is_array($config['urls'])) {
-            throw new \RuntimeException('URL source must have a "urls" array property');
+        if (!isset($config['urls']) || !\is_array(value: $config['urls'])) {
+            throw new \RuntimeException(message: 'URL source must have a "urls" array property');
         }
 
         // Add headers validation and parsing
         $headers = [];
-        if (isset($config['headers']) && \is_array($config['headers'])) {
+        if (isset($config['headers']) && \is_array(value: $config['headers'])) {
             $headers = $config['headers'];
         }
 

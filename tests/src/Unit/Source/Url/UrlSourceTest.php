@@ -50,7 +50,7 @@ class UrlSourceTest extends TestCase
     #[Test]
     public function it_should_create_url_source_with_required_parameters(): void
     {
-        $source = new UrlSource(self::SAMPLE_URLS);
+        $source = new UrlSource(urls: self::SAMPLE_URLS);
 
         $this->assertSame(self::SAMPLE_URLS, $source->urls);
         $this->assertEmpty($source->getDescription());
@@ -88,7 +88,7 @@ class UrlSourceTest extends TestCase
             'tags' => self::SAMPLE_TAGS,
         ];
 
-        $source = $this->factory->create($data);
+        $source = $this->factory->create(config: $data);
 
         $this->assertSame(self::SAMPLE_URLS, $source->urls);
         $this->assertSame(self::SAMPLE_DESCRIPTION, $source->getDescription());
@@ -104,7 +104,7 @@ class UrlSourceTest extends TestCase
             'urls' => self::SAMPLE_URLS,
         ];
 
-        $source = $this->factory->create($data);
+        $source = $this->factory->create(config: $data);
 
         $this->assertSame(self::SAMPLE_URLS, $source->urls);
         $this->assertEmpty($source->getDescription());
@@ -118,7 +118,7 @@ class UrlSourceTest extends TestCase
     {
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('URL source must have a "urls" array property');
-        $this->factory->create([
+        $this->factory->create(config: [
             'description' => self::SAMPLE_DESCRIPTION,
         ]);
     }
@@ -129,7 +129,7 @@ class UrlSourceTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('URL source must have a "urls" array property');
 
-        $this->factory->create([
+        $this->factory->create(config: [
             'urls' => 'not an array',
         ]);
     }
@@ -191,6 +191,6 @@ class UrlSourceTest extends TestCase
     {
         parent::setUp();
 
-        $this->factory = new UrlSourceFactory($this->createDirectories());
+        $this->factory = new UrlSourceFactory(dirs: $this->createDirectories());
     }
 }

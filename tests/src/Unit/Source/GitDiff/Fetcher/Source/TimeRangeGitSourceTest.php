@@ -17,20 +17,20 @@ final class TimeRangeGitSourceTest extends GitSourceTestCase
     #[Test]
     public function it_should_support_time_based_ranges(): void
     {
-        $this->assertTrue($this->timeRangeGitSource->supports('HEAD@{1.week.ago}..HEAD'));
-        $this->assertTrue($this->timeRangeGitSource->supports('HEAD@{1.days.ago}..HEAD@{0.days.ago}'));
-        $this->assertTrue($this->timeRangeGitSource->supports('HEAD@{0:00:00}..HEAD'));
-        $this->assertTrue($this->timeRangeGitSource->supports('--since=2023-01-01'));
+        $this->assertTrue($this->timeRangeGitSource->supports(commitReference: 'HEAD@{1.week.ago}..HEAD'));
+        $this->assertTrue($this->timeRangeGitSource->supports(commitReference: 'HEAD@{1.days.ago}..HEAD@{0.days.ago}'));
+        $this->assertTrue($this->timeRangeGitSource->supports(commitReference: 'HEAD@{0:00:00}..HEAD'));
+        $this->assertTrue($this->timeRangeGitSource->supports(commitReference: '--since=2023-01-01'));
     }
 
     #[Test]
     public function it_should_not_support_other_formats(): void
     {
-        $this->assertFalse($this->timeRangeGitSource->supports(''));
-        $this->assertFalse($this->timeRangeGitSource->supports('--cached'));
-        $this->assertFalse($this->timeRangeGitSource->supports('HEAD~1..HEAD'));
-        $this->assertFalse($this->timeRangeGitSource->supports('stash@{0}'));
-        $this->assertFalse($this->timeRangeGitSource->supports('abcdef1 -- path/to/file'));
+        $this->assertFalse($this->timeRangeGitSource->supports(commitReference: ''));
+        $this->assertFalse($this->timeRangeGitSource->supports(commitReference: '--cached'));
+        $this->assertFalse($this->timeRangeGitSource->supports(commitReference: 'HEAD~1..HEAD'));
+        $this->assertFalse($this->timeRangeGitSource->supports(commitReference: 'stash@{0}'));
+        $this->assertFalse($this->timeRangeGitSource->supports(commitReference: 'abcdef1 -- path/to/file'));
     }
 
     #[Test]
@@ -43,8 +43,8 @@ final class TimeRangeGitSourceTest extends GitSourceTestCase
 
         // Get files changed using --since format
         $changedFiles = $this->timeRangeGitSource->getChangedFiles(
-            $this->repoDir,
-            '--since=1.minute.ago',
+            repository: $this->repoDir,
+            commitReference: '--since=1.minute.ago',
         );
 
         // Verify both files are included in the time range (empty lines filtered out)
@@ -63,8 +63,8 @@ final class TimeRangeGitSourceTest extends GitSourceTestCase
 
         // Get files changed in the time range
         $changedFiles = $this->timeRangeGitSource->getChangedFiles(
-            $this->repoDir,
-            'HEAD@{1.week.ago}..HEAD',
+            repository: $this->repoDir,
+            commitReference: 'HEAD@{1.week.ago}..HEAD',
         );
 
         // Verify both files are included
@@ -83,9 +83,9 @@ final class TimeRangeGitSourceTest extends GitSourceTestCase
 
         // Get the diff for this file in the time range
         $diff = $this->timeRangeGitSource->getFileDiff(
-            $this->repoDir,
-            '--since=1.minute.ago',
-            'time-diff.txt',
+            repository: $this->repoDir,
+            commitReference: '--since=1.minute.ago',
+            file: 'time-diff.txt',
         );
 
         // Verify that the diff contains the expected changes
@@ -103,9 +103,9 @@ final class TimeRangeGitSourceTest extends GitSourceTestCase
 
         // Get the diff for this file in the HEAD time range
         $diff = $this->timeRangeGitSource->getFileDiff(
-            $this->repoDir,
-            'HEAD@{1.week.ago}..HEAD',
-            'time-diff.txt',
+            repository: $this->repoDir,
+            commitReference: 'HEAD@{1.week.ago}..HEAD',
+            file: 'time-diff.txt',
         );
 
         // Verify that the diff contains the expected changes
@@ -119,29 +119,29 @@ final class TimeRangeGitSourceTest extends GitSourceTestCase
         // Test common formats
         $this->assertSame(
             'Changes from today',
-            $this->timeRangeGitSource->formatReferenceForDisplay('HEAD@{0:00:00}..HEAD'),
+            $this->timeRangeGitSource->formatReferenceForDisplay(commitReference: 'HEAD@{0:00:00}..HEAD'),
         );
 
         $this->assertSame(
             'Changes from last week',
-            $this->timeRangeGitSource->formatReferenceForDisplay('HEAD@{1.week.ago}..HEAD'),
+            $this->timeRangeGitSource->formatReferenceForDisplay(commitReference: 'HEAD@{1.week.ago}..HEAD'),
         );
 
         $this->assertSame(
             'Changes from last month',
-            $this->timeRangeGitSource->formatReferenceForDisplay('HEAD@{1.month.ago}..HEAD'),
+            $this->timeRangeGitSource->formatReferenceForDisplay(commitReference: 'HEAD@{1.month.ago}..HEAD'),
         );
 
         // Test --since format
         $this->assertSame(
             'Changes since 2023-01-01',
-            $this->timeRangeGitSource->formatReferenceForDisplay('--since=2023-01-01'),
+            $this->timeRangeGitSource->formatReferenceForDisplay(commitReference: '--since=2023-01-01'),
         );
 
         // Test custom format
         $this->assertSame(
             'Changes in time range: custom@{time}..range',
-            $this->timeRangeGitSource->formatReferenceForDisplay('custom@{time}..range'),
+            $this->timeRangeGitSource->formatReferenceForDisplay(commitReference: 'custom@{time}..range'),
         );
     }
 
@@ -154,8 +154,8 @@ final class TimeRangeGitSourceTest extends GitSourceTestCase
 
         // Try to get changes in a time range with no commits
         $changedFiles = $this->timeRangeGitSource->getChangedFiles(
-            $this->repoDir,
-            '--since=2099-01-01', // Future date with no changes
+            repository: $this->repoDir,
+            commitReference: '--since=2099-01-01', // Future date with no changes
         );
 
         // Verify that an empty array is returned
@@ -166,6 +166,6 @@ final class TimeRangeGitSourceTest extends GitSourceTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->timeRangeGitSource = new TimeRangeGitSource($this->commandExecutorMock, new Files(), $this->logger);
+        $this->timeRangeGitSource = new TimeRangeGitSource(commandsExecutor: $this->commandExecutorMock, files: new Files(), logger: $this->logger);
     }
 }

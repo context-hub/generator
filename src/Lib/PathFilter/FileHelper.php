@@ -10,12 +10,12 @@ final readonly class FileHelper
     {
         $availableModifiers = 'imsxuADUn';
 
-        if (\preg_match('/^(.{3,}?)[' . $availableModifiers . ']*$/', $str, $m)) {
-            $start = \substr($m[1], 0, 1);
-            $end = \substr($m[1], -1);
+        if (\preg_match(pattern: '/^(.{3,}?)[' . $availableModifiers . ']*$/', subject: $str, matches: $m)) {
+            $start = \substr(string: $m[1], offset: 0, length: 1);
+            $end = \substr(string: $m[1], offset: -1);
 
             if ($start === $end) {
-                return !\preg_match('/[*?[:alnum:] \\\\]/', $start);
+                return !\preg_match(pattern: '/[*?[:alnum:] \\\\]/', subject: $start);
             }
 
             foreach ([['{', '}'], ['(', ')'], ['[', ']'], ['<', '>']] as $delimiters) {
@@ -38,7 +38,7 @@ final readonly class FileHelper
         $escaping = false;
         $inCurlies = 0;
         $regex = '';
-        $sizeGlob = \strlen($glob);
+        $sizeGlob = \strlen(string: $glob);
         /** @psalm-suppress InvalidOperand */
         for ($i = 0; $i < $sizeGlob; ++$i) {
             /** @psalm-suppress InvalidArrayOffset */
@@ -72,7 +72,7 @@ final readonly class FileHelper
                 $i += 2 + isset($glob[$i + 3]);
 
                 if ($delimiter === '/') {
-                    $car = \str_replace('/', '\\/', $car);
+                    $car = \str_replace(search: '/', replace: '\\/', subject: $car);
                 }
             }
 

@@ -46,7 +46,7 @@ final class VersionCommand extends BaseCommand
 
             try {
                 $latestVersion = $this->fetchLatestVersion();
-                $isUpdateAvailable = $this->isUpdateAvailable($app->version, $latestVersion);
+                $isUpdateAvailable = $this->isUpdateAvailable(currentVersion: $app->version, latestVersion: $latestVersion);
 
                 if ($isUpdateAvailable) {
                     $this->output->success("A new version is available: {$latestVersion}");
@@ -91,18 +91,18 @@ final class VersionCommand extends BaseCommand
 
         if (!$response->isSuccess()) {
             throw new HttpException(
-                \sprintf('Failed to fetch latest version. Server returned status code %d', $response->getStatusCode()),
+                message: \sprintf('Failed to fetch latest version. Server returned status code %d', $response->getStatusCode()),
             );
         }
 
-        $tagName = $response->getJsonValue('tag_name');
+        $tagName = $response->getJsonValue(key: 'tag_name');
 
         if ($tagName === null) {
-            throw new HttpException("Invalid response format: 'tag_name' missing");
+            throw new HttpException(message: "Invalid response format: 'tag_name' missing");
         }
 
         // Remove 'v' prefix if present
-        return \ltrim((string) $tagName, 'v');
+        return \ltrim(string: (string) $tagName, characters: 'v');
     }
 
     /**
@@ -116,8 +116,8 @@ final class VersionCommand extends BaseCommand
         }
 
         // Clean up versions for comparison
-        $currentVersion = \ltrim($currentVersion, 'v');
-        $latestVersion = \ltrim($latestVersion, 'v');
+        $currentVersion = \ltrim(string: $currentVersion, characters: 'v');
+        $latestVersion = \ltrim(string: $latestVersion, characters: 'v');
 
         return \version_compare($currentVersion, $latestVersion, '<');
     }

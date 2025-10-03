@@ -47,6 +47,6 @@ final readonly class DocumentConfigMerger extends AbstractConfigMerger
         }
 
         // Convert back to numerically indexed array
-        return \array_values($indexedDocuments);
+        return \array_values(array: $indexedDocuments);
     }
 }

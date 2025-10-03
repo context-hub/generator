@@ -28,8 +28,8 @@ final class UrlSourceTest extends ConsoleTestCase
     {
         // Setup mock response
         $this->mockHttpClient->addResponse(
-            'https://example.com/api',
-            new HttpResponse(
+            url: 'https://example.com/api',
+            response: new HttpResponse(
                 statusCode: 200,
                 body: '<html><body><h1>Example API</h1><p>This is example content</p></body></html>',
                 headers: ['Content-Type' => 'text/html'],
@@ -78,8 +78,8 @@ final class UrlSourceTest extends ConsoleTestCase
     {
         // Setup mock response with content that has elements to select
         $this->mockHttpClient->addResponse(
-            'https://example.com/docs',
-            new HttpResponse(
+            url: 'https://example.com/docs',
+            response: new HttpResponse(
                 statusCode: 200,
                 body: '<html><body><div class="header">Header</div><div class="content"><h2>Documentation</h2><p>Selected content</p></div><div class="footer">Footer</div></body></html>',
                 headers: ['Content-Type' => 'text/html'],
@@ -113,8 +113,8 @@ final class UrlSourceTest extends ConsoleTestCase
     {
         // Setup mock response
         $this->mockHttpClient->addResponse(
-            'https://api.example.com/data',
-            new HttpResponse(
+            url: 'https://api.example.com/data',
+            response: new HttpResponse(
                 statusCode: 200,
                 body: '{"message": "Authentication successful", "data": {"name": "Test User", "email": "test@example.com"}}',
                 headers: ['Content-Type' => 'application/json'],
@@ -138,7 +138,7 @@ final class UrlSourceTest extends ConsoleTestCase
             );
 
         // Verify the headers were sent
-        $sentHeaders = $this->mockHttpClient->getRequestHeaders('https://api.example.com/data');
+        $sentHeaders = $this->mockHttpClient->getRequestHeaders(url: 'https://api.example.com/data');
         $this->assertArrayHasKey('Authorization', $sentHeaders);
         $this->assertEquals('Bearer test-token', $sentHeaders['Authorization']);
         $this->assertArrayHasKey('Accept', $sentHeaders);
@@ -151,8 +151,8 @@ final class UrlSourceTest extends ConsoleTestCase
     {
         // Setup mock responses for multiple URLs
         $this->mockHttpClient->addResponse(
-            'https://example.com/page1',
-            new HttpResponse(
+            url: 'https://example.com/page1',
+            response: new HttpResponse(
                 statusCode: 200,
                 body: '<html><body><h1>Page 1</h1><p>Content from page 1</p></body></html>',
                 headers: ['Content-Type' => 'text/html'],
@@ -160,8 +160,8 @@ final class UrlSourceTest extends ConsoleTestCase
         );
 
         $this->mockHttpClient->addResponse(
-            'https://example.com/page2',
-            new HttpResponse(
+            url: 'https://example.com/page2',
+            response: new HttpResponse(
                 statusCode: 200,
                 body: '<html><body><h1>Page 2</h1><p>Content from page 2</p></body></html>',
                 headers: ['Content-Type' => 'text/html'],
@@ -194,8 +194,8 @@ final class UrlSourceTest extends ConsoleTestCase
     {
         // Setup mock response with error
         $this->mockHttpClient->addResponse(
-            'https://example.com/not-found',
-            new HttpResponse(
+            url: 'https://example.com/not-found',
+            response: new HttpResponse(
                 statusCode: 404,
                 body: 'Not Found',
                 headers: [],
@@ -224,8 +224,8 @@ final class UrlSourceTest extends ConsoleTestCase
     {
         // Setup mock response
         $this->mockHttpClient->addResponse(
-            'https://api.production.example.com/data',
-            new HttpResponse(
+            url: 'https://api.production.example.com/data',
+            response: new HttpResponse(
                 statusCode: 200,
                 body: '<html><body><h1>Production API</h1><p>This is production data</p></body></html>',
                 headers: ['Content-Type' => 'text/html'],
@@ -256,7 +256,7 @@ final class UrlSourceTest extends ConsoleTestCase
             );
 
         // Verify the headers were sent with resolved variables
-        $sentHeaders = $this->mockHttpClient->getRequestHeaders('https://api.production.example.com/data');
+        $sentHeaders = $this->mockHttpClient->getRequestHeaders(url: 'https://api.production.example.com/data');
         $this->assertArrayHasKey('Authorization', $sentHeaders);
         $this->assertEquals('Bearer prod-token', $sentHeaders['Authorization']);
     }
@@ -271,7 +271,7 @@ final class UrlSourceTest extends ConsoleTestCase
         $this->mockHttpClient = new MockHttpClient();
 
         // Register mock HTTP client in the container
-        $this->getContainer()->bindSingleton(HttpClientInterface::class, $this->mockHttpClient);
+        $this->getContainer()->bindSingleton(alias: HttpClientInterface::class, resolver: $this->mockHttpClient);
     }
 
     protected function buildContext(
@@ -282,7 +282,7 @@ final class UrlSourceTest extends ConsoleTestCase
         string $command = 'generate',
         bool $asJson = true,
     ): CompilingResult {
-        return (new ContextBuilder($this->getConsole()))->build(
+        return (new ContextBuilder(console: $this->getConsole()))->build(
             workDir: $workDir,
             configPath: $configPath,
             inlineJson: $inlineJson,

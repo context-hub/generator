@@ -53,22 +53,22 @@ class VariableSystemEdgeCasesTest extends TestCase
             }
         };
 
-        $processor = new VariableReplacementProcessor($nestedProvider);
-        $resolver = new VariableResolver($processor);
+        $processor = new VariableReplacementProcessor(provider: $nestedProvider);
+        $resolver = new VariableResolver(processor: $processor);
 
         // Test case for nested variables - these are not automatically resolved recursively
         // since the processor doesn't recursively process
-        $result = $resolver->resolve('${LEVEL3}');
+        $result = $resolver->resolve(strings: '${LEVEL3}');
 
         // Should only resolve one level: "${LEVEL3}" -> "references ${LEVEL2}"
         $this->assertSame('references ${LEVEL2}', $result);
 
         // If we process it a second time, we get one level deeper
-        $result = $resolver->resolve($result);
+        $result = $resolver->resolve(strings: $result);
         $this->assertSame('references uses ${LEVEL1}', $result);
 
         // And once more to fully resolve
-        $result = $resolver->resolve($result);
+        $result = $resolver->resolve(strings: $result);
         $this->assertSame('references uses value1', $result);
     }
 
@@ -93,15 +93,15 @@ class VariableSystemEdgeCasesTest extends TestCase
             }
         };
 
-        $processor = new VariableReplacementProcessor($circularProvider);
-        $resolver = new VariableResolver($processor);
+        $processor = new VariableReplacementProcessor(provider: $circularProvider);
+        $resolver = new VariableResolver(processor: $processor);
 
         // With circular references, each resolution replaces one level
-        $result = $resolver->resolve('${CIRCULAR1}');
+        $result = $resolver->resolve(strings: '${CIRCULAR1}');
         $this->assertSame('${CIRCULAR2}', $result);
 
         // Second level replaces to the other circular var
-        $result = $resolver->resolve($result);
+        $result = $resolver->resolve(strings: $result);
         $this->assertSame('${CIRCULAR1}', $result);
 
         // You could potentially get in an infinite loop if you keep reprocessing,
@@ -130,10 +130,10 @@ class VariableSystemEdgeCasesTest extends TestCase
             }
         };
 
-        $processor = new VariableReplacementProcessor($specialCharsProvider);
-        $resolver = new VariableResolver($processor);
+        $processor = new VariableReplacementProcessor(provider: $specialCharsProvider);
+        $resolver = new VariableResolver(processor: $processor);
 
-        $result = $resolver->resolve('Value: ${SPECIAL}');
+        $result = $resolver->resolve(strings: 'Value: ${SPECIAL}');
         $expected = 'Value: ' . $value;
 
         $this->assertSame($expected, $result);
@@ -160,15 +160,15 @@ class VariableSystemEdgeCasesTest extends TestCase
             }
         };
 
-        $processor = new VariableReplacementProcessor($provider);
-        $resolver = new VariableResolver($processor);
+        $processor = new VariableReplacementProcessor(provider: $provider);
+        $resolver = new VariableResolver(processor: $processor);
 
         // Test adjacent variables
-        $result = $resolver->resolve('${FIRST}${SECOND}${THIRD}');
+        $result = $resolver->resolve(strings: '${FIRST}${SECOND}${THIRD}');
         $this->assertSame('firstsecondthird', $result);
 
         // Test mixed syntax adjacent variables
-        $result = $resolver->resolve('${FIRST}{{SECOND}}${THIRD}');
+        $result = $resolver->resolve(strings: '${FIRST}{{SECOND}}${THIRD}');
         $this->assertSame('firstsecondthird', $result);
     }
 
@@ -191,8 +191,8 @@ class VariableSystemEdgeCasesTest extends TestCase
             }
         };
 
-        $processor = new VariableReplacementProcessor($provider);
-        $resolver = new VariableResolver($processor);
+        $processor = new VariableReplacementProcessor(provider: $provider);
+        $resolver = new VariableResolver(processor: $processor);
 
         // Test various malformed variable patterns
         $testCases = [
@@ -216,7 +216,7 @@ class VariableSystemEdgeCasesTest extends TestCase
         ];
 
         foreach ($testCases as $input => $expected) {
-            $result = $resolver->resolve($input);
+            $result = $resolver->resolve(strings: $input);
             $this->assertSame($expected, $result, "Failed for input: $input");
         }
     }

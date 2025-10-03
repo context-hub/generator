@@ -68,7 +68,7 @@ final class ContentBuilder implements \Stringable
      */
     public function addBlock(BlockInterface $block): self
     {
-        $this->content->addBlock($block);
+        $this->content->addBlock(block: $block);
         return $this;
     }
 
@@ -80,7 +80,7 @@ final class ContentBuilder implements \Stringable
      */
     public function addTitle(string $title, int $level = 1): self
     {
-        return $this->addBlock(new TitleBlock($title, $level));
+        return $this->addBlock(block: new TitleBlock(content: $title, level: $level));
     }
 
     /**
@@ -90,7 +90,7 @@ final class ContentBuilder implements \Stringable
      */
     public function addText(string $text): self
     {
-        return $this->addBlock(new TextBlock($text));
+        return $this->addBlock(block: new TextBlock(content: $text));
     }
 
     /**
@@ -100,7 +100,7 @@ final class ContentBuilder implements \Stringable
      */
     public function addDescription(string $description): self
     {
-        return $this->addBlock(new DescriptionBlock($description));
+        return $this->addBlock(block: new DescriptionBlock(content: $description));
     }
 
     /**
@@ -111,7 +111,7 @@ final class ContentBuilder implements \Stringable
      */
     public function addCodeBlock(string $code, ?string $language = null, ?string $path = null): self
     {
-        return $this->addBlock(new CodeBlock($code, $language, $path));
+        return $this->addBlock(block: new CodeBlock(content: $code, language: $language, filepath: $path));
     }
 
     /**
@@ -121,7 +121,7 @@ final class ContentBuilder implements \Stringable
      */
     public function addTreeView(string $treeView): self
     {
-        return $this->addBlock(new TreeViewBlock($treeView));
+        return $this->addBlock(block: new TreeViewBlock(content: $treeView));
     }
 
     /**
@@ -133,7 +133,7 @@ final class ContentBuilder implements \Stringable
      */
     public function addFileStats(int $fileSize, int $lineCount, ?string $filePath = null): self
     {
-        return $this->addBlock(new FileStatsBlock('', $fileSize, $lineCount, $filePath));
+        return $this->addBlock(block: new FileStatsBlock(content: '', fileSize: $fileSize, lineCount: $lineCount, filePath: $filePath));
     }
 
     /**
@@ -144,7 +144,7 @@ final class ContentBuilder implements \Stringable
      */
     public function addSeparator(string $separator = '-', int $length = 60): self
     {
-        return $this->addBlock(new SeparatorBlock($separator, $length));
+        return $this->addBlock(block: new SeparatorBlock(content: $separator, length: $length));
     }
 
     /**
@@ -154,7 +154,7 @@ final class ContentBuilder implements \Stringable
      */
     public function addComment(string $comment): self
     {
-        return $this->addBlock(new CommentBlock($comment));
+        return $this->addBlock(block: new CommentBlock(content: $comment));
     }
 
     /**
@@ -163,7 +163,7 @@ final class ContentBuilder implements \Stringable
     public function merge(self $builder): self
     {
         foreach ($builder->content->getBlocks() as $block) {
-            $this->addBlock($block);
+            $this->addBlock(block: $block);
         }
 
         return $this;
@@ -176,11 +176,11 @@ final class ContentBuilder implements \Stringable
      */
     public function build(): string
     {
-        return $this->content->render($this->renderer);
+        return $this->content->render(renderer: $this->renderer);
     }
 
     public function __toString(): string
     {
-        return (string) \preg_replace("/(\r\n|\n)+$/", '', $this->build());
+        return (string) \preg_replace(pattern: "/(\r\n|\n)+$/", replacement: '', subject: $this->build());
     }
 }

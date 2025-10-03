@@ -16,7 +16,7 @@ enum Platform: string
             'Linux' => self::Linux,
             'Darwin' => self::Macos,
             'Windows' => self::Windows,
-            default => throw new \RuntimeException('Unsupported platform: ' . PHP_OS_FAMILY),
+            default => throw new \RuntimeException(message: 'Unsupported platform: ' . PHP_OS_FAMILY),
         };
     }
 

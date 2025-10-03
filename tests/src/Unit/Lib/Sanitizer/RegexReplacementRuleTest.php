@@ -13,17 +13,17 @@ class RegexReplacementRuleTest extends TestCase
     #[Test]
     public function it_should_return_correct_name(): void
     {
-        $rule = new RegexReplacementRule('test-rule', []);
+        $rule = new RegexReplacementRule(name: 'test-rule', patterns: []);
         $this->assertEquals('test-rule', $rule->getName());
     }
 
     #[Test]
     public function it_should_not_modify_content_with_empty_patterns(): void
     {
-        $rule = new RegexReplacementRule('empty-patterns', []);
+        $rule = new RegexReplacementRule(name: 'empty-patterns', patterns: []);
         $content = "This content should remain unchanged";
 
-        $this->assertEquals($content, $rule->apply($content));
+        $this->assertEquals($content, $rule->apply(content: $content));
     }
 
     #[Test]
@@ -37,7 +37,7 @@ class RegexReplacementRuleTest extends TestCase
         $content = "Contact us at test@example.com for more information";
         $expected = "Contact us at [EMAIL_REMOVED] for more information";
 
-        $this->assertEquals($expected, $rule->apply($content));
+        $this->assertEquals($expected, $rule->apply(content: $content));
     }
 
     #[Test]
@@ -54,7 +54,7 @@ class RegexReplacementRuleTest extends TestCase
         $content = "Contact us at test@example.com or visit our server at 192.168.1.1";
         $expected = "Contact us at [EMAIL_REMOVED] or visit our server at [IP_ADDRESS_REMOVED]";
 
-        $this->assertEquals($expected, $rule->apply($content));
+        $this->assertEquals($expected, $rule->apply(content: $content));
     }
 
     #[Test]
@@ -70,7 +70,7 @@ class RegexReplacementRuleTest extends TestCase
         $content = "config = { password = \"supersecret123\" }";
         $expected = "config = { password=\"[REDACTED]\" }";
 
-        $this->assertEquals($expected, $rule->apply($content));
+        $this->assertEquals($expected, $rule->apply(content: $content));
     }
 
     #[Test]
@@ -86,7 +86,7 @@ class RegexReplacementRuleTest extends TestCase
         $content = "function test() {\n  /* This is a\n  multiline comment */\n  return true;\n}";
         $expected = "function test() {\n  [COMMENT_REMOVED]\n  return true;\n}";
 
-        $this->assertEquals($expected, $rule->apply($content));
+        $this->assertEquals($expected, $rule->apply(content: $content));
     }
 
     #[Test]
@@ -103,7 +103,7 @@ class RegexReplacementRuleTest extends TestCase
         $content = "Card: 1234 5678 9012 3456, Phone: (123) 456-7890";
         $expected = "Card: [CREDIT_CARD_REMOVED], Phone: ([PHONE_NUMBER_REMOVED]";
 
-        $this->assertEquals($expected, $rule->apply($content));
+        $this->assertEquals($expected, $rule->apply(content: $content));
     }
 
     #[Test]
@@ -118,7 +118,7 @@ class RegexReplacementRuleTest extends TestCase
 
         $content = "This content has no email addresses";
 
-        $this->assertEquals($content, $rule->apply($content));
+        $this->assertEquals($content, $rule->apply(content: $content));
     }
 
     #[Test]
@@ -135,6 +135,6 @@ class RegexReplacementRuleTest extends TestCase
         $content = "The code is secret123key and secret456code";
         $expected = "The code is [SECRET_KEY_REMOVED] and [SECRET_CODE_REMOVED]";
 
-        $this->assertEquals($expected, $rule->apply($content));
+        $this->assertEquals($expected, $rule->apply(content: $content));
     }
 }

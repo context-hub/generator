@@ -19,14 +19,14 @@ class TextSourceFetcherTest extends TestCase
     public function it_should_support_text_source(): void
     {
         $source = new TextSource(content: 'Sample content');
-        $this->assertTrue($this->fetcher->supports($source));
+        $this->assertTrue($this->fetcher->supports(source: $source));
     }
 
     #[Test]
     public function it_should_not_support_other_sources(): void
     {
         $source = $this->createMock(SourceInterface::class);
-        $this->assertFalse($this->fetcher->supports($source));
+        $this->assertFalse($this->fetcher->supports(source: $source));
     }
 
     #[Test]
@@ -40,7 +40,7 @@ class TextSourceFetcherTest extends TestCase
             "</INSTRUCTION>\n" .
             "------------------------------------------------------------\n";
 
-        $this->assertEquals($expected, $this->fetcher->fetch($source, new ModifiersApplier([])));
+        $this->assertEquals($expected, $this->fetcher->fetch(source: $source, modifiersApplier: new ModifiersApplier(modifiers: [])));
     }
 
     #[Test]
@@ -51,7 +51,7 @@ class TextSourceFetcherTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Source must be an instance of TextSource');
 
-        $this->fetcher->fetch($source, new ModifiersApplier([]));
+        $this->fetcher->fetch(source: $source, modifiersApplier: new ModifiersApplier(modifiers: []));
     }
 
     protected function setUp(): void

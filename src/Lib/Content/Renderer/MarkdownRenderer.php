@@ -54,7 +54,7 @@ final class MarkdownRenderer extends AbstractRenderer
         }
 
         $level = $block->getLevel();
-        $prefix = \str_repeat('#', \min(6, \max(1, $level)));
+        $prefix = \str_repeat(string: '#', times: \min(6, \max(1, $level)));
 
         return "{$prefix} " . $content . "\n\n";
     }
@@ -81,7 +81,7 @@ final class MarkdownRenderer extends AbstractRenderer
     public function renderFileStatsBlock(FileStatsBlock $block): string
     {
         $filePath = $block->getFilePath() ? "File: `{$block->getFilePath()}`\n" : '';
-        $size = $block->formatSize($block->getFileSize());
+        $size = $block->formatSize(bytes: $block->getFileSize());
         $lineCount = $block->getLineCount();
 
         return <<<STATS
@@ -96,7 +96,7 @@ final class MarkdownRenderer extends AbstractRenderer
 
     public function renderSeparatorBlock(SeparatorBlock $block): string
     {
-        return \str_repeat((string) $block, $block->getLength()) . "\n\n";
+        return \str_repeat(string: (string) $block, times: $block->getLength()) . "\n\n";
     }
 
     public function renderCommentBlock(CommentBlock $block): string
@@ -106,7 +106,7 @@ final class MarkdownRenderer extends AbstractRenderer
             return '';
         }
 
-        $lines = \explode("\n", $content);
+        $lines = \explode(separator: "\n", string: $content);
         $result = '';
 
         foreach ($lines as $line) {

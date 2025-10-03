@@ -26,17 +26,17 @@ final readonly class ListToolsAction
     {
         $this->logger->info('Listing available tools');
 
-        $tools = \array_values($this->provider->getTools());
+        $tools = \array_values(array: $this->provider->getTools());
         foreach ($this->toolProvider->all() as $toolDefinition) {
             $tools[] = new Tool(
                 name: $toolDefinition->id,
-                inputSchema: $this->buildInputSchema($toolDefinition),
+                inputSchema: $this->buildInputSchema(toolDefinition: $toolDefinition),
                 description: $toolDefinition->description,
                 annotations: null,
             );
         }
 
-        return new ListToolsResult($tools);
+        return new ListToolsResult(tools: $tools);
     }
 
     /**

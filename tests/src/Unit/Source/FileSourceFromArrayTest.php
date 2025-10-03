@@ -21,7 +21,7 @@ class FileSourceFromArrayTest extends TestCase
             'sourcePaths' => 'path/to/file.php',
         ];
 
-        $source = $this->factory->create($data);
+        $source = $this->factory->create(config: $data);
 
         $this->assertEquals(['/test/path/to/file.php'], $source->sourcePaths);
         $this->assertEquals('', $source->getDescription());
@@ -48,7 +48,7 @@ class FileSourceFromArrayTest extends TestCase
             'modifiers' => ['modifier1', 'modifier2'],
         ];
 
-        $source = $this->factory->create($data);
+        $source = $this->factory->create(config: $data);
 
         $expectedPaths = ['/test/path/to/file.php', '/test/path/to/directory'];
         $this->assertEquals($expectedPaths, $source->sourcePaths);
@@ -72,7 +72,7 @@ class FileSourceFromArrayTest extends TestCase
             'filePattern' => ['*.php', '*.js'],
         ];
 
-        $source = $this->factory->create($data);
+        $source = $this->factory->create(config: $data);
 
         $this->assertEquals($data['filePattern'], $source->filePattern);
     }
@@ -85,7 +85,7 @@ class FileSourceFromArrayTest extends TestCase
             'excludePatterns' => ['vendor', 'node_modules'],
         ];
 
-        $source = $this->factory->create($data);
+        $source = $this->factory->create(config: $data);
 
         $this->assertEquals($data['excludePatterns'], $source->notPath);
     }
@@ -99,7 +99,7 @@ class FileSourceFromArrayTest extends TestCase
 
         $rootPath = '/var/www';
 
-        $source = (new FileSourceFactory($this->createDirectories($rootPath)))->create($data);
+        $source = (new FileSourceFactory(dirs: $this->createDirectories($rootPath)))->create(config: $data);
 
         $expectedPaths = [
             '/var/www/path/to/file.php',
@@ -115,7 +115,7 @@ class FileSourceFromArrayTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('File source must have a "sourcePaths" property');
 
-        $this->factory->create([]);
+        $this->factory->create(config: []);
     }
 
     #[Test]
@@ -124,7 +124,7 @@ class FileSourceFromArrayTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('"sourcePaths" must be a string or array in source');
 
-        $this->factory->create(['sourcePaths' => 123]);
+        $this->factory->create(config: ['sourcePaths' => 123]);
     }
 
     #[Test]
@@ -133,7 +133,7 @@ class FileSourceFromArrayTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('filePattern must be a string or an array of strings');
 
-        $this->factory->create([
+        $this->factory->create(config: [
             'sourcePaths' => 'path/to/file.php',
             'filePattern' => 123,
         ]);
@@ -145,7 +145,7 @@ class FileSourceFromArrayTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('All elements in filePattern must be strings');
 
-        $this->factory->create([
+        $this->factory->create(config: [
             'sourcePaths' => 'path/to/file.php',
             'filePattern' => ['*.php', 123],
         ]);
@@ -165,7 +165,7 @@ class FileSourceFromArrayTest extends TestCase
             size: ['> 10K', '< 1M'],
             date: ['since yesterday'],
             ignoreUnreadableDirs: true,
-            treeView: new TreeViewConfig(false),
+            treeView: new TreeViewConfig(enabled: false),
             modifiers: ['modifier1', 'modifier2'],
         );
 
@@ -190,7 +190,7 @@ class FileSourceFromArrayTest extends TestCase
             'modifiers' => ['modifier1', 'modifier2'],
         ];
 
-        $this->assertEquals($expected, \json_decode(\json_encode($source->jsonSerialize()), true));
+        $this->assertEquals($expected, \json_decode(json: \json_encode(value: $source->jsonSerialize()), associative: true));
     }
 
     #[Test]
@@ -214,13 +214,13 @@ class FileSourceFromArrayTest extends TestCase
             ],
         ];
 
-        $this->assertEquals($expected, \json_decode(\json_encode($source->jsonSerialize()), true));
+        $this->assertEquals($expected, \json_decode(json: \json_encode(value: $source->jsonSerialize()), associative: true));
     }
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->factory = new FileSourceFactory($this->createDirectories());
+        $this->factory = new FileSourceFactory(dirs: $this->createDirectories());
     }
 }

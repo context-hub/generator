@@ -25,7 +25,7 @@ final readonly class ModifierAliasesParserPlugin implements ConfigParserPluginIn
     public function supports(array $config): bool
     {
         return isset($config['settings']['modifiers'])
-            && \is_array($config['settings']['modifiers']);
+            && \is_array(value: $config['settings']['modifiers']);
     }
 
     public function updateConfig(array $config, string $rootPath): array
@@ -36,15 +36,15 @@ final readonly class ModifierAliasesParserPlugin implements ConfigParserPluginIn
 
     public function parse(array $config, string $rootPath): ?RegistryInterface
     {
-        if (!$this->supports($config)) {
+        if (!$this->supports(config: $config)) {
             return null;
         }
 
         $modifiersConfig = $config['settings']['modifiers'];
 
         foreach ($modifiersConfig as $alias => $modifierConfig) {
-            $modifier = Modifier::from($modifierConfig);
-            $this->aliasesRegistry->register($alias, $modifier);
+            $modifier = Modifier::from(data: $modifierConfig);
+            $this->aliasesRegistry->register(alias: $alias, modifier: $modifier);
         }
 
         return null;

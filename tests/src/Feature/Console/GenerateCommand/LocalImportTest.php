@@ -44,7 +44,7 @@ final class LocalImportTest extends ConsoleTestCase
                 import:
                   - path: {$this->getRelativePath($baseConfig)}
                     type: local
-                
+
                 documents:
                   - description: "Main Document"
                     outputPath: "main.md"
@@ -110,8 +110,8 @@ final class LocalImportTest extends ConsoleTestCase
                 import:
                   - path: {$this->getRelativePath($baseConfig)}
                     type: local
-                    pathPrefix: "prefixed" 
-                
+                    pathPrefix: "prefixed"
+
                 documents:
                   - description: "Main Document"
                     outputPath: "main.md"
@@ -194,7 +194,7 @@ final class LocalImportTest extends ConsoleTestCase
                     docs:
                       - "first.md"
                       - "third.md"
-                
+
                 documents:
                   - description: "Main Document"
                     outputPath: "main.md"
@@ -273,7 +273,7 @@ final class LocalImportTest extends ConsoleTestCase
                 import:
                   - path: {$this->getRelativePath($nestedConfig)}
                     type: local
-                
+
                 documents:
                   - description: "Middle Document"
                     outputPath: "middle.md"
@@ -292,7 +292,7 @@ final class LocalImportTest extends ConsoleTestCase
                 import:
                   - path: {$this->getRelativePath($middleConfig)}
                     type: local
-                
+
                 documents:
                   - description: "Main Document"
                     outputPath: "main.md"
@@ -363,7 +363,7 @@ final class LocalImportTest extends ConsoleTestCase
                 import:
                   - path: {$this->getRelativePath($firstConfig)}
                     type: local
-                
+
                 documents:
                   - description: "Second Document"
                     outputPath: "second.md"
@@ -378,12 +378,12 @@ final class LocalImportTest extends ConsoleTestCase
 
         // Now update the first config to import the second
         \file_put_contents(
-            $firstConfig,
-            <<<YAML
+            filename: $firstConfig,
+            data: <<<YAML
                 import:
                   - path: {$this->getRelativePath($secondConfig)}
                     type: local
-                
+
                 documents:
                   - description: "First Document"
                     outputPath: "first.md"
@@ -448,7 +448,7 @@ final class LocalImportTest extends ConsoleTestCase
                 import:
                   - path: {$this->getRelativePath($wildcardDir)}/*.yaml
                     type: local
-                
+
                 documents:
                   - description: "Main Document"
                     outputPath: "main.md"
@@ -507,7 +507,7 @@ final class LocalImportTest extends ConsoleTestCase
                 variables:
                   BASE_VAR: "base-variable-value"
                   SHARED_VAR: "base-shared-value"
-                
+
                 documents:
                   - description: "Base Variable Document"
                     outputPath: "base-vars.md"
@@ -526,11 +526,11 @@ final class LocalImportTest extends ConsoleTestCase
                 import:
                   - path: {$this->getRelativePath($baseConfig)}
                     type: local
-                
+
                 variables:
                   MAIN_VAR: "main-variable-value"
                   SHARED_VAR: "main-shared-value" # This should override the imported one
-                
+
                 documents:
                   - description: "Main Variable Document"
                     outputPath: "main-vars.md"
@@ -592,7 +592,7 @@ final class LocalImportTest extends ConsoleTestCase
         string $command = 'generate',
         bool $asJson = true,
     ): CompilingResult {
-        return (new ContextBuilder($this->getConsole()))->build(
+        return (new ContextBuilder(console: $this->getConsole()))->build(
             workDir: $workDir,
             configPath: $configPath,
             inlineJson: $inlineJson,
@@ -606,6 +606,6 @@ final class LocalImportTest extends ConsoleTestCase
     {
         // Convert absolute path to relative path for use in YAML configurations
         // This ensures the test is independent of the absolute paths on the test system
-        return \basename($absolutePath);
+        return \basename(path: $absolutePath);
     }
 }

@@ -31,15 +31,15 @@ final readonly class UrlSourceConfig implements SourceConfigInterface
     public static function fromArray(array $config, string $basePath): self
     {
         if (!isset($config['url'])) {
-            throw new \InvalidArgumentException("Source configuration must have a 'url' property");
+            throw new \InvalidArgumentException(message: "Source configuration must have a 'url' property");
         }
 
         $url = $config['url'];
         $headers = $config['headers'] ?? [];
-        $filter = FilterConfig::fromArray($config['filter'] ?? null);
+        $filter = FilterConfig::fromArray(config: $config['filter'] ?? null);
 
         // Ensure headers is an array
-        if (!\is_array($headers)) {
+        if (!\is_array(value: $headers)) {
             $headers = [];
         }
 
@@ -61,12 +61,12 @@ final readonly class UrlSourceConfig implements SourceConfigInterface
      */
     public function getExtension(): string
     {
-        $parsedUrl = \parse_url($this->url);
+        $parsedUrl = \parse_url(url: $this->url);
         if (!isset($parsedUrl['path'])) {
             return '';
         }
 
-        return \strtolower(\pathinfo($parsedUrl['path'], PATHINFO_EXTENSION));
+        return \strtolower(string: \pathinfo(path: $parsedUrl['path'], flags: PATHINFO_EXTENSION));
     }
 
     public function getPath(): string

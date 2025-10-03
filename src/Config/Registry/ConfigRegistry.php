@@ -45,15 +45,15 @@ final class ConfigRegistry implements \JsonSerializable
      */
     public function get(string $type, string $className): RegistryInterface
     {
-        if (!$this->has($type)) {
-            throw new \InvalidArgumentException(\sprintf('Registry of type "%s" does not exist', $type));
+        if (!$this->has(type: $type)) {
+            throw new \InvalidArgumentException(message: \sprintf('Registry of type "%s" does not exist', $type));
         }
 
         $registry = $this->registries[$type];
 
         if (!$registry instanceof $className) {
             throw new \InvalidArgumentException(
-                \sprintf('Registry of type "%s" is not an instance of "%s"', $type, $className),
+                message: \sprintf('Registry of type "%s" is not an instance of "%s"', $type, $className),
             );
         }
 
@@ -81,8 +81,8 @@ final class ConfigRegistry implements \JsonSerializable
         }
 
         return \array_filter(
-            $data,
-            static fn($value) => $value !== null && $value !== [],
+            array: $data,
+            callback: static fn($value) => $value !== null && $value !== [],
         );
     }
 }

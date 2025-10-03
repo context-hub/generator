@@ -16,7 +16,7 @@ final readonly class CompositeProcessor implements VariableReplacementProcessorI
     public function process(string $text): string
     {
         foreach ($this->processors as $processor) {
-            $text = $processor->process($text);
+            $text = $processor->process(text: $text);
         }
 
         return $text;

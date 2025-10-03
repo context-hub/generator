@@ -78,7 +78,7 @@ final class ToolRunCommand extends BaseCommand
                     // Get the appropriate loader based on options provided
                     if ($this->configPath !== null) {
                         $this->logger->info(\sprintf('Loading configuration from %s...', $this->configPath));
-                        $loader = $configProvider->fromPath($this->configPath);
+                        $loader = $configProvider->fromPath(configPath: $this->configPath);
                     } else {
                         $this->logger->info('Loading configuration from default location...');
                         $loader = $configProvider->fromDefaultLocation();
@@ -102,7 +102,7 @@ final class ToolRunCommand extends BaseCommand
                         bindings: [
                             DirectoriesInterface::class => $dirs,
                             ConfigLoaderInterface::class => $loader,
-                            CommandExecutorInterface::class => $container->make(CommandExecutor::class, [
+                            CommandExecutorInterface::class => $container->make(alias: CommandExecutor::class, parameters: [
                                 'projectRoot' => (string) $dirs->getRootPath(),
                             ]),
                         ],
@@ -112,11 +112,11 @@ final class ToolRunCommand extends BaseCommand
                         ToolProviderInterface $toolProvider,
                     ): int {
                         $toolId = $this->toolId;
-                        $providedArgs = $this->parseProvidedArguments($this->argOptions);
+                        $providedArgs = $this->parseProvidedArguments(inputArgs: $this->argOptions);
 
                         // If no tool ID is provided, list available tools and prompt for selection
                         if (empty($toolId) && $this->input->isInteractive()) {
-                            $tool = $this->selectTool($toolProvider);
+                            $tool = $this->selectTool(toolProvider: $toolProvider);
                             if (!$tool) {
                                 return Command::FAILURE;
                             }
@@ -133,7 +133,7 @@ final class ToolRunCommand extends BaseCommand
                         }
 
                         // Get tool handler
-                        $handler = $handlerFactory->createHandlerForTool($tool);
+                        $handler = $handlerFactory->createHandlerForTool(tool: $tool);
 
                         // Get arguments for tool execution
                         $args = [];
@@ -142,14 +142,14 @@ final class ToolRunCommand extends BaseCommand
                             if (!$this->input->isInteractive()) {
                                 // In non-interactive mode, validate the provided arguments
                                 try {
-                                    $args = $this->validateArguments($tool->schema, $providedArgs);
+                                    $args = $this->validateArguments(schema: $tool->schema, args: $providedArgs);
                                 } catch (\InvalidArgumentException $e) {
                                     $this->output->error($e->getMessage());
                                     return Command::FAILURE;
                                 }
                             } else {
                                 // In interactive mode, prompt for arguments
-                                $args = $this->promptForArguments($tool, $providedArgs);
+                                $args = $this->promptForArguments(tool: $tool, providedArgs: $providedArgs);
                             }
                         }
 
@@ -157,13 +157,13 @@ final class ToolRunCommand extends BaseCommand
                         $this->output->writeln(\sprintf('<info>Executing tool "%s"...</info>', $tool->id));
 
                         try {
-                            $startTime = \microtime(true);
+                            $startTime = \microtime(as_float: true);
 
                             // Create progress indicator
                             $progressBar = null;
                             if (!$this->output->isVerbose()) {
-                                $progressBar = new ProgressBar($this->output);
-                                $progressBar->setFormat(' %percent:3s%% [%bar%] %elapsed:6s%');
+                                $progressBar = new ProgressBar(output: $this->output);
+                                $progressBar->setFormat(format: ' %percent:3s%% [%bar%] %elapsed:6s%');
                                 $progressBar->start();
                                 $progressBar->display();
                             }
@@ -171,7 +171,7 @@ final class ToolRunCommand extends BaseCommand
                             // Execute the tool
                             $result = $handler->execute($tool, $args);
 
-                            $executionTime = \microtime(true) - $startTime;
+                            $executionTime = \microtime(as_float: true) - $startTime;
 
                             // Finish progress bar if it was started
                             if ($progressBar !== null) {
@@ -180,7 +180,7 @@ final class ToolRunCommand extends BaseCommand
                             }
 
                             // Display results
-                            $this->displayResults($tool, $result, $executionTime);
+                            $this->displayResults(tool: $tool, result: $result, executionTime: $executionTime);
 
                             return isset($result['success']) && $result['success'] === false ? Command::FAILURE : Command::SUCCESS;
                         } catch (\Throwable $e) {
@@ -221,7 +221,7 @@ final class ToolRunCommand extends BaseCommand
             $toolMap[$label] = $tool;
         }
 
-        $selectedLabel = $this->choiceQuestion('Select a tool to execute:', $choices);
+        $selectedLabel = $this->choiceQuestion(question: 'Select a tool to execute:', choices: $choices);
 
         return $toolMap[$selectedLabel];
     }
@@ -247,8 +247,8 @@ final class ToolRunCommand extends BaseCommand
                 continue;
             }
 
-            $isRequired = \in_array($name, $requiredProps, true);
-            $default = $schema->getDefaultValue($name);
+            $isRequired = \in_array(needle: $name, haystack: $requiredProps, strict: true);
+            $default = $schema->getDefaultValue(propertyName: $name);
             $type = $propDef['type'] ?? 'string';
 
             $title = $propDef['title'] ?? $name;
@@ -269,13 +269,13 @@ final class ToolRunCommand extends BaseCommand
                 $isRequired ? ', required' : '',
             );
 
-            $question = new Question('Provide value', $default);
+            $question = new Question(question: 'Provide value', default: $default);
 
             // Add validator based on type
-            $question->setValidator(static function ($value) use ($name, $type, $isRequired) {
+            $question->setValidator(validator: static function ($value) use ($name, $type, $isRequired) {
                 if ($value === null || $value === '') {
                     if ($isRequired) {
-                        throw new \RuntimeException("$name is required");
+                        throw new \RuntimeException(message: "$name is required");
                     }
                     return null;
                 }
@@ -284,16 +284,16 @@ final class ToolRunCommand extends BaseCommand
                 switch ($type) {
                     case 'number':
                     case 'integer':
-                        if (!\is_numeric($value)) {
-                            throw new \RuntimeException("$name must be a number");
+                        if (!\is_numeric(value: $value)) {
+                            throw new \RuntimeException(message: "$name must be a number");
                         }
-                        if ($type === 'integer' && !\filter_var($value, FILTER_VALIDATE_INT)) {
-                            throw new \RuntimeException("$name must be an integer");
+                        if ($type === 'integer' && !\filter_var(value: $value, filter: FILTER_VALIDATE_INT)) {
+                            throw new \RuntimeException(message: "$name must be an integer");
                         }
                         break;
                     case 'boolean':
-                        if (!\in_array(\strtolower((string) $value), ['true', 'false', '1', '0', 'yes', 'no'], true)) {
-                            throw new \RuntimeException("$name must be a boolean (true/false, yes/no, 1/0)");
+                        if (!\in_array(needle: \strtolower(string: (string) $value), haystack: ['true', 'false', '1', '0', 'yes', 'no'], strict: true)) {
+                            throw new \RuntimeException(message: "$name must be a boolean (true/false, yes/no, 1/0)");
                         }
                         break;
                 }
@@ -304,16 +304,16 @@ final class ToolRunCommand extends BaseCommand
             // For boolean type, use confirmation question
             if ($type === 'boolean') {
                 $defaultBool = $default === 'true' || $default === true || $default === 1 || $default === '1';
-                $question = new ConfirmationQuestion($questionText, $defaultBool);
+                $question = new ConfirmationQuestion(question: $questionText, default: $defaultBool);
             }
 
             // Prompt for input
-            $helper = $this->getHelper('question');
-            \assert($helper instanceof QuestionHelper);
-            $value = $helper->ask($this->input, $this->output, $question);
+            $helper = $this->getHelper(name: 'question');
+            \assert(assertion: $helper instanceof QuestionHelper);
+            $value = $helper->ask(input: $this->input, output: $this->output, question: $question);
 
             // Handle the value for non-string types
-            if ($type === 'boolean' && !\is_string($value)) {
+            if ($type === 'boolean' && !\is_string(value: $value)) {
                 $value = $value ? 'true' : 'false';
             }
 
@@ -333,18 +333,18 @@ final class ToolRunCommand extends BaseCommand
     {
         $required = $schema->getRequiredProperties();
         $properties = $schema->getProperties();
-        if (\is_object($properties)) {
+        if (\is_object(value: $properties)) {
             return [];
         }
 
         // Check all required properties are provided
         foreach ($required as $prop) {
             if (!isset($args[$prop])) {
-                $defaultValue = $schema->getDefaultValue($prop);
+                $defaultValue = $schema->getDefaultValue(propertyName: $prop);
                 if ($defaultValue !== null) {
                     $args[$prop] = $defaultValue;
                 } else {
-                    throw new \InvalidArgumentException(\sprintf('Required argument "%s" is missing', $prop));
+                    throw new \InvalidArgumentException(message: \sprintf('Required argument "%s" is missing', $prop));
                 }
             }
         }
@@ -359,23 +359,23 @@ final class ToolRunCommand extends BaseCommand
             $type = $properties[$name]['type'] ?? 'string';
             switch ($type) {
                 case 'integer':
-                    if (!\filter_var($value, FILTER_VALIDATE_INT)) {
+                    if (!\filter_var(value: $value, filter: FILTER_VALIDATE_INT)) {
                         throw new \InvalidArgumentException(
-                            \sprintf('Argument "%s" must be an integer, got "%s"', $name, $value),
+                            message: \sprintf('Argument "%s" must be an integer, got "%s"', $name, $value),
                         );
                     }
                     break;
                 case 'number':
-                    if (!\is_numeric($value)) {
+                    if (!\is_numeric(value: $value)) {
                         throw new \InvalidArgumentException(
-                            \sprintf('Argument "%s" must be a number, got "%s"', $name, $value),
+                            message: \sprintf('Argument "%s" must be a number, got "%s"', $name, $value),
                         );
                     }
                     break;
                 case 'boolean':
-                    if (!\in_array(\strtolower((string) $value), ['true', 'false', '1', '0', 'yes', 'no'], true)) {
+                    if (!\in_array(needle: \strtolower(string: (string) $value), haystack: ['true', 'false', '1', '0', 'yes', 'no'], strict: true)) {
                         throw new \InvalidArgumentException(
-                            \sprintf('Argument "%s" must be a boolean, got "%s"', $name, $value),
+                            message: \sprintf('Argument "%s" must be a boolean, got "%s"', $name, $value),
                         );
                     }
                     break;
@@ -393,13 +393,13 @@ final class ToolRunCommand extends BaseCommand
         $args = [];
 
         foreach ($inputArgs as $arg) {
-            if (!\str_contains((string) $arg, '=')) {
+            if (!\str_contains(haystack: (string) $arg, needle: '=')) {
                 $this->output->warning(\sprintf('Invalid argument format: %s (expected name=value)', $arg));
                 continue;
             }
 
-            [$name, $value] = \explode('=', (string) $arg, 2);
-            $args[\trim($name)] = \trim($value);
+            [$name, $value] = \explode(separator: '=', string: (string) $arg, limit: 2);
+            $args[\trim(string: $name)] = \trim(string: $value);
         }
 
         return $args;
@@ -413,9 +413,9 @@ final class ToolRunCommand extends BaseCommand
         $this->output->writeln(\sprintf('<info>Tool execution completed in %.2f seconds</info>', $executionTime));
 
         if ($tool->type === 'run') {
-            $this->displayRunResults($result);
+            $this->displayRunResults(result: $result);
         } elseif ($tool->type === 'http') {
-            $this->displayHttpResults($result);
+            $this->displayHttpResults(result: $result);
         } else {
             // Generic display for any tool type
             $this->output->writeln('<info>Result:</info>');
@@ -423,7 +423,7 @@ final class ToolRunCommand extends BaseCommand
             if (!empty($result['output'])) {
                 $this->output->writeln($result['output']);
             } else {
-                $this->output->writeln(\json_encode($result, JSON_PRETTY_PRINT));
+                $this->output->writeln(\json_encode(value: $result, flags: JSON_PRETTY_PRINT));
             }
         }
     }
@@ -443,7 +443,7 @@ final class ToolRunCommand extends BaseCommand
 
         $this->newLine();
 
-        if (isset($result['commands']) && \is_array($result['commands'])) {
+        if (isset($result['commands']) && \is_array(value: $result['commands'])) {
             foreach ($result['commands'] as $i => $cmdResult) {
                 $cmdSuccess = $cmdResult['success'] ?? true;
 
@@ -483,9 +483,9 @@ final class ToolRunCommand extends BaseCommand
             $outputData = $result['output'];
 
             // Try to parse JSON output
-            $jsonData = \json_decode($outputData, true);
+            $jsonData = \json_decode(json: $outputData, associative: true);
 
-            if (\json_last_error() === JSON_ERROR_NONE && \is_array($jsonData)) {
+            if (\json_last_error() === JSON_ERROR_NONE && \is_array(value: $jsonData)) {
                 foreach ($jsonData as $i => $response) {
                     $success = $response['success'] ?? false;
 
@@ -505,7 +505,7 @@ final class ToolRunCommand extends BaseCommand
 
                     if (isset($response['response'])) {
                         $this->output->writeln('Response data:');
-                        $this->output->writeln(\json_encode($response['response'], JSON_PRETTY_PRINT));
+                        $this->output->writeln(\json_encode(value: $response['response'], flags: JSON_PRETTY_PRINT));
                     }
 
                     $this->output->writeln('');

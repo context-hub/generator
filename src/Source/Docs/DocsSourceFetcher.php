@@ -54,7 +54,7 @@ final readonly class DocsSourceFetcher implements SourceFetcherInterface
             $this->logger->error($errorMessage, [
                 'sourceType' => $source::class,
             ]);
-            throw new \InvalidArgumentException($errorMessage);
+            throw new \InvalidArgumentException(message: $errorMessage);
         }
 
         $this->logger->info('Fetching documentation from Context7', [
@@ -66,11 +66,11 @@ final readonly class DocsSourceFetcher implements SourceFetcherInterface
         // Create builder
         $builder = $this->builderFactory
             ->create()
-            ->addDescription($this->variableResolver->resolve($source->getDescription()));
+            ->addDescription(description: $this->variableResolver->resolve(strings: $source->getDescription()));
 
         try {
-            $library = $this->variableResolver->resolve($source->library);
-            $topic = $this->variableResolver->resolve($source->topic);
+            $library = $this->variableResolver->resolve(strings: $source->library);
+            $topic = $this->variableResolver->resolve(strings: $source->topic);
             $tokens = $source->tokens;
 
             // Build the URL for Context7 API
@@ -78,7 +78,7 @@ final readonly class DocsSourceFetcher implements SourceFetcherInterface
                 '%s/%s/llms.txt?topic=%s&tokens=%d',
                 self::CONTEXT7_BASE_URL,
                 $library,
-                \rawurlencode($topic),
+                \rawurlencode(string: $topic),
                 $tokens,
             );
 
@@ -88,7 +88,7 @@ final readonly class DocsSourceFetcher implements SourceFetcherInterface
             ]);
 
             // Send the request
-            $requestHeaders = $this->variableResolver->resolve($this->defaultHeaders);
+            $requestHeaders = $this->variableResolver->resolve(strings: $this->defaultHeaders);
             $response = $this->httpClient->get($url, $requestHeaders);
             $statusCode = $response->getStatusCode();
 
@@ -99,9 +99,9 @@ final readonly class DocsSourceFetcher implements SourceFetcherInterface
                 ]);
 
                 $builder
-                    ->addComment("Library: {$library}")
-                    ->addComment("Topic: {$topic}")
-                    ->addComment("Error: HTTP status code {$statusCode}")
+                    ->addComment(comment: "Library: {$library}")
+                    ->addComment(comment: "Topic: {$topic}")
+                    ->addComment(comment: "Error: HTTP status code {$statusCode}")
                     ->addSeparator();
                 return $builder->build();
             }
@@ -113,7 +113,7 @@ final readonly class DocsSourceFetcher implements SourceFetcherInterface
 
             // Get the response body
             $content = $response->getBody();
-            $contentLength = \strlen($content);
+            $contentLength = \strlen(string: $content);
 
             $this->logger->debug('Received documentation content', [
                 'library' => $library,
@@ -123,16 +123,16 @@ final readonly class DocsSourceFetcher implements SourceFetcherInterface
 
             // Add metadata to the builder
             $builder
-                ->addComment("Library: {$library}")
-                ->addComment("Topic: {$topic}")
-                ->addComment("Tokens: {$tokens}")
+                ->addComment(comment: "Library: {$library}")
+                ->addComment(comment: "Topic: {$topic}")
+                ->addComment(comment: "Tokens: {$tokens}")
                 ->addSeparator();
 
             // Apply modifiers to the content
             $processedContent = $modifiersApplier->apply($content, $url);
 
             // Add the processed content to the builder
-            $builder->addText($processedContent);
+            $builder->addText(text: $processedContent);
         } catch (\Throwable $e) {
             $this->logger->error('Error retrieving documentation from Context7', [
                 'library' => $source->library ?? 'unknown',
@@ -143,15 +143,15 @@ final readonly class DocsSourceFetcher implements SourceFetcherInterface
             ]);
 
             $builder
-                ->addComment("Library: {$source->library}")
-                ->addComment("Topic: {$source->topic}")
-                ->addComment("Error: {$e->getMessage()}")
+                ->addComment(comment: "Library: {$source->library}")
+                ->addComment(comment: "Topic: {$source->topic}")
+                ->addComment(comment: "Error: {$e->getMessage()}")
                 ->addSeparator();
         }
 
         $content = $builder->build();
         $this->logger->info('Documentation content fetched successfully', [
-            'contentLength' => \strlen($content),
+            'contentLength' => \strlen(string: $content),
         ]);
 
         // Return built content

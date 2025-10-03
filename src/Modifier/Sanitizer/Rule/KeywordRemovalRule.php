@@ -35,7 +35,7 @@ final readonly class KeywordRemovalRule implements RuleInterface
             return $content;
         }
 
-        $lines = \explode(PHP_EOL, $content);
+        $lines = \explode(separator: PHP_EOL, string: $content);
         $result = [];
 
         foreach ($lines as $line) {
@@ -53,7 +53,7 @@ final readonly class KeywordRemovalRule implements RuleInterface
             if ($matches) {
                 if (!$this->removeLines) {
                     // Replace just the keywords
-                    $line = $this->replaceKeywords($line);
+                    $line = $this->replaceKeywords(line: $line);
                     $result[] = $line;
                 } else {
                     // If removeLines is true, we skip this line entirely
@@ -64,7 +64,7 @@ final readonly class KeywordRemovalRule implements RuleInterface
             }
         }
 
-        return \implode(PHP_EOL, $result);
+        return \implode(separator: PHP_EOL, array: $result);
     }
 
     /**
@@ -74,8 +74,8 @@ final readonly class KeywordRemovalRule implements RuleInterface
     {
         foreach ($this->keywords as $keyword) {
             $line = $this->caseSensitive
-                ? \str_replace($keyword, $this->replacement, $line)
-                : (string) \preg_replace('/' . \preg_quote($keyword, '/') . '/i', $this->replacement, $line);
+                ? \str_replace(search: $keyword, replace: $this->replacement, subject: $line)
+                : (string) \preg_replace(pattern: '/' . \preg_quote(str: $keyword, delimiter: '/') . '/i', replacement: $this->replacement, subject: $line);
         }
 
         return $line;

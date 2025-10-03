@@ -15,12 +15,12 @@ final readonly class CommitGitSource extends AbstractGitSource
     public function supports(string $commitReference): bool
     {
         // Basic commit range like commit1..commit2
-        if (\preg_match('/^[^\.]+\.\.[^\.]+$/', $commitReference)) {
+        if (\preg_match(pattern: '/^[^\.]+\.\.[^\.]+$/', subject: $commitReference)) {
             return true;
         }
 
         // Single commit hash like abc1234
-        if (\preg_match('/^[0-9a-f]{7,40}$/', $commitReference)) {
+        if (\preg_match(pattern: '/^[0-9a-f]{7,40}$/', subject: $commitReference)) {
             return true;
         }
 
@@ -36,7 +36,7 @@ final readonly class CommitGitSource extends AbstractGitSource
             'develop..HEAD',
         ];
 
-        if (\in_array($commitReference, $commonFormats, true)) {
+        if (\in_array(needle: $commitReference, haystack: $commonFormats, strict: true)) {
             return true;
         }
 

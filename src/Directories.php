@@ -40,24 +40,24 @@ final readonly class Directories implements DirectoriesInterface
     ) {
         // Ensure paths are not empty
         if ($rootPath === '') {
-            throw new \InvalidArgumentException('Root path cannot be empty');
+            throw new \InvalidArgumentException(message: 'Root path cannot be empty');
         }
         if ($outputPath === '') {
-            throw new \InvalidArgumentException('Output path cannot be empty');
+            throw new \InvalidArgumentException(message: 'Output path cannot be empty');
         }
         if ($configPath === '') {
-            throw new \InvalidArgumentException('Config path cannot be empty');
+            throw new \InvalidArgumentException(message: 'Config path cannot be empty');
         }
         if ($jsonSchemaPath === '') {
-            throw new \InvalidArgumentException('JSON schema path cannot be empty');
+            throw new \InvalidArgumentException(message: 'JSON schema path cannot be empty');
         }
 
         // Initialize FSPath objects
-        $this->binaryPathObj = FSPath::create($this->binaryPath ?? $this->resolveBinaryPath());
-        $this->rootPathObj = FSPath::create($rootPath);
-        $this->outputPathObj = FSPath::create($outputPath);
-        $this->configPathObj = FSPath::create($configPath);
-        $this->envFilePathObj = $envFilePath !== null ? FSPath::create($envFilePath) : null;
+        $this->binaryPathObj = FSPath::create(path: $this->binaryPath ?? $this->resolveBinaryPath());
+        $this->rootPathObj = FSPath::create(path: $rootPath);
+        $this->outputPathObj = FSPath::create(path: $outputPath);
+        $this->configPathObj = FSPath::create(path: $configPath);
+        $this->envFilePathObj = $envFilePath !== null ? FSPath::create(path: $envFilePath) : null;
     }
 
     public function getBinaryPath(): FSPath
@@ -163,17 +163,17 @@ final readonly class Directories implements DirectoriesInterface
         }
 
         // If relative, resolve against the original root path
-        $configPathObj = FSPath::create($configPath);
+        $configPathObj = FSPath::create(path: $configPath);
 
         if ($configPathObj->isRelative()) {
             $configPath = $this->rootPathObj->join($configPath)->toString();
         }
 
         // If config path is absolute, use its directory as root
-        $configDir = \rtrim(\is_dir($configPath) ? $configPath : \dirname($configPath), '/');
+        $configDir = \rtrim(string: \is_dir(filename: $configPath) ? $configPath : \dirname(path: $configPath), characters: '/');
 
-        if (\is_dir($configDir)) {
-            return $this->withRootPath($configDir)->withConfigPath($configPath);
+        if (\is_dir(filename: $configDir)) {
+            return $this->withRootPath(rootPath: $configDir)->withConfigPath(configPath: $configPath);
         }
 
         return $this;
@@ -196,6 +196,6 @@ final readonly class Directories implements DirectoriesInterface
             return $_SERVER['SCRIPT_NAME'];
         }
 
-        throw new \RuntimeException('Unable to determine binary path');
+        throw new \RuntimeException(message: 'Unable to determine binary path');
     }
 }

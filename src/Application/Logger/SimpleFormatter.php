@@ -35,17 +35,17 @@ final readonly class SimpleFormatter implements FormatterInterface
      */
     public function format(string $level, string|\Stringable $message, array $context = []): string
     {
-        $logLevel = LogLevel::fromString($level);
+        $logLevel = LogLevel::fromString(level: $level);
         $formattedMessage = (string) $message;
 
         // Interpolate placeholders in the message
-        $formattedMessage = $this->interpolate($formattedMessage, $context);
+        $formattedMessage = $this->interpolate(message: $formattedMessage, context: $context);
 
         // Build the complete formatted line
         $parts = [];
 
         if ($this->includeTimestamp) {
-            $parts[] = '[' . \date($this->dateFormat) . ']';
+            $parts[] = '[' . \date(format: $this->dateFormat) . ']';
         }
 
         $parts[] = '[' . $logLevel->getLabel() . ']';
@@ -55,7 +55,7 @@ final readonly class SimpleFormatter implements FormatterInterface
 
         $parts[] = $formattedMessage;
 
-        return ' ' . \implode(' ', $parts);
+        return ' ' . \implode(separator: ' ', array: $parts);
     }
 
     public function withPrefix(string $prefix): static
@@ -74,7 +74,7 @@ final readonly class SimpleFormatter implements FormatterInterface
 
     public function log($level, \Stringable|string $message, array $context = []): void
     {
-        echo $this->format($level, $message, $context);
+        echo $this->format(level: $level, message: $message, context: $context);
     }
 
     /**
@@ -93,9 +93,9 @@ final readonly class SimpleFormatter implements FormatterInterface
             return $message;
         }
 
-        $json = \json_encode($context, \JSON_PRETTY_PRINT);
+        $json = \json_encode(value: $context, flags: \JSON_PRETTY_PRINT);
         // add indentation fo each line
-        $json = \preg_replace('/^/m', ' ', $json);
+        $json = \preg_replace(pattern: '/^/m', replacement: ' ', subject: $json);
 
         return $message . "\n\n" . $json . "\n";
     }

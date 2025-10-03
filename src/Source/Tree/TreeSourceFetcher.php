@@ -43,7 +43,7 @@ final readonly class TreeSourceFetcher implements SourceFetcherInterface
             $this->logger?->error($errorMessage, [
                 'sourceType' => $source::class,
             ]);
-            throw new \InvalidArgumentException($errorMessage);
+            throw new \InvalidArgumentException(message: $errorMessage);
         }
 
         $this->logger?->info('Fetching tree source content', [
@@ -57,14 +57,14 @@ final readonly class TreeSourceFetcher implements SourceFetcherInterface
         $this->logger?->debug('Creating content builder');
         $builder = $this->builderFactory
             ->create()
-            ->addTitle($source->getDescription());
+            ->addTitle(title: $source->getDescription());
 
         try {
             // Use SymfonyFinder to find files
-            $finderResult = $this->finder->find($source, $this->basePath, $source->treeView->getOptions());
+            $finderResult = $this->finder->find(source: $source, basePath: $this->basePath, options: $source->treeView->getOptions());
 
             // Add content to builder
-            $builder->addCodeBlock($finderResult->treeView);
+            $builder->addCodeBlock(code: $finderResult->treeView);
         } catch (\Throwable $e) {
             $errorMessage = \sprintf('Error while generating tree: %s', $e->getMessage());
             $this->logger?->error($errorMessage, [
@@ -72,12 +72,12 @@ final readonly class TreeSourceFetcher implements SourceFetcherInterface
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
             ]);
-            throw new \RuntimeException($errorMessage);
+            throw new \RuntimeException(message: $errorMessage);
         }
 
         $content = $builder->build();
         $this->logger?->info('Tree source content fetched successfully', [
-            'contentLength' => \strlen($content),
+            'contentLength' => \strlen(string: $content),
         ]);
 
         return $content;

@@ -17,28 +17,28 @@ final class CommitGitSourceTest extends GitSourceTestCase
     #[Test]
     public function it_should_support_basic_commit_range(): void
     {
-        $this->assertTrue($this->commitGitSource->supports('HEAD~1..HEAD'));
-        $this->assertTrue($this->commitGitSource->supports('main..HEAD'));
-        $this->assertTrue($this->commitGitSource->supports('master..HEAD'));
-        $this->assertTrue($this->commitGitSource->supports('develop..HEAD'));
+        $this->assertTrue($this->commitGitSource->supports(commitReference: 'HEAD~1..HEAD'));
+        $this->assertTrue($this->commitGitSource->supports(commitReference: 'main..HEAD'));
+        $this->assertTrue($this->commitGitSource->supports(commitReference: 'master..HEAD'));
+        $this->assertTrue($this->commitGitSource->supports(commitReference: 'develop..HEAD'));
     }
 
     #[Test]
     public function it_should_support_commit_hash(): void
     {
-        $this->assertTrue($this->commitGitSource->supports('abcdef1'));
-        $this->assertTrue($this->commitGitSource->supports('abcdef1234567890'));
-        $this->assertTrue($this->commitGitSource->supports('abcdef1234567890abcdef1234567890abcdef12'));
+        $this->assertTrue($this->commitGitSource->supports(commitReference: 'abcdef1'));
+        $this->assertTrue($this->commitGitSource->supports(commitReference: 'abcdef1234567890'));
+        $this->assertTrue($this->commitGitSource->supports(commitReference: 'abcdef1234567890abcdef1234567890abcdef12'));
     }
 
     #[Test]
     public function it_should_not_support_other_formats(): void
     {
-        $this->assertFalse($this->commitGitSource->supports(''));
-        $this->assertFalse($this->commitGitSource->supports('--cached'));
-        $this->assertFalse($this->commitGitSource->supports('stash@{0}'));
-        $this->assertFalse($this->commitGitSource->supports('HEAD@{1.week.ago}..HEAD'));
-        $this->assertFalse($this->commitGitSource->supports('abc123 -- path/to/file'));
+        $this->assertFalse($this->commitGitSource->supports(commitReference: ''));
+        $this->assertFalse($this->commitGitSource->supports(commitReference: '--cached'));
+        $this->assertFalse($this->commitGitSource->supports(commitReference: 'stash@{0}'));
+        $this->assertFalse($this->commitGitSource->supports(commitReference: 'HEAD@{1.week.ago}..HEAD'));
+        $this->assertFalse($this->commitGitSource->supports(commitReference: 'abc123 -- path/to/file'));
     }
 
     #[Test]
@@ -50,7 +50,7 @@ final class CommitGitSourceTest extends GitSourceTestCase
         $this->mockChangedFiles($expectedCommand, $expectedFiles);
 
         // Get the changed files
-        $changedFiles = $this->commitGitSource->getChangedFiles($this->repoDir, 'HEAD~1..HEAD');
+        $changedFiles = $this->commitGitSource->getChangedFiles(repository: $this->repoDir, commitReference: 'HEAD~1..HEAD');
 
         // Verify that test2.txt is in the changed files
         $this->assertCount(1, $changedFiles);
@@ -66,7 +66,7 @@ final class CommitGitSourceTest extends GitSourceTestCase
         $this->mockFileDiff($expectedCommand, $expectedDiff);
 
         // Get the diff for the file
-        $diff = $this->commitGitSource->getFileDiff($this->repoDir, 'HEAD~1..HEAD', 'test.txt');
+        $diff = $this->commitGitSource->getFileDiff(repository: $this->repoDir, commitReference: 'HEAD~1..HEAD', file: 'test.txt');
 
         // Verify that the diff contains expected changes
         $this->assertStringContainsString('-Original content', $diff);
@@ -79,23 +79,23 @@ final class CommitGitSourceTest extends GitSourceTestCase
         // Test common formats
         $this->assertSame(
             'Changes in last commit',
-            $this->commitGitSource->formatReferenceForDisplay('HEAD~1..HEAD'),
+            $this->commitGitSource->formatReferenceForDisplay(commitReference: 'HEAD~1..HEAD'),
         );
 
         $this->assertSame(
             'Changes in last 5 commits',
-            $this->commitGitSource->formatReferenceForDisplay('HEAD~5..HEAD'),
+            $this->commitGitSource->formatReferenceForDisplay(commitReference: 'HEAD~5..HEAD'),
         );
 
         $this->assertSame(
             'Changes in changes since diverging from main',
-            $this->commitGitSource->formatReferenceForDisplay('main..HEAD'),
+            $this->commitGitSource->formatReferenceForDisplay(commitReference: 'main..HEAD'),
         );
 
         // Test custom format
         $this->assertSame(
             'Changes in commit range: custom..range',
-            $this->commitGitSource->formatReferenceForDisplay('custom..range'),
+            $this->commitGitSource->formatReferenceForDisplay(commitReference: 'custom..range'),
         );
     }
 
@@ -112,8 +112,8 @@ final class CommitGitSourceTest extends GitSourceTestCase
 
         // Get the changed files for the specific commit
         $changedFiles = $this->commitGitSource->getChangedFiles(
-            $this->repoDir,
-            $commitHash . '~1..' . $commitHash,
+            repository: $this->repoDir,
+            commitReference: $commitHash . '~1..' . $commitHash,
         );
 
         // Verify that only specific.txt is in the changed files
@@ -125,6 +125,6 @@ final class CommitGitSourceTest extends GitSourceTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->commitGitSource = new CommitGitSource($this->commandExecutorMock, new Files(), $this->logger);
+        $this->commitGitSource = new CommitGitSource(commandsExecutor: $this->commandExecutorMock, files: new Files(), logger: $this->logger);
     }
 }

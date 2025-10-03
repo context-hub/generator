@@ -74,7 +74,7 @@ final class ToolListCommand extends BaseCommand
                     // Get the appropriate loader based on options provided
                     if ($this->configPath !== null) {
                         $this->logger->info(\sprintf('Loading configuration from %s...', $this->configPath));
-                        $loader = $configProvider->fromPath($this->configPath);
+                        $loader = $configProvider->fromPath(configPath: $this->configPath);
                     } else {
                         $this->logger->info('Loading configuration from default location...');
                         $loader = $configProvider->fromDefaultLocation();
@@ -100,7 +100,7 @@ final class ToolListCommand extends BaseCommand
                     $filteredTools = [];
                     foreach ($tools as $tool) {
                         // Filter by ID if specified
-                        if (!empty($this->toolIds) && !\in_array($tool->id, $this->toolIds, true)) {
+                        if (!empty($this->toolIds) && !\in_array(needle: $tool->id, haystack: $this->toolIds, strict: true)) {
                             continue;
                         }
 
@@ -120,7 +120,7 @@ final class ToolListCommand extends BaseCommand
                 }
 
                 // Display tools as a table
-                return $this->displayAsTable($tools);
+                return $this->displayAsTable(tools: $tools);
             },
         );
     }
@@ -135,42 +135,42 @@ final class ToolListCommand extends BaseCommand
         $title = 'Available Tools';
         $this->output->title($title);
 
-        $table = new Table($this->output);
+        $table = new Table(output: $this->output);
 
         if ($this->detailed) {
-            $table->setHeaders(['ID', 'Type', 'Description', 'Schema', 'Commands']);
+            $table->setHeaders(headers: ['ID', 'Type', 'Description', 'Schema', 'Commands']);
         } else {
-            $table->setHeaders(['ID', 'Type', 'Description', 'Schema']);
+            $table->setHeaders(headers: ['ID', 'Type', 'Description', 'Schema']);
         }
 
         foreach ($tools as $tool) {
             $hasSchema = $tool->schema !== null && !empty($tool->schema->getProperties());
 
             $row = [
-                new TableCell($tool->id, ['style' => new TableCellStyle(['fg' => 'cyan'])]),
+                new TableCell(value: $tool->id, options: ['style' => new TableCellStyle(options: ['fg' => 'cyan'])]),
                 new TableCell(
-                    $tool->type,
-                    ['style' => new TableCellStyle(['fg' => $tool->type === 'run' ? 'green' : 'blue'])],
+                    value: $tool->type,
+                    options: ['style' => new TableCellStyle(options: ['fg' => $tool->type === 'run' ? 'green' : 'blue'])],
                 ),
                 $tool->description,
                 $hasSchema ? '✓' : '-',
             ];
 
             if ($this->detailed) {
-                $commandDetails = $this->formatCommands($tool);
+                $commandDetails = $this->formatCommands(tool: $tool);
                 $row[] = $commandDetails;
             }
 
-            $table->addRow($row);
+            $table->addRow(row: $row);
             if ($this->detailed) {
-                $table->addRow(new TableSeparator());
+                $table->addRow(row: new TableSeparator());
             }
         }
 
         $table->render();
 
         $this->output->writeln('');
-        $this->output->writeln(\sprintf('%s: %s', Style::property('Total tools'), Style::count(\count($tools))));
+        $this->output->writeln(\sprintf('%s: %s', Style::property(text: 'Total tools'), Style::count(count: \count(value: $tools))));
         $this->output->writeln('');
         $this->output->writeln('To execute a tool, run: <info>tool:run <tool-id></info>');
 
@@ -195,12 +195,12 @@ final class ToolListCommand extends BaseCommand
 
             $cmdInfo = $command->cmd;
             if (!empty($args)) {
-                $cmdInfo .= ' ' . \implode(' ', $args);
+                $cmdInfo .= ' ' . \implode(separator: ' ', array: $args);
             }
 
             $commands[] = \sprintf('#%d: %s', $index + 1, $cmdInfo);
         }
 
-        return \implode("\n", $commands);
+        return \implode(separator: "\n", array: $commands);
     }
 }

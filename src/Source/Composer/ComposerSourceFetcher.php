@@ -46,7 +46,7 @@ final readonly class ComposerSourceFetcher implements SourceFetcherInterface
     public function supports(SourceInterface $source): bool
     {
         $isSupported = $source instanceof ComposerSource;
-        $this->logDebug('Checking if source is supported', [
+        $this->logDebug(message: 'Checking if source is supported', context: [
             'sourceType' => $source::class,
             'isSupported' => $isSupported,
         ]);
@@ -57,15 +57,15 @@ final readonly class ComposerSourceFetcher implements SourceFetcherInterface
     {
         if (!$source instanceof ComposerSource) {
             $errorMessage = 'Source must be an instance of ComposerSource';
-            $this->logError($errorMessage, [
+            $this->logError(message: $errorMessage, context: [
                 'sourceType' => $source::class,
             ]);
-            throw new \InvalidArgumentException($errorMessage);
+            throw new \InvalidArgumentException(message: $errorMessage);
         }
 
-        $description = $this->variableResolver->resolve($source->getDescription());
+        $description = $this->variableResolver->resolve(strings: $source->getDescription());
 
-        $this->logInfo('Fetching Composer source content', [
+        $this->logInfo(message: 'Fetching Composer source content', context: [
             'description' => $description,
             'composerPath' => $source->composerPath,
             'includeDevDependencies' => $source->includeDevDependencies,
@@ -74,7 +74,7 @@ final readonly class ComposerSourceFetcher implements SourceFetcherInterface
         // Create a content builder
         $builder = $this->builderFactory
             ->create()
-            ->addTitle($description);
+            ->addTitle(title: $description);
 
         // Get packages from the provider
         $packages = $this->provider->getPackages(
@@ -83,42 +83,42 @@ final readonly class ComposerSourceFetcher implements SourceFetcherInterface
         );
 
         // Filter packages if packages is set
-        $packages = $packages->filter($source->packages);
+        $packages = $packages->filter(pattern: $source->packages);
 
         if ($packages->count() === 0) {
-            $this->logWarning('No matching packages found', [
+            $this->logWarning(message: 'No matching packages found', context: [
                 'composerPath' => $source->composerPath,
                 'packages' => $source->packages,
             ]);
 
-            $builder->addText('No matching packages found.');
+            $builder->addText(text: 'No matching packages found.');
             return $builder->build();
         }
 
-        $this->logInfo('Found matching packages', [
+        $this->logInfo(message: 'Found matching packages', context: [
             'count' => $packages->count(),
-            'packages' => \array_keys($packages->all()),
+            'packages' => \array_keys(array: $packages->all()),
         ]);
 
         // Generate a tree view of selected packages if requested
         if ($source->treeView->enabled) {
-            $this->logDebug('Generating package tree view');
-            $builder->addTreeView($packages->generateTree());
+            $this->logDebug(message: 'Generating package tree view');
+            $builder->addTreeView(treeView: $packages->generateTree());
         }
 
         // For each package, fetch its source code
         foreach ($packages as $package) {
-            $this->logInfo('Processing package', [
+            $this->logInfo(message: 'Processing package', context: [
                 'name' => $package->name,
                 'version' => $package->version,
                 'path' => $package->path,
             ]);
 
-            $builder->addTitle(\sprintf('%s (%s)', $package->name, $package->version), 2);
+            $builder->addTitle(title: \sprintf('%s (%s)', $package->name, $package->version), level: 2);
 
             // Add package description and metadata if available
             if ($package->getDescription()) {
-                $builder->addDescription($package->getDescription());
+                $builder->addDescription(description: $package->getDescription());
             }
 
             // Create a metadata section with authors, license, homepage, etc.
@@ -137,12 +137,12 @@ final readonly class ComposerSourceFetcher implements SourceFetcherInterface
             }
 
             if (!empty($metadata)) {
-                $builder->addText(\implode("\n", $metadata));
+                $builder->addText(text: \implode(separator: "\n", array: $metadata));
             }
 
             // Get source directories for this package
             $sourceDirs = $package->getSourceDirectories();
-            $this->logDebug('Found source directories', [
+            $this->logDebug(message: 'Found source directories', context: [
                 'package' => $package->name,
                 'directories' => $sourceDirs,
             ]);
@@ -150,15 +150,15 @@ final readonly class ComposerSourceFetcher implements SourceFetcherInterface
             // For each source directory, create a FileSource and fetch its content
             foreach ($sourceDirs as $dir) {
                 $sourceDir = $package->path . '/' . $dir;
-                if (!\is_dir($sourceDir)) {
-                    $this->logWarning('Source directory not found', [
+                if (!\is_dir(filename: $sourceDir)) {
+                    $this->logWarning(message: 'Source directory not found', context: [
                         'package' => $package->name,
                         'directory' => $sourceDir,
                     ]);
                     continue;
                 }
 
-                $this->logDebug('Creating FileSource for directory', [
+                $this->logDebug(message: 'Creating FileSource for directory', context: [
                     'package' => $package->name,
                     'directory' => $sourceDir,
                 ]);
@@ -177,17 +177,17 @@ final readonly class ComposerSourceFetcher implements SourceFetcherInterface
 
                 // Use the FileSourceFetcher to fetch the content
                 try {
-                    $content = $this->fileSourceFetcher->fetch($fileSource, $modifiersApplier);
-                    $builder->addText($content);
+                    $content = $this->fileSourceFetcher->fetch(source: $fileSource, modifiersApplier: $modifiersApplier);
+                    $builder->addText(text: $content);
                 } catch (\Throwable $e) {
-                    $this->logError('Error fetching package source', [
+                    $this->logError(message: 'Error fetching package source', context: [
                         'package' => $package->name,
                         'directory' => $sourceDir,
                         'error' => $e->getMessage(),
                     ]);
 
                     $builder->addText(
-                        \sprintf(
+                        text: \sprintf(
                             "Error fetching source for %s in directory %s: %s",
                             $package->name,
                             $sourceDir,
@@ -201,9 +201,9 @@ final readonly class ComposerSourceFetcher implements SourceFetcherInterface
         }
 
         $content = $builder->build();
-        $this->logInfo('Composer source content fetched successfully', [
+        $this->logInfo(message: 'Composer source content fetched successfully', context: [
             'packageCount' => $packages->count(),
-            'contentLength' => \strlen($content),
+            'contentLength' => \strlen(string: $content),
         ]);
 
         return $content;

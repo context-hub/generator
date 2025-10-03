@@ -46,7 +46,7 @@ abstract class AbstractFileSourceTestCase extends FeatureTestCases
      */
     protected function getSourceType(SourceInterface $source): string
     {
-        return \json_decode(\json_encode($source), true)['type'] ?? '';
+        return \json_decode(json: \json_encode(value: $source), associative: true)['type'] ?? '';
     }
 
     /**
@@ -58,19 +58,19 @@ abstract class AbstractFileSourceTestCase extends FeatureTestCases
 
         // Create a basic structure
         $rootFile = $tempDir . '/root_file.txt';
-        \file_put_contents($rootFile, 'Root file content');
+        \file_put_contents(filename: $rootFile, data: 'Root file content');
 
         $subDir = $tempDir . '/subdir';
-        \mkdir($subDir, 0777, true);
+        \mkdir(directory: $subDir, recursive: true);
 
         $nestedFile = $subDir . '/nested_file.txt';
-        \file_put_contents($nestedFile, 'Nested file content');
+        \file_put_contents(filename: $nestedFile, data: 'Nested file content');
 
         $deepDir = $subDir . '/deep';
-        \mkdir($deepDir, 0777, true);
+        \mkdir(directory: $deepDir, recursive: true);
 
         $deepFile = $deepDir . '/deep_file.txt';
-        \file_put_contents($deepFile, 'Deep nested file content');
+        \file_put_contents(filename: $deepFile, data: 'Deep nested file content');
 
         return $tempDir;
     }

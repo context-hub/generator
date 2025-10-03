@@ -40,18 +40,18 @@ final class UrlSource extends BaseSource
      */
     public function hasSelector(): bool
     {
-        return $this->selector !== null && \trim($this->selector) !== '';
+        return $this->selector !== null && \trim(string: $this->selector) !== '';
     }
 
     #[\Override]
     public function jsonSerialize(): array
     {
-        return \array_filter([
+        return \array_filter(array: [
             'type' => 'url',
             ...parent::jsonSerialize(),
             'urls' => $this->urls,
             'selector' => $this->getSelector(),
             'headers' => $this->headers,
-        ], static fn($value) => $value !== null && $value !== '' && $value !== []);
+        ], callback: static fn($value) => $value !== null && $value !== '' && $value !== []);
     }
 }

@@ -44,7 +44,7 @@ final readonly class FileSourceFetcher implements SourceFetcherInterface
             $this->logger?->error($errorMessage, [
                 'sourceType' => $source::class,
             ]);
-            throw new \InvalidArgumentException($errorMessage);
+            throw new \InvalidArgumentException(message: $errorMessage);
         }
 
         $this->logger?->info('Fetching file source content', [
@@ -56,7 +56,7 @@ final readonly class FileSourceFetcher implements SourceFetcherInterface
         $this->logger?->debug('Creating content builder');
         $builder = $this->builderFactory
             ->create()
-            ->addTitle($source->getDescription());
+            ->addTitle(title: $source->getDescription());
 
         // Execute find operation and get the result
         $this->logger?->debug('Finding files', [
@@ -69,12 +69,12 @@ final readonly class FileSourceFetcher implements SourceFetcherInterface
             $fileCount = $finderResult->count();
             $this->logger?->debug('Files found', ['fileCount' => $fileCount]);
         } catch (\Throwable $e) {
-            if (\str_contains($e->getMessage(), 'must call one of in() or append() methods')) {
+            if (\str_contains(haystack: $e->getMessage(), needle: 'must call one of in() or append() methods')) {
                 $errorMessage = \sprintf(
                     'Some directories or files contain invalid paths: %s',
                     \implode(
-                        ', ',
-                        [
+                        separator: ', ',
+                        array: [
                             ...(array) $source->in(),
                             ...(array) $source->files(),
                         ],
@@ -83,7 +83,7 @@ final readonly class FileSourceFetcher implements SourceFetcherInterface
                 $this->logger?->error($errorMessage, [
                     'error' => $e->getMessage(),
                 ]);
-                throw new \RuntimeException($errorMessage);
+                throw new \RuntimeException(message: $errorMessage);
             }
 
             $errorMessage = \sprintf('Error while finding files: %s', $e->getMessage());
@@ -92,13 +92,13 @@ final readonly class FileSourceFetcher implements SourceFetcherInterface
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
             ]);
-            throw new \RuntimeException($errorMessage);
+            throw new \RuntimeException(message: $errorMessage);
         }
 
         // Generate tree view if requested
         if ($source->treeView->enabled) {
             $this->logger?->debug('Adding tree view to output');
-            $builder->addTreeView($finderResult->treeView);
+            $builder->addTreeView(treeView: $finderResult->treeView);
         }
 
         // Process each file
@@ -115,7 +115,7 @@ final readonly class FileSourceFetcher implements SourceFetcherInterface
                 );
             }
 
-            $relativePath = \trim(\str_replace($this->basePath, '', $file->getPath()));
+            $relativePath = \trim(string: \str_replace(search: $this->basePath, replace: '', subject: $file->getPath()));
             $fileName = $file->getFilename();
             $filePath = empty($relativePath) ? $fileName : "$relativePath/$fileName";
 
@@ -126,13 +126,13 @@ final readonly class FileSourceFetcher implements SourceFetcherInterface
                 'size' => $file->getSize(),
             ]);
 
-            $language = $this->detectLanguage($filePath);
-            $content = $modifiersApplier->apply($this->getContent($file, $source), $fileName);
+            $language = $this->detectLanguage(filePath: $filePath);
+            $content = $modifiersApplier->apply($this->getContent(file: $file, source: $source), $fileName);
 
             $this->logger?->debug('Adding file to content', [
                 'file' => $filePath,
                 'language' => $language,
-                'contentLength' => \strlen($content),
+                'contentLength' => \strlen(string: $content),
             ]);
 
             $builder->addCodeBlock(
@@ -145,7 +145,7 @@ final readonly class FileSourceFetcher implements SourceFetcherInterface
         $content = $builder->build();
         $this->logger?->info('File source content fetched successfully', [
             'fileCount' => $fileCount,
-            'contentLength' => \strlen($content),
+            'contentLength' => \strlen(string: $content),
         ]);
 
         // Return built content
@@ -161,7 +161,7 @@ final readonly class FileSourceFetcher implements SourceFetcherInterface
      */
     protected function getContent(SplFileInfo $file, SourceInterface $source): string
     {
-        \assert($source instanceof FileSource);
+        \assert(assertion: $source instanceof FileSource);
 
         $filePath = $file->getRelativePathname();
         $this->logger?->debug('Reading file content', ['file' => $filePath]);
@@ -170,7 +170,7 @@ final readonly class FileSourceFetcher implements SourceFetcherInterface
 
     private function detectLanguage(string $filePath): ?string
     {
-        $extension = \pathinfo($filePath, PATHINFO_EXTENSION);
+        $extension = \pathinfo(path: $filePath, flags: PATHINFO_EXTENSION);
 
         $this->logger?->debug('Detecting language for file', [
             'file' => $filePath,

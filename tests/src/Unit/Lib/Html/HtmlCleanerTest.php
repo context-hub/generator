@@ -25,7 +25,7 @@ class HtmlCleanerTest extends TestCase
             ->willReturn($expectedMarkdown);
 
         $cleaner = new HtmlCleaner(htmlConverter: $htmlConverter);
-        $result = $cleaner->clean($html);
+        $result = $cleaner->clean(html: $html);
 
         $this->assertEquals($expectedMarkdown, $result);
     }
@@ -41,7 +41,7 @@ class HtmlCleanerTest extends TestCase
             ->method('convert');
 
         $cleaner = new HtmlCleaner(htmlConverter: $htmlConverter);
-        $result = $cleaner->clean($html);
+        $result = $cleaner->clean(html: $html);
 
         $this->assertEquals('', $result);
     }
@@ -52,7 +52,7 @@ class HtmlCleanerTest extends TestCase
         $html = '<div><h1>Test Title</h1><p>This is a test paragraph</p></div>';
 
         $cleaner = new HtmlCleaner();
-        $result = $cleaner->clean($html);
+        $result = $cleaner->clean(html: $html);
 
         // Just verify that conversion happens without errors
         $this->assertIsString($result);

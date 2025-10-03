@@ -28,7 +28,7 @@ final readonly class RenderConfig implements \JsonSerializable
     public static function fromArray(array $data): self
     {
         $strategy = isset($data['strategy'])
-            ? RenderStrategyEnum::fromString($data['strategy'])
+            ? RenderStrategyEnum::fromString(value: $data['strategy'])
             : RenderStrategyEnum::Raw;
 
         return new self(
@@ -44,7 +44,7 @@ final readonly class RenderConfig implements \JsonSerializable
     public static function fromString(string $render): self
     {
         return new self(
-            strategy: RenderStrategyEnum::fromString($render),
+            strategy: RenderStrategyEnum::fromString(value: $render),
             showStats: true,
             contextLines: 3,
         );
@@ -55,7 +55,7 @@ final readonly class RenderConfig implements \JsonSerializable
      */
     public function jsonSerialize(): array
     {
-        return \array_filter([
+        return \array_filter(array: [
             'strategy' => $this->strategy->value,
             'showStats' => $this->showStats,
             'contextLines' => $this->contextLines,

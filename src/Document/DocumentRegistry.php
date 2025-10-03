@@ -46,12 +46,12 @@ final class DocumentRegistry implements RegistryInterface, \ArrayAccess
 
     public function getIterator(): \Traversable
     {
-        return new \ArrayIterator($this->getItems());
+        return new \ArrayIterator(array: $this->getItems());
     }
 
     public function offsetExists(mixed $offset): bool
     {
-        return \array_key_exists($offset, $this->documents);
+        return \array_key_exists(key: $offset, array: $this->documents);
     }
 
     public function offsetGet(mixed $offset): mixed
@@ -61,11 +61,11 @@ final class DocumentRegistry implements RegistryInterface, \ArrayAccess
 
     public function offsetSet(mixed $offset, mixed $value): void
     {
-        throw new \BadMethodCallException('Cannot set value directly. Use register() method.');
+        throw new \BadMethodCallException(message: 'Cannot set value directly. Use register() method.');
     }
 
     public function offsetUnset(mixed $offset): void
     {
-        throw new \BadMethodCallException('Cannot unset value directly.');
+        throw new \BadMethodCallException(message: 'Cannot unset value directly.');
     }
 }

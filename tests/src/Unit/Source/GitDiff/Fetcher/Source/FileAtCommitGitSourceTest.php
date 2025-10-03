@@ -17,20 +17,20 @@ final class FileAtCommitGitSourceTest extends GitSourceTestCase
     #[Test]
     public function it_should_support_commit_with_path_format(): void
     {
-        $this->assertTrue($this->fileAtCommitGitSource->supports('abcdef1 -- path/to/file.php'));
-        $this->assertTrue($this->fileAtCommitGitSource->supports('HEAD -- src/'));
-        $this->assertTrue($this->fileAtCommitGitSource->supports('main -- vendor/'));
+        $this->assertTrue($this->fileAtCommitGitSource->supports(commitReference: 'abcdef1 -- path/to/file.php'));
+        $this->assertTrue($this->fileAtCommitGitSource->supports(commitReference: 'HEAD -- src/'));
+        $this->assertTrue($this->fileAtCommitGitSource->supports(commitReference: 'main -- vendor/'));
     }
 
     #[Test]
     public function it_should_not_support_other_formats(): void
     {
-        $this->assertFalse($this->fileAtCommitGitSource->supports(''));
-        $this->assertFalse($this->fileAtCommitGitSource->supports('--cached'));
-        $this->assertFalse($this->fileAtCommitGitSource->supports('stash@{0}'));
-        $this->assertFalse($this->fileAtCommitGitSource->supports('HEAD~1..HEAD'));
-        $this->assertFalse($this->fileAtCommitGitSource->supports('HEAD@{1.week.ago}..HEAD'));
-        $this->assertFalse($this->fileAtCommitGitSource->supports('abcdef1'));
+        $this->assertFalse($this->fileAtCommitGitSource->supports(commitReference: ''));
+        $this->assertFalse($this->fileAtCommitGitSource->supports(commitReference: '--cached'));
+        $this->assertFalse($this->fileAtCommitGitSource->supports(commitReference: 'stash@{0}'));
+        $this->assertFalse($this->fileAtCommitGitSource->supports(commitReference: 'HEAD~1..HEAD'));
+        $this->assertFalse($this->fileAtCommitGitSource->supports(commitReference: 'HEAD@{1.week.ago}..HEAD'));
+        $this->assertFalse($this->fileAtCommitGitSource->supports(commitReference: 'abcdef1'));
     }
 
     #[Test]
@@ -46,7 +46,7 @@ final class FileAtCommitGitSourceTest extends GitSourceTestCase
 
         // Get only src files at this commit
         $commitReference = $commitHash . ' -- src/';
-        $files = $this->fileAtCommitGitSource->getChangedFiles($this->repoDir, $commitReference);
+        $files = $this->fileAtCommitGitSource->getChangedFiles(repository: $this->repoDir, commitReference: $commitReference);
 
         // Verify that only src/test1.php is returned
         $this->assertCount(1, $files);
@@ -69,7 +69,7 @@ final class FileAtCommitGitSourceTest extends GitSourceTestCase
 
         // Get only model files
         $commitReference = $commitHash . ' -- src/models/';
-        $files = $this->fileAtCommitGitSource->getChangedFiles($this->repoDir, $commitReference);
+        $files = $this->fileAtCommitGitSource->getChangedFiles(repository: $this->repoDir, commitReference: $commitReference);
 
         // Verify that only model files are returned (and the commit hash is filtered out)
         $this->assertCount(2, $files);
@@ -91,7 +91,7 @@ final class FileAtCommitGitSourceTest extends GitSourceTestCase
 
         // Get the file at the first commit
         $commitReference = $commitHash . ' -- test.php';
-        $content = $this->fileAtCommitGitSource->getFileDiff($this->repoDir, $commitReference, 'test.php');
+        $content = $this->fileAtCommitGitSource->getFileDiff(repository: $this->repoDir, commitReference: $commitReference, file: 'test.php');
 
         // Verify that the original content is returned
         $this->assertStringContainsString('<?php echo "Original";', $content);
@@ -107,7 +107,7 @@ final class FileAtCommitGitSourceTest extends GitSourceTestCase
 
         // Try to get a file that doesn't match the path filter
         $commitReference = $commitHash . ' -- src/';
-        $content = $this->fileAtCommitGitSource->getFileDiff($this->repoDir, $commitReference, 'vendor/file2.php');
+        $content = $this->fileAtCommitGitSource->getFileDiff(repository: $this->repoDir, commitReference: $commitReference, file: 'vendor/file2.php');
 
         // Verify that an empty string is returned
         $this->assertSame('', $content);
@@ -117,7 +117,7 @@ final class FileAtCommitGitSourceTest extends GitSourceTestCase
     public function it_should_format_reference_for_display(): void
     {
         $commitRef = 'abc1234 -- src/file.php';
-        $displayText = $this->fileAtCommitGitSource->formatReferenceForDisplay($commitRef);
+        $displayText = $this->fileAtCommitGitSource->formatReferenceForDisplay(commitReference: $commitRef);
 
         $this->assertSame('Files at commit abc1234 with path: src/file.php', $displayText);
     }
@@ -126,6 +126,6 @@ final class FileAtCommitGitSourceTest extends GitSourceTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->fileAtCommitGitSource = new FileAtCommitGitSource($this->commandExecutorMock, new Files(), $this->logger);
+        $this->fileAtCommitGitSource = new FileAtCommitGitSource(commandsExecutor: $this->commandExecutorMock, files: new Files(), logger: $this->logger);
     }
 }

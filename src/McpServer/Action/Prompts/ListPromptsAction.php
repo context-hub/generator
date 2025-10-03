@@ -38,6 +38,6 @@ final readonly class ListPromptsAction
             $prompts[] = $prompt->prompt;
         }
 
-        return new ListPromptsResult($prompts);
+        return new ListPromptsResult(prompts: $prompts);
     }
 }

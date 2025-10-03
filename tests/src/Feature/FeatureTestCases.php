@@ -38,15 +38,15 @@ abstract class FeatureTestCases extends AppTestCase
     {
         parent::tearDown();
 
-        if (\is_dir($this->getContextsDir())) {
+        if (\is_dir(filename: $this->getContextsDir())) {
             $files = new Files();
-            $files->deleteDirectory($this->getContextsDir());
+            $files->deleteDirectory(directory: $this->getContextsDir());
         }
     }
 
     protected function getContextsDir(string $path = ''): string
     {
-        return (string) FSPath::create($this->getFixturesDir('Compiler/.context'))->join($path);
+        return (string) FSPath::create(path: $this->getFixturesDir('Compiler/.context'))->join($path);
     }
 
     abstract protected function getConfigPath(): string;
@@ -58,8 +58,8 @@ abstract class FeatureTestCases extends AppTestCase
 
     private function compileDocuments(DocumentCompiler $compiler, ConfigurationProvider $configProvider): void
     {
-        $loader = $configProvider->fromPath($this->getConfigPath());
+        $loader = $configProvider->fromPath(configPath: $this->getConfigPath());
 
-        $this->assertConfigItems($compiler, new ConfigRegistryAccessor($loader->load()));
+        $this->assertConfigItems($compiler, new ConfigRegistryAccessor(registry: $loader->load()));
     }
 }

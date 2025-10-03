@@ -39,12 +39,12 @@ final readonly class GitCommitAction
 
         // Check if we're in a valid git repository
         if (!$this->commandsExecutor->isValidRepository($repository)) {
-            return ToolResult::error('Not a git repository (or any of the parent directories)');
+            return ToolResult::error(error: 'Not a git repository (or any of the parent directories)');
         }
 
         // Validate commit message
-        if (empty(\trim($request->message))) {
-            return ToolResult::error('Commit message cannot be empty');
+        if (empty(\trim(string: $request->message))) {
+            return ToolResult::error(error: 'Commit message cannot be empty');
         }
 
         try {
@@ -60,14 +60,14 @@ final readonly class GitCommitAction
             }
 
             // Check if there are changes to commit (unless allowEmpty is true)
-            if (!$this->hasChangesToCommit($repository, $request->stageAll)) {
-                return ToolResult::error('No changes to commit. Use git-add to stage files or enable stageAll option');
+            if (!$this->hasChangesToCommit(repository: $repository, stageAll: $request->stageAll)) {
+                return ToolResult::error(error: 'No changes to commit. Use git-add to stage files or enable stageAll option');
             }
 
-            $command = new Command($repository, $commandParts);
+            $command = new Command(repository: $repository, command: $commandParts);
             $result = $this->commandsExecutor->executeString($command);
 
-            return ToolResult::text($result);
+            return ToolResult::text(text: $result);
         } catch (GitCommandException $e) {
             $this->logger->error('Error executing git commit', [
                 'repository' => $repository,
@@ -76,7 +76,7 @@ final readonly class GitCommitAction
                 'code' => $e->getCode(),
             ]);
 
-            return ToolResult::error($e->getMessage());
+            return ToolResult::error(error: $e->getMessage());
         } catch (\Throwable $e) {
             $this->logger->error('Unexpected error during git commit', [
                 'repository' => $repository,
@@ -84,7 +84,7 @@ final readonly class GitCommitAction
                 'error' => $e->getMessage(),
             ]);
 
-            return ToolResult::error($e->getMessage());
+            return ToolResult::error(error: $e->getMessage());
         }
     }
 
@@ -93,14 +93,14 @@ final readonly class GitCommitAction
         try {
             if ($stageAll) {
                 // Check if there are any tracked files with changes
-                $statusCommand = new Command($repository, ['status', '--porcelain']);
+                $statusCommand = new Command(repository: $repository, command: ['status', '--porcelain']);
                 $status = $this->commandsExecutor->executeString($statusCommand);
-                return !empty(\trim($status));
+                return !empty(\trim(string: $status));
             }
             // Check if there are staged changes
-            $diffCommand = new Command($repository, ['diff', '--cached', '--name-only']);
+            $diffCommand = new Command(repository: $repository, command: ['diff', '--cached', '--name-only']);
             $stagedFiles = $this->commandsExecutor->executeString($diffCommand);
-            return !empty(\trim($stagedFiles));
+            return !empty(\trim(string: $stagedFiles));
         } catch (\Throwable) {
             // If we can't check, assume there might be changes to avoid blocking
             return true;

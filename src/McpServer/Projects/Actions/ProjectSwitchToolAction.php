@@ -41,7 +41,7 @@ final readonly class ProjectSwitchToolAction
             $pathOrAlias = $request->alias;
 
             if (empty($pathOrAlias)) {
-                return ToolResult::error('Missing pathOrAlias parameter');
+                return ToolResult::error(error: 'Missing pathOrAlias parameter');
             }
 
             // Handle using an alias as the path
@@ -49,27 +49,27 @@ final readonly class ProjectSwitchToolAction
             $wasAlias = $resolvedPath !== $pathOrAlias;
 
             // Normalize path to absolute path
-            $projectPath = $this->normalizePath($resolvedPath);
+            $projectPath = $this->normalizePath(path: $resolvedPath);
 
             // Check if the project exists in our registry
             $projects = $this->projectService->getProjects();
             if (!isset($projects[$projectPath])) {
-                $availableProjects = \array_keys($projects);
-                $availableAliases = \array_keys($this->projectService->getAliases());
+                $availableProjects = \array_keys(array: $projects);
+                $availableAliases = \array_keys(array: $this->projectService->getAliases());
 
                 $suggestions = [];
                 if (!empty($availableProjects)) {
-                    $suggestions[] = 'Available project paths: ' . \implode(', ', $availableProjects);
+                    $suggestions[] = 'Available project paths: ' . \implode(separator: ', ', array: $availableProjects);
                 }
                 if (!empty($availableAliases)) {
-                    $suggestions[] = 'Available aliases: ' . \implode(', ', $availableAliases);
+                    $suggestions[] = 'Available aliases: ' . \implode(separator: ', ', array: $availableAliases);
                 }
 
                 return ToolResult::error(
-                    \sprintf(
+                    error: \sprintf(
                         "Project '%s' is not registered.\n%s",
                         $projectPath,
-                        \implode("\n", $suggestions),
+                        \implode(separator: "\n", array: $suggestions),
                     ),
                 );
             }
@@ -101,7 +101,7 @@ final readonly class ProjectSwitchToolAction
                     resolvedFromAlias: $aliasResolution,
                 );
 
-                return ToolResult::success($response);
+                return ToolResult::success(data: $response);
             }
 
             $response = new ProjectSwitchResponse(
@@ -109,7 +109,7 @@ final readonly class ProjectSwitchToolAction
                 message: \sprintf("Failed to switch to project '%s'", $projectPath),
             );
 
-            return ToolResult::error($response->message);
+            return ToolResult::error(error: $response->message);
         } catch (\Throwable $e) {
             $this->logger->error('Error switching project', [
                 'pathOrAlias' => $request->alias,
@@ -117,7 +117,7 @@ final readonly class ProjectSwitchToolAction
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return ToolResult::error($e->getMessage());
+            return ToolResult::error(error: $e->getMessage());
         }
     }
 
@@ -131,7 +131,7 @@ final readonly class ProjectSwitchToolAction
             return (string) FSPath::cwd();
         }
 
-        $pathObj = FSPath::create($path);
+        $pathObj = FSPath::create(path: $path);
 
         // If path is relative, make it absolute from the current directory
         if ($pathObj->isRelative()) {

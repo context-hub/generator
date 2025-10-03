@@ -21,7 +21,7 @@ final class CompositeVariableProvider implements VariableProviderInterface
         VariableProviderInterface ...$providers,
     ) {
         foreach ($providers as $provider) {
-            $this->addProvider($provider);
+            $this->addProvider(provider: $provider);
         }
     }
 

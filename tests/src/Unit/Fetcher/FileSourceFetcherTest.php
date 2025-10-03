@@ -23,7 +23,7 @@ class FileSourceFetcherTest extends TestCase
     public function it_should_not_support_other_sources(): void
     {
         $source = $this->createMock(SourceInterface::class);
-        $this->assertFalse($this->fetcher->supports($source));
+        $this->assertFalse($this->fetcher->supports(source: $source));
     }
 
     #[Test]
@@ -34,7 +34,7 @@ class FileSourceFetcherTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Source must be an instance of FileSource');
 
-        $this->fetcher->fetch($source, new ModifiersApplier([]));
+        $this->fetcher->fetch(source: $source, modifiersApplier: new ModifiersApplier(modifiers: []));
     }
 
     protected function setUp(): void

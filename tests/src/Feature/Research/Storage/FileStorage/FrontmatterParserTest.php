@@ -33,7 +33,7 @@ This is the main content of the entry.
 Some more content here.
 MARKDOWN;
 
-        $result = $this->parser->parse($content);
+        $result = $this->parser->parse(content: $content);
 
         $this->assertArrayHasKey('frontmatter', $result);
         $this->assertArrayHasKey('content', $result);
@@ -62,7 +62,7 @@ This is just regular markdown content without frontmatter.
 More content here.
 MARKDOWN;
 
-        $result = $this->parser->parse($content);
+        $result = $this->parser->parse(content: $content);
 
         $this->assertArrayHasKey('frontmatter', $result);
         $this->assertArrayHasKey('content', $result);
@@ -83,7 +83,7 @@ MARKDOWN;
 This has empty frontmatter.
 MARKDOWN;
 
-        $result = $this->parser->parse($content);
+        $result = $this->parser->parse(content: $content);
 
         $this->assertEmpty($result['frontmatter']);
         $this->assertEquals("# Content Only\n\nThis has empty frontmatter.", $result['content']);
@@ -115,7 +115,7 @@ tags:
 This entry has complex YAML frontmatter.
 MARKDOWN;
 
-        $result = $this->parser->parse($content);
+        $result = $this->parser->parse(content: $content);
 
         $frontmatter = $result['frontmatter'];
         $this->assertEquals('entry_123', $frontmatter['entry_info']['id']);
@@ -139,7 +139,7 @@ MARKDOWN;
 
         $content = "# Combined Entry\n\nThis content was combined with frontmatter.";
 
-        $result = $this->parser->combine($frontmatter, $content);
+        $result = $this->parser->combine(frontmatter: $frontmatter, content: $content);
 
         $expectedOutput = <<<'MARKDOWN'
 ---
@@ -164,7 +164,7 @@ MARKDOWN;
         $frontmatter = [];
         $content = "# Content Only\n\nJust content, no frontmatter.";
 
-        $result = $this->parser->combine($frontmatter, $content);
+        $result = $this->parser->combine(frontmatter: $frontmatter, content: $content);
 
         $this->assertEquals($content, $result);
     }
@@ -184,7 +184,7 @@ priority: 5
 This content is not extracted.
 MARKDOWN;
 
-        $frontmatter = $this->parser->extractFrontmatter($content);
+        $frontmatter = $this->parser->extractFrontmatter(content: $content);
 
         $this->assertEquals('Extract Test', $frontmatter['title']);
         $this->assertEquals('published', $frontmatter['status']);
@@ -207,7 +207,7 @@ MARKDOWN;
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Failed to parse YAML frontmatter');
 
-        $this->parser->parse($content);
+        $this->parser->parse(content: $content);
     }
 
     #[Test]
@@ -225,7 +225,7 @@ special_chars: "αβγ 中文 العربية 🚀"
 Content with special characters.
 MARKDOWN;
 
-        $result = $this->parser->parse($content);
+        $result = $this->parser->parse(content: $content);
 
         $frontmatter = $result['frontmatter'];
         $this->assertEquals("Entry with 'quotes' and \"double quotes\"", $frontmatter['title']);
@@ -254,7 +254,7 @@ notes: >
 Test content.
 MARKDOWN;
 
-        $result = $this->parser->parse($content);
+        $result = $this->parser->parse(content: $content);
 
         $frontmatter = $result['frontmatter'];
         $this->assertEquals('Multiline Test', $frontmatter['title']);
@@ -291,7 +291,7 @@ function test() {
 > with multiple lines.
 MARKDOWN;
 
-        $result = $this->parser->parse($content);
+        $result = $this->parser->parse(content: $content);
 
         $expectedContent = <<<'CONTENT'
 # Main Title

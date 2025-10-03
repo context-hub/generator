@@ -32,8 +32,8 @@ final readonly class CompositeConfigParser implements ConfigParserInterface
 
             foreach ($parsedRegistry->all() as $type => $typeRegistry) {
                 // Only register if not already registered
-                if (!$registry->has($type)) {
-                    $registry->register($typeRegistry);
+                if (!$registry->has(type: $type)) {
+                    $registry->register(registry: $typeRegistry);
                 }
             }
         }

@@ -19,19 +19,19 @@ final readonly class LibrarySearchResult implements \JsonSerializable
      */
     public static function fromArray(array $data, int $maxResults = 2): self
     {
-        if (!isset($data['results']) || !\is_array($data['results'])) {
-            throw new \InvalidArgumentException('Invalid search response format: missing results array');
+        if (!isset($data['results']) || !\is_array(value: $data['results'])) {
+            throw new \InvalidArgumentException(message: 'Invalid search response format: missing results array');
         }
 
         $libraries = [];
-        $results = \array_slice($data['results'], 0, \min(5, \max(1, $maxResults)));
+        $results = \array_slice(array: $data['results'], offset: 0, length: \min(5, \max(1, $maxResults)));
 
         foreach ($results as $libraryData) {
-            $libraries[] = Library::fromArray($libraryData);
+            $libraries[] = Library::fromArray(data: $libraryData);
         }
 
         return new self(
-            count: \count($libraries),
+            count: \count(value: $libraries),
             libraries: $libraries,
         );
     }

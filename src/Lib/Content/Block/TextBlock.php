@@ -23,7 +23,7 @@ final readonly class TextBlock extends AbstractBlock
 
     public function getTag(): string
     {
-        return \trim($this->tag);
+        return \trim(string: $this->tag);
     }
 
     public function hasTag(): bool

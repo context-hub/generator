@@ -16,7 +16,7 @@ final readonly class PathExclusion extends AbstractExclusion
     public function __construct(string $pattern)
     {
         parent::__construct($pattern);
-        $this->normalizedPattern = $this->normalizePattern($pattern);
+        $this->normalizedPattern = $this->normalizePattern(pattern: $pattern);
     }
 
     /**
@@ -27,10 +27,10 @@ final readonly class PathExclusion extends AbstractExclusion
      */
     public function matches(string $path): bool
     {
-        $normalizedPath = $this->normalizePattern($path);
+        $normalizedPath = $this->normalizePattern(pattern: $path);
 
         return $normalizedPath === $this->normalizedPattern ||
-            \str_contains($normalizedPath, $this->normalizedPattern);
+            \str_contains(haystack: $normalizedPath, needle: $this->normalizedPattern);
     }
 
     public function jsonSerialize(): array

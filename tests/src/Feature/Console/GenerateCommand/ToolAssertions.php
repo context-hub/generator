@@ -111,7 +111,7 @@ trait ToolAssertions
                     \sprintf('Schema for tool [%s] does not have property [%s]', $id, $propName),
                 );
 
-                if (\is_array($propDef)) {
+                if (\is_array(value: $propDef)) {
                     foreach ($propDef as $key => $value) {
                         TestCase::assertArrayHasKey(
                             $key,
@@ -180,13 +180,13 @@ trait ToolAssertions
         TestCase::assertArrayHasKey('commands', $tool, \sprintf('Tool [%s] does not have commands', $id));
 
         TestCase::assertCount(
-            \count($expectedCommands),
+            \count(value: $expectedCommands),
             $tool['commands'],
             \sprintf(
                 'Tool [%s] has %d commands, expected %d',
                 $id,
-                \count($tool['commands']),
-                \count($expectedCommands),
+                \count(value: $tool['commands']),
+                \count(value: $expectedCommands),
             ),
         );
 
@@ -207,21 +207,21 @@ trait ToolAssertions
                 );
             }
 
-            if (isset($expectedCommand['args']) && \is_array($expectedCommand['args'])) {
+            if (isset($expectedCommand['args']) && \is_array(value: $expectedCommand['args'])) {
                 TestCase::assertCount(
-                    \count($expectedCommand['args']),
+                    \count(value: $expectedCommand['args']),
                     $actualCommand['args'],
                     \sprintf(
                         'Tool [%s] command at index [%d] has %d args, expected %d',
                         $id,
                         $index,
-                        \count($actualCommand['args']),
-                        \count($expectedCommand['args']),
+                        \count(value: $actualCommand['args']),
+                        \count(value: $expectedCommand['args']),
                     ),
                 );
 
                 foreach ($expectedCommand['args'] as $argIndex => $expectedArg) {
-                    if (\is_string($expectedArg)) {
+                    if (\is_string(value: $expectedArg)) {
                         TestCase::assertEquals(
                             $expectedArg,
                             $actualCommand['args'][$argIndex],
@@ -262,13 +262,13 @@ trait ToolAssertions
         TestCase::assertArrayHasKey('requests', $tool, \sprintf('Tool [%s] does not have requests', $id));
 
         TestCase::assertCount(
-            \count($expectedRequests),
+            \count(value: $expectedRequests),
             $tool['requests'],
             \sprintf(
                 'Tool [%s] has %d requests, expected %d',
                 $id,
-                \count($tool['requests']),
-                \count($expectedRequests),
+                \count(value: $tool['requests']),
+                \count(value: $expectedRequests),
             ),
         );
 
@@ -297,7 +297,7 @@ trait ToolAssertions
                 );
             }
 
-            if (isset($expectedRequest['headers']) && \is_array($expectedRequest['headers'])) {
+            if (isset($expectedRequest['headers']) && \is_array(value: $expectedRequest['headers'])) {
                 foreach ($expectedRequest['headers'] as $headerName => $expectedValue) {
                     TestCase::assertArrayHasKey(
                         $headerName,
@@ -338,7 +338,7 @@ trait ToolAssertions
         TestCase::assertCount(
             $count,
             $this->result['tools'] ?? [],
-            \sprintf('Expected %d tools, got %d', $count, \count($this->result['tools'] ?? [])),
+            \sprintf('Expected %d tools, got %d', $count, \count(value: $this->result['tools'] ?? [])),
         );
 
         return $this;

@@ -23,7 +23,7 @@ final readonly class LLMFriendlyRenderStrategy implements RenderStrategyInterfac
 
         // Handle empty diffs case
         if (empty($diffs)) {
-            $builder->addText("No changes found in this commit range.");
+            $builder->addText(text: "No changes found in this commit range.");
             return $builder;
         }
 
@@ -32,16 +32,16 @@ final readonly class LLMFriendlyRenderStrategy implements RenderStrategyInterfac
             // Only show stats if configured to do so
             if ($config->showStats && !empty($diffData['stats'])) {
                 $builder
-                    ->addTitle("Stats for {$file}", 2)
-                    ->addCodeBlock($diffData['stats']);
+                    ->addTitle(title: "Stats for {$file}", level: 2)
+                    ->addCodeBlock(code: $diffData['stats']);
             }
 
-            $diff = $this->convert($diffData['diff']);
+            $diff = $this->convert(diff: $diffData['diff']);
 
             // Add the enhanced diff
             $builder
-                ->addTitle("Diff for {$file}", 2)
-                ->addCodeBlock($diff, 'diff');
+                ->addTitle(title: "Diff for {$file}", level: 2)
+                ->addCodeBlock(code: $diff, language: 'diff');
         }
 
         return $builder;
@@ -56,44 +56,44 @@ final readonly class LLMFriendlyRenderStrategy implements RenderStrategyInterfac
             return $diff;
         }
 
-        $lines = \explode("\n", $diff);
+        $lines = \explode(separator: "\n", string: $diff);
         $enhancedLines = [];
         $additionBuffer = [];
         $removalBuffer = [];
 
         foreach ($lines as $line) {
             // Skip diff headers/metadata that start with 'diff', 'index', '---', '+++', or '@@'
-            if (\str_starts_with($line, 'diff') ||
-                \str_starts_with($line, 'index') ||
-                \str_starts_with($line, '---') ||
-                \str_starts_with($line, '+++') ||
-                \preg_match('/^@@\s+\-\d+,\d+\s+\+\d+,\d+\s+@@/', $line)) {
+            if (\str_starts_with(haystack: $line, needle: 'diff') ||
+                \str_starts_with(haystack: $line, needle: 'index') ||
+                \str_starts_with(haystack: $line, needle: '---') ||
+                \str_starts_with(haystack: $line, needle: '+++') ||
+                \preg_match(pattern: '/^@@\s+\-\d+,\d+\s+\+\d+,\d+\s+@@/', subject: $line)) {
                 // Output any pending buffers before handling metadata
-                $this->flushBuffers($enhancedLines, $additionBuffer, $removalBuffer);
+                $this->flushBuffers(output: $enhancedLines, additionBuffer: $additionBuffer, removalBuffer: $removalBuffer);
                 continue;
             }
 
             // Check for added lines
-            if (\str_starts_with($line, '+')) {
-                $additionBuffer[] = \substr($line, 1); // Remove the '+' sign
+            if (\str_starts_with(haystack: $line, needle: '+')) {
+                $additionBuffer[] = \substr(string: $line, offset: 1); // Remove the '+' sign
                 continue;
             }
 
             // Check for removed lines
-            if (\str_starts_with($line, '-')) {
-                $removalBuffer[] = \substr($line, 1); // Remove the '-' sign
+            if (\str_starts_with(haystack: $line, needle: '-')) {
+                $removalBuffer[] = \substr(string: $line, offset: 1); // Remove the '-' sign
                 continue;
             }
 
             // For context lines, flush any pending buffers first
-            $this->flushBuffers($enhancedLines, $additionBuffer, $removalBuffer);
+            $this->flushBuffers(output: $enhancedLines, additionBuffer: $additionBuffer, removalBuffer: $removalBuffer);
             $enhancedLines[] = $line;
         }
 
         // Ensure any remaining buffers are flushed at the end
-        $this->flushBuffers($enhancedLines, $additionBuffer, $removalBuffer);
+        $this->flushBuffers(output: $enhancedLines, additionBuffer: $additionBuffer, removalBuffer: $removalBuffer);
 
-        return \implode("\n", $enhancedLines);
+        return \implode(separator: "\n", array: $enhancedLines);
     }
 
     /**

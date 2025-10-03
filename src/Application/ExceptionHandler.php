@@ -24,14 +24,14 @@ final class ExceptionHandler implements ExceptionHandlerInterface, LoggerAwareIn
     public function __construct(
         #[Proxy] LoggerInterface $logger,
     ) {
-        $this->setLogger($logger);
+        $this->setLogger(logger: $logger);
         $this->handler = new \Spiral\Exceptions\ExceptionHandler();
         $this->bootBasicHandlers();
     }
 
     public function getRenderer(?string $format = null): ?ExceptionRendererInterface
     {
-        return $this->handler->getRenderer($format);
+        return $this->handler->getRenderer(format: $format);
     }
 
     public function setLogger(LoggerInterface $logger): void {}
@@ -46,22 +46,22 @@ final class ExceptionHandler implements ExceptionHandlerInterface, LoggerAwareIn
         ?Verbosity $verbosity = Verbosity::BASIC,
         ?string $format = null,
     ): string {
-        return $this->handler->render($exception, $verbosity, $format);
+        return $this->handler->render(exception: $exception, verbosity: $verbosity, format: $format);
     }
 
     public function canRender(string $format): bool
     {
-        return $this->handler->canRender($format);
+        return $this->handler->canRender(format: $format);
     }
 
     public function report(\Throwable $exception): void
     {
-        $this->handler->report($exception);
+        $this->handler->report(exception: $exception);
     }
 
     public function handleGlobalException(\Throwable $e): void
     {
-        $this->handler->handleGlobalException($e);
+        $this->handler->handleGlobalException(e: $e);
     }
 
     /**
@@ -69,7 +69,7 @@ final class ExceptionHandler implements ExceptionHandlerInterface, LoggerAwareIn
      */
     public function addRenderer(ExceptionRendererInterface $renderer): void
     {
-        $this->handler->addRenderer($renderer);
+        $this->handler->addRenderer(renderer: $renderer);
     }
 
     /**
@@ -77,7 +77,7 @@ final class ExceptionHandler implements ExceptionHandlerInterface, LoggerAwareIn
      */
     public function dontReport(string $exception): void
     {
-        $this->handler->dontReport($exception);
+        $this->handler->dontReport(exception: $exception);
     }
 
     /**
@@ -85,7 +85,7 @@ final class ExceptionHandler implements ExceptionHandlerInterface, LoggerAwareIn
      */
     public function addReporter(ExceptionReporterInterface|\Closure $reporter): void
     {
-        $this->handler->addReporter($reporter);
+        $this->handler->addReporter(reporter: $reporter);
     }
 
     /**
@@ -93,11 +93,11 @@ final class ExceptionHandler implements ExceptionHandlerInterface, LoggerAwareIn
      */
     public function setOutput(mixed $output): void
     {
-        $this->handler->setOutput($output);
+        $this->handler->setOutput(output: $output);
     }
 
     protected function bootBasicHandlers(): void
     {
-        $this->addRenderer(new ConsoleRenderer());
+        $this->addRenderer(renderer: new ConsoleRenderer());
     }
 }

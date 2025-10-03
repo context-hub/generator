@@ -43,7 +43,7 @@ final class GitlabClient implements GitlabClientInterface
         ]);
 
         // Format URL for GitLab API v4
-        $url = $this->buildApiUrl("/projects/{$repository->projectId}/repository/tree", [
+        $url = $this->buildApiUrl(path: "/projects/{$repository->projectId}/repository/tree", queryParams: [
             'ref' => $repository->branch,
             'path' => $path,
             'recursive' => 'false',
@@ -53,19 +53,19 @@ final class GitlabClient implements GitlabClientInterface
             'url' => $url,
         ]);
 
-        $response = $this->makeApiRequest($url);
-        $items = \json_decode($response, true);
+        $response = $this->makeApiRequest(url: $url);
+        $items = \json_decode(json: $response, associative: true);
 
-        if (!\is_array($items)) {
+        if (!\is_array(value: $items)) {
             $errorMessage = "Failed to parse GitLab API response for path: $path";
             $this->logger?->error($errorMessage, [
                 'response' => $response,
             ]);
-            throw new \RuntimeException($errorMessage);
+            throw new \RuntimeException(message: $errorMessage);
         }
 
         $this->logger?->debug('Got repository contents', [
-            'itemCount' => \count($items),
+            'itemCount' => \count(value: $items),
         ]);
 
         return $items;
@@ -80,7 +80,7 @@ final class GitlabClient implements GitlabClientInterface
         ]);
 
         // Format URL for GitLab API v4
-        $url = $this->buildApiUrl("/projects/{$repository->projectId}/repository/files/" . \rawurlencode($path), [
+        $url = $this->buildApiUrl(path: "/projects/{$repository->projectId}/repository/files/" . \rawurlencode(string: $path), queryParams: [
             'ref' => $repository->branch,
         ]);
 
@@ -88,15 +88,15 @@ final class GitlabClient implements GitlabClientInterface
             'url' => $url,
         ]);
 
-        $response = $this->makeApiRequest($url);
-        $data = \json_decode($response, true);
+        $response = $this->makeApiRequest(url: $url);
+        $data = \json_decode(json: $response, associative: true);
 
-        if (!\is_array($data) || !isset($data['content'])) {
+        if (!\is_array(value: $data) || !isset($data['content'])) {
             $errorMessage = "Failed to get file content for path: $path";
             $this->logger?->error($errorMessage, [
                 'response' => $response,
             ]);
-            throw new \RuntimeException($errorMessage);
+            throw new \RuntimeException(message: $errorMessage);
         }
 
         // GitLab returns file content as base64 encoded
@@ -105,11 +105,11 @@ final class GitlabClient implements GitlabClientInterface
         if ($content === false) {
             $errorMessage = "Failed to decode base64 content for path: $path";
             $this->logger?->error($errorMessage);
-            throw new \RuntimeException($errorMessage);
+            throw new \RuntimeException(message: $errorMessage);
         }
 
         $this->logger?->debug('Got file content', [
-            'contentLength' => \strlen($content),
+            'contentLength' => \strlen(string: $content),
         ]);
 
         return $content;
@@ -128,14 +128,14 @@ final class GitlabClient implements GitlabClientInterface
         $this->logger?->debug('Setting GitLab server URL', [
             'serverUrl' => $serverUrl,
         ]);
-        $this->serverUrl = \rtrim($serverUrl, '/');
+        $this->serverUrl = \rtrim(string: $serverUrl, characters: '/');
     }
 
     public function setHeaders(array $headers): void
     {
         $this->logger?->debug('Setting custom HTTP headers', [
-            'headerCount' => \count($headers),
-            'headers' => \array_keys($headers),
+            'headerCount' => \count(value: $headers),
+            'headers' => \array_keys(array: $headers),
         ]);
         $this->headers = $headers;
     }
@@ -152,7 +152,7 @@ final class GitlabClient implements GitlabClientInterface
         $url = "{$this->serverUrl}/api/v4{$path}";
 
         if (!empty($queryParams)) {
-            $url .= '?' . \http_build_query($queryParams);
+            $url .= '?' . \http_build_query(data: $queryParams);
         }
 
         return $url;
@@ -180,7 +180,7 @@ final class GitlabClient implements GitlabClientInterface
                     'statusCode' => $response->getStatusCode(),
                     'response' => $response->getBody(),
                 ]);
-                throw new \RuntimeException($errorMessage);
+                throw new \RuntimeException(message: $errorMessage);
             }
 
             return $response->getBody();
@@ -190,7 +190,7 @@ final class GitlabClient implements GitlabClientInterface
                 'url' => $url,
                 'exception' => $e,
             ]);
-            throw new \RuntimeException($errorMessage, 0, $e);
+            throw new \RuntimeException(message: $errorMessage, previous: $e);
         }
     }
 
