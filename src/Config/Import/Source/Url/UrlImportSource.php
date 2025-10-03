@@ -45,8 +45,8 @@ final class UrlImportSource extends AbstractImportSource
     {
         if (!$config instanceof UrlSourceConfig) {
             throw Exception\ImportSourceException::sourceNotSupported(
-                $config->getPath(),
-                $config->getType(),
+                path: $config->getPath(),
+                type: $config->getType(),
             );
         }
 
@@ -61,12 +61,12 @@ final class UrlImportSource extends AbstractImportSource
         }
 
         try {
-            $url = $this->container->get(VariableResolver::class)->resolve($config->url);
-            $headers = $this->container->get(VariableResolver::class)->resolve($config->headers);
+            $url = $this->container->get(id: VariableResolver::class)->resolve($config->url);
+            $headers = $this->container->get(id: VariableResolver::class)->resolve($config->headers);
 
             $this->logger->debug('Loading URL import', [
                 'url' => $url,
-                'headers' => \array_keys($headers),
+                'headers' => \array_keys(array: $headers),
             ]);
 
             // Fetch the content from the URL
@@ -75,21 +75,21 @@ final class UrlImportSource extends AbstractImportSource
 
             if (!$response->isSuccess()) {
                 throw new Exception\ImportSourceException(
-                    \sprintf('Failed to fetch URL: %s (status code: %d)', $url, $response->getStatusCode()),
+                    message: \sprintf('Failed to fetch URL: %s (status code: %d)', $url, $response->getStatusCode()),
                 );
             }
 
             $content = $response->getBody();
 
             // Determine content type and parse accordingly
-            $contentType = $this->getContentType($response->getHeader('Content-Type') ?? '');
+            $contentType = $this->getContentType(contentTypeHeader: $response->getHeader(name: 'Content-Type') ?? '');
             $extension = $config->getExtension();
 
             // Parse content based on content type or URL extension
-            $importedConfig = $this->parseContent($content, $contentType, $extension);
+            $importedConfig = $this->parseContent(content: $content, contentType: $contentType, extension: $extension);
 
             // Process selective imports if specified
-            return $this->processSelectiveImports($importedConfig, $config);
+            return $this->processSelectiveImports(config: $importedConfig, sourceConfig: $config);
         } catch (\Throwable $e) {
             $this->logger->error('URL import failed', [
                 'url' => $config->url,
@@ -97,8 +97,8 @@ final class UrlImportSource extends AbstractImportSource
             ]);
 
             throw Exception\ImportSourceException::networkError(
-                $config->url,
-                $e->getMessage(),
+                url: $config->url,
+                message: $e->getMessage(),
             );
         }
     }
@@ -114,8 +114,8 @@ final class UrlImportSource extends AbstractImportSource
     private function getContentType(string $contentTypeHeader): string
     {
         // Extract main content type, e.g. 'application/json; charset=utf-8' -> 'application/json'
-        if (\preg_match('/^([^;]+)/', $contentTypeHeader, $matches)) {
-            return \strtolower(\trim($matches[1]));
+        if (\preg_match(pattern: '/^([^;]+)/', subject: $contentTypeHeader, matches: $matches)) {
+            return \strtolower(string: \trim(string: $matches[1]));
         }
 
         return '';
@@ -128,18 +128,18 @@ final class UrlImportSource extends AbstractImportSource
     {
         // Try to determine format from content type
         if ($contentType === 'application/json') {
-            return (new StringJsonReader($content))->read('');
+            return (new StringJsonReader(jsonContent: $content))->read(path: '');
         }
 
         if ($contentType === 'application/yaml' || $contentType === 'application/x-yaml') {
-            return Yaml::parse($content);
+            return Yaml::parse(input: $content);
         }
 
         // If content type not determined, try by extension
         return match ($extension) {
-            'json' => (new StringJsonReader($content))->read(''),
-            'yaml', 'yml' => Yaml::parse($content),
-            default => throw new Exception\ImportSourceException('Unsupported content type for URL import'),
+            'json' => (new StringJsonReader(jsonContent: $content))->read(path: ''),
+            'yaml', 'yml' => Yaml::parse(input: $content),
+            default => throw new Exception\ImportSourceException(message: 'Unsupported content type for URL import'),
         };
     }
 }

@@ -67,7 +67,7 @@ final class GenerateCommand extends BaseCommand
             ->withOutputPath($this->workDir)
             ->withEnvFile($this->envFileName);
 
-        $container->getBinder('root')->bind(
+        $container->getBinder(scope: 'root')->bind(
             DirectoriesInterface::class,
             $dirs,
         );
@@ -95,10 +95,10 @@ final class GenerateCommand extends BaseCommand
                         // Get the appropriate loader based on options provided
                         if ($this->inlineJson !== null) {
                             $this->logger->info('Using inline JSON configuration...');
-                            $loader = $configProvider->fromString($this->inlineJson);
+                            $loader = $configProvider->fromString(jsonConfig: $this->inlineJson);
                         } elseif ($this->configPath !== null) {
                             $this->logger->info(\sprintf('Loading configuration from %s...', $this->configPath));
-                            $loader = $configProvider->fromPath($dirs->getConfigPath()->toString());
+                            $loader = $configProvider->fromPath(configPath: $dirs->getConfigPath()->toString());
                         } else {
                             $this->logger->info('Loading configuration from default location...');
                             $loader = $configProvider->fromDefaultLocation();
@@ -109,7 +109,7 @@ final class GenerateCommand extends BaseCommand
                         ]);
 
                         if ($this->asJson) {
-                            $this->output->writeln(\json_encode([
+                            $this->output->writeln(\json_encode(value: [
                                 'status' => 'error',
                                 'message' => 'Failed to load configuration',
                                 'error' => $e->getMessage(),
@@ -131,16 +131,16 @@ final class GenerateCommand extends BaseCommand
                     // Display summary header
                     $this->output->writeln('');
 
-                    $config = new ConfigRegistryAccessor($loader->load());
+                    $config = new ConfigRegistryAccessor(registry: $loader->load());
 
                     $imports = $config->getImports();
                     if ($imports !== null && !$this->asJson) {
-                        $renderer->renderImports($imports);
+                        $renderer->renderImports(imports: $imports);
                     }
 
                     if ($config->getDocuments() === null || $config->getDocuments()->getItems() === []) {
                         if ($this->asJson) {
-                            $this->output->writeln(\json_encode([
+                            $this->output->writeln(\json_encode(value: [
                                 'status' => 'success',
                                 'message' => 'No documents found in configuration.',
                                 'imports' => $imports,
@@ -159,10 +159,10 @@ final class GenerateCommand extends BaseCommand
                     foreach ($config->getDocuments() as $document) {
                         $this->logger->info(\sprintf('Compiling %s...', $document->description));
 
-                        $compiledDocument = $compiler->compile($document);
+                        $compiledDocument = $compiler->compile(document: $document);
 
                         if (!$this->asJson) {
-                            $renderer->renderCompilationResult($document, $compiledDocument);
+                            $renderer->renderCompilationResult(document: $document, compiledDocument: $compiledDocument);
                         } else {
                             $result[] = [
                                 'output_path' => $compiledDocument->outputPath,
@@ -173,7 +173,7 @@ final class GenerateCommand extends BaseCommand
                     }
 
                     if ($this->asJson) {
-                        $this->output->writeln(\json_encode([
+                        $this->output->writeln(\json_encode(value: [
                             'status' => 'success',
                             'message' => 'Documents compiled successfully',
                             'result' => $result,

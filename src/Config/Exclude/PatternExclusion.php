@@ -19,7 +19,7 @@ final readonly class PatternExclusion extends AbstractExclusion
     public function __construct(string $pattern)
     {
         parent::__construct($pattern);
-        $this->matcher = new PathMatcher($pattern);
+        $this->matcher = new PathMatcher(pattern: $pattern);
     }
 
     /**
@@ -29,7 +29,7 @@ final readonly class PatternExclusion extends AbstractExclusion
      */
     public function matches(string $path): bool
     {
-        return $this->matcher->isMatch($path);
+        return $this->matcher->isMatch(path: $path);
     }
 
     public function jsonSerialize(): array

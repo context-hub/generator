@@ -386,7 +386,7 @@ final class GithubSourceTest extends ConsoleTestCase
         $this->mockGithubClient = new MockGithubClient();
 
         // Register mock GitHub client in the container
-        $this->getContainer()->bindSingleton(GithubClientInterface::class, $this->mockGithubClient);
+        $this->getContainer()->bindSingleton(alias: GithubClientInterface::class, resolver: $this->mockGithubClient);
     }
 
     protected function buildContext(
@@ -397,7 +397,7 @@ final class GithubSourceTest extends ConsoleTestCase
         string $command = 'generate',
         bool $asJson = true,
     ): CompilingResult {
-        return (new ContextBuilder($this->getConsole()))->build(
+        return (new ContextBuilder(console: $this->getConsole()))->build(
             workDir: $workDir,
             configPath: $configPath,
             inlineJson: $inlineJson,

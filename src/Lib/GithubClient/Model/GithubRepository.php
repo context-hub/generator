@@ -14,9 +14,9 @@ final readonly class GithubRepository
         public string $repository,
         public string $branch = 'main',
     ) {
-        if (!\preg_match('/^([^\/]+)\/([^\/]+)$/', $repository)) {
+        if (!\preg_match(pattern: '/^([^\/]+)\/([^\/]+)$/', subject: $repository)) {
             throw new \InvalidArgumentException(
-                "Invalid repository format: $repository. Expected format: owner/repo",
+                message: "Invalid repository format: $repository. Expected format: owner/repo",
             );
         }
     }

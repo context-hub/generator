@@ -17,18 +17,18 @@ final class StagedGitSourceTest extends GitSourceTestCase
     #[Test]
     public function it_should_support_staged_references(): void
     {
-        $this->assertTrue($this->stagedGitSource->supports('--cached'));
-        $this->assertTrue($this->stagedGitSource->supports('staged'));
+        $this->assertTrue($this->stagedGitSource->supports(commitReference: '--cached'));
+        $this->assertTrue($this->stagedGitSource->supports(commitReference: 'staged'));
     }
 
     #[Test]
     public function it_should_not_support_other_formats(): void
     {
-        $this->assertFalse($this->stagedGitSource->supports(''));
-        $this->assertFalse($this->stagedGitSource->supports('HEAD~1..HEAD'));
-        $this->assertFalse($this->stagedGitSource->supports('stash@{0}'));
-        $this->assertFalse($this->stagedGitSource->supports('HEAD@{1.week.ago}..HEAD'));
-        $this->assertFalse($this->stagedGitSource->supports('abcdef1 -- path/to/file'));
+        $this->assertFalse($this->stagedGitSource->supports(commitReference: ''));
+        $this->assertFalse($this->stagedGitSource->supports(commitReference: 'HEAD~1..HEAD'));
+        $this->assertFalse($this->stagedGitSource->supports(commitReference: 'stash@{0}'));
+        $this->assertFalse($this->stagedGitSource->supports(commitReference: 'HEAD@{1.week.ago}..HEAD'));
+        $this->assertFalse($this->stagedGitSource->supports(commitReference: 'abcdef1 -- path/to/file'));
     }
 
     #[Test]
@@ -40,7 +40,7 @@ final class StagedGitSourceTest extends GitSourceTestCase
         $this->mockChangedFiles($expectedCommand, $expectedFiles);
 
         // Get the staged files
-        $stagedFiles = $this->stagedGitSource->getChangedFiles($this->repoDir, '--cached');
+        $stagedFiles = $this->stagedGitSource->getChangedFiles(repository: $this->repoDir, commitReference: '--cached');
 
         // Verify that only staged.txt is in the list
         $this->assertCount(1, $stagedFiles);
@@ -56,7 +56,7 @@ final class StagedGitSourceTest extends GitSourceTestCase
         $this->mockFileDiff($expectedCommand, $expectedDiff);
 
         // Get the diff for the staged file
-        $diff = $this->stagedGitSource->getFileDiff($this->repoDir, '--cached', 'existing.txt');
+        $diff = $this->stagedGitSource->getFileDiff(repository: $this->repoDir, commitReference: '--cached', file: 'existing.txt');
 
         // Verify that the diff contains expected changes
         $this->assertStringContainsString('-Original content', $diff);
@@ -68,12 +68,12 @@ final class StagedGitSourceTest extends GitSourceTestCase
     {
         $this->assertSame(
             'Changes staged for commit',
-            $this->stagedGitSource->formatReferenceForDisplay('--cached'),
+            $this->stagedGitSource->formatReferenceForDisplay(commitReference: '--cached'),
         );
 
         $this->assertSame(
             'Changes staged for commit',
-            $this->stagedGitSource->formatReferenceForDisplay('staged'),
+            $this->stagedGitSource->formatReferenceForDisplay(commitReference: 'staged'),
         );
     }
 
@@ -86,7 +86,7 @@ final class StagedGitSourceTest extends GitSourceTestCase
         $this->mockFileDiff($expectedCommand, $expectedDiff);
 
         // Get the diff for the new staged file
-        $diff = $this->stagedGitSource->getFileDiff($this->repoDir, '--cached', 'new-staged.txt');
+        $diff = $this->stagedGitSource->getFileDiff(repository: $this->repoDir, commitReference: '--cached', file: 'new-staged.txt');
 
         // Verify that the diff shows the new file content
         $this->assertStringContainsString('+New staged content', $diff);
@@ -100,7 +100,7 @@ final class StagedGitSourceTest extends GitSourceTestCase
         $this->mockChangedFiles($expectedCommand, []);
 
         // Get staged files when there are none
-        $stagedFiles = $this->stagedGitSource->getChangedFiles($this->repoDir, '--cached');
+        $stagedFiles = $this->stagedGitSource->getChangedFiles(repository: $this->repoDir, commitReference: '--cached');
 
         // Verify that the list is empty
         $this->assertEmpty($stagedFiles);
@@ -115,7 +115,7 @@ final class StagedGitSourceTest extends GitSourceTestCase
         $this->mockChangedFiles($expectedCommand, $expectedFiles);
 
         // Get the staged files
-        $stagedFiles = $this->stagedGitSource->getChangedFiles($this->repoDir, '--cached');
+        $stagedFiles = $this->stagedGitSource->getChangedFiles(repository: $this->repoDir, commitReference: '--cached');
 
         // Verify that all staged files are in the list
         $this->assertCount(3, $stagedFiles);
@@ -128,6 +128,6 @@ final class StagedGitSourceTest extends GitSourceTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->stagedGitSource = new StagedGitSource($this->commandExecutorMock, new Files(), $this->logger);
+        $this->stagedGitSource = new StagedGitSource(commandsExecutor: $this->commandExecutorMock, files: new Files(), logger: $this->logger);
     }
 }

@@ -42,15 +42,15 @@ final readonly class ReleaseManager
 
         if (!$response->isSuccess()) {
             throw new \RuntimeException(
-                "Failed to fetch latest release. Server returned status code {$response->getStatusCode()}",
+                message: "Failed to fetch latest release. Server returned status code {$response->getStatusCode()}",
             );
         }
 
         try {
             $data = $response->getJson();
-            return Release::fromApiResponse($data);
+            return Release::fromApiResponse(data: $data);
         } catch (HttpException $e) {
-            throw new \RuntimeException("Failed to parse GitHub response: {$e->getMessage()}", 0, $e);
+            throw new \RuntimeException(message: "Failed to parse GitHub response: {$e->getMessage()}", previous: $e);
         }
     }
 
@@ -62,11 +62,11 @@ final readonly class ReleaseManager
     {
         // First try platform-specific binary
         try {
-            $fileName = $this->binaryNameBuilder->buildPlatformSpecificName($binaryName, $version, $type);
+            $fileName = $this->binaryNameBuilder->buildPlatformSpecificName(baseName: $binaryName, version: $version, type: $type);
             $this->logger?->info("Attempting to download platform-specific binary: {$fileName}");
 
-            $assetUrl = $this->getAssetUrlOrFail($fileName);
-            $this->downloadAsset($assetUrl, $destinationPath);
+            $assetUrl = $this->getAssetUrlOrFail(fileName: $fileName);
+            $this->downloadAsset(assetUrl: $assetUrl, destinationPath: $destinationPath);
 
             $this->logger?->info("Successfully downloaded platform-specific binary: {$fileName}");
             return true;
@@ -75,17 +75,17 @@ final readonly class ReleaseManager
 
             // Fall back to generic binary
             try {
-                $fileName = $this->binaryNameBuilder->buildGenericName($binaryName, $type);
+                $fileName = $this->binaryNameBuilder->buildGenericName(baseName: $binaryName, type: $type);
                 $this->logger?->info("Falling back to generic binary: {$fileName}");
 
-                $assetUrl = $this->getAssetUrlOrFail($fileName);
-                $this->downloadAsset($assetUrl, $destinationPath);
+                $assetUrl = $this->getAssetUrlOrFail(fileName: $fileName);
+                $this->downloadAsset(assetUrl: $assetUrl, destinationPath: $destinationPath);
 
                 $this->logger?->info("Successfully downloaded generic binary: {$fileName}");
                 return true;
             } catch (\Throwable $e2) {
                 $this->logger?->error("Failed to download generic binary: {$e2->getMessage()}");
-                throw new \RuntimeException("Failed to download binary: {$e2->getMessage()}", 0, $e2);
+                throw new \RuntimeException(message: "Failed to download binary: {$e2->getMessage()}", previous: $e2);
             }
         }
     }
@@ -102,19 +102,19 @@ final readonly class ReleaseManager
 
         if (!$response->isSuccess()) {
             throw new \RuntimeException(
-                "Failed to download asset. Server returned status code {$response->getStatusCode()}",
+                message: "Failed to download asset. Server returned status code {$response->getStatusCode()}",
             );
         }
 
         // Write the file
-        if (!\file_put_contents($destinationPath, $response->getBody())) {
-            throw new \RuntimeException("Failed to write file: {$destinationPath}");
+        if (!\file_put_contents(filename: $destinationPath, data: $response->getBody())) {
+            throw new \RuntimeException(message: "Failed to write file: {$destinationPath}");
         }
 
         // Make the file executable if it's not a Windows system
         if (\PHP_OS_FAMILY !== 'Windows') {
-            if (!\chmod($destinationPath, 0755)) {
-                throw new \RuntimeException("Failed to set executable permissions on the file: {$destinationPath}");
+            if (!\chmod(filename: $destinationPath, permissions: 0755)) {
+                throw new \RuntimeException(message: "Failed to set executable permissions on the file: {$destinationPath}");
             }
         }
     }
@@ -129,10 +129,10 @@ final readonly class ReleaseManager
     private function getAssetUrlOrFail(string $fileName): string
     {
         $release = $this->getLatestRelease();
-        $assetUrl = $release->getAssetUrl($fileName);
+        $assetUrl = $release->getAssetUrl(fileName: $fileName);
 
         if ($assetUrl === null) {
-            throw new \RuntimeException("Could not find asset '{$fileName}' in release {$release->getVersion()}");
+            throw new \RuntimeException(message: "Could not find asset '{$fileName}' in release {$release->getVersion()}");
         }
 
         return $assetUrl;

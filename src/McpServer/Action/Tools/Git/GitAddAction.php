@@ -39,12 +39,12 @@ final readonly class GitAddAction
 
         // Check if we're in a valid git repository
         if (!$this->commandsExecutor->isValidRepository($repository)) {
-            return ToolResult::error('Not a git repository (or any of the parent directories)');
+            return ToolResult::error(error: 'Not a git repository (or any of the parent directories)');
         }
 
         // Validate that paths are provided
         if (empty($request->paths)) {
-            return ToolResult::error('No paths specified for staging');
+            return ToolResult::error(error: 'No paths specified for staging');
         }
 
         try {
@@ -61,16 +61,16 @@ final readonly class GitAddAction
             // Add the specified paths
             $commandParts = \array_merge($commandParts, $request->paths);
 
-            $command = new Command($repository, $commandParts);
+            $command = new Command(repository: $repository, command: $commandParts);
             $result = $this->commandsExecutor->executeString($command);
 
             // If no output, provide feedback about what was staged
-            if (empty(\trim($result))) {
-                $stagedInfo = $this->getStagedFilesInfo($repository, $request->paths);
+            if (empty(\trim(string: $result))) {
+                $stagedInfo = $this->getStagedFilesInfo(repository: $repository, paths: $request->paths);
                 $result = $stagedInfo ?: 'Files staged successfully';
             }
 
-            return ToolResult::text($result);
+            return ToolResult::text(text: $result);
         } catch (GitCommandException $e) {
             $this->logger->error('Error executing git add', [
                 'repository' => $repository,
@@ -79,7 +79,7 @@ final readonly class GitAddAction
                 'code' => $e->getCode(),
             ]);
 
-            return ToolResult::error($e->getMessage());
+            return ToolResult::error(error: $e->getMessage());
         } catch (\Throwable $e) {
             $this->logger->error('Unexpected error during git add', [
                 'repository' => $repository,
@@ -87,7 +87,7 @@ final readonly class GitAddAction
                 'error' => $e->getMessage(),
             ]);
 
-            return ToolResult::error($e->getMessage());
+            return ToolResult::error(error: $e->getMessage());
         }
     }
 
@@ -95,13 +95,13 @@ final readonly class GitAddAction
     {
         try {
             // Get list of staged files
-            $command = new Command($repository, ['diff', '--cached', '--name-status']);
+            $command = new Command(repository: $repository, command: ['diff', '--cached', '--name-status']);
             $stagedFiles = $this->commandsExecutor->executeString($command);
 
-            if (!empty(\trim($stagedFiles))) {
-                $lines = \explode("\n", \trim($stagedFiles));
-                $fileCount = \count($lines);
-                $pathsDescription = \count($paths) === 1 && $paths[0] === '.' ? 'all files' : \implode(', ', $paths);
+            if (!empty(\trim(string: $stagedFiles))) {
+                $lines = \explode(separator: "\n", string: \trim(string: $stagedFiles));
+                $fileCount = \count(value: $lines);
+                $pathsDescription = \count(value: $paths) === 1 && $paths[0] === '.' ? 'all files' : \implode(separator: ', ', array: $paths);
 
                 return \sprintf(
                     "Staged %d file(s) from %s:\n%s",

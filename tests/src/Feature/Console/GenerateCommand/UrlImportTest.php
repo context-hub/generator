@@ -27,7 +27,7 @@ final class UrlImportTest extends ConsoleTestCase
     public function basic_url_import_should_be_rendered(string $command): void
     {
         // Setup mock response for URL import
-        $jsonConfig = \json_encode([
+        $jsonConfig = \json_encode(value: [
             'documents' => [
                 [
                     'description' => 'URL Imported Document',
@@ -45,8 +45,8 @@ final class UrlImportTest extends ConsoleTestCase
         ]);
 
         $this->mockHttpClient->addResponse(
-            'https://example.com/config.json',
-            new HttpResponse(
+            url: 'https://example.com/config.json',
+            response: new HttpResponse(
                 statusCode: 200,
                 body: $jsonConfig,
                 headers: ['Content-Type' => 'application/json'],
@@ -59,7 +59,7 @@ final class UrlImportTest extends ConsoleTestCase
                 import:
                   - url: https://example.com/config.json
                     type: url
-                
+
                 documents:
                   - description: "Main Document"
                     outputPath: "main.md"
@@ -116,8 +116,8 @@ final class UrlImportTest extends ConsoleTestCase
             YAML;
 
         $this->mockHttpClient->addResponse(
-            'https://api.example.com/config',
-            new HttpResponse(
+            url: 'https://api.example.com/config',
+            response: new HttpResponse(
                 statusCode: 200,
                 body: $yamlConfig,
                 headers: ['Content-Type' => 'application/yaml'],
@@ -133,7 +133,7 @@ final class UrlImportTest extends ConsoleTestCase
                     headers:
                       Authorization: "Bearer test-token"
                       Accept: "application/yaml"
-                
+
                 documents:
                   - description: "Main Document"
                     outputPath: "main.md"
@@ -163,7 +163,7 @@ final class UrlImportTest extends ConsoleTestCase
             );
 
         // Verify the headers were sent correctly
-        $sentHeaders = $this->mockHttpClient->getRequestHeaders('https://api.example.com/config');
+        $sentHeaders = $this->mockHttpClient->getRequestHeaders(url: 'https://api.example.com/config');
         $this->assertArrayHasKey('Authorization', $sentHeaders);
         $this->assertEquals('Bearer test-token', $sentHeaders['Authorization']);
         $this->assertArrayHasKey('Accept', $sentHeaders);
@@ -175,7 +175,7 @@ final class UrlImportTest extends ConsoleTestCase
     public function url_import_with_variables_should_resolve_variables(): void
     {
         // Setup mock response
-        $jsonConfig = \json_encode([
+        $jsonConfig = \json_encode(value: [
             'documents' => [
                 [
                     'description' => 'Variable Test Document',
@@ -193,8 +193,8 @@ final class UrlImportTest extends ConsoleTestCase
         ]);
 
         $this->mockHttpClient->addResponse(
-            'https://api.testing.example.com/config',
-            new HttpResponse(
+            url: 'https://api.testing.example.com/config',
+            response: new HttpResponse(
                 statusCode: 200,
                 body: $jsonConfig,
                 headers: ['Content-Type' => 'application/json'],
@@ -215,7 +215,7 @@ final class UrlImportTest extends ConsoleTestCase
                     type: url
                     headers:
                       Authorization: "Bearer ${API_TOKEN}"
-                
+
                 documents:
                   - description: "Main Document"
                     outputPath: "main.md"
@@ -255,7 +255,7 @@ final class UrlImportTest extends ConsoleTestCase
             );
 
         // Verify the headers were sent with resolved variables
-        $sentHeaders = $this->mockHttpClient->getRequestHeaders('https://api.testing.example.com/config');
+        $sentHeaders = $this->mockHttpClient->getRequestHeaders(url: 'https://api.testing.example.com/config');
         $this->assertArrayHasKey('Authorization', $sentHeaders);
         $this->assertEquals('Bearer test-token', $sentHeaders['Authorization']);
     }
@@ -291,8 +291,8 @@ final class UrlImportTest extends ConsoleTestCase
             YAML;
 
         $this->mockHttpClient->addResponse(
-            'https://example.com/multi-docs.yaml',
-            new HttpResponse(
+            url: 'https://example.com/multi-docs.yaml',
+            response: new HttpResponse(
                 statusCode: 200,
                 body: $yamlConfig,
                 headers: ['Content-Type' => 'application/yaml'],
@@ -308,7 +308,7 @@ final class UrlImportTest extends ConsoleTestCase
                     docs:
                       - "first.md"
                       - "third.md"
-                
+
                 documents:
                   - description: "Main Document"
                     outputPath: "main.md"
@@ -366,8 +366,8 @@ final class UrlImportTest extends ConsoleTestCase
     {
         // Setup mock response with error
         $this->mockHttpClient->addResponse(
-            'https://example.com/not-found',
-            new HttpResponse(
+            url: 'https://example.com/not-found',
+            response: new HttpResponse(
                 statusCode: 404,
                 body: 'Not Found',
                 headers: [],
@@ -380,7 +380,7 @@ final class UrlImportTest extends ConsoleTestCase
                 import:
                   - url: https://example.com/not-found
                     type: url
-                
+
                 documents:
                   - description: "Main Document"
                     outputPath: "main.md"
@@ -417,7 +417,7 @@ final class UrlImportTest extends ConsoleTestCase
     public function url_import_with_multiple_urls_should_be_supported(): void
     {
         // Setup mock responses for multiple URLs
-        $jsonConfig1 = \json_encode([
+        $jsonConfig1 = \json_encode(value: [
             'documents' => [
                 [
                     'description' => 'First URL Document',
@@ -434,7 +434,7 @@ final class UrlImportTest extends ConsoleTestCase
             ],
         ]);
 
-        $jsonConfig2 = \json_encode([
+        $jsonConfig2 = \json_encode(value: [
             'documents' => [
                 [
                     'description' => 'Second URL Document',
@@ -452,8 +452,8 @@ final class UrlImportTest extends ConsoleTestCase
         ]);
 
         $this->mockHttpClient->addResponse(
-            'https://example.com/config1.json',
-            new HttpResponse(
+            url: 'https://example.com/config1.json',
+            response: new HttpResponse(
                 statusCode: 200,
                 body: $jsonConfig1,
                 headers: ['Content-Type' => 'application/json'],
@@ -461,8 +461,8 @@ final class UrlImportTest extends ConsoleTestCase
         );
 
         $this->mockHttpClient->addResponse(
-            'https://example.com/config2.json',
-            new HttpResponse(
+            url: 'https://example.com/config2.json',
+            response: new HttpResponse(
                 statusCode: 200,
                 body: $jsonConfig2,
                 headers: ['Content-Type' => 'application/json'],
@@ -477,7 +477,7 @@ final class UrlImportTest extends ConsoleTestCase
                     type: url
                   - url: https://example.com/config2.json
                     type: url
-                
+
                 documents:
                   - description: "Main Document"
                     outputPath: "main.md"
@@ -553,8 +553,8 @@ final class UrlImportTest extends ConsoleTestCase
             YAML;
 
         $this->mockHttpClient->addResponse(
-            'https://example.com/prompts.yaml',
-            new HttpResponse(
+            url: 'https://example.com/prompts.yaml',
+            response: new HttpResponse(
                 statusCode: 200,
                 body: $yamlConfig,
                 headers: ['Content-Type' => 'application/yaml'],
@@ -571,7 +571,7 @@ final class UrlImportTest extends ConsoleTestCase
                       tags:
                         include: ["coding"]
                         exclude: ["advanced"]
-                
+
                 documents:
                   - description: "Filtered Prompts Document"
                     outputPath: "filtered-prompts.md"
@@ -613,7 +613,7 @@ final class UrlImportTest extends ConsoleTestCase
         $this->mockHttpClient = new MockHttpClient();
 
         // Register mock HTTP client in the container
-        $this->getContainer()->bindSingleton(HttpClientInterface::class, $this->mockHttpClient);
+        $this->getContainer()->bindSingleton(alias: HttpClientInterface::class, resolver: $this->mockHttpClient);
     }
 
     protected function buildContext(
@@ -624,7 +624,7 @@ final class UrlImportTest extends ConsoleTestCase
         string $command = 'generate',
         bool $asJson = true,
     ): CompilingResult {
-        return (new ContextBuilder($this->getConsole()))->build(
+        return (new ContextBuilder(console: $this->getConsole()))->build(
             workDir: $workDir,
             configPath: $configPath,
             inlineJson: $inlineJson,

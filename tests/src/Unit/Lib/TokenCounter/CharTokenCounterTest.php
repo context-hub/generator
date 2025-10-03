@@ -19,7 +19,7 @@ class CharTokenCounterTest extends TestCase
         $filePath = $this->fixturesDir . '/empty.txt';
         $this->assertFileExists($filePath);
 
-        $count = $this->counter->countFile($filePath);
+        $count = $this->counter->countFile(filePath: $filePath);
         $this->assertEquals(1, $count);
     }
 
@@ -29,7 +29,7 @@ class CharTokenCounterTest extends TestCase
         $filePath = $this->fixturesDir . '/simple.txt';
         $this->assertFileExists($filePath);
 
-        $count = $this->counter->countFile($filePath);
+        $count = $this->counter->countFile(filePath: $filePath);
         $this->assertEquals(55, $count);
     }
 
@@ -39,8 +39,8 @@ class CharTokenCounterTest extends TestCase
         $filePath = $this->fixturesDir . '/multibyte.txt';
         $this->assertFileExists($filePath);
 
-        $count = $this->counter->countFile($filePath);
-        $expectedLength = \mb_strlen(\file_get_contents($filePath));
+        $count = $this->counter->countFile(filePath: $filePath);
+        $expectedLength = \mb_strlen(string: \file_get_contents(filename: $filePath));
         $this->assertEquals($expectedLength, $count);
     }
 
@@ -50,7 +50,7 @@ class CharTokenCounterTest extends TestCase
         $filePath = $this->fixturesDir . '/non-existent-file.txt';
         $this->assertFileDoesNotExist($filePath);
 
-        $count = $this->counter->countFile($filePath);
+        $count = $this->counter->countFile(filePath: $filePath);
         $this->assertEquals(0, $count);
     }
 
@@ -60,7 +60,7 @@ class CharTokenCounterTest extends TestCase
         $dirPath = $this->fixturesDir . '/nested';
         $this->assertDirectoryExists($dirPath);
 
-        $count = $this->counter->countFile($dirPath);
+        $count = $this->counter->countFile(filePath: $dirPath);
         $this->assertEquals(0, $count);
     }
 
@@ -81,15 +81,15 @@ class CharTokenCounterTest extends TestCase
             ],
         ];
 
-        $count = $this->counter->calculateDirectoryCount($directory);
+        $count = $this->counter->calculateDirectoryCount(directory: $directory);
 
         // Calculate expected count manually
         $expectedCount = 0;
-        $expectedCount += \mb_strlen(\file_get_contents($this->fixturesDir . '/simple.txt'));
-        $expectedCount += \mb_strlen(\file_get_contents($this->fixturesDir . '/multibyte.txt'));
-        $expectedCount += \mb_strlen(\file_get_contents($this->fixturesDir . '/nested/file1.txt'));
-        $expectedCount += \mb_strlen(\file_get_contents($this->fixturesDir . '/nested/level1/file2.txt'));
-        $expectedCount += \mb_strlen(\file_get_contents($this->fixturesDir . '/nested/level1/level2/file3.txt'));
+        $expectedCount += \mb_strlen(string: \file_get_contents(filename: $this->fixturesDir . '/simple.txt'));
+        $expectedCount += \mb_strlen(string: \file_get_contents(filename: $this->fixturesDir . '/multibyte.txt'));
+        $expectedCount += \mb_strlen(string: \file_get_contents(filename: $this->fixturesDir . '/nested/file1.txt'));
+        $expectedCount += \mb_strlen(string: \file_get_contents(filename: $this->fixturesDir . '/nested/level1/file2.txt'));
+        $expectedCount += \mb_strlen(string: \file_get_contents(filename: $this->fixturesDir . '/nested/level1/level2/file3.txt'));
 
         $this->assertEquals($expectedCount, $count);
     }
@@ -98,7 +98,7 @@ class CharTokenCounterTest extends TestCase
     public function it_should_return_zero_for_empty_directory(): void
     {
         $directory = [];
-        $count = $this->counter->calculateDirectoryCount($directory);
+        $count = $this->counter->calculateDirectoryCount(directory: $directory);
         $this->assertEquals(0, $count);
     }
 
@@ -110,7 +110,7 @@ class CharTokenCounterTest extends TestCase
             'file2.txt' => $this->fixturesDir . '/non-existent-file2.txt',
         ];
 
-        $count = $this->counter->calculateDirectoryCount($directory);
+        $count = $this->counter->calculateDirectoryCount(directory: $directory);
         $this->assertEquals(0, $count);
     }
 
@@ -122,8 +122,8 @@ class CharTokenCounterTest extends TestCase
             'file2.txt' => $this->fixturesDir . '/non-existent-file.txt', // Doesn't exist
         ];
 
-        $count = $this->counter->calculateDirectoryCount($directory);
-        $expectedCount = \mb_strlen(\file_get_contents($this->fixturesDir . '/simple.txt'));
+        $count = $this->counter->calculateDirectoryCount(directory: $directory);
+        $expectedCount = \mb_strlen(string: \file_get_contents(filename: $this->fixturesDir . '/simple.txt'));
 
         $this->assertEquals($expectedCount, $count);
     }

@@ -27,10 +27,10 @@ final class FileSourceSerializationTest extends AbstractFileSourceTestCase
         $source = $this->getFileSourceFromConfig($config);
 
         // Test JSON serialization
-        $serialized = \json_encode($source);
+        $serialized = \json_encode(value: $source);
         $this->assertNotFalse($serialized, 'JSON serialization failed');
 
-        $decoded = \json_decode($serialized, true);
+        $decoded = \json_decode(json: $serialized, associative: true);
         $this->assertIsArray($decoded);
 
         // Check required fields
@@ -47,10 +47,10 @@ final class FileSourceSerializationTest extends AbstractFileSourceTestCase
             description: 'Minimal source',
         );
 
-        $minimalSerialized = \json_encode($minimalSource);
+        $minimalSerialized = \json_encode(value: $minimalSource);
         $this->assertNotFalse($minimalSerialized, 'Minimal source JSON serialization failed');
 
-        $minimalDecoded = \json_decode($minimalSerialized, true);
+        $minimalDecoded = \json_decode(json: $minimalSerialized, associative: true);
         $this->assertIsArray($minimalDecoded);
 
         // Check that optional fields are not included when empty
@@ -80,10 +80,10 @@ final class FileSourceSerializationTest extends AbstractFileSourceTestCase
             maxFiles: 10,
         );
 
-        $fullSerialized = \json_encode($fullSource);
+        $fullSerialized = \json_encode(value: $fullSource);
         $this->assertNotFalse($fullSerialized, 'Full source JSON serialization failed');
 
-        $fullDecoded = \json_decode($fullSerialized, true);
+        $fullDecoded = \json_decode(json: $fullSerialized, associative: true);
         $this->assertIsArray($fullDecoded);
 
         // Check that all options are serialized

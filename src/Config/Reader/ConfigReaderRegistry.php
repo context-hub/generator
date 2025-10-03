@@ -14,7 +14,7 @@ final readonly class ConfigReaderRegistry
     public function has(string $ext): bool
     {
         foreach ($this->readers as $reader) {
-            if (\in_array($ext, $reader->getSupportedExtensions(), true)) {
+            if (\in_array(needle: $ext, haystack: $reader->getSupportedExtensions(), strict: true)) {
                 return true;
             }
         }
@@ -25,11 +25,11 @@ final readonly class ConfigReaderRegistry
     public function get(string $ext): ReaderInterface
     {
         foreach ($this->readers as $reader) {
-            if (\in_array($ext, $reader->getSupportedExtensions(), true)) {
+            if (\in_array(needle: $ext, haystack: $reader->getSupportedExtensions(), strict: true)) {
                 return $reader;
             }
         }
 
-        throw new \RuntimeException(\sprintf('No reader found for extension: %s', $ext));
+        throw new \RuntimeException(message: \sprintf('No reader found for extension: %s', $ext));
     }
 }

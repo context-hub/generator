@@ -49,8 +49,8 @@ abstract class GitSourceTestCase extends TestCase
         $this->commandExecutorMock
             ->expects($this->atLeastOnce())
             ->method('executeString')
-            ->with(new Command($this->repoDir, $command))
-            ->willReturn(\implode("\n", $files));
+            ->with(new Command(repository: $this->repoDir, command: $command))
+            ->willReturn(\implode(separator: "\n", array: $files));
     }
 
     /**
@@ -64,7 +64,7 @@ abstract class GitSourceTestCase extends TestCase
         $this->commandExecutorMock
             ->expects($this->atLeastOnce())
             ->method('executeString')
-            ->with(new Command($this->repoDir, $command))
+            ->with(new Command(repository: $this->repoDir, command: $command))
             ->willReturn($diff);
     }
 
@@ -77,7 +77,7 @@ abstract class GitSourceTestCase extends TestCase
     {
         $this->commandExecutorMock
             ->method('executeString')
-            ->with(new Command($this->repoDir, 'git rev-parse HEAD'))
+            ->with(new Command(repository: $this->repoDir, command: 'git rev-parse HEAD'))
             ->willReturn($hash);
 
         return $hash;
@@ -94,7 +94,7 @@ abstract class GitSourceTestCase extends TestCase
     {
         $this->commandExecutorMock
             ->method('executeString')
-            ->with(new Command($this->repoDir, $command))
+            ->with(new Command(repository: $this->repoDir, command: $command))
             ->willReturn($result);
     }
 }

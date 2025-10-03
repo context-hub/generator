@@ -75,7 +75,7 @@ final class DocumentTest extends TestCase
         $source->method('getTags')->willReturn(['source-tag']);
 
         $document = $this->document->addSource($source);
-        $tags = $document->getTags(true);
+        $tags = $document->getTags();
 
         $this->assertCount(1, $tags);
         $this->assertContains('source-tag', $tags);
@@ -88,7 +88,7 @@ final class DocumentTest extends TestCase
         $source->method('getTags')->willReturn(['source-tag']);
 
         $document = $this->document->addSource($source);
-        $tags = $document->getTags(false);
+        $tags = $document->getTags(includeSources: false);
 
         $this->assertEmpty($tags);
     }
@@ -133,7 +133,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_should_handle_modifiers_from_array(): void
     {
-        $modifier = Modifier::from([
+        $modifier = Modifier::from(data: [
             'name' => 'test-modifier',
             'options' => ['key' => 'value'],
         ]);
@@ -149,7 +149,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_should_handle_modifiers_from_string(): void
     {
-        $modifier = Modifier::from('test-modifier');
+        $modifier = Modifier::from(data: 'test-modifier');
 
         $document = $this->document->addModifier($modifier);
         $modifiers = $document->getModifiers();
@@ -195,7 +195,7 @@ final class DocumentTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->fixturesDir = \dirname(__DIR__, 3) . '/fixtures/Document';
+        $this->fixturesDir = \dirname(path: __DIR__, levels: 3) . '/fixtures/Document';
         $this->document = Document::create(
             description: 'Test Document',
             outputPath: $this->fixturesDir . '/output.txt',

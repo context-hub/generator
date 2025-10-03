@@ -53,7 +53,7 @@ final class FSPathWindowsTest extends TestCase
     #[Test]
     public function it_should_create_path_from_string(): void
     {
-        $path = FSPath::create('C:\\Users\\test');
+        $path = FSPath::create(path: 'C:\\Users\\test');
 
         $this->assertSame('C:\\Users\\test', $path->toString());
     }
@@ -61,7 +61,7 @@ final class FSPathWindowsTest extends TestCase
     #[Test]
     public function it_should_join_paths_correctly(): void
     {
-        $base = FSPath::create('C:\\Users');
+        $base = FSPath::create(path: 'C:\\Users');
 
         $joined = $base->join('test', 'documents');
         $this->assertSame('C:\\Users\\test\\documents', $joined->toString());
@@ -76,9 +76,9 @@ final class FSPathWindowsTest extends TestCase
     #[Test]
     public function it_should_handle_name_operations(): void
     {
-        $path = FSPath::create('C:\\Users\\test\\document.txt');
+        $path = FSPath::create(path: 'C:\\Users\\test\\document.txt');
 
-        $newPath = $path->withName('new.txt');
+        $newPath = $path->withName(name: 'new.txt');
         $this->assertSame('C:\\Users\\test\\new.txt', $newPath->toString());
 
         $extension = $path->extension();
@@ -88,22 +88,22 @@ final class FSPathWindowsTest extends TestCase
     #[Test]
     public function it_should_handle_extension_operations(): void
     {
-        $path = FSPath::create('C:\\Users\\test\\document.txt');
+        $path = FSPath::create(path: 'C:\\Users\\test\\document.txt');
 
-        $newPath = $path->withExt('md');
+        $newPath = $path->withExt(suffix: 'md');
         $this->assertSame('C:\\Users\\test\\document.md', $newPath->toString());
 
-        $newPath = $path->withExt('.md');
+        $newPath = $path->withExt(suffix: '.md');
         $this->assertSame('C:\\Users\\test\\document.md', $newPath->toString());
 
-        $newPath = $path->withStem('report');
+        $newPath = $path->withStem(stem: 'report');
         $this->assertSame('C:\\Users\\test\\report.txt', $newPath->toString());
     }
 
     #[Test]
     public function it_should_get_parent_directory(): void
     {
-        $path = FSPath::create('C:\\Users\\test\\document.txt');
+        $path = FSPath::create(path: 'C:\\Users\\test\\document.txt');
 
         $parent = $path->parent();
         $this->assertSame('C:\\Users\\test', $parent->toString());
@@ -115,25 +115,25 @@ final class FSPathWindowsTest extends TestCase
     #[Test]
     public function it_should_handle_root_paths(): void
     {
-        $root = FSPath::create('C:\\');
+        $root = FSPath::create(path: 'C:\\');
 
         // Root parent should be itself
         $this->assertSame('C:\\', $root->parent()->toString());
 
         // These operations should not change a root path
-        $this->assertSame('C:\\', $root->withName('test')->toString());
-        $this->assertSame('C:\\', $root->withExt('txt')->toString());
-        $this->assertSame('C:\\', $root->withStem('test')->toString());
+        $this->assertSame('C:\\', $root->withName(name: 'test')->toString());
+        $this->assertSame('C:\\', $root->withExt(suffix: 'txt')->toString());
+        $this->assertSame('C:\\', $root->withStem(stem: 'test')->toString());
     }
 
     #[Test]
     public function it_should_check_path_types(): void
     {
-        $absolutePath = FSPath::create('C:\\Users\\test');
+        $absolutePath = FSPath::create(path: 'C:\\Users\\test');
         $this->assertTrue($absolutePath->isAbsolute());
         $this->assertFalse($absolutePath->isRelative());
 
-        $relativePath = FSPath::create('Users\\test');
+        $relativePath = FSPath::create(path: 'Users\\test');
         $this->assertFalse($relativePath->isAbsolute());
         $this->assertTrue($relativePath->isRelative());
     }
@@ -142,10 +142,10 @@ final class FSPathWindowsTest extends TestCase
     #[DataProvider('provideRelativePathTests')]
     public function it_should_handle_relative_paths(string $from, string $to, string $expected): void
     {
-        $fromPath = FSPath::create($from);
-        $toPath = FSPath::create($to);
+        $fromPath = FSPath::create(path: $from);
+        $toPath = FSPath::create(path: $to);
 
-        $relativePath = $toPath->relativeTo($fromPath);
+        $relativePath = $toPath->relativeTo(other: $fromPath);
         $this->assertSame($expected, $relativePath->toString());
     }
 
@@ -153,22 +153,22 @@ final class FSPathWindowsTest extends TestCase
     public function it_should_normalize_paths(): void
     {
         // Mixed separators
-        $path = FSPath::create('C:/Users\\test/documents');
+        $path = FSPath::create(path: 'C:/Users\\test/documents');
         $this->assertSame('C:\\Users\\test\\documents', $path->toString());
 
         // Double separators
-        $path = FSPath::create('C:\\\\Users\\\\\\test');
+        $path = FSPath::create(path: 'C:\\\\Users\\\\\\test');
         $this->assertSame('C:\\Users\\test', $path->toString());
 
         // Dot segments
-        $path = FSPath::create('C:\\Users\\.\\test\\..\\admin');
+        $path = FSPath::create(path: 'C:\\Users\\.\\test\\..\\admin');
         $this->assertSame('C:\\Users\\admin', $path->toString());
     }
 
     #[Test]
     public function it_should_split_path_into_parts(): void
     {
-        $path = FSPath::create('C:\\Users\\test\\documents\\file.txt');
+        $path = FSPath::create(path: 'C:\\Users\\test\\documents\\file.txt');
 
         $parts = $path->parts();
         $this->assertSame(['C:', 'Users', 'test', 'documents', 'file.txt'], $parts);
@@ -177,7 +177,7 @@ final class FSPathWindowsTest extends TestCase
     #[Test]
     public function it_should_handle_stringable_interface(): void
     {
-        $path = FSPath::create('C:\\Users\\test');
+        $path = FSPath::create(path: 'C:\\Users\\test');
 
         $this->assertSame('C:\\Users\\test', (string) $path);
         $this->assertSame($path->toString(), (string) $path);
@@ -186,7 +186,7 @@ final class FSPathWindowsTest extends TestCase
     #[Test]
     public function it_should_handle_empty_paths(): void
     {
-        $path = FSPath::create('');
+        $path = FSPath::create();
 
         $this->assertSame('.', $path->toString());
         $this->assertFalse($path->isAbsolute());
@@ -197,15 +197,15 @@ final class FSPathWindowsTest extends TestCase
     public function it_should_properly_add_extension_prefix_when_changing_stem(): void
     {
         // Test specifically for the bug where withStem doesn't add the period before extension
-        $path = FSPath::create('C:\\Users\\test\\document.txt');
+        $path = FSPath::create(path: 'C:\\Users\\test\\document.txt');
 
-        $newPath = $path->withStem('report');
+        $newPath = $path->withStem(stem: 'report');
         $this->assertSame('C:\\Users\\test\\report.txt', $newPath->toString());
 
         // Also test with no extension
-        $path = FSPath::create('C:\\Users\\test\\document');
+        $path = FSPath::create(path: 'C:\\Users\\test\\document');
 
-        $newPath = $path->withStem('report');
+        $newPath = $path->withStem(stem: 'report');
         $this->assertSame('C:\\Users\\test\\report', $newPath->toString());
     }
 
@@ -213,7 +213,7 @@ final class FSPathWindowsTest extends TestCase
     {
         // Override directory separator for testing on non-Windows systems
         if (DIRECTORY_SEPARATOR !== self::WINDOWS_DIRECTORY_SEPARATOR) {
-            FSPath::setDirectorySeparator(self::WINDOWS_DIRECTORY_SEPARATOR);
+            FSPath::setDirectorySeparator(separator: self::WINDOWS_DIRECTORY_SEPARATOR);
             $this->isSeparatorOverridden = true;
         }
     }
@@ -222,7 +222,7 @@ final class FSPathWindowsTest extends TestCase
     {
         // Reset directory separator if it was overridden
         if ($this->isSeparatorOverridden) {
-            FSPath::setDirectorySeparator(null);
+            FSPath::setDirectorySeparator();
         }
     }
 }

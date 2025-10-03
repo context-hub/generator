@@ -33,11 +33,11 @@ final readonly class LibrarySearchAction
         $this->logger->info('Processing library-search tool');
 
         // Get params from the parsed body for POST requests
-        $query = \trim($request->query);
+        $query = \trim(string: $request->query);
         $maxResults = \min(10, \max(1, $request->maxResults ?? 5));
 
         if (empty($query)) {
-            return ToolResult::error('Missing query parameter');
+            return ToolResult::error(error: 'Missing query parameter');
         }
 
         try {
@@ -46,9 +46,9 @@ final readonly class LibrarySearchAction
                 maxResults: $maxResults,
             );
 
-            return ToolResult::success($searchResult);
+            return ToolResult::success(data: $searchResult);
         } catch (Context7ClientException $e) {
-            return ToolResult::error($e->getMessage());
+            return ToolResult::error(error: $e->getMessage());
         } catch (\Throwable $e) {
             $this->logger->error('Unexpected error in library-search tool', [
                 'query' => $query,
@@ -56,7 +56,7 @@ final readonly class LibrarySearchAction
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return ToolResult::error('Error searching libraries: ' . $e->getMessage());
+            return ToolResult::error(error: 'Error searching libraries: ' . $e->getMessage());
         }
     }
 }

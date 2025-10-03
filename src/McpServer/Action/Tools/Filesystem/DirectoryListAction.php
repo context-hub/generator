@@ -39,60 +39,60 @@ final readonly class DirectoryListAction
         $path = (string) $this->dirs->getRootPath()->join($relativePath);
 
         if (empty($path)) {
-            return ToolResult::error('Missing path parameter');
+            return ToolResult::error(error: 'Missing path parameter');
         }
 
         try {
-            if (!\file_exists($path)) {
-                return ToolResult::error(\sprintf("Path '%s' does not exist", $relativePath));
+            if (!\file_exists(filename: $path)) {
+                return ToolResult::error(error: \sprintf("Path '%s' does not exist", $relativePath));
             }
 
-            if (!\is_dir($path)) {
-                return ToolResult::error(\sprintf("Path '%s' is not a directory", $relativePath));
+            if (!\is_dir(filename: $path)) {
+                return ToolResult::error(error: \sprintf("Path '%s' is not a directory", $relativePath));
             }
 
             // Create and configure Symfony Finder
             $finder = new Finder();
-            $finder->in($path);
+            $finder->in(dirs: $path);
 
             // Apply pattern filter if provided
             if (!empty($request->pattern)) {
-                $patterns = \array_map(\trim(...), \explode(',', $request->pattern));
-                $finder->name($patterns);
+                $patterns = \array_map(callback: \trim(...), array: \explode(separator: ',', string: $request->pattern));
+                $finder->name(patterns: $patterns);
             }
 
             // Apply depth filter if provided
             $depth = $request->depth;
-            $finder->depth('<= ' . $depth);
+            $finder->depth(levels: '<= ' . $depth);
 
             // Apply size filter if provided
             if (!empty($request->size)) {
-                $finder->size($request->size);
+                $finder->size(sizes: $request->size);
             }
 
             // Apply date filter if provided
             if (!empty($request->date)) {
-                $finder->date($request->date);
+                $finder->date(dates: $request->date);
             }
 
             // Apply content filter if provided
             if (!empty($request->contains)) {
-                $finder->contains($request->contains);
+                $finder->contains(patterns: $request->contains);
             }
 
             // Apply type filter if provided
-            $type = \strtolower($request->type);
+            $type = \strtolower(string: $request->type);
             if ($type === 'file') {
                 $finder->files();
             } elseif ($type === 'directory') {
                 $finder->directories();
             } else {
                 // Default: include both files and directories
-                $finder->ignoreDotFiles(false);
+                $finder->ignoreDotFiles(ignoreDotFiles: false);
             }
 
             // Apply sorting if provided
-            $sort = \strtolower($request->sort);
+            $sort = \strtolower(string: $request->sort);
             match ($sort) {
                 'name' => $finder->sortByName(),
                 'type' => $finder->sortByType(),
@@ -108,7 +108,7 @@ final readonly class DirectoryListAction
 
             try {
                 foreach ($finder as $file) {
-                    $relativePath = \str_replace((string) $this->dirs->getRootPath() . '/', '', $file->getRealPath());
+                    $relativePath = \str_replace(search: (string) $this->dirs->getRootPath() . '/', replace: '', subject: $file->getRealPath());
 
                     $files[] = [
                         'name' => $file->getFilename(),
@@ -116,7 +116,7 @@ final readonly class DirectoryListAction
                         'fullPath' => $file->getRealPath(),
                         'isDirectory' => $file->isDir(),
                         'size' => $file->isFile() ? $file->getSize() : null,
-                        'lastModified' => \date('Y-m-d H:i:s', $file->getMTime()),
+                        'lastModified' => \date(format: 'Y-m-d H:i:s', timestamp: $file->getMTime()),
                     ];
 
                     $filePaths[] = $file->getRealPath();
@@ -149,9 +149,9 @@ final readonly class DirectoryListAction
 
                 if (!empty($filePaths)) {
                     $treeView = $this->treeBuilder->buildTree(
-                        $filePaths,
-                        (string) $this->dirs->getRootPath(),
-                        $treeViewConfig->getOptions(),
+                        files: $filePaths,
+                        basePath: (string) $this->dirs->getRootPath(),
+                        options: $treeViewConfig->getOptions(),
                     );
                 } else {
                     $treeView = "No files match the specified criteria.";
@@ -160,7 +160,7 @@ final readonly class DirectoryListAction
 
             // Prepare response data
             $responseData = [
-                'count' => \count($files),
+                'count' => \count(value: $files),
                 'basePath' => $relativePath,
             ];
 
@@ -170,7 +170,7 @@ final readonly class DirectoryListAction
                 $responseData['files'] = $files;
             }
 
-            return ToolResult::success($responseData);
+            return ToolResult::success(data: $responseData);
         } catch (\Throwable $e) {
             $this->logger->error('Error listing directory', [
                 'path' => $path,
@@ -178,7 +178,7 @@ final readonly class DirectoryListAction
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return ToolResult::error($e->getMessage());
+            return ToolResult::error(error: $e->getMessage());
         }
     }
 }

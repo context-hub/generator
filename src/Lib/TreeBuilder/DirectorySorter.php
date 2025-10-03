@@ -20,41 +20,41 @@ final class DirectorySorter
     {
         // First, remove any duplicates and ensure consistent path separators
         $normalized = \array_map(
-            static fn(string $path): string => self::normalizePath($path),
-            \array_unique((array) $directories),
+            callback: static fn(string $path): string => self::normalizePath($path),
+            array: \array_unique(array: (array) $directories),
         );
 
         // Early return for empty arrays or single item arrays (already sorted)
-        if (\count($normalized) <= 1) {
+        if (\count(value: $normalized) <= 1) {
             return $normalized;
         }
 
         // First sort alphabetically to ensure consistent ordering
-        \sort($normalized);
+        \sort(array: $normalized);
 
         // Then re-sort to ensure parent directories appear before their children
-        \usort($normalized, static function (string $a, string $b): int {
+        \usort(array: $normalized, callback: static function (string $a, string $b): int {
             // If one path is a direct parent of another, make sure the parent comes first
-            if (\str_starts_with($b, $a . '/')) {
+            if (\str_starts_with(haystack: $b, needle: $a . '/')) {
                 return -1;
             }
 
-            if (\str_starts_with($a, $b . '/')) {
+            if (\str_starts_with(haystack: $a, needle: $b . '/')) {
                 return 1;
             }
 
             // Get the top-level directories for comparison
-            $topDirA = \explode('/', $a)[0];
-            $topDirB = \explode('/', $b)[0];
+            $topDirA = \explode(separator: '/', string: $a)[0];
+            $topDirB = \explode(separator: '/', string: $b)[0];
 
             // If top-level directories are different, sort alphabetically
             if ($topDirA !== $topDirB) {
-                return \strcmp($topDirA, $topDirB);
+                return \strcmp(string1: $topDirA, string2: $topDirB);
             }
 
             // Count path segments (depth)
-            $depthA = \substr_count($a, '/');
-            $depthB = \substr_count($b, '/');
+            $depthA = \substr_count(haystack: $a, needle: '/');
+            $depthB = \substr_count(haystack: $b, needle: '/');
 
             // Sort by depth for paths with the same parent
             if ($depthA !== $depthB) {
@@ -62,10 +62,10 @@ final class DirectorySorter
             }
 
             // If same depth and not parent-child, sort alphabetically
-            return \strcmp($a, $b);
+            return \strcmp(string1: $a, string2: $b);
         });
 
-        return \array_unique($normalized);
+        return \array_unique(array: $normalized);
     }
 
     /**
@@ -102,8 +102,8 @@ final class DirectorySorter
 
         // Map back to original paths
         return \array_map(
-            static fn(string $normalizedPath): string => $mapping[$normalizedPath],
-            $sorted,
+            callback: static fn(string $normalizedPath): string => $mapping[$normalizedPath],
+            array: $sorted,
         );
     }
 
@@ -119,14 +119,14 @@ final class DirectorySorter
     private static function normalizePath(string $path): string
     {
         // Replace Windows backslashes with forward slashes
-        $path = \str_replace('\\', '/', $path);
+        $path = \str_replace(search: '\\', replace: '/', subject: $path);
 
         // Remove trailing slashes
-        $path = \rtrim($path, '/');
+        $path = \rtrim(string: $path, characters: '/');
 
         // Normalize Windows drive letter format (if present)
-        if (\preg_match('/^[A-Z]:\//i', $path)) {
-            $path = \substr($path, 2); // Remove drive letter and colon (e.g., "C:")
+        if (\preg_match(pattern: '/^[A-Z]:\//i', subject: $path)) {
+            $path = \substr(string: $path, offset: 2); // Remove drive letter and colon (e.g., "C:")
         }
 
         return $path;

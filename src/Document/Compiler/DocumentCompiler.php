@@ -44,14 +44,14 @@ final readonly class DocumentCompiler
      */
     public function compile(Document $document): CompiledDocument
     {
-        $outputPath = $this->variables->resolve($document->outputPath);
+        $outputPath = $this->variables->resolve(strings: $document->outputPath);
 
         $this->logger?->info('Starting document compilation', [
             'outputPath' => $outputPath,
         ]);
 
-        $errors = new ErrorCollection($document->getErrors());
-        $resultPath = (string) FSPath::create($this->basePath)->join($outputPath);
+        $errors = new ErrorCollection(errors: $document->getErrors());
+        $resultPath = (string) FSPath::create(path: $this->basePath)->join($outputPath);
 
         if (!$document->overwrite && $this->files->exists($resultPath)) {
             $this->logger?->notice('Document already exists and overwrite is disabled', [
@@ -65,30 +65,30 @@ final readonly class DocumentCompiler
         }
 
         $this->logger?->debug('Building document content');
-        $compiledDocument = $this->buildContent($errors, $document);
+        $compiledDocument = $this->buildContent(errors: $errors, document: $document);
 
-        $directory = \dirname($resultPath);
+        $directory = \dirname(path: $resultPath);
         $this->logger?->debug('Ensuring directory exists', ['directory' => $directory]);
         $this->files->ensureDirectory($directory);
 
         // Add file statistics to the generated content before writing
-        $finalContent = $this->addFileStatistics($compiledDocument->content, $resultPath, $outputPath);
+        $finalContent = $this->addFileStatistics(content: $compiledDocument->content, resultPath: $resultPath, outputPath: $outputPath);
 
         $this->logger?->debug('Writing compiled document to file', ['path' => $resultPath]);
         $this->files->write($resultPath, $finalContent);
 
-        $errorCount = \count($errors);
+        $errorCount = \count(value: $errors);
         if ($errorCount > 0) {
             $this->logger?->warning('Document compiled with errors', ['errorCount' => $errorCount]);
         } else {
             $this->logger?->info('Document compiled successfully', [
                 'path' => $resultPath,
-                'contentLength' => \strlen($finalContent),
+                'contentLength' => \strlen(string: $finalContent),
                 'fileSize' => $this->files->size($resultPath),
             ]);
         }
 
-        return $compiledDocument->withOutputPath($this->basePath, $outputPath);
+        return $compiledDocument->withOutputPath(outputPath: $this->basePath, contextPath: $outputPath);
     }
 
     /**
@@ -96,31 +96,31 @@ final readonly class DocumentCompiler
      */
     public function buildContent(ErrorCollection $errors, Document $document): CompiledDocument
     {
-        $description = $this->variables->resolve($document->description);
+        $description = $this->variables->resolve(strings: $document->description);
 
         $this->logger?->debug('Creating content builder');
         $builder = $this->builderFactory->create();
 
         $this->logger?->debug('Adding document title', ['title' => $description]);
-        $builder->addTitle($description);
+        $builder->addTitle(title: $description);
 
         // Add document tags if present
         if ($document->hasTags()) {
-            $tags = \implode(', ', $document->getTags());
+            $tags = \implode(separator: ', ', array: $document->getTags());
             $this->logger?->debug('Adding document tags', ['tags' => $tags]);
-            $builder->addBlock(new TextBlock($tags, 'DOCUMENT_TAGS'));
+            $builder->addBlock(block: new TextBlock(content: $tags, tag: 'DOCUMENT_TAGS'));
         }
 
         $sources = $document->getSources();
-        $sourceCount = \count($sources);
+        $sourceCount = \count(value: $sources);
         $this->logger?->info('Processing document sources', [
             'sourceCount' => $sourceCount,
             'hasDocumentModifiers' => $document->hasModifiers(),
         ]);
 
         // Create a modifiers applier with document-level modifiers if present
-        $modifiersApplier = ModifiersApplier::empty($this->modifierRegistry, $this->logger)
-            ->withModifiers($document->getModifiers());
+        $modifiersApplier = ModifiersApplier::empty(registry: $this->modifierRegistry, logger: $this->logger)
+            ->withModifiers(modifiers: $document->getModifiers());
 
         // Process all sources
         foreach ($sources as $index => $source) {
@@ -135,16 +135,16 @@ final readonly class DocumentCompiler
                 if ($source->hasDescription()) {
                     $description = $source->getDescription();
                     $this->logger?->debug('Adding source description', ['description' => $description]);
-                    $builder->addDescription("SOURCE: {$description}");
+                    $builder->addDescription(description: "SOURCE: {$description}");
                 }
 
                 $this->logger?->debug('Parsing source content');
                 $content = $source->parseContent($this->parser, $modifiersApplier);
                 $this->logger?->debug('Adding parsed content to builder', [
-                    'contentLength' => \strlen($content),
+                    'contentLength' => \strlen(string: $content),
                 ]);
 
-                $builder->addText($content);
+                $builder->addText(text: $content);
 
                 $this->logger?->debug('Source processed successfully');
             } catch (\Throwable $e) {
@@ -156,7 +156,7 @@ final readonly class DocumentCompiler
                 ]);
 
                 $errors->add(
-                    new SourceError(
+                    error: new SourceError(
                         source: $source,
                         exception: $e,
                     ),
@@ -191,11 +191,11 @@ final readonly class DocumentCompiler
 
             $fileSize = $this->files->size($resultPath);
             $fileContent = $this->files->read($resultPath);
-            $lineCount = \substr_count($fileContent, "\n") + 1; // Count lines including the last line
+            $lineCount = \substr_count(haystack: $fileContent, needle: "\n") + 1; // Count lines including the last line
 
             // Create a new content builder with the original content
             $builder = $this->builderFactory->create();
-            $builder->addText((string) $content);
+            $builder->addText(text: (string) $content);
 
             // Add file statistics
             $this->logger?->debug('Adding file statistics', [
@@ -204,7 +204,7 @@ final readonly class DocumentCompiler
                 'filePath' => $outputPath,
             ]);
 
-            $builder->addFileStats($fileSize, $lineCount, $outputPath);
+            $builder->addFileStats(fileSize: $fileSize, lineCount: $lineCount, filePath: $outputPath);
 
             return $builder->build();
         } catch (\Throwable $e) {

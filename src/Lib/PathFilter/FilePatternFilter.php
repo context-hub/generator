@@ -24,14 +24,14 @@ final class FilePatternFilter extends AbstractFilter
             return $items;
         }
 
-        return \array_filter($items, function (array $item): bool {
+        return \array_filter(array: $items, callback: function (array $item): bool {
             // Skip directories
             if ($item['type'] === 'dir') {
                 return true;
             }
 
             $filename = $item['name'];
-            return $this->matchPattern($filename, $this->pattern);
+            return $this->matchPattern(value: $filename, pattern: $this->pattern);
         });
     }
 }

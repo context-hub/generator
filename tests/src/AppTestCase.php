@@ -25,7 +25,7 @@ abstract class AppTestCase extends TestCase
 
     public function rootDirectory(): string
     {
-        return \dirname(__DIR__);
+        return \dirname(path: __DIR__);
     }
 
     public function getApp(): TestableKernelInterface
@@ -53,7 +53,7 @@ abstract class AppTestCase extends TestCase
      */
     public function makeApp(array $env = [], Container $container = new Container()): Kernel&TestableKernelInterface
     {
-        $environment = new Environment($env);
+        $environment = new Environment(values: $env);
 
         $app = $this->createAppInstance($container);
         $app->run($environment);
@@ -64,8 +64,8 @@ abstract class AppTestCase extends TestCase
     public function initApp(array $env = [], Container $container = new Container()): Kernel&TestableKernelInterface
     {
         $container->bindSingleton(
-            Application::class,
-            new Application(
+            alias: Application::class,
+            resolver: new Application(
                 version: '1.0.0',
                 name: 'Context Generator',
                 isBinary: true,
@@ -87,7 +87,7 @@ abstract class AppTestCase extends TestCase
      */
     public function get(string $id): mixed
     {
-        return $this->getApp()->getContainer()->get($id);
+        return $this->getApp()->getContainer()->get(id: $id);
     }
 
     protected function setUp(): void

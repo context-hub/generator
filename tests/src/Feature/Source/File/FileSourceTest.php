@@ -37,7 +37,7 @@ final class FileSourceTest extends AbstractFileSourceTestCase
         // Verify document properties
         $document = $documents[0];
         $this->assertEquals('File Source Test Document', $document->description);
-        $compiledDocument = $compiler->compile($document);
+        $compiledDocument = $compiler->compile(document: $document);
         $content = (string) $compiledDocument->content;
 
         // Check for expected content in the output

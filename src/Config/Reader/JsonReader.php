@@ -23,8 +23,8 @@ final readonly class JsonReader extends AbstractReader
         try {
             $config = \json_decode($content, true, flags: JSON_THROW_ON_ERROR);
 
-            if (!\is_array($config)) {
-                throw new ReaderException('JSON configuration must decode to an array');
+            if (!\is_array(value: $config)) {
+                throw new ReaderException(message: 'JSON configuration must decode to an array');
             }
 
             return $config;

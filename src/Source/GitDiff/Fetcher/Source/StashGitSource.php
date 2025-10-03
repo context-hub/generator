@@ -15,17 +15,17 @@ final readonly class StashGitSource extends AbstractGitSource
     public function supports(string $commitReference): bool
     {
         // Support regular stash references like stash@{0}
-        if (\preg_match('/^stash@\{\d+\}$/', $commitReference)) {
+        if (\preg_match(pattern: '/^stash@\{\d+\}$/', subject: $commitReference)) {
             return true;
         }
 
         // Support stash ranges like stash@{0}..stash@{2}
-        if (\preg_match('/^stash@\{\d+\}\.\.stash@\{\d+\}$/', $commitReference)) {
+        if (\preg_match(pattern: '/^stash@\{\d+\}\.\.stash@\{\d+\}$/', subject: $commitReference)) {
             return true;
         }
 
         // Support stash with message search like stash@{/message}
-        if (\preg_match('/^stash@\{\/(.*)\}$/', $commitReference)) {
+        if (\preg_match(pattern: '/^stash@\{\/(.*)\}$/', subject: $commitReference)) {
             return true;
         }
 
@@ -35,7 +35,7 @@ final readonly class StashGitSource extends AbstractGitSource
     public function getChangedFiles(string $repository, string $commitReference): array
     {
         // Handle single stash reference: stash@{0}
-        if (\preg_match('/^stash@\{\d+\}$/', $commitReference)) {
+        if (\preg_match(pattern: '/^stash@\{\d+\}$/', subject: $commitReference)) {
             return $this->executeGitCommand(
                 repository: $repository,
                 command: 'stash show --name-only ' . $commitReference,
@@ -43,12 +43,12 @@ final readonly class StashGitSource extends AbstractGitSource
         }
 
         // Handle stash range: stash@{0}..stash@{2}
-        if (\preg_match('/^stash@\{\d+\}\.\.stash@\{\d+\}$/', $commitReference)) {
-            [$startStash, $endStash] = \explode('..', $commitReference);
+        if (\preg_match(pattern: '/^stash@\{\d+\}\.\.stash@\{\d+\}$/', subject: $commitReference)) {
+            [$startStash, $endStash] = \explode(separator: '..', string: $commitReference);
 
             // Extract stash indices
-            \preg_match('/stash@\{(\d+)\}/', $startStash, $startMatches);
-            \preg_match('/stash@\{(\d+)\}/', $endStash, $endMatches);
+            \preg_match(pattern: '/stash@\{(\d+)\}/', subject: $startStash, matches: $startMatches);
+            \preg_match(pattern: '/stash@\{(\d+)\}/', subject: $endStash, matches: $endMatches);
 
             $startIndex = (int) $startMatches[1];
             $endIndex = (int) $endMatches[1];
@@ -71,11 +71,11 @@ final readonly class StashGitSource extends AbstractGitSource
                 }
             }
 
-            return \array_unique($allFiles);
+            return \array_unique(array: $allFiles);
         }
 
         // Handle stash with message search: stash@{/message}
-        if (\preg_match('/^stash@\{\/(.*)\}$/', $commitReference, $matches)) {
+        if (\preg_match(pattern: '/^stash@\{\/(.*)\}$/', subject: $commitReference, matches: $matches)) {
             // Extract message search pattern
             $searchPattern = $matches[1] ?? '';
             if (empty($searchPattern)) {
@@ -95,7 +95,7 @@ final readonly class StashGitSource extends AbstractGitSource
             // Find matching stash
             $matchingStashIndex = null;
             foreach ($listOutput as $index => $stashEntry) {
-                if (\stripos($stashEntry, $searchPattern) !== false) {
+                if (\stripos(haystack: $stashEntry, needle: $searchPattern) !== false) {
                     $matchingStashIndex = $index;
                     break;
                 }
@@ -117,10 +117,10 @@ final readonly class StashGitSource extends AbstractGitSource
     public function getFileDiff(string $repository, string $commitReference, string $file): string
     {
         // Handle single stash reference: stash@{0}
-        if (\preg_match('/^stash@\{\d+\}$/', $commitReference)) {
+        if (\preg_match(pattern: '/^stash@\{\d+\}$/', subject: $commitReference)) {
             // FIX: Use the correct syntax for showing a file in a stash
             // The stash index needs to be extracted without the stash@{} syntax
-            \preg_match('/^stash@\{(\d+)\}$/', $commitReference, $matches);
+            \preg_match(pattern: '/^stash@\{(\d+)\}$/', subject: $commitReference, matches: $matches);
             $stashIndex = $matches[1] ?? 0;
 
             // Build the command with the stash index
@@ -131,10 +131,10 @@ final readonly class StashGitSource extends AbstractGitSource
         }
 
         // Handle stash range (just use the first stash in the range for showing diff)
-        if (\preg_match('/^stash@\{\d+\}\.\.stash@\{\d+\}$/', $commitReference)) {
-            [$startStash,] = \explode('..', $commitReference);
+        if (\preg_match(pattern: '/^stash@\{\d+\}\.\.stash@\{\d+\}$/', subject: $commitReference)) {
+            [$startStash,] = \explode(separator: '..', string: $commitReference);
             // Extract the stash index from startStash
-            \preg_match('/^stash@\{(\d+)\}$/', $startStash, $matches);
+            \preg_match(pattern: '/^stash@\{(\d+)\}$/', subject: $startStash, matches: $matches);
             $stashIndex = $matches[1] ?? 0;
 
             // Build the command
@@ -145,7 +145,7 @@ final readonly class StashGitSource extends AbstractGitSource
         }
 
         // Handle stash with message search: stash@{/message}
-        if (\preg_match('/^stash@\{\/(.*)\}$/', $commitReference, $matches)) {
+        if (\preg_match(pattern: '/^stash@\{\/(.*)\}$/', subject: $commitReference, matches: $matches)) {
             // Extract message search pattern
             $searchPattern = $matches[1] ?? '';
             if (empty($searchPattern)) {
@@ -165,7 +165,7 @@ final readonly class StashGitSource extends AbstractGitSource
             // Find matching stash
             $matchingStashIndex = null;
             foreach ($listOutput as $index => $stashEntry) {
-                if (\stripos($stashEntry, $searchPattern) !== false) {
+                if (\stripos(haystack: $stashEntry, needle: $searchPattern) !== false) {
                     $matchingStashIndex = $index;
                     break;
                 }

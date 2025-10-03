@@ -17,20 +17,20 @@ final class StashGitSourceTest extends GitSourceTestCase
     #[Test]
     public function it_should_support_stash_references(): void
     {
-        $this->assertTrue($this->stashGitSource->supports('stash@{0}'));
-        $this->assertTrue($this->stashGitSource->supports('stash@{1}'));
-        $this->assertTrue($this->stashGitSource->supports('stash@{0}..stash@{2}'));
-        $this->assertTrue($this->stashGitSource->supports('stash@{/message}'));
+        $this->assertTrue($this->stashGitSource->supports(commitReference: 'stash@{0}'));
+        $this->assertTrue($this->stashGitSource->supports(commitReference: 'stash@{1}'));
+        $this->assertTrue($this->stashGitSource->supports(commitReference: 'stash@{0}..stash@{2}'));
+        $this->assertTrue($this->stashGitSource->supports(commitReference: 'stash@{/message}'));
     }
 
     #[Test]
     public function it_should_not_support_other_formats(): void
     {
-        $this->assertFalse($this->stashGitSource->supports(''));
-        $this->assertFalse($this->stashGitSource->supports('--cached'));
-        $this->assertFalse($this->stashGitSource->supports('HEAD~1..HEAD'));
-        $this->assertFalse($this->stashGitSource->supports('HEAD@{1.week.ago}..HEAD'));
-        $this->assertFalse($this->stashGitSource->supports('abcdef1 -- path/to/file'));
+        $this->assertFalse($this->stashGitSource->supports(commitReference: ''));
+        $this->assertFalse($this->stashGitSource->supports(commitReference: '--cached'));
+        $this->assertFalse($this->stashGitSource->supports(commitReference: 'HEAD~1..HEAD'));
+        $this->assertFalse($this->stashGitSource->supports(commitReference: 'HEAD@{1.week.ago}..HEAD'));
+        $this->assertFalse($this->stashGitSource->supports(commitReference: 'abcdef1 -- path/to/file'));
     }
 
     #[Test]
@@ -42,7 +42,7 @@ final class StashGitSourceTest extends GitSourceTestCase
         $this->mockChangedFiles($expectedCommand, $expectedFiles);
 
         // Get the files from the stash
-        $stashedFiles = $this->stashGitSource->getChangedFiles($this->repoDir, 'stash@{0}');
+        $stashedFiles = $this->stashGitSource->getChangedFiles(repository: $this->repoDir, commitReference: 'stash@{0}');
 
         // Verify that both files are in the stash
         $this->assertContains('stashed.txt', $stashedFiles);
@@ -58,7 +58,7 @@ final class StashGitSourceTest extends GitSourceTestCase
         $this->mockFileDiff($expectedCommand, $expectedDiff);
 
         // Get the diff for the stashed file
-        $diff = $this->stashGitSource->getFileDiff($this->repoDir, 'stash@{0}', 'stashed-diff.txt');
+        $diff = $this->stashGitSource->getFileDiff(repository: $this->repoDir, commitReference: 'stash@{0}', file: 'stashed-diff.txt');
 
         // Verify that the diff contains expected changes
         $this->assertStringContainsString('Modified content for stashing', $diff);
@@ -70,23 +70,23 @@ final class StashGitSourceTest extends GitSourceTestCase
         // Test common formats
         $this->assertSame(
             'Changes in latest stash',
-            $this->stashGitSource->formatReferenceForDisplay('stash@{0}'),
+            $this->stashGitSource->formatReferenceForDisplay(commitReference: 'stash@{0}'),
         );
 
         $this->assertSame(
             'Changes in second most recent stash',
-            $this->stashGitSource->formatReferenceForDisplay('stash@{1}'),
+            $this->stashGitSource->formatReferenceForDisplay(commitReference: 'stash@{1}'),
         );
 
         $this->assertSame(
             'Changes in latest 2 stashes',
-            $this->stashGitSource->formatReferenceForDisplay('stash@{0}..stash@{1}'),
+            $this->stashGitSource->formatReferenceForDisplay(commitReference: 'stash@{0}..stash@{1}'),
         );
 
         // Test custom format
         $this->assertSame(
             'Changes in stash: stash@{/custom-message}',
-            $this->stashGitSource->formatReferenceForDisplay('stash@{/custom-message}'),
+            $this->stashGitSource->formatReferenceForDisplay(commitReference: 'stash@{/custom-message}'),
         );
     }
 
@@ -98,7 +98,7 @@ final class StashGitSourceTest extends GitSourceTestCase
         $this->mockChangedFiles($expectedCommand, []);
 
         // Try to get files from a non-existent stash index
-        $files = $this->stashGitSource->getChangedFiles($this->repoDir, 'stash@{100}');
+        $files = $this->stashGitSource->getChangedFiles(repository: $this->repoDir, commitReference: 'stash@{100}');
 
         // Verify that an empty array is returned
         $this->assertEmpty($files);
@@ -112,7 +112,7 @@ final class StashGitSourceTest extends GitSourceTestCase
         $this->mockFileDiff($expectedCommand, '');
 
         // Try to get diff from a non-existent stash
-        $diff = $this->stashGitSource->getFileDiff($this->repoDir, 'stash@{100}', 'file.txt');
+        $diff = $this->stashGitSource->getFileDiff(repository: $this->repoDir, commitReference: 'stash@{100}', file: 'file.txt');
 
         // Verify that an empty string is returned
         $this->assertSame('', $diff);
@@ -122,6 +122,6 @@ final class StashGitSourceTest extends GitSourceTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->stashGitSource = new StashGitSource($this->commandExecutorMock, new Files(), $this->logger);
+        $this->stashGitSource = new StashGitSource(commandsExecutor: $this->commandExecutorMock, files: new Files(), logger: $this->logger);
     }
 }

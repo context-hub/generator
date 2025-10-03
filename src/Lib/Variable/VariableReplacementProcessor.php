@@ -30,16 +30,16 @@ final readonly class VariableReplacementProcessor implements VariableReplacement
     {
         // Replace ${VAR_NAME} syntax
         $result = \preg_replace_callback(
-            '/\${([a-zA-Z0-9_]+)}/',
-            fn(array $matches) => $this->replaceVariable($matches[1], '${%s}'),
-            $text,
+            pattern: '/\${([a-zA-Z0-9_]+)}/',
+            callback: fn(array $matches) => $this->replaceVariable(name: $matches[1], format: '${%s}'),
+            subject: $text,
         );
 
         // Replace {{VAR_NAME}} syntax
         return (string) \preg_replace_callback(
-            '/{{([a-zA-Z0-9_]+)}}/',
-            fn(array $matches) => $this->replaceVariable($matches[1], '{{%s}}'),
-            (string) $result,
+            pattern: '/{{([a-zA-Z0-9_]+)}}/',
+            callback: fn(array $matches) => $this->replaceVariable(name: $matches[1], format: '{{%s}}'),
+            subject: (string) $result,
         );
     }
 

@@ -19,8 +19,8 @@ abstract readonly class PathPrefixer
      */
     protected function combinePaths(string $prefix, string $path): string
     {
-        $combined = \rtrim($prefix, '/') . '/' . \ltrim($path, '/');
-        return $this->normalizePath($combined);
+        $combined = \rtrim(string: $prefix, characters: '/') . '/' . \ltrim(string: $path, characters: '/');
+        return $this->normalizePath(path: $combined);
     }
 
     /**
@@ -28,7 +28,7 @@ abstract readonly class PathPrefixer
      */
     protected function isAbsolutePath(string $path): bool
     {
-        return \str_starts_with($path, '/');
+        return \str_starts_with(haystack: $path, needle: '/');
     }
 
     /**
@@ -42,13 +42,13 @@ abstract readonly class PathPrefixer
         }
 
         // Preserve leading slash for absolute paths
-        $isAbsolute = $this->isAbsolutePath($path);
+        $isAbsolute = $this->isAbsolutePath(path: $path);
 
         // Replace backslashes with forward slashes for consistency
-        $path = \str_replace('\\', '/', $path);
+        $path = \str_replace(search: '\\', replace: '/', subject: $path);
 
         // Split the path into segments
-        $segments = \explode('/', $path);
+        $segments = \explode(separator: '/', string: $path);
 
         // Process each segment
         $result = [];
@@ -60,8 +60,8 @@ abstract readonly class PathPrefixer
 
             if ($segment === '..') {
                 // Handle parent directory references by removing the last segment
-                if (!empty($result) && $result[\count($result) - 1] !== '..') {
-                    \array_pop($result);
+                if (!empty($result) && $result[\count(value: $result) - 1] !== '..') {
+                    \array_pop(array: $result);
                 } else {
                     // If no segments to pop, preserve the .. reference
                     $result[] = $segment;
@@ -73,7 +73,7 @@ abstract readonly class PathPrefixer
         }
 
         // Combine the segments
-        $normalized = \implode('/', $result);
+        $normalized = \implode(separator: '/', array: $result);
 
         // Restore leading slash for absolute paths
         if ($isAbsolute && !empty($normalized)) {

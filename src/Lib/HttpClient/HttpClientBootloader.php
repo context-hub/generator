@@ -24,7 +24,7 @@ final class HttpClientBootloader extends Bootloader
                 Client $httpClient,
                 RequestFactoryInterface $requestFactory,
                 StreamFactoryInterface $streamFactory,
-            ) => new Psr18Client($httpClient, $requestFactory, $streamFactory),
+            ) => new Psr18Client(httpClient: $httpClient, requestFactory: $requestFactory, streamFactory: $streamFactory),
 
             HttpFactory::class => HttpFactory::class,
             RequestFactoryInterface::class => HttpFactory::class,

@@ -43,7 +43,7 @@ final readonly class GithubSourceFetcher implements SourceFetcherInterface
             $this->logger?->error($errorMessage, [
                 'sourceType' => $source::class,
             ]);
-            throw new \InvalidArgumentException($errorMessage);
+            throw new \InvalidArgumentException(message: $errorMessage);
         }
 
         $this->logger?->info('Fetching GitHub source content', [
@@ -58,15 +58,15 @@ final readonly class GithubSourceFetcher implements SourceFetcherInterface
             'repository' => $source->repository,
             'branch' => $source->branch,
         ]);
-        $repository = new GithubRepository($source->repository, $source->branch);
+        $repository = new GithubRepository(repository: $source->repository, branch: $source->branch);
 
         // Create builder
         $this->logger?->debug('Creating content builder');
         $builder = $this->builderFactory
             ->create()
-            ->addTitle($source->getDescription(), 2)
+            ->addTitle(title: $source->getDescription(), level: 2)
             ->addDescription(
-                \sprintf('Repository: %s. Branch: %s', $repository->getUrl(), $repository->branch),
+                description: \sprintf('Repository: %s. Branch: %s', $repository->getUrl(), $repository->branch),
             );
 
         // Find files using the finder and get the FinderResult
@@ -74,7 +74,7 @@ final readonly class GithubSourceFetcher implements SourceFetcherInterface
             'repository' => $repository->getUrl(),
             'branch' => $repository->branch,
         ]);
-        $finderResult = $this->finder->find($source);
+        $finderResult = $this->finder->find(source: $source);
         $fileCount = $finderResult->count();
         $this->logger?->debug('Files found in repository', [
             'fileCount' => $fileCount,
@@ -83,7 +83,7 @@ final readonly class GithubSourceFetcher implements SourceFetcherInterface
         // Add tree view if requested
         if ($source->showTreeView) {
             $this->logger?->debug('Adding tree view to output');
-            $builder->addTreeView($finderResult->treeView);
+            $builder->addTreeView(treeView: $finderResult->treeView);
         }
 
         // Fetch and add the content of each file
@@ -98,16 +98,16 @@ final readonly class GithubSourceFetcher implements SourceFetcherInterface
 
             $fileContent = $modifiersApplier->apply($file->getContents(), $path);
 
-            $language = $this->detectLanguage($path);
+            $language = $this->detectLanguage(filePath: $path);
             $this->logger?->debug('Adding file to content', [
                 'file' => $path,
                 'language' => $language,
-                'contentLength' => \strlen($fileContent),
+                'contentLength' => \strlen(string: $fileContent),
             ]);
 
             $builder
                 ->addCodeBlock(
-                    code: \trim($fileContent),
+                    code: \trim(string: $fileContent),
                     language: $language,
                     path: $path,
                 );
@@ -118,7 +118,7 @@ final readonly class GithubSourceFetcher implements SourceFetcherInterface
             'repository' => $repository->getUrl(),
             'branch' => $repository->branch,
             'fileCount' => $fileCount,
-            'contentLength' => \strlen($content),
+            'contentLength' => \strlen(string: $content),
         ]);
 
         // Return built content
@@ -127,7 +127,7 @@ final readonly class GithubSourceFetcher implements SourceFetcherInterface
 
     private function detectLanguage(string $filePath): ?string
     {
-        $extension = \pathinfo($filePath, PATHINFO_EXTENSION);
+        $extension = \pathinfo(path: $filePath, flags: PATHINFO_EXTENSION);
 
         $this->logger?->debug('Detecting language for file', [
             'file' => $filePath,

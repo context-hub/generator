@@ -23,7 +23,7 @@ final readonly class ConfigRegistryAccessor
      */
     public function getDocuments(): ?DocumentRegistry
     {
-        return $this->getRegistry('documents', DocumentRegistry::class);
+        return $this->getRegistry(type: 'documents', className: DocumentRegistry::class);
     }
 
     /**
@@ -31,7 +31,7 @@ final readonly class ConfigRegistryAccessor
      */
     public function getPrompts(): ?PromptRegistry
     {
-        return $this->getRegistry('prompts', PromptRegistry::class);
+        return $this->getRegistry(type: 'prompts', className: PromptRegistry::class);
     }
 
     /**
@@ -39,7 +39,7 @@ final readonly class ConfigRegistryAccessor
      */
     public function getTools(): ?ToolRegistry
     {
-        return $this->getRegistry('tools', ToolRegistry::class);
+        return $this->getRegistry(type: 'tools', className: ToolRegistry::class);
     }
 
     /**
@@ -47,7 +47,7 @@ final readonly class ConfigRegistryAccessor
      */
     public function getImports(): ?ImportRegistry
     {
-        return $this->getRegistry('import', ImportRegistry::class);
+        return $this->getRegistry(type: 'import', className: ImportRegistry::class);
     }
 
     /**
@@ -60,12 +60,12 @@ final readonly class ConfigRegistryAccessor
      */
     private function getRegistry(string $type, string $className): ?RegistryInterface
     {
-        if (!$this->registry->has($type)) {
+        if (!$this->registry->has(type: $type)) {
             return null;
         }
 
         try {
-            return $this->registry->get($type, $className);
+            return $this->registry->get(type: $type, className: $className);
         } catch (\InvalidArgumentException) {
             return null;
         }

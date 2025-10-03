@@ -33,54 +33,54 @@ final readonly class GenerateConfigAction
     public function __invoke(ServerRequestInterface $request): ReadResourceResult
     {
         try {
-            $detection = $this->detectionService->detectBestTemplate($this->dirs->getRootPath())->jsonSerialize();
+            $detection = $this->detectionService->detectBestTemplate(projectRoot: $this->dirs->getRootPath())->jsonSerialize();
 
             $response = <<<'INSTRUCTIONS'
                 You are an expert system for analyzing software projects and generating CTX configuration files.
-                
+
                 ## Your Role
-                Analyze the provided project structure, user requirements, and generate a complete, valid CTX 
+                Analyze the provided project structure, user requirements, and generate a complete, valid CTX
                 configuration file that follows the JSON Schema specification.
-                
+
                 ## JSON Schema
                 %s
-                
+
                 ## Project info
                 %s
-                
+
                 ## Available Tools
                 1. Use directory-list if you need to list directories in the project
                 2. Use file-read if you need to read files in the project
-                
+
                 ## Analysis Process
                 1. **Project Structure**: Examine directories, files, and detected frameworks
                 2. **Framework Patterns**: Apply framework-specific best practices
                 3. **Context Prioritization**: Focus on code most valuable for AI development assistance
                 4. **Document Organization**: Create logical, coherent context document groupings
-                
+
                 ## Configuration Rules
                 1. **Schema Compliance**: All output must validate against the provided JSON Schema
                 2. **Practical Focus**: Prioritize directories and files developers actively work with
                 3. **Logical Grouping**: Create documents that group related functionality
                 4. **Appropriate Sources**: Use optimal source types (file/tree) for each context need
                 5. **Meaningful Descriptions**: Provide clear, descriptive document names
-                
+
                 ## Output Requirements
                 - Generate complete YAML configuration in artefact form
                 - Use tree sources for structure overview
                 - Use file sources for code analysis
                 - Include tags
-                - Do not include modifiers, 
+                - Do not include modifiers,
                 - Validate all paths exist in project structure
                 INSTRUCTIONS;
 
             $response = \sprintf(
                 $response,
-                \json_encode($this->jsonSchema->getSimplifiedSchema()),
-                \json_encode($detection),
+                \json_encode(value: $this->jsonSchema->getSimplifiedSchema()),
+                \json_encode(value: $detection),
             );
 
-            return new ReadResourceResult([
+            return new ReadResourceResult(contents: [
                 new TextResourceContents(
                     uri: 'ctx://schema-builder-instructions',
                     mimeType: 'application/json',
@@ -94,7 +94,7 @@ final readonly class GenerateConfigAction
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return new ReadResourceResult([
+            return new ReadResourceResult(contents: [
                 new TextResourceContents(
                     uri: 'ctx://schema-builder-instructions',
                     mimeType: 'application/json',

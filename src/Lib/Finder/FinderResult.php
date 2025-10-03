@@ -20,6 +20,6 @@ final readonly class FinderResult
 
     public function count(): int
     {
-        return \count($this->files);
+        return \count(value: $this->files);
     }
 }

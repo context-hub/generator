@@ -58,31 +58,31 @@ final readonly class UrlSourceFetcher implements SourceFetcherInterface
             $this->logger?->error($errorMessage, [
                 'sourceType' => $source::class,
             ]);
-            throw new \InvalidArgumentException($errorMessage);
+            throw new \InvalidArgumentException(message: $errorMessage);
         }
 
         $this->logger?->info('Fetching URL source content', [
-            'urlCount' => \count($source->urls),
+            'urlCount' => \count(value: $source->urls),
             'hasSelector' => $source->hasSelector(),
         ]);
 
         // Create builder
         $builder = $this->builderFactory
             ->create()
-            ->addDescription($this->variableResolver->resolve($source->getDescription()));
+            ->addDescription(description: $this->variableResolver->resolve(strings: $source->getDescription()));
 
         foreach ($source->urls as $index => $url) {
-            $url = $this->variableResolver->resolve($url);
+            $url = $this->variableResolver->resolve(strings: $url);
 
             $this->logger?->debug('Processing URL', [
                 'url' => $url,
                 'index' => $index + 1,
-                'total' => \count($source->urls),
+                'total' => \count(value: $source->urls),
             ]);
 
             try {
                 $requestHeaders = $this->variableResolver->resolve(
-                    \array_merge($this->defaultHeaders, $source->headers),
+                    strings: \array_merge($this->defaultHeaders, $source->headers),
                 );
 
                 // Send the request
@@ -101,8 +101,8 @@ final readonly class UrlSourceFetcher implements SourceFetcherInterface
                     ]);
 
                     $builder
-                        ->addComment("URL: {$url}")
-                        ->addComment("Error: HTTP status code {$statusCode}")
+                        ->addComment(comment: "URL: {$url}")
+                        ->addComment(comment: "Error: HTTP status code {$statusCode}")
                         ->addSeparator();
                     continue;
                 }
@@ -114,7 +114,7 @@ final readonly class UrlSourceFetcher implements SourceFetcherInterface
 
                 // Get the response body
                 $html = $response->getBody();
-                $htmlLength = \strlen($html);
+                $htmlLength = \strlen(string: $html);
                 $this->logger?->debug('Received HTML content', [
                     'url' => $url,
                     'contentLength' => $htmlLength,
@@ -123,7 +123,7 @@ final readonly class UrlSourceFetcher implements SourceFetcherInterface
                 // Extract content from specific selector if defined
                 if ($source->hasSelector() && $this->selectorExtractor !== null) {
                     $selector = $source->getSelector();
-                    \assert(!empty($selector));
+                    \assert(assertion: !empty($selector));
 
                     $this->logger?->debug('Extracting content using selector', [
                         'url' => $url,
@@ -131,7 +131,7 @@ final readonly class UrlSourceFetcher implements SourceFetcherInterface
                     ]);
 
                     $contentFromSelector = $this->selectorExtractor->extract($html, $selector);
-                    $extractedLength = \strlen($contentFromSelector);
+                    $extractedLength = \strlen(string: $contentFromSelector);
 
                     if (empty($contentFromSelector)) {
                         $this->logger?->warning('Selector did not match any content', [
@@ -140,8 +140,8 @@ final readonly class UrlSourceFetcher implements SourceFetcherInterface
                         ]);
 
                         $builder
-                            ->addComment("URL: {$url}")
-                            ->addComment("Warning: Selector '{$source->getSelector()}' didn't match any content")
+                            ->addComment(comment: "URL: {$url}")
+                            ->addComment(comment: "Warning: Selector '{$source->getSelector()}' didn't match any content")
                             ->addSeparator();
                     } else {
                         $this->logger?->debug('Content extracted using selector', [
@@ -151,26 +151,26 @@ final readonly class UrlSourceFetcher implements SourceFetcherInterface
                             'originalLength' => $htmlLength,
                         ]);
 
-                        $builder->addComment("URL: {$url} (selector: {$source->getSelector()})");
+                        $builder->addComment(comment: "URL: {$url} (selector: {$source->getSelector()})");
                         $html = $contentFromSelector;
                     }
                 } else {
                     // Process the whole page
                     $this->logger?->debug('Processing entire HTML page', ['url' => $url]);
-                    $builder->addComment("URL: {$url}");
+                    $builder->addComment(comment: "URL: {$url}");
                 }
 
                 $this->logger?->debug('Cleaning HTML content', ['url' => $url]);
                 $cleanedHtml = $modifiersApplier->apply($this->cleaner->clean($html), $url);
                 $this->logger?->debug('HTML content cleaned', [
                     'url' => $url,
-                    'originalLength' => \strlen($html),
-                    'cleanedLength' => \strlen($cleanedHtml),
+                    'originalLength' => \strlen(string: $html),
+                    'cleanedLength' => \strlen(string: $cleanedHtml),
                 ]);
 
                 $builder
-                    ->addText($cleanedHtml)
-                    ->addComment("END OF URL: {$url}")
+                    ->addText(text: $cleanedHtml)
+                    ->addComment(comment: "END OF URL: {$url}")
                     ->addSeparator();
 
                 $this->logger?->debug('URL processed successfully', ['url' => $url]);
@@ -183,16 +183,16 @@ final readonly class UrlSourceFetcher implements SourceFetcherInterface
                 ]);
 
                 $builder
-                    ->addComment("URL: {$url}")
-                    ->addComment("Error: {$e->getMessage()}")
+                    ->addComment(comment: "URL: {$url}")
+                    ->addComment(comment: "Error: {$e->getMessage()}")
                     ->addSeparator();
             }
         }
 
         $content = $builder->build();
         $this->logger?->info('URL source content fetched successfully', [
-            'contentLength' => \strlen($content),
-            'urlCount' => \count($source->urls),
+            'contentLength' => \strlen(string: $content),
+            'urlCount' => \count(value: $source->urls),
         ]);
 
         // Return built content

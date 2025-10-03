@@ -43,37 +43,37 @@ final readonly class TextSourceFetcher implements SourceFetcherInterface
             $this->logger?->error($errorMessage, [
                 'sourceType' => $source::class,
             ]);
-            throw new \InvalidArgumentException($errorMessage);
+            throw new \InvalidArgumentException(message: $errorMessage);
         }
 
-        $description = $this->variableResolver->resolve($source->getDescription());
+        $description = $this->variableResolver->resolve(strings: $source->getDescription());
 
         $this->logger?->info('Fetching text source content', [
             'description' => $description,
             'tag' => $source->tag,
-            'contentLength' => \strlen($source->content),
+            'contentLength' => \strlen(string: $source->content),
         ]);
 
         // Create builder
         $this->logger?->debug('Creating content builder');
         $builder = $this->builderFactory
             ->create()
-            ->addDescription($description);
+            ->addDescription(description: $description);
 
         $this->logger?->debug('Adding text content with tags', [
             'tag' => $source->tag,
         ]);
 
-        $content = $this->variableResolver->resolve($source->content);
-        $tag = $this->variableResolver->resolve($source->tag);
+        $content = $this->variableResolver->resolve(strings: $source->content);
+        $tag = $this->variableResolver->resolve(strings: $source->tag);
 
         $builder
-            ->addBlock(new TextBlock($modifiersApplier->apply($content, 'file.txt'), $tag))
+            ->addBlock(block: new TextBlock(content: $modifiersApplier->apply($content, 'file.txt'), tag: $tag))
             ->addSeparator();
 
         $content = $builder->build();
         $this->logger?->info('Text source content fetched successfully', [
-            'contentLength' => \strlen($content),
+            'contentLength' => \strlen(string: $content),
         ]);
 
         // Return built content

@@ -27,30 +27,30 @@ final readonly class ExcludeParserPlugin implements ConfigParserPluginInterface
 
     public function supports(array $config): bool
     {
-        return isset($config['exclude']) && \is_array($config['exclude']);
+        return isset($config['exclude']) && \is_array(value: $config['exclude']);
     }
 
     public function parse(array $config, string $rootPath): ?RegistryInterface
     {
-        if (!$this->supports($config)) {
+        if (!$this->supports(config: $config)) {
             return null;
         }
 
-        \assert($this->registry instanceof RegistryInterface);
+        \assert(assertion: $this->registry instanceof RegistryInterface);
         $excludeConfig = $config['exclude'];
 
         // Parse patterns
-        if (isset($excludeConfig['patterns']) && \is_array($excludeConfig['patterns'])) {
-            $this->parsePatterns($excludeConfig['patterns']);
+        if (isset($excludeConfig['patterns']) && \is_array(value: $excludeConfig['patterns'])) {
+            $this->parsePatterns(patterns: $excludeConfig['patterns']);
         }
 
         // Parse paths
-        if (isset($excludeConfig['paths']) && \is_array($excludeConfig['paths'])) {
-            $this->parsePaths($excludeConfig['paths']);
+        if (isset($excludeConfig['paths']) && \is_array(value: $excludeConfig['paths'])) {
+            $this->parsePaths(paths: $excludeConfig['paths']);
         }
 
         $this->logger?->info('Parsed exclusion configuration', [
-            'patternCount' => \count($this->registry->getPatterns()),
+            'patternCount' => \count(value: $this->registry->getPatterns()),
         ]);
 
         return $this->registry;
@@ -68,14 +68,14 @@ final readonly class ExcludeParserPlugin implements ConfigParserPluginInterface
     private function parsePatterns(array $patterns): void
     {
         foreach ($patterns as $pattern) {
-            if (!\is_string($pattern) || empty($pattern)) {
+            if (!\is_string(value: $pattern) || empty($pattern)) {
                 $this->logger?->warning('Invalid exclusion pattern, skipping', [
                     'pattern' => $pattern,
                 ]);
                 continue;
             }
 
-            $this->registry->addPattern(new PatternExclusion($pattern));
+            $this->registry->addPattern(new PatternExclusion(pattern: $pattern));
         }
     }
 
@@ -85,14 +85,14 @@ final readonly class ExcludeParserPlugin implements ConfigParserPluginInterface
     private function parsePaths(array $paths): void
     {
         foreach ($paths as $path) {
-            if (!\is_string($path) || empty($path)) {
+            if (!\is_string(value: $path) || empty($path)) {
                 $this->logger?->warning('Invalid exclusion path, skipping', [
                     'path' => $path,
                 ]);
                 continue;
             }
 
-            $this->registry->addPattern(new PathExclusion($path));
+            $this->registry->addPattern(new PathExclusion(pattern: $path));
         }
     }
 }

@@ -17,8 +17,8 @@ enum ConfigType: string
     public static function types(): array
     {
         return \array_map(
-            static fn(self $type) => $type->value,
-            self::cases(),
+            callback: static fn(self $type) => $type->value,
+            array: self::cases(),
         );
     }
 
@@ -28,7 +28,7 @@ enum ConfigType: string
             'json' => self::Json,
             'yaml', 'yml' => self::Yaml,
             'php' => self::PHP,
-            default => throw new \ValueError(\sprintf('Unsupported config type: %s', $ext)),
+            default => throw new \ValueError(message: \sprintf('Unsupported config type: %s', $ext)),
         };
     }
 }

@@ -28,7 +28,7 @@ final class GitlabSourceBootloader extends Bootloader
         GitlabSourceFactory $factory,
     ): void {
         // Register the GitLab source fetcher with the fetcher registry
-        $registry->register(GitlabSourceFetcher::class);
+        $registry->register(fetcher: GitlabSourceFetcher::class);
 
         // Register the GitLab source factory with the source registry
         $sourceRegistry->register($factory);
@@ -39,6 +39,6 @@ final class GitlabSourceBootloader extends Bootloader
         GitlabServerParserPlugin $plugin,
     ): void {
         // Register the GitLab server parser plugin with the config loader
-        $parserRegistry->registerParserPlugin($plugin);
+        $parserRegistry->registerParserPlugin(plugin: $plugin);
     }
 }

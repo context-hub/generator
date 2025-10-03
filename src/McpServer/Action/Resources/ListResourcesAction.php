@@ -38,10 +38,10 @@ final readonly class ListResourcesAction
         }
 
         // Add document resources from config loader
-        $config = new ConfigRegistryAccessor($this->configLoader->load());
+        $config = new ConfigRegistryAccessor(registry: $this->configLoader->load());
 
         foreach ($config->getDocuments() as $document) {
-            $tags = \implode(', ', $document->getTags());
+            $tags = \implode(separator: ', ', array: $document->getTags());
 
             $resources[] = new Resource(
                 uri: 'ctx://document/' . $document->outputPath,

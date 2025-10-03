@@ -28,7 +28,7 @@ final readonly class GitlabServerParserPlugin implements ConfigParserPluginInter
     public function supports(array $config): bool
     {
         return isset($config['settings']['gitlab']['servers'])
-            && \is_array($config['settings']['gitlab']['servers']);
+            && \is_array(value: $config['settings']['gitlab']['servers']);
     }
 
     public function updateConfig(array $config, string $rootPath): array
@@ -39,14 +39,14 @@ final readonly class GitlabServerParserPlugin implements ConfigParserPluginInter
 
     public function parse(array $config, string $rootPath): ?RegistryInterface
     {
-        if (!$this->supports($config)) {
+        if (!$this->supports(config: $config)) {
             $this->logger?->debug('No GitLab server settings found in configuration');
             return null;
         }
 
         $serversConfig = $config['settings']['gitlab']['servers'];
         $this->logger?->info('Parsing GitLab server configurations', [
-            'serverCount' => \count($serversConfig),
+            'serverCount' => \count(value: $serversConfig),
         ]);
 
         foreach ($serversConfig as $name => $serverConfig) {
@@ -55,8 +55,8 @@ final readonly class GitlabServerParserPlugin implements ConfigParserPluginInter
                     'name' => $name,
                 ]);
 
-                $server = ServerConfig::fromArray($serverConfig);
-                $this->serverRegistry->register($name, $server);
+                $server = ServerConfig::fromArray(config: $serverConfig);
+                $this->serverRegistry->register(name: $name, config: $server);
 
                 $this->logger?->debug('Registered GitLab server', [
                     'name' => $name,
@@ -70,7 +70,7 @@ final readonly class GitlabServerParserPlugin implements ConfigParserPluginInter
         }
 
         $this->logger?->info('GitLab server configurations parsed successfully', [
-            'registeredServers' => \count($this->serverRegistry->all()),
+            'registeredServers' => \count(value: $this->serverRegistry->all()),
         ]);
 
         return null;

@@ -28,11 +28,11 @@ final class TextSource extends BaseSource
     #[\Override]
     public function jsonSerialize(): array
     {
-        return \array_filter([
+        return \array_filter(array: [
             'type' => 'text',
             ...parent::jsonSerialize(),
             'content' => $this->content,
             'tag' => $this->tag,
-        ], static fn($value) => $value !== null && $value !== '' && $value !== []);
+        ], callback: static fn($value) => $value !== null && $value !== '' && $value !== []);
     }
 }

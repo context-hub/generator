@@ -49,20 +49,20 @@ final class PromptsTest extends ConsoleTestCase
                 command: $command,
             )
             ->assertSuccess()
-            ->assertPromptExists('test-prompt')
-            ->assertPrompt('test-prompt', [
+            ->assertPromptExists(id: 'test-prompt')
+            ->assertPrompt(id: 'test-prompt', properties: [
                 'type' => 'prompt',
                 'description' => 'A simple test prompt',
             ])
-            ->assertPromptMessages('test-prompt', [
+            ->assertPromptMessages(id: 'test-prompt', messageContents: [
                 'Hello {{name}}, this is a test prompt.',
             ])
             ->assertPromptSchema(
-                'test-prompt',
-                [
+                id: 'test-prompt',
+                properties: [
                     'name' => ['description' => "User's name"],
                 ],
-                ['name'],
+                required: ['name'],
             );
     }
 
@@ -85,7 +85,7 @@ final class PromptsTest extends ConsoleTestCase
                     messages:
                       - role: user
                         content: "Hello {{name}}, this is the first prompt."
-                
+
                   - id: second-prompt
                     description: "Second test prompt"
                     schema:
@@ -108,14 +108,14 @@ final class PromptsTest extends ConsoleTestCase
                 command: $command,
             )
             ->assertSuccess()
-            ->assertPromptCount(2)
-            ->assertPromptExists('first-prompt')
-            ->assertPromptExists('second-prompt')
-            ->assertPrompt('first-prompt', [
+            ->assertPromptCount(count: 2)
+            ->assertPromptExists(id: 'first-prompt')
+            ->assertPromptExists(id: 'second-prompt')
+            ->assertPrompt(id: 'first-prompt', properties: [
                 'type' => 'prompt',
                 'description' => 'First test prompt',
             ])
-            ->assertPrompt('second-prompt', [
+            ->assertPrompt(id: 'second-prompt', properties: [
                 'type' => 'prompt',
                 'description' => 'Second test prompt',
             ]);
@@ -134,7 +134,7 @@ final class PromptsTest extends ConsoleTestCase
                     messages:
                       - role: user
                         content: "This is a base template with {{variable}}."
-                
+
                   - id: extended-prompt
                     type: prompt
                     description: "Prompt that extends a template"
@@ -162,25 +162,25 @@ final class PromptsTest extends ConsoleTestCase
                 command: $command,
             )
             ->assertSuccess()
-            ->assertPromptExists('extended-prompt')
-            ->assertPrompt('extended-prompt', [
+            ->assertPromptExists(id: 'extended-prompt')
+            ->assertPrompt(id: 'extended-prompt', properties: [
                 'type' => 'prompt',
                 'description' => 'Prompt that extends a template',
             ])
-            ->assertPromptExtends('extended-prompt', 'base-template')
-            ->assertPromptTemplateArguments('extended-prompt', 'base-template', [
+            ->assertPromptExtends(id: 'extended-prompt', templateId: 'base-template')
+            ->assertPromptTemplateArguments(id: 'extended-prompt', templateId: 'base-template', arguments: [
                 'variable' => 'custom value',
             ])
-            ->assertPromptMessages('extended-prompt', [
+            ->assertPromptMessages(id: 'extended-prompt', messageContents: [
                 'This is a base template with custom value.',
                 'Additional message with {{additionalVar}}.',
             ])
             ->assertPromptSchema(
-                'extended-prompt',
-                [
+                id: 'extended-prompt',
+                properties: [
                     'additionalVar' => ['description' => 'Additional parameter'],
                 ],
-                ['additionalVar'],
+                required: ['additionalVar'],
             );
     }
 
@@ -197,7 +197,7 @@ final class PromptsTest extends ConsoleTestCase
                     messages:
                       - role: user
                         content: "Base content with {{baseVar}}."
-                
+
                   - id: intermediate-template
                     type: template
                     extend:
@@ -207,7 +207,7 @@ final class PromptsTest extends ConsoleTestCase
                     messages:
                       - role: user
                         content: "Intermediate content with {{intermediateVar}}."
-                
+
                   - id: final-prompt
                     type: prompt
                     description: "Multi-level inherited prompt"
@@ -229,12 +229,12 @@ final class PromptsTest extends ConsoleTestCase
                 command: $command,
             )
             ->assertSuccess()
-            ->assertPromptExists('final-prompt')
-            ->assertPromptExtends('final-prompt', 'intermediate-template')
-            ->assertPromptTemplateArguments('final-prompt', 'intermediate-template', [
+            ->assertPromptExists(id: 'final-prompt')
+            ->assertPromptExtends(id: 'final-prompt', templateId: 'intermediate-template')
+            ->assertPromptTemplateArguments(id: 'final-prompt', templateId: 'intermediate-template', arguments: [
                 'intermediateVar' => 'final value',
             ])
-            ->assertPromptMessages('final-prompt', [
+            ->assertPromptMessages(id: 'final-prompt', messageContents: [
                 'Base content with final value.',
                 'Intermediate content with final value.',
                 'Final content.',
@@ -278,16 +278,16 @@ final class PromptsTest extends ConsoleTestCase
                 command: $command,
             )
             ->assertSuccess()
-            ->assertPromptExists('complex-schema-prompt')
+            ->assertPromptExists(id: 'complex-schema-prompt')
             ->assertPromptSchema(
-                'complex-schema-prompt',
-                [
+                id: 'complex-schema-prompt',
+                properties: [
                     'title' => ['description' => 'Document title'],
                     'sections' => ['description' => 'Document sections'],
                     'author' => ['description' => 'Document author'],
                     'tags' => ['description' => 'Document tags'],
                 ],
-                ['title', 'author'],
+                required: ['title', 'author'],
             );
     }
 
@@ -305,7 +305,7 @@ final class PromptsTest extends ConsoleTestCase
                     messages:
                       - role: user
                         content: "Help me with coding."
-                
+
                   - id: writing-prompt
                     description: "Writing assistant prompt"
                     tags: ["writing", "content", "creativity"]
@@ -361,7 +361,7 @@ final class PromptsTest extends ConsoleTestCase
                     messages:
                       - role: user
                         content: "This template was imported from another file with {{importedVar}}."
-                
+
                   - id: imported-prompt
                     description: "Imported standalone prompt"
                     schema:
@@ -383,7 +383,7 @@ final class PromptsTest extends ConsoleTestCase
                 import:
                   - path: {$this->getRelativePath($basePromptsFile)}
                     type: local
-                
+
                 prompts:
                   - id: main-prompt
                     description: "Main file prompt"
@@ -406,14 +406,14 @@ final class PromptsTest extends ConsoleTestCase
             )
             ->assertSuccess()
             ->assertImported(path: $this->getRelativePath($basePromptsFile), type: 'local')
-            ->assertPromptCount(2) // Only prompts, not templates, should be counted
-            ->assertPromptExists('imported-prompt')
-            ->assertPromptExists('main-prompt')
-            ->assertPromptExtends('main-prompt', 'imported-template')
-            ->assertPromptTemplateArguments('main-prompt', 'imported-template', [
+            ->assertPromptCount(count: 2) // Only prompts, not templates, should be counted
+            ->assertPromptExists(id: 'imported-prompt')
+            ->assertPromptExists(id: 'main-prompt')
+            ->assertPromptExtends(id: 'main-prompt', templateId: 'imported-template')
+            ->assertPromptTemplateArguments(id: 'main-prompt', templateId: 'imported-template', arguments: [
                 'importedVar' => 'successfully imported value',
             ])
-            ->assertPromptMessages('main-prompt', [
+            ->assertPromptMessages(id: 'main-prompt', messageContents: [
                 'This template was imported from another file with successfully imported value.',
                 'Additional content from main file.',
             ]);
@@ -433,14 +433,14 @@ final class PromptsTest extends ConsoleTestCase
                     messages:
                       - role: user
                         content: "I need help with coding."
-                
+
                   - id: design-helper
                     description: "Helps with design tasks"
                     tags: ["design", "ui"]
                     messages:
                       - role: user
                         content: "I need help with design."
-                
+
                   - id: advanced-coding
                     description: "Advanced coding assistance"
                     tags: ["coding", "advanced"]
@@ -461,7 +461,7 @@ final class PromptsTest extends ConsoleTestCase
                       tags:
                         include: ["coding"]
                         exclude: ["advanced"]
-                
+
                 prompts:
                   - id: local-prompt
                     description: "Local prompt"
@@ -481,11 +481,11 @@ final class PromptsTest extends ConsoleTestCase
             ->assertSuccess()
             ->assertImported(path: $this->getRelativePath($promptsFile), type: 'local')
             ->assertPromptCount(
-                2,
+                count: 2,
             ) // Local prompt + coding-helper (design-helper and advanced-coding should be filtered out)
-            ->assertPromptExists('coding-helper')
-            ->assertPromptExists('local-prompt')
-            ->assertPrompt('coding-helper', [
+            ->assertPromptExists(id: 'coding-helper')
+            ->assertPromptExists(id: 'local-prompt')
+            ->assertPrompt(id: 'coding-helper', properties: [
                 'description' => 'Helps with coding tasks',
             ]);
     }
@@ -503,13 +503,13 @@ final class PromptsTest extends ConsoleTestCase
                     messages:
                       - role: user
                         content: "This is the first prompt."
-                
+
                   - id: prompt-two
                     description: "Second prompt"
                     messages:
                       - role: user
                         content: "This is the second prompt."
-                
+
                   - id: prompt-three
                     description: "Third prompt"
                     messages:
@@ -527,7 +527,7 @@ final class PromptsTest extends ConsoleTestCase
                     type: local
                     filter:
                       ids: ["prompt-one", "prompt-three"]
-                
+
                 prompts:
                   - id: local-prompt
                     description: "Local prompt"
@@ -546,10 +546,10 @@ final class PromptsTest extends ConsoleTestCase
             )
             ->assertSuccess()
             ->assertImported(path: $this->getRelativePath($promptsFile), type: 'local')
-            ->assertPromptCount(3) // Local prompt + prompt-one + prompt-three
-            ->assertPromptExists('prompt-one')
-            ->assertPromptExists('prompt-three')
-            ->assertPromptExists('local-prompt');
+            ->assertPromptCount(count: 3) // Local prompt + prompt-one + prompt-three
+            ->assertPromptExists(id: 'prompt-one')
+            ->assertPromptExists(id: 'prompt-three')
+            ->assertPromptExists(id: 'local-prompt');
     }
 
     #[Test]
@@ -575,7 +575,7 @@ final class PromptsTest extends ConsoleTestCase
         );
 
         // At minimum, the prompt count should be 0
-        $result->assertPromptCount(0);
+        $result->assertPromptCount(count: 0);
     }
 
     #[\Override]
@@ -593,7 +593,7 @@ final class PromptsTest extends ConsoleTestCase
         string $command = 'generate',
         bool $asJson = true,
     ): CompilingResult {
-        return (new ContextBuilder($this->getConsole()))->build(
+        return (new ContextBuilder(console: $this->getConsole()))->build(
             workDir: $workDir,
             configPath: $configPath,
             inlineJson: $inlineJson,
@@ -607,6 +607,6 @@ final class PromptsTest extends ConsoleTestCase
     {
         // Convert absolute path to relative path for use in YAML configurations
         // This ensures the test is independent of the absolute paths on the test system
-        return \basename($absolutePath);
+        return \basename(path: $absolutePath);
     }
 }

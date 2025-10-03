@@ -66,19 +66,19 @@ final class McpConfigCommand extends BaseCommand
         ConfigGeneratorInterface $configGenerator,
         DirectoriesInterface $dirs,
     ): int {
-        $renderer = new McpConfigRenderer($this->output);
+        $renderer = new McpConfigRenderer(output: $this->output);
         $renderer->renderHeader();
 
         // Handle interactive mode
         if ($this->interactive) {
-            return $this->runInteractiveMode($osDetection, $configGenerator, $renderer, $dirs);
+            return $this->runInteractiveMode(osDetection: $osDetection, configGenerator: $configGenerator, renderer: $renderer, dirs: $dirs);
         }
 
         // Detect operating system and environment
-        $osInfo = $osDetection->detect($this->forceWsl);
+        $osInfo = $osDetection->detect(forceWsl: $this->forceWsl);
 
         // Determine configuration approach
-        $options = $this->buildConfigOptions($dirs);
+        $options = $this->buildConfigOptions(dirs: $dirs);
 
         // Generate configuration
         $config = $configGenerator->generate(
@@ -89,11 +89,11 @@ final class McpConfigCommand extends BaseCommand
         );
 
         // Render the configuration
-        $renderer->renderConfiguration($config, $osInfo, $options);
+        $renderer->renderConfiguration(config: $config, osInfo: $osInfo, options: $options);
 
         // Show explanations if requested
         if ($this->explain) {
-            $renderer->renderExplanation($config, $osInfo, $options);
+            $renderer->renderExplanation(config: $config, osInfo: $osInfo, options: $options);
         }
 
         return Command::SUCCESS;
@@ -116,7 +116,7 @@ final class McpConfigCommand extends BaseCommand
 
         // Auto-detect OS
         $osInfo = $osDetection->detect();
-        $renderer->renderDetectedEnvironment($osInfo);
+        $renderer->renderDetectedEnvironment(osInfo: $osInfo);
 
         // Ask about WSL if on Windows
         if ($osInfo->isWindows() && !$osInfo->isWsl()) {
@@ -154,7 +154,7 @@ final class McpConfigCommand extends BaseCommand
             );
 
             // Validate project path
-            if (!\is_dir($projectPath)) {
+            if (!\is_dir(filename: $projectPath)) {
                 $this->output->warning("Warning: The specified path does not exist: {$projectPath}");
 
                 if (!$this->output->confirm('Continue anyway?', true)) {
@@ -180,8 +180,8 @@ final class McpConfigCommand extends BaseCommand
             options: $options,
         );
 
-        $renderer->renderConfiguration($config, $osInfo, $options);
-        $renderer->renderExplanation($config, $osInfo, $options);
+        $renderer->renderConfiguration(config: $config, osInfo: $osInfo, options: $options);
+        $renderer->renderExplanation(config: $config, osInfo: $osInfo, options: $options);
 
         return Command::SUCCESS;
     }

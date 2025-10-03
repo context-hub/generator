@@ -18,8 +18,8 @@ class CompositeVariableProviderTest extends TestCase
     {
         $provider = new CompositeVariableProvider();
 
-        $this->assertFalse($provider->has('TEST_VAR'));
-        $this->assertNull($provider->get('TEST_VAR'));
+        $this->assertFalse($provider->has(name: 'TEST_VAR'));
+        $this->assertNull($provider->get(name: 'TEST_VAR'));
     }
 
     #[Test]
@@ -38,7 +38,7 @@ class CompositeVariableProviderTest extends TestCase
 
         $composite = new CompositeVariableProvider($provider1, $provider2, $provider3);
 
-        $this->assertTrue($composite->has('TEST_VAR'));
+        $this->assertTrue($composite->has(name: 'TEST_VAR'));
     }
 
     #[Test]
@@ -60,7 +60,7 @@ class CompositeVariableProviderTest extends TestCase
 
         $composite = new CompositeVariableProvider($provider1, $provider2, $provider3);
 
-        $this->assertSame('test_value', $composite->get('TEST_VAR'));
+        $this->assertSame('test_value', $composite->get(name: 'TEST_VAR'));
     }
 
     #[Test]
@@ -79,10 +79,10 @@ class CompositeVariableProviderTest extends TestCase
         $composite = new CompositeVariableProvider($lowPriority);
 
         // Add high priority provider
-        $composite->addProviderWithHighPriority($highPriority);
+        $composite->addProviderWithHighPriority(provider: $highPriority);
 
         // The high priority provider should be checked first
-        $this->assertSame('high_priority_value', $composite->get('SHARED_VAR'));
+        $this->assertSame('high_priority_value', $composite->get(name: 'SHARED_VAR'));
     }
 
     #[Test]
@@ -93,8 +93,8 @@ class CompositeVariableProviderTest extends TestCase
         $provider3 = $this->createMock(VariableProviderInterface::class);
 
         $composite = new CompositeVariableProvider($provider1);
-        $composite->addProvider($provider2);
-        $composite->addProviderWithHighPriority($provider3);
+        $composite->addProvider(provider: $provider2);
+        $composite->addProviderWithHighPriority(provider: $provider3);
 
         $providers = $composite->getProviders();
 

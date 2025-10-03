@@ -31,17 +31,17 @@ final class ConsoleLogger extends AbstractLogger implements HasPrefixLoggerInter
 
     public function log($level, string|\Stringable $message, array $context = []): void
     {
-        $logLevel = $this->normalizeLogLevel($level);
+        $logLevel = $this->normalizeLogLevel(level: $level);
 
         // Only output if verbosity of the output is sufficient for this log level
-        if (!$this->isLevelEnabled($logLevel)) {
+        if (!$this->isLevelEnabled(level: $logLevel)) {
             return;
         }
 
         $formattedMessage = $this->formatter->format($logLevel, $message, $context);
 
         // Apply color formatting based on log level
-        $colorizedMessage = $this->colorize($formattedMessage, $logLevel);
+        $colorizedMessage = $this->colorize(message: $formattedMessage, level: $logLevel);
 
         $this->output->writeln($colorizedMessage);
     }
@@ -75,7 +75,7 @@ final class ConsoleLogger extends AbstractLogger implements HasPrefixLoggerInter
      */
     private function colorize(string $message, string $level): string
     {
-        $color = LogLevel::fromString($level)->getAnsiColor();
+        $color = LogLevel::fromString(level: $level)->getAnsiColor();
 
         if (empty($color)) {
             return $message;
@@ -89,12 +89,12 @@ final class ConsoleLogger extends AbstractLogger implements HasPrefixLoggerInter
      */
     private function normalizeLogLevel(mixed $level): string
     {
-        if (\is_string($level)) {
-            return \strtolower($level);
+        if (\is_string(value: $level)) {
+            return \strtolower(string: $level);
         }
 
         if ($level instanceof \Stringable) {
-            return \strtolower((string) $level);
+            return \strtolower(string: (string) $level);
         }
 
         // Default to 'info' for invalid levels

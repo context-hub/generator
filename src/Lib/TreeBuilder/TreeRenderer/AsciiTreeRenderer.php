@@ -53,13 +53,13 @@ final readonly class AsciiTreeRenderer implements TreeRendererInterface
         }
 
         $result = '';
-        $count = \count($node);
+        $count = \count(value: $node);
         $i = 0;
 
         foreach ($node as $name => $children) {
             $i++;
             $isLastItem = ($i === $count);
-            $isDirectory = \is_array($children);
+            $isDirectory = \is_array(value: $children);
 
             // Skip files if includeFiles is false
             if (!$isDirectory && !$includeFiles) {
@@ -79,31 +79,31 @@ final readonly class AsciiTreeRenderer implements TreeRendererInterface
             if ($showSize || $showLastModified || $showCharCount) {
                 if ($showSize) {
                     $size = $isDirectory
-                        ? $this->calculateDirectorySize($children)
-                        : (\file_exists($fullPath) ? \filesize($fullPath) : 0);
-                    $metadata .= $this->formatSize($size);
+                        ? $this->calculateDirectorySize(directory: $children)
+                        : (\file_exists(filename: $fullPath) ? \filesize(filename: $fullPath) : 0);
+                    $metadata .= $this->formatSize(bytes: $size);
                 }
 
                 if ($showLastModified) {
                     $mtime = $isDirectory
-                        ? $this->getLatestModificationTime($children)
-                        : (\file_exists($fullPath) ? \filemtime($fullPath) : 0);
+                        ? $this->getLatestModificationTime(directory: $children)
+                        : (\file_exists(filename: $fullPath) ? \filemtime(filename: $fullPath) : 0);
                     if ($showSize) {
                         $metadata .= ', ';
                     }
-                    $metadata .= \date('Y-m-d', $mtime ?: \time());
+                    $metadata .= \date(format: 'Y-m-d', timestamp: $mtime ?: \time());
                 }
 
                 // Add character count if requested
                 if ($showCharCount) {
                     $charCount = $isDirectory
                         ? $this->tokenCounter->calculateDirectoryCount($children)
-                        : (\file_exists($fullPath) ? $this->tokenCounter->countFile($fullPath) : 0);
+                        : (\file_exists(filename: $fullPath) ? $this->tokenCounter->countFile($fullPath) : 0);
                     if ($showSize || $showLastModified) {
                         $metadata .= ', ';
                     }
                     if ($charCount > 0) {
-                        $metadata .= \number_format($charCount) . ' chars';
+                        $metadata .= \number_format(num: $charCount) . ' chars';
                     }
                 }
             }
@@ -127,15 +127,15 @@ final readonly class AsciiTreeRenderer implements TreeRendererInterface
             if ($isDirectory) {
                 $newPrefix = $prefix . ($isLast ? '    ' : '│   ');
                 $result .= $this->renderNode(
-                    $children,
-                    $newPrefix,
-                    $isLastItem,
-                    $showSize,
-                    $showLastModified,
-                    $showCharCount,
-                    $includeFiles,
-                    $dirContext,
-                    $relativePath,  // Pass the updated relative path
+                    node: $children,
+                    prefix: $newPrefix,
+                    isLast: $isLastItem,
+                    showSize: $showSize,
+                    showLastModified: $showLastModified,
+                    showCharCount: $showCharCount,
+                    includeFiles: $includeFiles,
+                    dirContext: $dirContext,
+                    currentPath: $relativePath,  // Pass the updated relative path
                 );
             }
         }
@@ -154,10 +154,10 @@ final readonly class AsciiTreeRenderer implements TreeRendererInterface
         $totalSize = 0;
 
         foreach ($directory as $children) {
-            if (\is_array($children)) {
-                $totalSize += $this->calculateDirectorySize($children);
+            if (\is_array(value: $children)) {
+                $totalSize += $this->calculateDirectorySize(directory: $children);
             } else {
-                $totalSize += \file_exists($children) ? \filesize($children) : 0;
+                $totalSize += \file_exists(filename: $children) ? \filesize(filename: $children) : 0;
             }
         }
 
@@ -175,9 +175,9 @@ final readonly class AsciiTreeRenderer implements TreeRendererInterface
         $latestTime = 0;
 
         foreach ($directory as $children) {
-            $time = \is_array($children)
-                ? $this->getLatestModificationTime($children)
-                : (\file_exists($children) ? (int) \filemtime($children) : 0);
+            $time = \is_array(value: $children)
+                ? $this->getLatestModificationTime(directory: $children)
+                : (\file_exists(filename: $children) ? (int) \filemtime(filename: $children) : 0);
 
             if ($time > $latestTime) {
                 $latestTime = $time;
@@ -201,8 +201,8 @@ final readonly class AsciiTreeRenderer implements TreeRendererInterface
         /**
          * @psalm-suppress InvalidOperand
          */
-        $pow = \floor(($bytes ? \log($bytes) : 0) / \log(1024));
-        $pow = \min($pow, \count($units) - 1);
+        $pow = \floor(num: ($bytes ? \log(num: $bytes) : 0) / \log(num: 1024));
+        $pow = \min($pow, \count(value: $units) - 1);
 
         /**
          * @psalm-suppress InvalidOperand

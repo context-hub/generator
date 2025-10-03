@@ -21,7 +21,7 @@ final class RenderStrategyFactoryTest extends TestCase
     #[Test]
     public function it_should_create_raw_render_strategy(): void
     {
-        $strategy = $this->factory->create(RenderStrategyEnum::Raw);
+        $strategy = $this->factory->create(strategy: RenderStrategyEnum::Raw);
 
         $this->assertInstanceOf(RenderStrategyInterface::class, $strategy);
         $this->assertInstanceOf(RawRenderStrategy::class, $strategy);
@@ -30,7 +30,7 @@ final class RenderStrategyFactoryTest extends TestCase
     #[Test]
     public function it_should_create_llm_friendly_render_strategy(): void
     {
-        $strategy = $this->factory->create(RenderStrategyEnum::LLM);
+        $strategy = $this->factory->create(strategy: RenderStrategyEnum::LLM);
 
         $this->assertInstanceOf(RenderStrategyInterface::class, $strategy);
         $this->assertInstanceOf(LLMFriendlyRenderStrategy::class, $strategy);

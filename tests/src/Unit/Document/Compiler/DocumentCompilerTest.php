@@ -56,10 +56,10 @@ final class DocumentCompilerTest extends TestCase
                 $content = "# Test Document",
             );
 
-        $compiled = $this->compiler->compile($document);
+        $compiled = $this->compiler->compile(document: $document);
 
         $this->assertEquals($content, (string) $compiled->content);
-        $this->assertEquals(0, \count($compiled->errors));
+        $this->assertEquals(0, \count(value: $compiled->errors));
     }
 
     #[Test]
@@ -81,10 +81,10 @@ final class DocumentCompilerTest extends TestCase
             ->expects($this->never())
             ->method('write');
 
-        $compiled = $this->compiler->compile($document);
+        $compiled = $this->compiler->compile(document: $document);
 
         $this->assertEquals("", (string) $compiled->content);
-        $this->assertEquals(0, \count($compiled->errors));
+        $this->assertEquals(0, \count(value: $compiled->errors));
     }
 
     #[Test]
@@ -99,7 +99,7 @@ final class DocumentCompilerTest extends TestCase
         $source = $this->createMock(SourceInterface::class);
         $source
             ->method('parseContent')
-            ->willThrowException(new \RuntimeException('Source error'));
+            ->willThrowException(new \RuntimeException(message: 'Source error'));
 
         $document = $document->addSource($source);
 
@@ -109,10 +109,10 @@ final class DocumentCompilerTest extends TestCase
             ->with('/base/path/output.txt')
             ->willReturn(false);
 
-        $compiled = $this->compiler->compile($document);
+        $compiled = $this->compiler->compile(document: $document);
 
         $this->assertEquals("# Test Document", (string) $compiled->content);
-        $this->assertEquals(1, \count($compiled->errors));
+        $this->assertEquals(1, \count(value: $compiled->errors));
         $this->assertInstanceOf(SourceError::class, $compiled->errors->getIterator()[0]);
     }
 
@@ -139,10 +139,10 @@ final class DocumentCompilerTest extends TestCase
                 $content = "# Test Document\n<DOCUMENT_TAGS>\ntag1, tag2\n</DOCUMENT_TAGS>",
             );
 
-        $compiled = $this->compiler->compile($document);
+        $compiled = $this->compiler->compile(document: $document);
 
         $this->assertEquals($content, (string) $compiled->content);
-        $this->assertEquals(0, \count($compiled->errors));
+        $this->assertEquals(0, \count(value: $compiled->errors));
     }
 
     #[Test]
@@ -180,10 +180,10 @@ final class DocumentCompilerTest extends TestCase
                 $content = "# Test Document\nContent from source 1\nContent from source 2",
             );
 
-        $compiled = $this->compiler->compile($document);
+        $compiled = $this->compiler->compile(document: $document);
 
         $this->assertEquals($content, (string) $compiled->content);
-        $this->assertEquals(0, \count($compiled->errors));
+        $this->assertEquals(0, \count(value: $compiled->errors));
     }
 
     #[Test]
@@ -210,10 +210,10 @@ final class DocumentCompilerTest extends TestCase
                 $content = "# Test Document\n_SOURCE: Source Description_\nSource content",
             );
 
-        $compiled = $this->compiler->compile($document);
+        $compiled = $this->compiler->compile(document: $document);
 
         $this->assertEquals($content, (string) $compiled->content);
-        $this->assertEquals(0, \count($compiled->errors));
+        $this->assertEquals(0, \count(value: $compiled->errors));
     }
 
     #[Test]
@@ -228,20 +228,20 @@ final class DocumentCompilerTest extends TestCase
         $source1 = $this->createMock(SourceInterface::class);
         $source1
             ->method('parseContent')
-            ->willThrowException(new \RuntimeException('Error 1'));
+            ->willThrowException(new \RuntimeException(message: 'Error 1'));
 
         $source2 = $this->createMock(SourceInterface::class);
         $source2
             ->method('parseContent')
-            ->willThrowException(new \RuntimeException('Error 2'));
+            ->willThrowException(new \RuntimeException(message: 'Error 2'));
 
         $document = $document->addSource($source1)->addSource($source2);
 
-        $compiled = $this->compiler->compile($document);
+        $compiled = $this->compiler->compile(document: $document);
 
         $this->assertEquals("# Test Document", (string) $compiled->content);
-        $this->assertEquals(2, \count($compiled->errors));
-        $errors = \iterator_to_array($compiled->errors->getIterator());
+        $this->assertEquals(2, \count(value: $compiled->errors));
+        $errors = \iterator_to_array(iterator: $compiled->errors->getIterator());
         $this->assertInstanceOf(SourceError::class, $errors[0]);
         $this->assertInstanceOf(SourceError::class, $errors[1]);
         $this->assertEquals('Error 1', $errors[0]->exception->getMessage());
@@ -265,10 +265,10 @@ final class DocumentCompilerTest extends TestCase
                 $content = "# Empty Document",
             );
 
-        $compiled = $this->compiler->compile($document);
+        $compiled = $this->compiler->compile(document: $document);
 
         $this->assertEquals($content, (string) $compiled->content);
-        $this->assertEquals(0, \count($compiled->errors));
+        $this->assertEquals(0, \count(value: $compiled->errors));
     }
 
     protected function setUp(): void

@@ -39,7 +39,7 @@ final readonly class ServerConfig implements \JsonSerializable
     public static function fromArray(array $config): self
     {
         if (!isset($config['url'])) {
-            throw new \InvalidArgumentException('GitLab server configuration must have a "url" property');
+            throw new \InvalidArgumentException(message: 'GitLab server configuration must have a "url" property');
         }
 
         return self::create(
@@ -51,21 +51,21 @@ final readonly class ServerConfig implements \JsonSerializable
 
     public function withResolvedVariables(VariableResolver $resolver): self
     {
-        $resolvedHeaders = \array_map(static fn($value) => $resolver->resolve($value), $this->headers);
+        $resolvedHeaders = \array_map(callback: static fn($value) => $resolver->resolve(strings: $value), array: $this->headers);
 
         return new self(
-            url: $resolver->resolve($this->url),
-            token: $this->token !== null ? $resolver->resolve($this->token) : null,
+            url: $resolver->resolve(strings: $this->url),
+            token: $this->token !== null ? $resolver->resolve(strings: $this->token) : null,
             headers: $resolvedHeaders,
         );
     }
 
     public function jsonSerialize(): array
     {
-        return \array_filter([
+        return \array_filter(array: [
             'url' => $this->url,
             'token' => $this->token,
             'headers' => $this->headers,
-        ], static fn($value) => $value !== null && (!\is_array($value) || !empty($value)));
+        ], callback: static fn($value) => $value !== null && (!\is_array(value: $value) || !empty($value)));
     }
 }

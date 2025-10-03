@@ -27,7 +27,7 @@ final readonly class RegexReplacementRule implements RuleInterface
     {
         foreach ($this->patterns as $pattern => $replacement) {
             /** @var string $content */
-            $content = \preg_replace($pattern, $replacement, $content);
+            $content = \preg_replace(pattern: $pattern, replacement: $replacement, subject: $content);
         }
 
         return $content;

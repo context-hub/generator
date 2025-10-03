@@ -59,22 +59,22 @@ final class ToolsTest extends ConsoleTestCase
                 command: $command,
             )
             ->assertSuccess()
-            ->assertToolExists('test-command')
-            ->assertTool('test-command', [
+            ->assertToolExists(id: 'test-command')
+            ->assertTool(id: 'test-command', properties: [
                 'type' => 'run',
                 'description' => 'A simple test command tool',
             ])
             ->assertToolSchema(
-                'test-command',
-                [
+                id: 'test-command',
+                properties: [
                     'param' => [
                         'type' => 'string',
                         'description' => 'Command parameter',
                     ],
                 ],
-                ['param'],
+                required: ['param'],
             )
-            ->assertToolCommands('test-command', [
+            ->assertToolCommands(id: 'test-command', expectedCommands: [
                 [
                     'cmd' => 'echo',
                     'args' => ['Hello', '{{param}}'],
@@ -122,14 +122,14 @@ final class ToolsTest extends ConsoleTestCase
                 command: $command,
             )
             ->assertSuccess()
-            ->assertToolExists('test-api')
-            ->assertTool('test-api', [
+            ->assertToolExists(id: 'test-api')
+            ->assertTool(id: 'test-api', properties: [
                 'type' => 'http',
                 'description' => 'A simple HTTP API tool',
             ])
             ->assertToolSchema(
-                'test-api',
-                [
+                id: 'test-api',
+                properties: [
                     'token' => [
                         'type' => 'string',
                         'description' => 'API token',
@@ -139,7 +139,7 @@ final class ToolsTest extends ConsoleTestCase
                         'description' => 'Search query',
                     ],
                 ],
-                ['token'],
+                required: ['token'],
             );
     }
 
@@ -158,7 +158,7 @@ final class ToolsTest extends ConsoleTestCase
                       - cmd: "ls"
                         args:
                           - "-la"
-                
+
                   - id: api-tool
                     description: "API interaction tool"
                     type: "http"
@@ -176,14 +176,14 @@ final class ToolsTest extends ConsoleTestCase
                 command: $command,
             )
             ->assertSuccess()
-            ->assertToolCount(2)
-            ->assertToolExists('command-tool')
-            ->assertToolExists('api-tool')
-            ->assertTool('command-tool', [
+            ->assertToolCount(count: 2)
+            ->assertToolExists(id: 'command-tool')
+            ->assertToolExists(id: 'api-tool')
+            ->assertTool(id: 'command-tool', properties: [
                 'type' => 'run',
                 'description' => 'Command execution tool',
             ])
-            ->assertTool('api-tool', [
+            ->assertTool(id: 'api-tool', properties: [
                 'type' => 'http',
                 'description' => 'API interaction tool',
             ]);
@@ -227,14 +227,14 @@ final class ToolsTest extends ConsoleTestCase
                 command: $command,
             )
             ->assertSuccess()
-            ->assertToolExists('conditional-args')
-            ->assertTool('conditional-args', [
+            ->assertToolExists(id: 'conditional-args')
+            ->assertTool(id: 'conditional-args', properties: [
                 'type' => 'run',
                 'description' => 'Tool with conditional arguments',
             ])
             ->assertToolSchema(
-                'conditional-args',
-                [
+                id: 'conditional-args',
+                properties: [
                     'debug' => [
                         'type' => 'boolean',
                         'description' => 'Enable debug mode',
@@ -278,8 +278,8 @@ final class ToolsTest extends ConsoleTestCase
                 command: $command,
             )
             ->assertSuccess()
-            ->assertToolExists('env-vars-tool')
-            ->assertTool('env-vars-tool', [
+            ->assertToolExists(id: 'env-vars-tool')
+            ->assertTool(id: 'env-vars-tool', properties: [
                 'type' => 'run',
                 'description' => 'Tool with environment variables',
                 'env' => [
@@ -339,10 +339,10 @@ final class ToolsTest extends ConsoleTestCase
                 command: $command,
             )
             ->assertSuccess()
-            ->assertToolExists('complex-schema-tool')
+            ->assertToolExists(id: 'complex-schema-tool')
             ->assertToolSchema(
-                'complex-schema-tool',
-                [
+                id: 'complex-schema-tool',
+                properties: [
                     'name' => [
                         'type' => 'string',
                         'description' => 'Project name',
@@ -353,7 +353,7 @@ final class ToolsTest extends ConsoleTestCase
                         'default' => '1.0.0',
                     ],
                 ],
-                ['name'],
+                required: ['name'],
             );
     }
 
@@ -382,7 +382,7 @@ final class ToolsTest extends ConsoleTestCase
                 import:
                   - path: {$this->getRelativePath($baseConfig)}
                     type: local
-                
+
                 tools:
                   - id: local-tool
                     description: "Tool defined in main config"
@@ -403,9 +403,9 @@ final class ToolsTest extends ConsoleTestCase
             )
             ->assertSuccess()
             ->assertImported(path: $this->getRelativePath($baseConfig), type: 'local')
-            ->assertToolExists('imported-tool')
-            ->assertToolExists('local-tool')
-            ->assertToolCount(2);
+            ->assertToolExists(id: 'imported-tool')
+            ->assertToolExists(id: 'local-tool')
+            ->assertToolCount(count: 2);
     }
 
     #[Test]
@@ -432,7 +432,7 @@ final class ToolsTest extends ConsoleTestCase
                 command: $command,
             )
             ->assertSuccess()
-            ->assertToolCount(0);
+            ->assertToolCount(count: 0);
     }
 
     #[\Override]
@@ -450,7 +450,7 @@ final class ToolsTest extends ConsoleTestCase
         string $command = 'generate',
         bool $asJson = true,
     ): CompilingResult {
-        return (new ContextBuilder($this->getConsole()))->build(
+        return (new ContextBuilder(console: $this->getConsole()))->build(
             workDir: $workDir,
             configPath: $configPath,
             inlineJson: $inlineJson,
@@ -464,6 +464,6 @@ final class ToolsTest extends ConsoleTestCase
     {
         // Convert absolute path to relative path for use in YAML configurations
         // This ensures the test is independent of the absolute paths on the test system
-        return \basename($absolutePath);
+        return \basename(path: $absolutePath);
     }
 }

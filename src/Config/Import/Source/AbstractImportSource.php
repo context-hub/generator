@@ -36,7 +36,7 @@ abstract class AbstractImportSource implements ImportSourceInterface
             ]);
 
             throw new Exception\ImportSourceException(
-                \sprintf('Unsupported configuration file format: %s', $path),
+                message: \sprintf('Unsupported configuration file format: %s', $path),
             );
         }
 
@@ -48,7 +48,7 @@ abstract class AbstractImportSource implements ImportSourceInterface
      */
     protected function processSelectiveImports(array $config, SourceConfigInterface $sourceConfig): array
     {
-        $config = $this->filterConfigSections($config);
+        $config = $this->filterConfigSections(config: $config);
 
         if (!isset($config['documents']) || !$sourceConfig instanceof LocalSourceConfig) {
             return $config;
@@ -57,7 +57,7 @@ abstract class AbstractImportSource implements ImportSourceInterface
         // If no specific docs are requested, return the full config
         $selectiveDocs = $sourceConfig->getSelectiveDocuments();
         if (empty($selectiveDocs)) {
-            return $this->filterConfigSections($config);
+            return $this->filterConfigSections(config: $config);
         }
 
         $this->logger->debug('Processing selective imports', [
@@ -67,7 +67,7 @@ abstract class AbstractImportSource implements ImportSourceInterface
         ]);
 
         // For selective imports, we only include specific documents
-        if (isset($config['documents']) && \is_array($config['documents'])) {
+        if (isset($config['documents']) && \is_array(value: $config['documents'])) {
             $filteredDocuments = [];
 
             foreach ($config['documents'] as $document) {
@@ -76,8 +76,8 @@ abstract class AbstractImportSource implements ImportSourceInterface
                     $outputPath = $document['outputPath'];
                     foreach ($selectiveDocs as $requestedDoc) {
                         // Simple wildcard matching
-                        $pattern = $this->wildcardToRegex($requestedDoc);
-                        if (\preg_match($pattern, (string) $outputPath)) {
+                        $pattern = $this->wildcardToRegex(pattern: $requestedDoc);
+                        if (\preg_match(pattern: $pattern, subject: (string) $outputPath)) {
                             $filteredDocuments[] = $document;
                             break;
                         }
@@ -89,11 +89,11 @@ abstract class AbstractImportSource implements ImportSourceInterface
             $config['documents'] = $filteredDocuments;
 
             $this->logger->debug('Selective import processed', [
-                'totalDocuments' => \count($filteredDocuments),
+                'totalDocuments' => \count(value: $filteredDocuments),
             ]);
         }
 
-        return $this->filterConfigSections($config);
+        return $this->filterConfigSections(config: $config);
     }
 
     /**
@@ -101,9 +101,9 @@ abstract class AbstractImportSource implements ImportSourceInterface
      */
     protected function wildcardToRegex(string $pattern): string
     {
-        $pattern = \preg_quote($pattern, '/');
-        $pattern = \str_replace('\*', '.*', $pattern);
-        $pattern = \str_replace('\?', '.', $pattern);
+        $pattern = \preg_quote(str: $pattern, delimiter: '/');
+        $pattern = \str_replace(search: '\*', replace: '.*', subject: $pattern);
+        $pattern = \str_replace(search: '\?', replace: '.', subject: $pattern);
         return '/^' . $pattern . '$/';
     }
 

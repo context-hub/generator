@@ -27,24 +27,24 @@ final readonly class VariablesParserPlugin implements ConfigParserPluginInterfac
 
     public function supports(array $config): bool
     {
-        return isset($config['variables']) && \is_array($config['variables']);
+        return isset($config['variables']) && \is_array(value: $config['variables']);
     }
 
     public function parse(array $config, string $rootPath): ?RegistryInterface
     {
-        if (!$this->supports($config)) {
+        if (!$this->supports(config: $config)) {
             return null;
         }
 
         $variables = $config['variables'];
 
         $this->logger?->debug('Parsing variables from config', [
-            'count' => \count($variables),
-            'keys' => \array_keys($variables),
+            'count' => \count(value: $variables),
+            'keys' => \array_keys(array: $variables),
         ]);
 
         // Update the variables in the provider
-        $this->variableProvider->setVariables($variables);
+        $this->variableProvider->setVariables(variables: $variables);
 
         return null;
     }

@@ -134,7 +134,7 @@ final class GenerateCommandTest extends ConsoleTestCase
     #[DataProvider('commandsProvider')]
     public function inline_json_should_be_used_instead_of_file(): void
     {
-        $inlineJson = \file_get_contents($this->getFixturesDir('Console/GenerateCommand/inline-json.json'));
+        $inlineJson = \file_get_contents(filename: $this->getFixturesDir('Console/GenerateCommand/inline-json.json'));
 
         $this
             ->buildContext(
@@ -272,7 +272,7 @@ final class GenerateCommandTest extends ConsoleTestCase
         string $command = 'generate',
         bool $asJson = true,
     ): CompilingResult {
-        return (new ContextBuilder($this->getConsole()))->build(
+        return (new ContextBuilder(console: $this->getConsole()))->build(
             workDir: $workDir,
             configPath: $configPath,
             inlineJson: $inlineJson,

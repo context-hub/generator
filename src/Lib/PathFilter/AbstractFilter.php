@@ -22,18 +22,18 @@ abstract class AbstractFilter implements FilterInterface
             return true; // No pattern means match all
         }
 
-        $patterns = \is_array($pattern) ? $pattern : [$pattern];
+        $patterns = \is_array(value: $pattern) ? $pattern : [$pattern];
 
         foreach ($patterns as $p) {
-            if (\str_contains($value, $p)) {
+            if (\str_contains(haystack: $value, needle: $p)) {
                 return true;
             }
 
-            if (!FileHelper::isRegex($pattern)) {
-                $p = FileHelper::toRegex($p);
+            if (!FileHelper::isRegex(str: $pattern)) {
+                $p = FileHelper::toRegex(glob: $p);
             }
 
-            if ($this->matchGlob($value, $p)) {
+            if ($this->matchGlob(value: $value, regex: $p)) {
                 return true;
             }
         }
@@ -46,6 +46,6 @@ abstract class AbstractFilter implements FilterInterface
      */
     protected function matchGlob(string $value, string $regex): bool
     {
-        return (bool) \preg_match($regex, $value);
+        return (bool) \preg_match(pattern: $regex, subject: $value);
     }
 }

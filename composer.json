@@ -43,7 +43,8 @@
     "spiral/code-style": "^2.2.2",
     "spiral/testing": "^2.9",
     "rector/rector": "^2.0",
-    "vimeo/psalm": "^6.0"
+    "vimeo/psalm": "^6.0",
+    "savinmikhail/add_named_arguments_rector": "^0.1.19"
   },
   "autoload": {
     "psr-4": {

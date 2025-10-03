@@ -17,7 +17,7 @@ abstract class AbstractCompilerTestCase extends FeatureTestCases
 
         foreach ($config->getDocuments() as $document) {
             $outputPaths[] = $this->getContextsDir($document->outputPath);
-            $compiledDocument = $compiler->compile($document);
+            $compiledDocument = $compiler->compile(document: $document);
 
             $results[$document->outputPath] = (string) $compiledDocument->content;
         }
@@ -29,7 +29,7 @@ abstract class AbstractCompilerTestCase extends FeatureTestCases
         $this->assertSame(
             <<<'CONTENT'
                 # Project structure
-                ###  
+                ###
                 ```
                 └── src/ [309.0 B, 309 chars]
                     └── dir1/ [217.0 B, 217 chars]
@@ -42,7 +42,7 @@ abstract class AbstractCompilerTestCase extends FeatureTestCases
                     └── dir2/ [92.0 B, 92 chars]
                         └── Test2Class.php [85.0 B, 85 chars]
                         └── file.txt [7.0 B, 7 chars]
-                
+
                 ```
                 CONTENT,
             $results['structure.md'],
@@ -59,37 +59,37 @@ abstract class AbstractCompilerTestCase extends FeatureTestCases
                         └── TestClass.php
                         └── subdir1/
                             └── Test3Class.php
-                
+
                 ```
                 ###  Path: `/src/dir1/Test1Class.php`
-                
+
                 ```php
                 <?php
-                
+
                 declare(strict_types=1);
-                
+
                 final readonly class Test1Class {}
-                
+
                 ```
                 ###  Path: `/src/dir1/TestClass.php`
-                
+
                 ```php
                 <?php
-                
+
                 declare(strict_types=1);
-                
+
                 final readonly class TestClass {}
-                
+
                 ```
                 ###  Path: `/src/dir1/subdir1/Test3Class.php`
-                
+
                 ```php
                 <?php
-                
+
                 declare(strict_types=1);
-                
+
                 final readonly class Test3Class {}
-                
+
                 ```
                 <INSTRUCTION>
                 Foo Bar
@@ -107,19 +107,19 @@ abstract class AbstractCompilerTestCase extends FeatureTestCases
                 └── src/
                     └── dir2/
                         └── Test2Class.php
-                
+
                 ```
                 ###  Path: `/src/dir2/Test2Class.php`
-                
+
                 ```php
                 <?php
-                
+
                 declare(strict_types=1);
-                
+
                 namespace dir2;
-                
+
                 final readonly class Test2Class {}
-                
+
                 ```
                 <INSTRUCTION>
                 Foo Bar
@@ -141,20 +141,20 @@ abstract class AbstractCompilerTestCase extends FeatureTestCases
                         │   └── file.txt
                     └── dir2/
                         └── file.txt
-                
+
                 ```
                 ###  Path: `/src/dir1/file.txt`
-                
+
                 ```txt
                 foo baf
                 ```
                 ###  Path: `/src/dir1/subdir1/file.txt`
-                
+
                 ```txt
                 foo bar
                 ```
                 ###  Path: `/src/dir2/file.txt`
-                
+
                 ```txt
                 foo baz
                 ```

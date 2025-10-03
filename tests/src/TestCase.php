@@ -35,8 +35,8 @@ abstract class TestCase extends BaseTestCase
 
         // Clean up temp files
         foreach ($this->tempFiles as $file) {
-            if (\file_exists($file)) {
-                \unlink($file);
+            if (\file_exists(filename: $file)) {
+                \unlink(filename: $file);
             }
         }
 
@@ -79,8 +79,8 @@ abstract class TestCase extends BaseTestCase
      */
     protected function createTempFile(string $content, string $extension = '.txt'): string
     {
-        $tempFile = \tempnam(\sys_get_temp_dir(), 'test_') . $extension;
-        \file_put_contents($tempFile, $content);
+        $tempFile = \tempnam(directory: \sys_get_temp_dir(), prefix: 'test_') . $extension;
+        \file_put_contents(filename: $tempFile, data: $content);
 
         // Register for cleanup
         $this->registerTempFile($tempFile);
@@ -104,7 +104,7 @@ abstract class TestCase extends BaseTestCase
     protected function createTempDir(): string
     {
         $tempDir = \sys_get_temp_dir() . '/test_' . \uniqid();
-        \mkdir($tempDir, 0777, true);
+        \mkdir(directory: $tempDir, recursive: true);
 
         // Register for cleanup
         $this->registerTempDir($tempDir);
@@ -125,11 +125,11 @@ abstract class TestCase extends BaseTestCase
      */
     private function removeDirectory(string $dir): void
     {
-        if (!\is_dir($dir)) {
+        if (!\is_dir(filename: $dir)) {
             return;
         }
 
-        $items = \scandir($dir);
+        $items = \scandir(directory: $dir);
 
         foreach ($items as $item) {
             if ($item === '.' || $item === '..') {
@@ -138,13 +138,13 @@ abstract class TestCase extends BaseTestCase
 
             $path = $dir . '/' . $item;
 
-            if (\is_dir($path)) {
+            if (\is_dir(filename: $path)) {
                 $this->removeDirectory($path);
             } else {
-                \unlink($path);
+                \unlink(filename: $path);
             }
         }
 
-        \rmdir($dir);
+        \rmdir(directory: $dir);
     }
 }

@@ -19,11 +19,11 @@ final readonly class SourcePathPrefixer extends PathPrefixer
     public function applyPrefix(array $config, string $pathPrefix): array
     {
         // Apply to documents array
-        if (isset($config['documents']) && \is_array($config['documents'])) {
+        if (isset($config['documents']) && \is_array(value: $config['documents'])) {
             foreach ($config['documents'] as &$document) {
-                if (isset($document['sources']) && \is_array($document['sources'])) {
+                if (isset($document['sources']) && \is_array(value: $document['sources'])) {
                     foreach ($document['sources'] as &$source) {
-                        $source = $this->applyPathPrefixToSource($source, $pathPrefix);
+                        $source = $this->applyPathPrefixToSource(source: $source, prefix: $pathPrefix);
                     }
                 }
             }
@@ -39,13 +39,13 @@ final readonly class SourcePathPrefixer extends PathPrefixer
     {
         // Handle sourcePaths property
         if (isset($source['sourcePaths'])) {
-            $source['sourcePaths'] = $this->applyPrefixToPaths($source['sourcePaths'], $prefix);
+            $source['sourcePaths'] = $this->applyPrefixToPaths(paths: $source['sourcePaths'], prefix: $prefix);
         }
 
         // Handle composerPath property (for composer source)
         if (isset($source['composerPath']) && $source['type'] === 'composer') {
-            if (!$this->isAbsolutePath($source['composerPath'])) {
-                $source['composerPath'] = $this->combinePaths($prefix, $source['composerPath']);
+            if (!$this->isAbsolutePath(path: $source['composerPath'])) {
+                $source['composerPath'] = $this->combinePaths(prefix: $prefix, path: $source['composerPath']);
             }
         }
 
@@ -57,18 +57,18 @@ final readonly class SourcePathPrefixer extends PathPrefixer
      */
     private function applyPrefixToPaths(mixed $paths, string $prefix): mixed
     {
-        if (\is_string($paths)) {
+        if (\is_string(value: $paths)) {
             // Skip absolute paths
-            if ($this->isAbsolutePath($paths)) {
+            if ($this->isAbsolutePath(path: $paths)) {
                 return $paths;
             }
-            return $this->combinePaths($prefix, $paths);
+            return $this->combinePaths(prefix: $prefix, path: $paths);
         }
 
-        if (\is_array($paths)) {
+        if (\is_array(value: $paths)) {
             $result = [];
             foreach ($paths as $path) {
-                $result[] = $this->applyPrefixToPaths($path, $prefix);
+                $result[] = $this->applyPrefixToPaths(paths: $path, prefix: $prefix);
             }
             return $result;
         }

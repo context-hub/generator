@@ -58,14 +58,14 @@ final class LoggerBootloader extends Bootloader implements InjectorInterface
         // Register injectable class
         $binder->bindInjector(LoggerInterface::class, self::class);
         $handler->addReporter(
-            new readonly class($snapshot) implements ExceptionReporterInterface {
+            reporter: new readonly class($snapshot) implements ExceptionReporterInterface {
                 public function __construct(
                     private FileSnapshot $fileSnapshot,
                 ) {}
 
                 public function report(\Throwable $exception): void
                 {
-                    $this->fileSnapshot->create($exception);
+                    $this->fileSnapshot->create(e: $exception);
                 }
             },
         );
@@ -77,7 +77,7 @@ final class LoggerBootloader extends Bootloader implements InjectorInterface
 
         $prefix = null;
         if ($context instanceof \ReflectionParameter) {
-            $prefix = $this->findAttribute($context)?->prefix ?? $context->getDeclaringClass()->getShortName();
+            $prefix = $this->findAttribute(parameter: $context)?->prefix ?? $context->getDeclaringClass()->getShortName();
         }
 
         if (!$prefix) {
@@ -89,7 +89,7 @@ final class LoggerBootloader extends Bootloader implements InjectorInterface
 
     private function findAttribute(\ReflectionParameter $parameter): ?LoggerPrefix
     {
-        foreach ($parameter->getAttributes(LoggerPrefix::class) as $attribute) {
+        foreach ($parameter->getAttributes(name: LoggerPrefix::class) as $attribute) {
             return $attribute->newInstance();
         }
 

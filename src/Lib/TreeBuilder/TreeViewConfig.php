@@ -39,13 +39,13 @@ final readonly class TreeViewConfig implements \JsonSerializable
         }
 
         // Handle boolean case (backward compatibility)
-        if (isset($data['treeView']) && \is_bool($data['treeView'])) {
+        if (isset($data['treeView']) && \is_bool(value: $data['treeView'])) {
             return new self(enabled: $data['treeView']);
         }
 
         // Handle object/array case
         $config = $data['treeView'] ?? [];
-        if (!\is_array($config)) {
+        if (!\is_array(value: $config)) {
             return new self(enabled: (bool) $config);
         }
 
@@ -80,7 +80,7 @@ final readonly class TreeViewConfig implements \JsonSerializable
      */
     public function jsonSerialize(): array
     {
-        return \array_filter([
+        return \array_filter(array: [
             'enabled' => $this->enabled,
             'showSize' => $this->showSize,
             'showLastModified' => $this->showLastModified,
@@ -88,6 +88,6 @@ final readonly class TreeViewConfig implements \JsonSerializable
             'includeFiles' => $this->includeFiles === false ? false : null,
             'maxDepth' => $this->maxDepth > 0 ? $this->maxDepth : null,
             'dirContext' => !empty($this->dirContext) ? $this->dirContext : null,
-        ], static fn($value) => $value !== null);
+        ], callback: static fn($value) => $value !== null);
     }
 }

@@ -26,7 +26,7 @@ abstract class BaseCommand extends Command
     #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        \assert($output instanceof SymfonyStyle);
+        \assert(assertion: $output instanceof SymfonyStyle);
 
         $this->input = $input;
         $this->output = $output;
@@ -43,8 +43,8 @@ abstract class BaseCommand extends Command
 
         $this->logger = $logger;
 
-        \assert($this->logger instanceof HasPrefixLoggerInterface);
-        \assert($this->logger instanceof LoggerInterface);
+        \assert(assertion: $this->logger instanceof HasPrefixLoggerInterface);
+        \assert(assertion: $this->logger instanceof LoggerInterface);
 
         $this->container
             ->get(BinderInterface::class)

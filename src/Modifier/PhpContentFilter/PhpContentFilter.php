@@ -89,7 +89,7 @@ final class PhpContentFilter implements SourceModifierInterface
      */
     public function supports(string $contentType): bool
     {
-        return \str_ends_with($contentType, '.php');
+        return \str_ends_with(haystack: $contentType, needle: '.php');
     }
 
     /**
@@ -104,7 +104,7 @@ final class PhpContentFilter implements SourceModifierInterface
         $this->config = \array_merge($this->config, $context);
 
         try {
-            $file = PhpFile::fromCode($content);
+            $file = PhpFile::fromCode(code: $content);
             $output = '';
 
             foreach ($file->getNamespaces() as $namespace) {
@@ -123,7 +123,7 @@ final class PhpContentFilter implements SourceModifierInterface
                 }
 
                 foreach ($namespace->getClasses() as $class) {
-                    $output .= $this->processClass($class);
+                    $output .= $this->processClass(class: $class);
                 }
             }
 
@@ -140,14 +140,14 @@ final class PhpContentFilter implements SourceModifierInterface
     {
         // Determine class type and process accordingly
         if ($class->isInterface()) {
-            return $this->processInterface($class);
+            return $this->processInterface(interface: $class);
         } elseif ($class->isTrait()) {
-            return $this->processTrait($class);
-        } elseif (\PHP_VERSION_ID >= 80100 && \method_exists($class, 'isEnum') && $class->isEnum()) {
-            return $this->processEnum($class);
+            return $this->processTrait(trait: $class);
+        } elseif (\PHP_VERSION_ID >= 80100 && \method_exists(object_or_class: $class, method: 'isEnum') && $class->isEnum()) {
+            return $this->processEnum(enum: $class);
         }
 
-        return $this->processStandardClass($class);
+        return $this->processStandardClass(class: $class);
     }
 
     /**
@@ -156,13 +156,13 @@ final class PhpContentFilter implements SourceModifierInterface
     private function processStandardClass(ClassType $class): string
     {
         // Filter properties
-        $this->filterProperties($class);
+        $this->filterProperties(class: $class);
 
         // Filter constants
-        $this->filterConstants($class);
+        $this->filterConstants(class: $class);
 
         // Filter methods
-        $this->filterMethods($class);
+        $this->filterMethods(class: $class);
 
         // Generate the class code
         return (string) $class . "\n";
@@ -174,10 +174,10 @@ final class PhpContentFilter implements SourceModifierInterface
     private function processInterface(InterfaceType $interface): string
     {
         // Filter constants
-        $this->filterConstants($interface);
+        $this->filterConstants(class: $interface);
 
         // Filter methods
-        $this->filterMethods($interface);
+        $this->filterMethods(class: $interface);
 
         // Generate the interface code
         return (string) $interface . "\n";
@@ -189,13 +189,13 @@ final class PhpContentFilter implements SourceModifierInterface
     private function processTrait(TraitType $trait): string
     {
         // Filter properties
-        $this->filterProperties($trait);
+        $this->filterProperties(class: $trait);
 
         // Filter constants
-        $this->filterConstants($trait);
+        $this->filterConstants(class: $trait);
 
         // Filter methods
-        $this->filterMethods($trait);
+        $this->filterMethods(class: $trait);
 
         // Generate the trait code
         return (string) $trait . "\n";
@@ -207,10 +207,10 @@ final class PhpContentFilter implements SourceModifierInterface
     private function processEnum(EnumType $enum): string
     {
         // Filter constants (for backed enums)
-        $this->filterConstants($enum);
+        $this->filterConstants(class: $enum);
 
         // Filter methods
-        $this->filterMethods($enum);
+        $this->filterMethods(class: $enum);
 
         // Generate the enum code
         return (string) $enum . "\n";
@@ -221,25 +221,25 @@ final class PhpContentFilter implements SourceModifierInterface
      */
     private function filterProperties(ClassLike $class): void
     {
-        if (!\method_exists($class, 'getProperties')) {
+        if (!\method_exists(object_or_class: $class, method: 'getProperties')) {
             return;
         }
 
         $propertiesToRemove = [];
 
         foreach ($class->getProperties() as $property) {
-            if (!$this->shouldKeepProperty($property)) {
+            if (!$this->shouldKeepProperty(property: $property)) {
                 $propertiesToRemove[] = $property->getName();
                 continue;
             }
 
             // Handle doc comments if needed
-            if (!$this->config['keep_doc_comments'] && \method_exists($property, 'setComment')) {
+            if (!$this->config['keep_doc_comments'] && \method_exists(object_or_class: $property, method: 'setComment')) {
                 $property->setComment('');
             }
 
             // Handle attributes if needed
-            if (!$this->config['keep_attributes'] && \method_exists($property, 'getAttributes')) {
+            if (!$this->config['keep_attributes'] && \method_exists(object_or_class: $property, method: 'getAttributes')) {
                 foreach ($property->getAttributes() as $attribute) {
                     /** @psalm-suppress UndefinedMethod */
                     $property->removeAttribute($attribute->getName());
@@ -259,25 +259,25 @@ final class PhpContentFilter implements SourceModifierInterface
      */
     private function filterConstants(ClassLike $class): void
     {
-        if (!\method_exists($class, 'getConstants')) {
+        if (!\method_exists(object_or_class: $class, method: 'getConstants')) {
             return;
         }
 
         $constantsToRemove = [];
 
         foreach ($class->getConstants() as $constant) {
-            if (!$this->shouldKeepConstant($constant)) {
+            if (!$this->shouldKeepConstant(constant: $constant)) {
                 $constantsToRemove[] = $constant->getName();
                 continue;
             }
 
             // Handle doc comments if needed
-            if (!$this->config['keep_doc_comments'] && \method_exists($constant, 'setComment')) {
+            if (!$this->config['keep_doc_comments'] && \method_exists(object_or_class: $constant, method: 'setComment')) {
                 $constant->setComment('');
             }
 
             // Handle attributes if needed
-            if (!$this->config['keep_attributes'] && \method_exists($constant, 'getAttributes')) {
+            if (!$this->config['keep_attributes'] && \method_exists(object_or_class: $constant, method: 'getAttributes')) {
                 foreach ($constant->getAttributes() as $attribute) {
                     /** @psalm-suppress UndefinedMethod */
                     $constant->removeAttribute($attribute->getName());
@@ -297,14 +297,14 @@ final class PhpContentFilter implements SourceModifierInterface
      */
     private function filterMethods(ClassLike $class): void
     {
-        if (!\method_exists($class, 'getMethods')) {
+        if (!\method_exists(object_or_class: $class, method: 'getMethods')) {
             return;
         }
 
         $methodsToRemove = [];
 
         foreach ($class->getMethods() as $method) {
-            if (!$this->shouldKeepMethod($method)) {
+            if (!$this->shouldKeepMethod(method: $method)) {
                 $methodsToRemove[] = $method->getName();
                 continue;
             }
@@ -341,7 +341,7 @@ final class PhpContentFilter implements SourceModifierInterface
     {
         // Check visibility
         $visibility = $property->isPublic() ? 'public' : ($property->isProtected() ? 'protected' : 'private');
-        if (!\in_array($visibility, $this->config['property_visibility'], true)) {
+        if (!\in_array(needle: $visibility, haystack: $this->config['property_visibility'], strict: true)) {
             return false;
         }
 
@@ -349,14 +349,14 @@ final class PhpContentFilter implements SourceModifierInterface
 
         // If include list is provided and not empty, check against it
         if (!empty($this->config['include_properties'])) {
-            if (\in_array($propertyName, $this->config['include_properties'], true)) {
+            if (\in_array(needle: $propertyName, haystack: $this->config['include_properties'], strict: true)) {
                 return true;
             }
 
             // If we have an include list but the property isn't in it,
             // still check pattern matches if configured
             if ($this->config['include_properties_pattern'] !== null) {
-                if (\preg_match($this->config['include_properties_pattern'], $propertyName)) {
+                if (\preg_match(pattern: $this->config['include_properties_pattern'], subject: $propertyName)) {
                     return true;
                 }
             }
@@ -366,20 +366,20 @@ final class PhpContentFilter implements SourceModifierInterface
         }
 
         // Check exclude list
-        if (\in_array($propertyName, $this->config['exclude_properties'], true)) {
+        if (\in_array(needle: $propertyName, haystack: $this->config['exclude_properties'], strict: true)) {
             return false;
         }
 
         // Check exclude pattern
         if ($this->config['exclude_properties_pattern'] !== null) {
-            if (\preg_match($this->config['exclude_properties_pattern'], $propertyName)) {
+            if (\preg_match(pattern: $this->config['exclude_properties_pattern'], subject: $propertyName)) {
                 return false;
             }
         }
 
         // Check include pattern (when no explicit include list exists)
         if (empty($this->config['include_properties']) && $this->config['include_properties_pattern'] !== null) {
-            return (bool) \preg_match($this->config['include_properties_pattern'], $propertyName);
+            return (bool) \preg_match(pattern: $this->config['include_properties_pattern'], subject: $propertyName);
         }
 
         // No filters matched, keep the property
@@ -392,9 +392,9 @@ final class PhpContentFilter implements SourceModifierInterface
     private function shouldKeepConstant(Constant $constant): bool
     {
         // Check visibility if applicable
-        if (\method_exists($constant, 'isPublic')) {
+        if (\method_exists(object_or_class: $constant, method: 'isPublic')) {
             $visibility = $constant->isPublic() ? 'public' : ($constant->isProtected() ? 'protected' : 'private');
-            if (!\in_array($visibility, $this->config['constant_visibility'], true)) {
+            if (!\in_array(needle: $visibility, haystack: $this->config['constant_visibility'], strict: true)) {
                 return false;
             }
         }
@@ -403,11 +403,11 @@ final class PhpContentFilter implements SourceModifierInterface
 
         // If include list is provided, check against it
         if (!empty($this->config['include_constants'])) {
-            return \in_array($constantName, $this->config['include_constants'], true);
+            return \in_array(needle: $constantName, haystack: $this->config['include_constants'], strict: true);
         }
 
         // Check exclude list
-        if (\in_array($constantName, $this->config['exclude_constants'], true)) {
+        if (\in_array(needle: $constantName, haystack: $this->config['exclude_constants'], strict: true)) {
             return false;
         }
 
@@ -422,7 +422,7 @@ final class PhpContentFilter implements SourceModifierInterface
     {
         // Check visibility
         $visibility = $method->isPublic() ? 'public' : ($method->isProtected() ? 'protected' : 'private');
-        if (!\in_array($visibility, $this->config['method_visibility'], true)) {
+        if (!\in_array(needle: $visibility, haystack: $this->config['method_visibility'], strict: true)) {
             return false;
         }
 
@@ -430,14 +430,14 @@ final class PhpContentFilter implements SourceModifierInterface
 
         // If include list is provided and not empty, check against it
         if (!empty($this->config['include_methods'])) {
-            if (\in_array($methodName, $this->config['include_methods'], true)) {
+            if (\in_array(needle: $methodName, haystack: $this->config['include_methods'], strict: true)) {
                 return true;
             }
 
             // If we have an include list but the method isn't in it,
             // still check pattern matches if configured
             if ($this->config['include_methods_pattern'] !== null) {
-                if (\preg_match($this->config['include_methods_pattern'], $methodName)) {
+                if (\preg_match(pattern: $this->config['include_methods_pattern'], subject: $methodName)) {
                     return true;
                 }
             }
@@ -447,20 +447,20 @@ final class PhpContentFilter implements SourceModifierInterface
         }
 
         // Check exclude list
-        if (\in_array($methodName, $this->config['exclude_methods'], true)) {
+        if (\in_array(needle: $methodName, haystack: $this->config['exclude_methods'], strict: true)) {
             return false;
         }
 
         // Check exclude pattern
         if ($this->config['exclude_methods_pattern'] !== null) {
-            if (\preg_match($this->config['exclude_methods_pattern'], $methodName)) {
+            if (\preg_match(pattern: $this->config['exclude_methods_pattern'], subject: $methodName)) {
                 return false;
             }
         }
 
         // Check include pattern (when no explicit include list exists)
         if (empty($this->config['include_methods']) && $this->config['include_methods_pattern'] !== null) {
-            return (bool) \preg_match($this->config['include_methods_pattern'], $methodName);
+            return (bool) \preg_match(pattern: $this->config['include_methods_pattern'], subject: $methodName);
         }
 
         // No filters matched, keep the method

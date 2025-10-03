@@ -32,10 +32,10 @@ final readonly class RenderStrategyFactory
     {
         if (!isset(self::STRATEGIES[$strategy->value])) {
             throw new \InvalidArgumentException(
-                \sprintf(
+                message: \sprintf(
                     'Invalid render strategy "%s". Valid strategies are: %s',
                     $strategy->value,
-                    \implode(', ', \array_keys(self::STRATEGIES)),
+                    \implode(separator: ', ', array: \array_keys(array: self::STRATEGIES)),
                 ),
             );
         }

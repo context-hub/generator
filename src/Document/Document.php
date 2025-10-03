@@ -60,7 +60,7 @@ final class Document implements \JsonSerializable
      */
     public function getErrors(): array
     {
-        return \array_values($this->errors);
+        return \array_values(array: $this->errors);
     }
 
     public function addError(string $error): self
@@ -97,7 +97,7 @@ final class Document implements \JsonSerializable
      */
     public function getModifiers(): array
     {
-        return \array_values($this->modifiers);
+        return \array_values(array: $this->modifiers);
     }
 
     /**
@@ -131,7 +131,7 @@ final class Document implements \JsonSerializable
             }
         }
 
-        return \array_values(\array_unique($this->tags));
+        return \array_values(array: \array_unique(array: $this->tags));
     }
 
     /**
@@ -149,18 +149,18 @@ final class Document implements \JsonSerializable
      */
     public function getSources(): array
     {
-        return \array_values($this->sources);
+        return \array_values(array: $this->sources);
     }
 
     public function jsonSerialize(): array
     {
-        return \array_filter([
+        return \array_filter(array: [
             'description' => $this->description,
             'outputPath' => $this->outputPath,
             'overwrite' => $this->overwrite,
             'sources' => $this->getSources(),
             'modifiers' => $this->getModifiers(),
             'tags' => $this->getTags(),
-        ], static fn($value) => $value !== null && $value !== []);
+        ], callback: static fn($value) => $value !== null && $value !== []);
     }
 }

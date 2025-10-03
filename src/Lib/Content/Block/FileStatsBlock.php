@@ -45,14 +45,14 @@ final readonly class FileStatsBlock extends AbstractBlock
         $units = ['B', 'KB', 'MB', 'GB'];
         $i = 0;
 
-        while ($bytes >= 1024 && $i < \count($units) - 1) {
+        while ($bytes >= 1024 && $i < \count(value: $units) - 1) {
             $bytes = (float) $bytes / 1024.0;
             $i++;
         }
 
         // Ensure $i is within bounds
-        $i = \min($i, \count($units) - 1);
+        $i = \min($i, \count(value: $units) - 1);
 
-        return (string) \round($bytes, 2) . ' ' . $units[$i];
+        return (string) \round(num: $bytes, precision: 2) . ' ' . $units[$i];
     }
 }

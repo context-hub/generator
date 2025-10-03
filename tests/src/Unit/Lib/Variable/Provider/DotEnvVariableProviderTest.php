@@ -24,9 +24,9 @@ class DotEnvVariableProviderTest extends TestCase
             ->with('TEST_VAR')
             ->willReturn(true);
 
-        $provider = new DotEnvVariableProvider($this->repository);
+        $provider = new DotEnvVariableProvider(repository: $this->repository);
 
-        $this->assertTrue($provider->has('TEST_VAR'));
+        $this->assertTrue($provider->has(name: 'TEST_VAR'));
     }
 
     #[Test]
@@ -43,9 +43,9 @@ class DotEnvVariableProviderTest extends TestCase
             ->with('TEST_VAR')
             ->willReturn('test_value');
 
-        $provider = new DotEnvVariableProvider($this->repository);
+        $provider = new DotEnvVariableProvider(repository: $this->repository);
 
-        $this->assertSame('test_value', $provider->get('TEST_VAR'));
+        $this->assertSame('test_value', $provider->get(name: 'TEST_VAR'));
     }
 
     #[Test]
@@ -62,10 +62,10 @@ class DotEnvVariableProviderTest extends TestCase
             ->with('MISSING_VAR')
             ->willReturn(null);
 
-        $provider = new DotEnvVariableProvider($this->repository);
+        $provider = new DotEnvVariableProvider(repository: $this->repository);
 
-        $this->assertFalse($provider->has('MISSING_VAR'));
-        $this->assertNull($provider->get('MISSING_VAR'));
+        $this->assertFalse($provider->has(name: 'MISSING_VAR'));
+        $this->assertNull($provider->get(name: 'MISSING_VAR'));
     }
 
     #[Test]
@@ -74,7 +74,7 @@ class DotEnvVariableProviderTest extends TestCase
         // Create temporary .env file in system temp directory
         $tempDir = \sys_get_temp_dir();
         $envPath = $tempDir . '/.env.test';
-        \file_put_contents($envPath, "TEST_ENV_VAR=from_env_file\n");
+        \file_put_contents(filename: $envPath, data: "TEST_ENV_VAR=from_env_file\n");
 
         // We need to use a real repository for this test
         // This requires us to have phpdotenv package installed
@@ -93,13 +93,13 @@ class DotEnvVariableProviderTest extends TestCase
         try {
             // This might fail in test environment without dotenv properly set up
             // But we're just testing that the constructor uses the rootPath
-            new DotEnvVariableProvider($repository, $tempDir, '.env.test');
+            new DotEnvVariableProvider(repository: $repository, rootPath: $tempDir, envFileName: '.env.test');
             // If it didn't throw, we consider it a success for this test
             $this->addToAssertionCount(1);
         } finally {
             // Clean up temp file
-            if (\file_exists($envPath)) {
-                \unlink($envPath);
+            if (\file_exists(filename: $envPath)) {
+                \unlink(filename: $envPath);
             }
         }
     }

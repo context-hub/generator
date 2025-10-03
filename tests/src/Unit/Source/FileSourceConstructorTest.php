@@ -38,7 +38,7 @@ class FileSourceConstructorTest extends TestCase
             size: $size,
             date: $date,
             ignoreUnreadableDirs: $ignoreUnreadableDirs,
-            treeView: new TreeViewConfig($showTreeView),
+            treeView: new TreeViewConfig(enabled: $showTreeView),
             modifiers: $modifiers,
         );
 

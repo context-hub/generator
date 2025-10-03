@@ -75,7 +75,7 @@ final class ConfigLoaderBootloader extends Bootloader
             ParserPluginRegistry::class => fn(
                 ImportParserPlugin $importParserPlugin,
                 DocumentsParserPlugin $documentsParserPlugin,
-            ) => new ParserPluginRegistry([
+            ) => new ParserPluginRegistry(plugins: [
                 // todo: think about priority when registering plugins
                 ...$this->parserPlugins,
                 $documentsParserPlugin,
@@ -112,7 +112,7 @@ final class ConfigLoaderBootloader extends Bootloader
                 ConfigMergerRegistry $registry,
             ) {
                 foreach ($this->mergers as $merger) {
-                    $registry->register($merger);
+                    $registry->register(merger: $merger);
                 }
 
                 return $registry;
@@ -124,7 +124,7 @@ final class ConfigLoaderBootloader extends Bootloader
         DocumentConfigMerger $documentConfigMerger,
         VariablesConfigMerger $variablesConfigMerger,
     ): void {
-        $this->registerMerger($documentConfigMerger);
-        $this->registerMerger($variablesConfigMerger);
+        $this->registerMerger(merger: $documentConfigMerger);
+        $this->registerMerger(merger: $variablesConfigMerger);
     }
 }

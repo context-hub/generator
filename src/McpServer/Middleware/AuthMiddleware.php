@@ -30,7 +30,7 @@ final readonly class AuthMiddleware implements MiddlewareInterface
             bindings: new Scope(
                 name: AppScope::McpOauth,
                 bindings: [
-                    UserProviderInterface::class => new InMemoryUserProvider($auth),
+                    UserProviderInterface::class => new InMemoryUserProvider(authInfo: $auth),
                 ],
             ),
             scope: static fn() => $handler->handle($request),

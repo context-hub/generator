@@ -17,18 +17,18 @@ final class UnstagedGitSourceTest extends GitSourceTestCase
     #[Test]
     public function it_should_support_unstaged_references(): void
     {
-        $this->assertTrue($this->unstagedGitSource->supports(''));
-        $this->assertTrue($this->unstagedGitSource->supports('unstaged'));
+        $this->assertTrue($this->unstagedGitSource->supports(commitReference: ''));
+        $this->assertTrue($this->unstagedGitSource->supports(commitReference: 'unstaged'));
     }
 
     #[Test]
     public function it_should_not_support_other_formats(): void
     {
-        $this->assertFalse($this->unstagedGitSource->supports('--cached'));
-        $this->assertFalse($this->unstagedGitSource->supports('HEAD~1..HEAD'));
-        $this->assertFalse($this->unstagedGitSource->supports('stash@{0}'));
-        $this->assertFalse($this->unstagedGitSource->supports('HEAD@{1.week.ago}..HEAD'));
-        $this->assertFalse($this->unstagedGitSource->supports('abcdef1 -- path/to/file'));
+        $this->assertFalse($this->unstagedGitSource->supports(commitReference: '--cached'));
+        $this->assertFalse($this->unstagedGitSource->supports(commitReference: 'HEAD~1..HEAD'));
+        $this->assertFalse($this->unstagedGitSource->supports(commitReference: 'stash@{0}'));
+        $this->assertFalse($this->unstagedGitSource->supports(commitReference: 'HEAD@{1.week.ago}..HEAD'));
+        $this->assertFalse($this->unstagedGitSource->supports(commitReference: 'abcdef1 -- path/to/file'));
     }
 
     #[Test]
@@ -40,7 +40,7 @@ final class UnstagedGitSourceTest extends GitSourceTestCase
         $this->mockChangedFiles($expectedCommand, $expectedFiles);
 
         // Get the unstaged files
-        $unstagedFiles = $this->unstagedGitSource->getChangedFiles($this->repoDir, '');
+        $unstagedFiles = $this->unstagedGitSource->getChangedFiles(repository: $this->repoDir, commitReference: '');
 
         // Verify that unstaged files are in the list
         $this->assertCount(2, $unstagedFiles);
@@ -57,7 +57,7 @@ final class UnstagedGitSourceTest extends GitSourceTestCase
         $this->mockFileDiff($expectedCommand, $expectedDiff);
 
         // Get the diff for the unstaged file
-        $diff = $this->unstagedGitSource->getFileDiff($this->repoDir, '', 'unstaged-diff.txt');
+        $diff = $this->unstagedGitSource->getFileDiff(repository: $this->repoDir, commitReference: '', file: 'unstaged-diff.txt');
 
         // Verify that the diff contains expected changes
         $this->assertStringContainsString('-Original unstaged content', $diff);
@@ -69,12 +69,12 @@ final class UnstagedGitSourceTest extends GitSourceTestCase
     {
         $this->assertSame(
             'Unstaged changes',
-            $this->unstagedGitSource->formatReferenceForDisplay(''),
+            $this->unstagedGitSource->formatReferenceForDisplay(commitReference: ''),
         );
 
         $this->assertSame(
             'Unstaged changes',
-            $this->unstagedGitSource->formatReferenceForDisplay('unstaged'),
+            $this->unstagedGitSource->formatReferenceForDisplay(commitReference: 'unstaged'),
         );
     }
 
@@ -87,7 +87,7 @@ final class UnstagedGitSourceTest extends GitSourceTestCase
         $this->mockChangedFiles($expectedCommand, $expectedFiles);
 
         // Get the unstaged files
-        $unstagedFiles = $this->unstagedGitSource->getChangedFiles($this->repoDir, '');
+        $unstagedFiles = $this->unstagedGitSource->getChangedFiles(repository: $this->repoDir, commitReference: '');
 
         // Verify that the new file is in the unstaged files
         $this->assertContains('new-unstaged.txt', $unstagedFiles);
@@ -101,7 +101,7 @@ final class UnstagedGitSourceTest extends GitSourceTestCase
         $this->mockChangedFiles($expectedCommand, []);
 
         // Get unstaged files when there are none
-        $unstagedFiles = $this->unstagedGitSource->getChangedFiles($this->repoDir, '');
+        $unstagedFiles = $this->unstagedGitSource->getChangedFiles(repository: $this->repoDir, commitReference: '');
 
         // Verify that the list is empty
         $this->assertEmpty($unstagedFiles);
@@ -116,7 +116,7 @@ final class UnstagedGitSourceTest extends GitSourceTestCase
         $this->mockChangedFiles($expectedCommand, $expectedFiles);
 
         // Get all unstaged files
-        $unstagedFiles = $this->unstagedGitSource->getChangedFiles($this->repoDir, '');
+        $unstagedFiles = $this->unstagedGitSource->getChangedFiles(repository: $this->repoDir, commitReference: '');
 
         // Verify that all expected unstaged files are in the list
         $this->assertCount(3, $unstagedFiles);
@@ -129,6 +129,6 @@ final class UnstagedGitSourceTest extends GitSourceTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->unstagedGitSource = new UnstagedGitSource($this->commandExecutorMock, new Files(), $this->logger);
+        $this->unstagedGitSource = new UnstagedGitSource(commandsExecutor: $this->commandExecutorMock, files: new Files(), logger: $this->logger);
     }
 }

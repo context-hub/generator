@@ -24,7 +24,7 @@ final readonly class WindowsUpdateStrategy implements UpdateStrategyInterface
 
         // Create the update script
         $this->logger?->info("Creating Windows batch script...");
-        $scriptPath = $this->createUpdateScript($sourcePath, $targetPath);
+        $scriptPath = $this->createUpdateScript(sourcePath: $sourcePath, targetPath: $targetPath);
 
         if ($scriptPath === null) {
             $this->logger?->error("Failed to create Windows batch script");
@@ -36,7 +36,7 @@ final readonly class WindowsUpdateStrategy implements UpdateStrategyInterface
         // Run the script in the background
         $command = \sprintf(
             'start /b "" %s',
-            \escapeshellarg($scriptPath),
+            \escapeshellarg(arg: $scriptPath),
         );
 
         $this->logger?->info("Executing batch script in background with command: {$command}");
@@ -44,7 +44,7 @@ final readonly class WindowsUpdateStrategy implements UpdateStrategyInterface
         // Execute the command
         $output = [];
         $resultCode = 0;
-        \exec($command, $output, $resultCode);
+        \exec(command: $command, output: $output, result_code: $resultCode);
 
         $success = $resultCode === 0;
 
@@ -69,10 +69,10 @@ final readonly class WindowsUpdateStrategy implements UpdateStrategyInterface
             $this->logger?->info("Generated temporary script path: {$scriptPath}");
 
             // Convert paths to Windows-style
-            $sourcePath = \str_replace('/', '\\', $sourcePath);
-            $targetPath = \str_replace('/', '\\', $targetPath);
-            $targetDir = \str_replace('/', '\\', \dirname($targetPath));
-            $scriptPathWin = \str_replace('/', '\\', $scriptPath);
+            $sourcePath = \str_replace(search: '/', replace: '\\', subject: $sourcePath);
+            $targetPath = \str_replace(search: '/', replace: '\\', subject: $targetPath);
+            $targetDir = \str_replace(search: '/', replace: '\\', subject: \dirname(path: $targetPath));
+            $scriptPathWin = \str_replace(search: '/', replace: '\\', subject: $scriptPath);
 
             $this->logger?->debug("Windows paths: source={$sourcePath}, target={$targetPath}, target_dir={$targetDir}");
 
@@ -80,28 +80,28 @@ final readonly class WindowsUpdateStrategy implements UpdateStrategyInterface
                 @echo off
                 rem Wait for parent process to exit
                 timeout /t 1 /nobreak > nul
-                
+
                 rem Define paths
                 set SOURCE={$sourcePath}
                 set TARGET={$targetPath}
                 set TARGET_DIR={$targetDir}
-                
+
                 echo Starting update process for %TARGET%
-                
+
                 rem Create the target directory if it doesn't exist
                 if not exist "%TARGET_DIR%" mkdir "%TARGET_DIR%"
-                
+
                 rem Try to update the file with multiple attempts
                 set MAX_ATTEMPTS=10
                 set ATTEMPT=1
                 set SUCCESS=0
-                
+
                 :LOOP
                 if %ATTEMPT% gtr %MAX_ATTEMPTS% goto FAILED
                 if %SUCCESS% equ 1 goto SUCCESS
-                
+
                 echo Attempt %ATTEMPT%: Trying to update %TARGET%
-                
+
                 rem Try to copy the file
                 copy /Y "%SOURCE%" "%TARGET%" > nul 2>&1
                 if %ERRORLEVEL% equ 0 (
@@ -113,19 +113,19 @@ final readonly class WindowsUpdateStrategy implements UpdateStrategyInterface
                     set /a ATTEMPT+=1
                     goto LOOP
                 )
-                
+
                 :FAILED
                 echo Update failed after %MAX_ATTEMPTS% attempts.
                 goto CLEANUP
-                
+
                 :SUCCESS
                 echo Update successful!
-                
+
                 :CLEANUP
                 rem Clean up temporary files
                 del "%SOURCE%" > nul 2>&1
                 del "{$scriptPathWin}" > nul 2>&1
-                
+
                 if %SUCCESS% equ 0 exit /b 1
                 exit /b 0
                 BATCH;

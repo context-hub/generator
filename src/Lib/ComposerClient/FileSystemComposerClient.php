@@ -24,27 +24,27 @@ final readonly class FileSystemComposerClient implements ComposerClientInterface
     public function loadComposerData(string $path): array
     {
         // If path is a directory, append composer.json
-        if (\is_dir($path)) {
-            $path = \rtrim($path, '/') . '/composer.json';
+        if (\is_dir(filename: $path)) {
+            $path = \rtrim(string: $path, characters: '/') . '/composer.json';
         }
 
         // Check if composer.json exists
         if (!$this->files->exists($path)) {
             $this->logger?->error('composer.json not found', ['path' => $path]);
-            throw ComposerNotFoundException::fileNotFound($path);
+            throw ComposerNotFoundException::fileNotFound(path: $path);
         }
 
         // Read composer.json
         $composerJson = $this->files->read($path);
 
         // Parse composer.json
-        $composerData = \json_decode($composerJson, true);
-        if (!\is_array($composerData) || \json_last_error() !== JSON_ERROR_NONE) {
+        $composerData = \json_decode(json: $composerJson, associative: true);
+        if (!\is_array(value: $composerData) || \json_last_error() !== JSON_ERROR_NONE) {
             $this->logger?->error('Failed to parse composer.json', [
                 'path' => $path,
                 'error' => \json_last_error_msg(),
             ]);
-            throw ComposerNotFoundException::cannotParse($path, \json_last_error_msg());
+            throw ComposerNotFoundException::cannotParse(path: $path, reason: \json_last_error_msg());
         }
 
         return $composerData;
@@ -52,7 +52,7 @@ final readonly class FileSystemComposerClient implements ComposerClientInterface
 
     public function tryLoadComposerLock(string $path): ?array
     {
-        $lockPath = \rtrim($path, '/') . '/composer.lock';
+        $lockPath = \rtrim(string: $path, characters: '/') . '/composer.lock';
 
         if (!$this->files->exists($lockPath)) {
             $this->logger?->info('composer.lock not found', ['path' => $lockPath]);
@@ -71,8 +71,8 @@ final readonly class FileSystemComposerClient implements ComposerClientInterface
         }
 
         // Parse composer.lock
-        $lockData = \json_decode($lockJson, true);
-        if (!\is_array($lockData) || \json_last_error() !== JSON_ERROR_NONE) {
+        $lockData = \json_decode(json: $lockJson, associative: true);
+        if (!\is_array(value: $lockData) || \json_last_error() !== JSON_ERROR_NONE) {
             $this->logger?->warning('Failed to parse composer.lock', [
                 'path' => $lockPath,
                 'error' => \json_last_error_msg(),
@@ -86,7 +86,7 @@ final readonly class FileSystemComposerClient implements ComposerClientInterface
     public function getVendorDir(array $composerData, string $basePath): string
     {
         // Check if composer.json has a custom vendor-dir configuration
-        if (isset($composerData['config']['vendor-dir']) && \is_string($composerData['config']['vendor-dir'])) {
+        if (isset($composerData['config']['vendor-dir']) && \is_string(value: $composerData['config']['vendor-dir'])) {
             return $composerData['config']['vendor-dir'];
         }
 
@@ -94,7 +94,7 @@ final readonly class FileSystemComposerClient implements ComposerClientInterface
         $defaultVendorDir = 'vendor';
         $vendorPath = $basePath . '/' . $defaultVendorDir;
 
-        if (\is_dir($vendorPath)) {
+        if (\is_dir(filename: $vendorPath)) {
             return $defaultVendorDir;
         }
 
@@ -102,7 +102,7 @@ final readonly class FileSystemComposerClient implements ComposerClientInterface
         $possibleVendorDirs = ['vendor', 'vendors', 'lib', 'libs', 'packages', 'deps'];
 
         foreach ($possibleVendorDirs as $dir) {
-            if (\is_dir($basePath . '/' . $dir)) {
+            if (\is_dir(filename: $basePath . '/' . $dir)) {
                 $this->logger?->info('Found alternative vendor directory', ['directory' => $dir]);
                 return $dir;
             }

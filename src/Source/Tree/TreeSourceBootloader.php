@@ -30,7 +30,7 @@ final class TreeSourceBootloader extends Bootloader
         SourceRegistryInterface $sourceRegistry,
         TreeSourceFactory $factory,
     ): void {
-        $registry->register(TreeSourceFetcher::class);
+        $registry->register(fetcher: TreeSourceFetcher::class);
         $sourceRegistry->register($factory);
     }
 }

@@ -41,7 +41,7 @@ final class GithubFileInfo extends SplFileInfo
             return $this->fetchedContent;
         }
 
-        return \call_user_func($this->content);
+        return \call_user_func(callback: $this->content);
     }
 
     /**

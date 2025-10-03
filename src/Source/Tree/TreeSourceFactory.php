@@ -29,31 +29,31 @@ final readonly class TreeSourceFactory extends AbstractSourceFactory
 
 
         if (!isset($config['sourcePaths'])) {
-            throw new \RuntimeException('Tree source must have a "sourcePaths" property');
+            throw new \RuntimeException(message: 'Tree source must have a "sourcePaths" property');
         }
 
         $sourcePaths = $config['sourcePaths'];
-        if (!\is_string($sourcePaths) && !\is_array($sourcePaths)) {
-            throw new \RuntimeException('"sourcePaths" must be a string or array in source');
+        if (!\is_string(value: $sourcePaths) && !\is_array(value: $sourcePaths)) {
+            throw new \RuntimeException(message: '"sourcePaths" must be a string or array in source');
         }
 
-        $sourcePaths = \is_string($sourcePaths) ? [$sourcePaths] : $sourcePaths;
+        $sourcePaths = \is_string(value: $sourcePaths) ? [$sourcePaths] : $sourcePaths;
         $sourcePaths = \array_map(
-            fn(string $sourcePaths): string => (string) $this->dirs->getRootPath()->join($sourcePaths),
-            $sourcePaths,
+            callback: fn(string $sourcePaths): string => (string) $this->dirs->getRootPath()->join($sourcePaths),
+            array: $sourcePaths,
         );
 
         // Validate filePattern if present
         if (isset($config['filePattern'])) {
-            if (!\is_string($config['filePattern']) && !\is_array($config['filePattern'])) {
-                throw new \RuntimeException('filePattern must be a string or an array of strings');
+            if (!\is_string(value: $config['filePattern']) && !\is_array(value: $config['filePattern'])) {
+                throw new \RuntimeException(message: 'filePattern must be a string or an array of strings');
             }
 
             // If it's an array, make sure all elements are strings
-            if (\is_array($config['filePattern'])) {
+            if (\is_array(value: $config['filePattern'])) {
                 foreach ($config['filePattern'] as $pattern) {
-                    if (!\is_string($pattern)) {
-                        throw new \RuntimeException('All elements in filePattern must be strings');
+                    if (!\is_string(value: $pattern)) {
+                        throw new \RuntimeException(message: 'All elements in filePattern must be strings');
                     }
                 }
             }
@@ -61,17 +61,17 @@ final readonly class TreeSourceFactory extends AbstractSourceFactory
 
         // Validate renderFormat if present
         if (isset($config['renderFormat'])) {
-            if (!\is_string($config['renderFormat'])) {
-                throw new \RuntimeException('renderFormat must be a string');
+            if (!\is_string(value: $config['renderFormat'])) {
+                throw new \RuntimeException(message: 'renderFormat must be a string');
             }
 
             $validFormats = ['ascii'];
-            if (!\in_array($config['renderFormat'], $validFormats, true)) {
+            if (!\in_array(needle: $config['renderFormat'], haystack: $validFormats, strict: true)) {
                 throw new \RuntimeException(
-                    \sprintf(
+                    message: \sprintf(
                         'Invalid renderFormat: %s. Allowed formats: %s',
                         $config['renderFormat'],
-                        \implode(', ', $validFormats),
+                        \implode(separator: ', ', array: $validFormats),
                     ),
                 );
             }
@@ -84,8 +84,8 @@ final readonly class TreeSourceFactory extends AbstractSourceFactory
         $notPath = $config['notPath'] ?? [];
 
         // Validate dirContext if present
-        if (isset($config['dirContext']) && !\is_array($config['dirContext'])) {
-            throw new \RuntimeException('dirContext must be an associative array');
+        if (isset($config['dirContext']) && !\is_array(value: $config['dirContext'])) {
+            throw new \RuntimeException(message: 'dirContext must be an associative array');
         }
 
         return new TreeSource(

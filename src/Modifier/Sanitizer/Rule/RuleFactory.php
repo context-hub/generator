@@ -15,15 +15,15 @@ final class RuleFactory
     public function createFromConfig(array $config): RuleInterface
     {
         if (!isset($config['type'])) {
-            throw new \InvalidArgumentException('Rule configuration must include a "type" field');
+            throw new \InvalidArgumentException(message: 'Rule configuration must include a "type" field');
         }
 
         return match ($config['type']) {
-            'keyword' => $this->createKeywordRemovalRule($config),
-            'regex' => $this->createRegexReplacementRule($config),
-            'comment' => $this->createCommentInsertionRule($config),
+            'keyword' => $this->createKeywordRemovalRule(config: $config),
+            'regex' => $this->createRegexReplacementRule(config: $config),
+            'comment' => $this->createCommentInsertionRule(config: $config),
             default => throw new \InvalidArgumentException(
-                \sprintf('Unsupported rule type: %s', $config['type']),
+                message: \sprintf('Unsupported rule type: %s', $config['type']),
             ),
         };
     }
@@ -33,8 +33,8 @@ final class RuleFactory
      */
     private function createKeywordRemovalRule(array $config): KeywordRemovalRule
     {
-        if (!isset($config['keywords']) || !\is_array($config['keywords'])) {
-            throw new \InvalidArgumentException('Keyword rule must include a "keywords" array');
+        if (!isset($config['keywords']) || !\is_array(value: $config['keywords'])) {
+            throw new \InvalidArgumentException(message: 'Keyword rule must include a "keywords" array');
         }
 
         return new KeywordRemovalRule(
@@ -53,20 +53,20 @@ final class RuleFactory
     {
         $patterns = [];
         if (isset($config['patterns'])) {
-            if (!\is_array($config['patterns'])) {
-                throw new \InvalidArgumentException('Regex rule "patterns" object must be an array');
+            if (!\is_array(value: $config['patterns'])) {
+                throw new \InvalidArgumentException(message: 'Regex rule "patterns" object must be an array');
             }
 
             $patterns = $config['patterns'];
         }
 
         // Handle predefined pattern aliases if specified
-        if (isset($config['usePatterns']) && \is_array($config['usePatterns'])) {
-            $patterns = \array_merge($patterns, $this->getPatternsByAliases($config['usePatterns']));
+        if (isset($config['usePatterns']) && \is_array(value: $config['usePatterns'])) {
+            $patterns = \array_merge($patterns, $this->getPatternsByAliases(aliases: $config['usePatterns']));
         }
 
         if (empty($patterns)) {
-            throw new \InvalidArgumentException('Regex rule must include "patterns" or "usePatterns"');
+            throw new \InvalidArgumentException(message: 'Regex rule must include "patterns" or "usePatterns"');
         }
 
         return new RegexReplacementRule(

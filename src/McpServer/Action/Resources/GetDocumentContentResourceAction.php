@@ -30,7 +30,7 @@ final readonly class GetDocumentContentResourceAction
         $path = $request->getAttribute('path');
         $this->logger->info('Getting document content', ['path' => $path]);
 
-        $config = new ConfigRegistryAccessor($this->configLoader->load());
+        $config = new ConfigRegistryAccessor(registry: $this->configLoader->load());
         $contents = [];
 
         foreach ($config->getDocuments() as $document) {
@@ -38,13 +38,13 @@ final readonly class GetDocumentContentResourceAction
                 $contents[] = new TextResourceContents(
                     uri: 'ctx://document/' . $document->outputPath,
                     mimeType: 'text/markdown',
-                    text: (string) $this->compiler->buildContent(new ErrorCollection(), $document)->content,
+                    text: (string) $this->compiler->buildContent(errors: new ErrorCollection(), document: $document)->content,
                 );
 
                 break;
             }
         }
 
-        return new ReadResourceResult($contents);
+        return new ReadResourceResult(contents: $contents);
     }
 }

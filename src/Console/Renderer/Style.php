@@ -30,7 +30,7 @@ final class Style
      */
     public static function separator(string $char = '-', int $length = 80): string
     {
-        return \sprintf('<fg=blue>%s</>', \str_repeat($char, $length));
+        return \sprintf('<fg=blue>%s</>', \str_repeat(string: $char, times: $length));
     }
 
     /**
@@ -78,8 +78,8 @@ final class Style
      */
     public static function indent(string $text, int $spaces = 2): string
     {
-        $indent = \str_repeat(' ', $spaces);
-        return $indent . \str_replace("\n", "\n" . $indent, $text);
+        $indent = \str_repeat(string: ' ', times: $spaces);
+        return $indent . \str_replace(search: "\n", replace: "\n" . $indent, subject: $text);
     }
 
     /**
@@ -201,7 +201,7 @@ final class Style
     {
         return \sprintf(
             '%s: %s',
-            self::property(\str_pad($key, $keyWidth)),
+            self::property(\str_pad(string: $key, length: $keyWidth)),
             self::value($value),
         );
     }

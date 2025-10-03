@@ -109,7 +109,7 @@ final class DirectoriesTest extends TestCase
             jsonSchemaPath: '/test/schema',
         );
 
-        $newDirs = $dirs->withRootPath('/new/root');
+        $newDirs = $dirs->withRootPath(rootPath: '/new/root');
 
         // Verify original instance is unchanged
         $this->assertSame('/test/root', $dirs->rootPath);
@@ -131,7 +131,7 @@ final class DirectoriesTest extends TestCase
             jsonSchemaPath: '/test/schema',
         );
 
-        $newDirs = $dirs->withRootPath(null);
+        $newDirs = $dirs->withRootPath();
 
         $this->assertSame($dirs, $newDirs);
     }
@@ -146,7 +146,7 @@ final class DirectoriesTest extends TestCase
             jsonSchemaPath: '/test/schema',
         );
 
-        $newDirs = $dirs->withConfigPath('/new/config');
+        $newDirs = $dirs->withConfigPath(configPath: '/new/config');
 
         // Verify original instance is unchanged
         $this->assertSame('/test/config', $dirs->configPath);
@@ -168,7 +168,7 @@ final class DirectoriesTest extends TestCase
             jsonSchemaPath: '/test/schema',
         );
 
-        $newDirs = $dirs->withConfigPath(null);
+        $newDirs = $dirs->withConfigPath();
 
         $this->assertSame($dirs, $newDirs);
     }
@@ -183,7 +183,7 @@ final class DirectoriesTest extends TestCase
             jsonSchemaPath: '/test/schema',
         );
 
-        $newDirs = $dirs->withEnvFile('.env.test');
+        $newDirs = $dirs->withEnvFile(envFileName: '.env.test');
 
         // Verify original instance is unchanged
         $this->assertNull($dirs->envFilePath);
@@ -202,7 +202,7 @@ final class DirectoriesTest extends TestCase
             jsonSchemaPath: '/test/schema',
         );
 
-        $newDirs = $dirs->withEnvFile(null);
+        $newDirs = $dirs->withEnvFile();
 
         $this->assertSame($dirs, $newDirs);
     }
@@ -243,7 +243,7 @@ final class DirectoriesTest extends TestCase
         // Create a temporary directory for testing
         $tempDir = $this->createTempDir();
         $configDir = $tempDir . '/config';
-        \mkdir($configDir);
+        \mkdir(directory: $configDir);
 
         $dirs = new Directories(
             rootPath: '/test/root',
@@ -253,16 +253,16 @@ final class DirectoriesTest extends TestCase
         );
 
         // Test with absolute config path to existing directory
-        $newDirs = $dirs->determineRootPath($configDir);
+        $newDirs = $dirs->determineRootPath(configPath: $configDir);
         $this->assertSame($configDir, $newDirs->rootPath);
         $this->assertSame($configDir, $newDirs->configPath);
 
         // Test with absolute config path to existing file
         $configFile = $tempDir . '/config.json';
-        \file_put_contents($configFile, '{}');
+        \file_put_contents(filename: $configFile, data: '{}');
         $this->registerTempFile($configFile);
 
-        $newDirs = $dirs->determineRootPath($configFile);
+        $newDirs = $dirs->determineRootPath(configPath: $configFile);
         $this->assertSame($tempDir, $newDirs->rootPath);
         $this->assertSame($configFile, $newDirs->configPath);
     }
@@ -273,7 +273,7 @@ final class DirectoriesTest extends TestCase
         // Create a temporary directory structure
         $tempDir = $this->createTempDir();
         $configDir = $tempDir . '/config';
-        \mkdir($configDir);
+        \mkdir(directory: $configDir);
 
         $dirs = new Directories(
             rootPath: $tempDir,
@@ -283,7 +283,7 @@ final class DirectoriesTest extends TestCase
         );
 
         // Test with relative config path
-        $newDirs = $dirs->determineRootPath('config');
+        $newDirs = $dirs->determineRootPath(configPath: 'config');
         $this->assertSame($configDir, $newDirs->rootPath);
         $this->assertSame($configDir, $newDirs->configPath);
     }
@@ -298,7 +298,7 @@ final class DirectoriesTest extends TestCase
             jsonSchemaPath: '/test/schema',
         );
 
-        $newDirs = $dirs->determineRootPath(null);
+        $newDirs = $dirs->determineRootPath();
 
         $this->assertSame($dirs, $newDirs);
     }
@@ -313,7 +313,7 @@ final class DirectoriesTest extends TestCase
             jsonSchemaPath: '/test/schema',
         );
 
-        $newDirs = $dirs->determineRootPath('/path/to/config.json', '{"inline": "config"}');
+        $newDirs = $dirs->determineRootPath(configPath: '/path/to/config.json', inlineConfig: '{"inline": "config"}');
 
         $this->assertSame($dirs, $newDirs);
     }
@@ -329,7 +329,7 @@ final class DirectoriesTest extends TestCase
         );
 
         // Non-existent path
-        $newDirs = $dirs->determineRootPath('/non/existent/path');
+        $newDirs = $dirs->determineRootPath(configPath: '/non/existent/path');
 
         $this->assertSame($dirs, $newDirs);
     }

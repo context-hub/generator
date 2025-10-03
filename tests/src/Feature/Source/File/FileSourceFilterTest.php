@@ -34,7 +34,7 @@ final class FileSourceFilterTest extends AbstractFileSourceTestCase
         $this->assertEquals('nested file', $source->contains);
 
         // Compile and verify content filtering worked
-        $compiledDocument = $compiler->compile($document);
+        $compiledDocument = $compiler->compile(document: $document);
         $content = (string) $compiledDocument->content;
 
         // Should include nested file but not the root test_file.txt

@@ -105,7 +105,7 @@ final class GitlabSource extends SourceWithModifiers implements FilterableSource
     #[\Override]
     public function jsonSerialize(): array
     {
-        return \array_filter([
+        return \array_filter(array: [
             'type' => 'gitlab',
             ...parent::jsonSerialize(),
             'repository' => $this->repository,
@@ -118,6 +118,6 @@ final class GitlabSource extends SourceWithModifiers implements FilterableSource
             'notContains' => $this->notContains,
             'showTreeView' => $this->showTreeView,
             'server' => $this->server,
-        ], static fn($value) => $value !== null && (!\is_array($value) || !empty($value)));
+        ], callback: static fn($value) => $value !== null && (!\is_array(value: $value) || !empty($value)));
     }
 }

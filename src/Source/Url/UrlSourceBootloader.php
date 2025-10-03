@@ -47,7 +47,7 @@ final class UrlSourceBootloader extends Bootloader
         SourceRegistryInterface $sourceRegistry,
         UrlSourceFactory $factory,
     ): void {
-        $registry->register(UrlSourceFetcher::class);
+        $registry->register(fetcher: UrlSourceFetcher::class);
         $sourceRegistry->register($factory);
     }
 }

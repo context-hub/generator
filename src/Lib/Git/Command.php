@@ -25,33 +25,33 @@ final readonly class Command implements \Stringable
      */
     public function getCommandParts(): array
     {
-        if (\is_array($this->command)) {
+        if (\is_array(value: $this->command)) {
             return $this->command;
         }
 
-        $command = \trim($this->command);
+        $command = \trim(string: $this->command);
 
         // If the command already starts with 'git', remove it
-        if (\str_starts_with($command, 'git ')) {
-            $command = \substr($command, 4);
+        if (\str_starts_with(haystack: $command, needle: 'git ')) {
+            $command = \substr(string: $command, offset: 4);
         }
 
-        return \array_filter(\explode(' ', $command));
+        return \array_filter(array: \explode(separator: ' ', string: $command));
     }
 
     public function __toString(): string
     {
-        if (\is_string($this->command)) {
-            $command = \trim($this->command);
+        if (\is_string(value: $this->command)) {
+            $command = \trim(string: $this->command);
 
             // If the command already starts with 'git', use it as is
-            if (\str_starts_with($command, 'git ')) {
-                $command = \substr($command, 4);
+            if (\str_starts_with(haystack: $command, needle: 'git ')) {
+                $command = \substr(string: $command, offset: 4);
             }
 
             return $command;
         }
 
-        return \implode(' ', $this->command);
+        return \implode(separator: ' ', array: $this->command);
     }
 }

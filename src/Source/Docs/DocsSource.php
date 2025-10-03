@@ -31,12 +31,12 @@ final class DocsSource extends BaseSource
     #[\Override]
     public function jsonSerialize(): array
     {
-        return \array_filter([
+        return \array_filter(array: [
             'type' => 'docs',
             ...parent::jsonSerialize(),
             'library' => $this->library,
             'topic' => $this->topic,
             'tokens' => $this->tokens,
-        ], static fn($value) => $value !== null && $value !== '' && $value !== []);
+        ], callback: static fn($value) => $value !== null && $value !== '' && $value !== []);
     }
 }

@@ -32,11 +32,11 @@ final readonly class JsonSchemaResourceAction
     {
         $this->logger->info('Getting JSON schema');
 
-        return new ReadResourceResult([
+        return new ReadResourceResult(contents: [
             new TextResourceContents(
                 uri: 'ctx://json-schema',
                 mimeType: 'application/json',
-                text: \json_encode($this->jsonSchema->getSimplifiedSchema()),
+                text: \json_encode(value: $this->jsonSchema->getSimplifiedSchema()),
             ),
         ]);
     }

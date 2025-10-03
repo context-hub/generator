@@ -24,9 +24,9 @@ final class PathFilter extends AbstractFilter
             return $items;
         }
 
-        return \array_filter($items, function (array $item): bool {
+        return \array_filter(array: $items, callback: function (array $item): bool {
             $path = $item['path'] ?? '';
-            return $this->matchPattern($path, $this->pathPattern);
+            return $this->matchPattern(value: $path, pattern: $this->pathPattern);
         });
     }
 }

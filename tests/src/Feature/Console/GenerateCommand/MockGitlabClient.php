@@ -40,7 +40,7 @@ final class MockGitlabClient implements GitlabClientInterface
             return $this->fileContents[$repoKey][$path];
         }
 
-        throw new \RuntimeException("File content not found for {$path} in repository {$repository->repository}");
+        throw new \RuntimeException(message: "File content not found for {$path} in repository {$repository->repository}");
     }
 
     public function setToken(?string $token): void

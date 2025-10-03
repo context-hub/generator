@@ -28,10 +28,10 @@ final readonly class ModifierResolver
         }
 
         // If it's a string, check if it's an alias
-        if (\is_string($reference)) {
-            if ($this->aliasesRegistry->has($reference)) {
-                $modifier = $this->aliasesRegistry->get($reference);
-                \assert($modifier !== null);
+        if (\is_string(value: $reference)) {
+            if ($this->aliasesRegistry->has(alias: $reference)) {
+                $modifier = $this->aliasesRegistry->get(alias: $reference);
+                \assert(assertion: $modifier !== null);
                 return $modifier;
             }
 
@@ -40,7 +40,7 @@ final readonly class ModifierResolver
         }
 
         // Otherwise, it's an array configuration
-        return Modifier::from($reference);
+        return Modifier::from(data: $reference);
     }
 
     /**
@@ -52,8 +52,8 @@ final readonly class ModifierResolver
     public function resolveAll(array $references): array
     {
         return \array_map(
-            fn($reference) => $this->resolve($reference),
-            $references,
+            callback: fn($reference) => $this->resolve(reference: $reference),
+            array: $references,
         );
     }
 }

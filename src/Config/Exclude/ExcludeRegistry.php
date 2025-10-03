@@ -87,7 +87,7 @@ final class ExcludeRegistry implements ExcludeRegistryInterface, RegistryInterfa
      */
     public function getIterator(): \Traversable
     {
-        return new \ArrayIterator($this->patterns);
+        return new \ArrayIterator(array: $this->patterns);
     }
 
     /**
@@ -97,8 +97,8 @@ final class ExcludeRegistry implements ExcludeRegistryInterface, RegistryInterfa
     {
         return [
             'patterns' => \array_map(
-                static fn(ExclusionPatternInterface $pattern) => $pattern->jsonSerialize(),
-                $this->patterns,
+                callback: static fn(ExclusionPatternInterface $pattern) => $pattern->jsonSerialize(),
+                array: $this->patterns,
             ),
         ];
     }

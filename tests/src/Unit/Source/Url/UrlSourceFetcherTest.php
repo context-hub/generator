@@ -36,7 +36,7 @@ class UrlSourceFetcherTest extends TestCase
     #[Test]
     public function it_should_support_url_sources(): void
     {
-        $urlSource = new UrlSource(['https://example.com']);
+        $urlSource = new UrlSource(urls: ['https://example.com']);
 
         $this->logger
             ->expects($this->once())
@@ -46,7 +46,7 @@ class UrlSourceFetcherTest extends TestCase
                 'isSupported' => true,
             ]);
 
-        $this->assertTrue($this->fetcher->supports($urlSource));
+        $this->assertTrue($this->fetcher->supports(source: $urlSource));
     }
 
     #[Test]
@@ -62,7 +62,7 @@ class UrlSourceFetcherTest extends TestCase
                 'isSupported' => false,
             ]);
 
-        $this->assertFalse($this->fetcher->supports($otherSource));
+        $this->assertFalse($this->fetcher->supports(source: $otherSource));
     }
 
     #[Test]
@@ -73,7 +73,7 @@ class UrlSourceFetcherTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Source must be an instance of UrlSource');
 
-        $this->fetcher->fetch($invalidSource, $this->modifiersApplier);
+        $this->fetcher->fetch(source: $invalidSource, modifiersApplier: $this->modifiersApplier);
     }
 
     #[Test]
@@ -118,7 +118,7 @@ class UrlSourceFetcherTest extends TestCase
             ->willReturn($modifiedContent);
 
         // Act
-        $result = $this->fetcher->fetch($urlSource, $this->modifiersApplier);
+        $result = $this->fetcher->fetch(source: $urlSource, modifiersApplier: $this->modifiersApplier);
 
         // Assert
         $this->assertStringContainsString('Test description', $result);
@@ -167,7 +167,7 @@ class UrlSourceFetcherTest extends TestCase
         $this->modifiersApplier->method('apply')->willReturn($modifiedContent);
 
         // Act
-        $result = $this->fetcher->fetch($urlSource, $this->modifiersApplier);
+        $result = $this->fetcher->fetch(source: $urlSource, modifiersApplier: $this->modifiersApplier);
 
         // Assert
         $this->assertStringContainsString("URL: {$url} (selector: {$selector})", $result);
@@ -204,7 +204,7 @@ class UrlSourceFetcherTest extends TestCase
             ->willReturn('');
 
         // Act
-        $result = $this->fetcher->fetch($urlSource, $this->modifiersApplier);
+        $result = $this->fetcher->fetch(source: $urlSource, modifiersApplier: $this->modifiersApplier);
 
         // Assert
         $this->assertStringContainsString("URL: {$url}", $result);
@@ -231,7 +231,7 @@ class UrlSourceFetcherTest extends TestCase
         $this->httpClient->method('get')->willReturn($response);
 
         // Act
-        $result = $this->fetcher->fetch($urlSource, $this->modifiersApplier);
+        $result = $this->fetcher->fetch(source: $urlSource, modifiersApplier: $this->modifiersApplier);
 
         // Assert
         $this->assertStringContainsString("URL: {$url}", $result);
@@ -252,7 +252,7 @@ class UrlSourceFetcherTest extends TestCase
         // HTTP client mocks - throw exception
         $this->httpClient
             ->method('get')
-            ->willThrowException(new \RuntimeException($exceptionMessage));
+            ->willThrowException(new \RuntimeException(message: $exceptionMessage));
 
         // Log the error
         $this->logger
@@ -266,7 +266,7 @@ class UrlSourceFetcherTest extends TestCase
             );
 
         // Act
-        $result = $this->fetcher->fetch($urlSource, $this->modifiersApplier);
+        $result = $this->fetcher->fetch(source: $urlSource, modifiersApplier: $this->modifiersApplier);
 
         // Assert
         $this->assertStringContainsString("URL: {$url}", $result);
@@ -301,22 +301,22 @@ class UrlSourceFetcherTest extends TestCase
         $this->modifiersApplier->method('apply')->willReturn('Modified content');
 
         // Act
-        $result = $this->fetcher->fetch($urlSource, $this->modifiersApplier);
+        $result = $this->fetcher->fetch(source: $urlSource, modifiersApplier: $this->modifiersApplier);
 
         // Assert
         $this->assertStringContainsString("URL: https://example.com", $result);
         $this->assertStringContainsString("URL: https://example.org", $result);
         $this->assertStringContainsString("Modified content", $result);
         // Check if each URL appears twice (once in URL comment, once in END OF URL comment)
-        $this->assertEquals(2, \substr_count($result, "https://example.com"));
-        $this->assertEquals(2, \substr_count($result, "https://example.org"));
+        $this->assertEquals(2, \substr_count(haystack: $result, needle: "https://example.com"));
+        $this->assertEquals(2, \substr_count(haystack: $result, needle: "https://example.org"));
     }
 
     protected function setUp(): void
     {
         $this->httpClient = $this->createMock(HttpClientInterface::class);
         $this->variableResolver = new VariableResolver(
-            new VariableReplacementProcessor(),
+            processor: new VariableReplacementProcessor(),
         );
         $this->cleaner = $this->createMock(HtmlCleanerInterface::class);
         $this->selectorExtractor = $this->createMock(SelectorContentExtractorInterface::class);

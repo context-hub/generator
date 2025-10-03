@@ -24,9 +24,9 @@ final class SourceConfigFactory
         $type = $config['type'] ?? 'local';
 
         return match ($type) {
-            'local' => LocalSourceConfig::fromArray($config, $basePath),
-            'url' => UrlSourceConfig::fromArray($config, $basePath),
-            default => throw new \InvalidArgumentException("Unsupported source type: {$type}"),
+            'local' => LocalSourceConfig::fromArray(config: $config, basePath: $basePath),
+            'url' => UrlSourceConfig::fromArray(config: $config, basePath: $basePath),
+            default => throw new \InvalidArgumentException(message: "Unsupported source type: {$type}"),
         };
     }
 }

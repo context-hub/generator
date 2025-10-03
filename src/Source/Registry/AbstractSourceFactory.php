@@ -27,6 +27,6 @@ abstract readonly class AbstractSourceFactory implements SourceFactoryInterface
      */
     protected function parseModifiers(array $modifiersConfig): array
     {
-        return $this->modifierResolver->resolveAll($modifiersConfig);
+        return $this->modifierResolver->resolveAll(references: $modifiersConfig);
     }
 }

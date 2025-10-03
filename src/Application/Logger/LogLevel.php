@@ -25,7 +25,7 @@ enum LogLevel: string
      */
     public static function fromString(string $level): self
     {
-        $normalizedLevel = \strtolower($level);
+        $normalizedLevel = \strtolower(string: $level);
 
         return match ($normalizedLevel) {
             PsrLogLevel::EMERGENCY => self::EMERGENCY,
@@ -59,6 +59,6 @@ enum LogLevel: string
      */
     public function getLabel(): string
     {
-        return \strtoupper($this->value);
+        return \strtoupper(string: $this->value);
     }
 }

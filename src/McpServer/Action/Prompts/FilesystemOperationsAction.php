@@ -42,7 +42,7 @@ final readonly class FilesystemOperationsAction
                 new PromptMessage(
                     role: Role::User,
                     content: new TextContent(
-                        text: \implode("\n", $rules),
+                        text: \implode(separator: "\n", array: $rules),
                     ),
                 ),
             ],

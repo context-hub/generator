@@ -27,7 +27,7 @@ final class ConsoleBootloader extends Bootloader
     public function init(AbstractKernel $kernel, BinderInterface $binder, Application $app): void
     {
         $kernel->bootstrapped(static function (AbstractKernel $kernel): void {
-            $kernel->addDispatcher(ConsoleDispatcher::class);
+            $kernel->addDispatcher(dispatcher: ConsoleDispatcher::class);
         });
 
         // Registering necessary scope bindings
@@ -53,7 +53,7 @@ final class ConsoleBootloader extends Bootloader
         foreach ($interceptors as $interceptor) {
             $this->config->modify(
                 ConsoleConfig::CONFIG,
-                new Append('interceptors', null, $interceptor),
+                new Append(position: 'interceptors', key: null, value: $interceptor),
             );
         }
     }
@@ -66,7 +66,7 @@ final class ConsoleBootloader extends Bootloader
         foreach ($commands as $command) {
             $this->config->modify(
                 ConsoleConfig::CONFIG,
-                new Append('commands', null, $command),
+                new Append(position: 'commands', key: null, value: $command),
             );
         }
     }

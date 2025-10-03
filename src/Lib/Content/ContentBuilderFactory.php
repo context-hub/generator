@@ -15,6 +15,6 @@ final readonly class ContentBuilderFactory
 
     public function create(?RendererInterface $renderer = null): ContentBuilder
     {
-        return new ContentBuilder($renderer ?? $this->defaultRenderer);
+        return new ContentBuilder(renderer: $renderer ?? $this->defaultRenderer);
     }
 }

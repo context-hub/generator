@@ -23,7 +23,7 @@ final class GitClientException extends \RuntimeException
             'Git command "%s" failed with exit code %d: %s',
             $command,
             $exitCode,
-            \implode("\n", $errorOutput),
+            \implode(separator: "\n", array: $errorOutput),
         );
 
         parent::__construct($message, $exitCode);

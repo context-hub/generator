@@ -37,7 +37,7 @@ final class SourceRegistry implements SourceRegistryInterface, SourceProviderInt
     public function create(string $type, array $config): SourceInterface
     {
         if (!isset($this->factories[$type])) {
-            throw new \RuntimeException(\sprintf('Source factory for type "%s" not found', $type));
+            throw new \RuntimeException(message: \sprintf('Source factory for type "%s" not found', $type));
         }
 
         $factory = $this->factories[$type];

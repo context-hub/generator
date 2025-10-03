@@ -21,7 +21,7 @@ class RuleFactoryTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Rule configuration must include a "type" field');
 
-        $this->factory->createFromConfig([]);
+        $this->factory->createFromConfig(config: []);
     }
 
     #[Test]
@@ -30,7 +30,7 @@ class RuleFactoryTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Unsupported rule type: unknown');
 
-        $this->factory->createFromConfig(['type' => 'unknown']);
+        $this->factory->createFromConfig(config: ['type' => 'unknown']);
     }
 
     #[Test]
@@ -39,7 +39,7 @@ class RuleFactoryTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Keyword rule must include a "keywords" array');
 
-        $this->factory->createFromConfig(['type' => 'keyword']);
+        $this->factory->createFromConfig(config: ['type' => 'keyword']);
     }
 
     #[Test]
@@ -48,7 +48,7 @@ class RuleFactoryTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Keyword rule must include a "keywords" array');
 
-        $this->factory->createFromConfig([
+        $this->factory->createFromConfig(config: [
             'type' => 'keyword',
             'keywords' => 'not-an-array',
         ]);
@@ -57,7 +57,7 @@ class RuleFactoryTest extends TestCase
     #[Test]
     public function it_should_create_keyword_rule_with_minimal_config(): void
     {
-        $rule = $this->factory->createFromConfig([
+        $rule = $this->factory->createFromConfig(config: [
             'type' => 'keyword',
             'keywords' => ['secret', 'password'],
         ]);
@@ -67,14 +67,14 @@ class RuleFactoryTest extends TestCase
 
         // Test the rule works as expected
         $content = "Line with secret\nNormal line";
-        $result = $rule->apply($content);
+        $result = $rule->apply(content: $content);
         $this->assertEquals("[REMOVED]\nNormal line", $result);
     }
 
     #[Test]
     public function it_should_create_keyword_rule_with_full_config(): void
     {
-        $rule = $this->factory->createFromConfig([
+        $rule = $this->factory->createFromConfig(config: [
             'type' => 'keyword',
             'name' => 'custom-keyword-rule',
             'keywords' => ['secret', 'password'],
@@ -88,7 +88,7 @@ class RuleFactoryTest extends TestCase
 
         // Test the rule works as expected
         $content = "Line with secret\nLine with SECRET\nNormal line";
-        $result = $rule->apply($content);
+        $result = $rule->apply(content: $content);
         $this->assertEquals("Line with [REDACTED]\nLine with SECRET\nNormal line", $result);
     }
 
@@ -98,7 +98,7 @@ class RuleFactoryTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Regex rule must include "patterns" or "usePatterns"');
 
-        $this->factory->createFromConfig(['type' => 'regex']);
+        $this->factory->createFromConfig(config: ['type' => 'regex']);
     }
 
     #[Test]
@@ -107,7 +107,7 @@ class RuleFactoryTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Regex rule "patterns" object must be an array');
 
-        $this->factory->createFromConfig([
+        $this->factory->createFromConfig(config: [
             'type' => 'regex',
             'patterns' => 'not-an-array',
         ]);
@@ -116,7 +116,7 @@ class RuleFactoryTest extends TestCase
     #[Test]
     public function it_should_create_regex_rule_with_custom_patterns(): void
     {
-        $rule = $this->factory->createFromConfig([
+        $rule = $this->factory->createFromConfig(config: [
             'type' => 'regex',
             'name' => 'custom-regex-rule',
             'patterns' => [
@@ -129,14 +129,14 @@ class RuleFactoryTest extends TestCase
 
         // Test the rule works as expected
         $content = "Contact us at test@example.com";
-        $result = $rule->apply($content);
+        $result = $rule->apply(content: $content);
         $this->assertEquals("Contact us at [EMAIL_REMOVED]", $result);
     }
 
     #[Test]
     public function it_should_create_regex_rule_with_predefined_patterns(): void
     {
-        $rule = $this->factory->createFromConfig([
+        $rule = $this->factory->createFromConfig(config: [
             'type' => 'regex',
             'usePatterns' => ['email', 'ip-address'],
         ]);
@@ -145,14 +145,14 @@ class RuleFactoryTest extends TestCase
 
         // Test the rule works as expected with email pattern
         $content = "Contact us at test@example.com or visit 192.168.1.1";
-        $result = $rule->apply($content);
+        $result = $rule->apply(content: $content);
         $this->assertEquals("Contact us at [EMAIL_REMOVED] or visit [IP_ADDRESS_REMOVED]", $result);
     }
 
     #[Test]
     public function it_should_create_regex_rule_with_mixed_patterns(): void
     {
-        $rule = $this->factory->createFromConfig([
+        $rule = $this->factory->createFromConfig(config: [
             'type' => 'regex',
             'patterns' => [
                 '/custom-pattern/' => '[CUSTOM_REMOVED]',
@@ -164,14 +164,14 @@ class RuleFactoryTest extends TestCase
 
         // Test the rule works with both custom and predefined patterns
         $content = "Contact us at test@example.com or use custom-pattern";
-        $result = $rule->apply($content);
+        $result = $rule->apply(content: $content);
         $this->assertEquals("Contact us at [EMAIL_REMOVED] or use [CUSTOM_REMOVED]", $result);
     }
 
     #[Test]
     public function it_should_create_comment_rule_with_minimal_config(): void
     {
-        $rule = $this->factory->createFromConfig([
+        $rule = $this->factory->createFromConfig(config: [
             'type' => 'comment',
         ]);
 
@@ -180,14 +180,14 @@ class RuleFactoryTest extends TestCase
 
         // Test the rule doesn't modify content with default empty settings
         $content = "<?php\n\necho 'Hello';";
-        $result = $rule->apply($content);
+        $result = $rule->apply(content: $content);
         $this->assertEquals($content, $result);
     }
 
     #[Test]
     public function it_should_create_comment_rule_with_full_config(): void
     {
-        $rule = $this->factory->createFromConfig([
+        $rule = $this->factory->createFromConfig(config: [
             'type' => 'comment',
             'name' => 'custom-comment-rule',
             'fileHeaderComment' => 'File header',
@@ -202,7 +202,7 @@ class RuleFactoryTest extends TestCase
 
         // Test the rule applies comments correctly
         $content = "<?php\n\nclass Test {\n    public function method() {}\n}";
-        $result = $rule->apply($content);
+        $result = $rule->apply(content: $content);
 
         $this->assertStringContainsString('// File header', $result);
         $this->assertStringContainsString('// Class comment', $result);

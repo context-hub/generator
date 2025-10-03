@@ -51,14 +51,14 @@ final readonly class ContextBuilder
             args: $args,
         );
 
-        $output = \trim($output);
-        $data = \json_decode($output, true);
+        $output = \trim(string: $output);
+        $data = \json_decode(json: $output, associative: true);
 
         if (!$data) {
-            throw new \RuntimeException('Failed to decode JSON output: ' . \json_last_error_msg());
+            throw new \RuntimeException(message: 'Failed to decode JSON output: ' . \json_last_error_msg());
         }
 
-        return new CompilingResult($data);
+        return new CompilingResult(result: $data);
     }
 
     private function runCommand(
@@ -67,13 +67,13 @@ final readonly class ContextBuilder
         ?OutputInterface $output = null,
         ?int $verbosityLevel = null,
     ): string {
-        $input = new ArrayInput($args);
-        $input->setInteractive(false);
+        $input = new ArrayInput(parameters: $args);
+        $input->setInteractive(interactive: false);
         $output ??= new BufferedOutput();
         /** @psalm-suppress ArgumentTypeCoercion */
         $output->setVerbosity($verbosityLevel ?? $this->defaultVerbosityLevel);
 
-        $this->console->run($command, $input, $output);
+        $this->console->run(command: $command, input: $input, output: $output);
 
         return $output->fetch();
     }

@@ -47,7 +47,7 @@ final readonly class GitDiffSourceFetcher implements SourceFetcherInterface
             $this->logger?->error($errorMessage, [
                 'sourceType' => $source::class,
             ]);
-            throw new \InvalidArgumentException($errorMessage);
+            throw new \InvalidArgumentException(message: $errorMessage);
         }
 
         $this->logger?->info('Fetching git diff source content', [
@@ -64,23 +64,23 @@ final readonly class GitDiffSourceFetcher implements SourceFetcherInterface
         ]);
 
         try {
-            $finderResult = $this->finder->find($source);
+            $finderResult = $this->finder->find(source: $source);
 
             // Extract diffs from the finder result
             $this->logger?->debug('Extracting diffs from finder result');
-            $diffs = $this->extractDiffsFromFinderResult($finderResult);
-            $this->logger?->debug('Diffs extracted', ['diffCount' => \count($diffs)]);
+            $diffs = $this->extractDiffsFromFinderResult(finderResult: $finderResult);
+            $this->logger?->debug('Diffs extracted', ['diffCount' => \count(value: $diffs)]);
 
             // Format the output using the specified render strategy
             $this->logger?->debug('Using render strategy to format output', [
                 'strategy' => $source->renderConfig->strategy,
             ]);
 
-            $content = $this->renderOutput($diffs, $finderResult->treeView, $source);
+            $content = $this->renderOutput(diffs: $diffs, treeView: $finderResult->treeView, source: $source);
 
             $this->logger?->info('Git diff source content fetched successfully', [
-                'diffCount' => \count($diffs),
-                'contentLength' => \strlen($content),
+                'diffCount' => \count(value: $diffs),
+                'contentLength' => \strlen(string: $content),
                 'renderStrategy' => $source->renderConfig->strategy,
             ]);
 
@@ -115,7 +115,7 @@ final readonly class GitDiffSourceFetcher implements SourceFetcherInterface
             }
 
             // Get the original path and diff content
-            $originalPath = \method_exists($file, 'getOriginalPath')
+            $originalPath = \method_exists(object_or_class: $file, method: 'getOriginalPath')
                 ? $file->getOriginalPath()
                 : $file->getRelativePathname();
 
@@ -129,15 +129,15 @@ final readonly class GitDiffSourceFetcher implements SourceFetcherInterface
 
             // Get the stats for this file
             $stats = '';
-            if (\method_exists($file, 'getStats')) {
+            if (\method_exists(object_or_class: $file, method: 'getStats')) {
                 $this->logger?->debug('Getting stats from file method');
                 $stats = $file->getStats();
             } else {
                 $this->logger?->debug('Extracting stats from diff content');
                 // Try to extract stats from the diff content
-                \preg_match('/^(.*?)(?=diff --git)/s', $diffContent, $matches);
+                \preg_match(pattern: '/^(.*?)(?=diff --git)/s', subject: $diffContent, matches: $matches);
                 if (!empty($matches[1])) {
-                    $stats = \trim($matches[1]);
+                    $stats = \trim(string: $matches[1]);
                     $this->logger?->debug('Stats extracted from diff content');
                 } else {
                     $this->logger?->debug('No stats found in diff content');
@@ -152,12 +152,12 @@ final readonly class GitDiffSourceFetcher implements SourceFetcherInterface
 
             $this->logger?->debug('Diff processed', [
                 'file' => $originalPath,
-                'diffLength' => \strlen($diffContent),
+                'diffLength' => \strlen(string: $diffContent),
                 'hasStats' => !empty($stats),
             ]);
         }
 
-        $this->logger?->debug('All diffs extracted', ['diffCount' => \count($diffs)]);
+        $this->logger?->debug('All diffs extracted', ['diffCount' => \count(value: $diffs)]);
         return $diffs;
     }
 
@@ -176,28 +176,28 @@ final readonly class GitDiffSourceFetcher implements SourceFetcherInterface
             if (empty($diffs)) {
                 $this->logger?->info('No diffs found for commit range', ['commit' => $source->commit]);
                 $builder
-                    ->addTitle("Git Diff for Commit Range: {$source->commit}", 1)
-                    ->addText("No changes found in this commit range.");
+                    ->addTitle(title: "Git Diff for Commit Range: {$source->commit}")
+                    ->addText(text: "No changes found in this commit range.");
 
                 return $builder->build();
             }
 
             $builder
-                ->addTitle("Git Diff for Commit Range: {$source->commit}", 1)
-                ->addTitle($source->getDescription(), 2)
-                ->addTitle("Summary of Changes", 2)
-                ->addTreeView($treeView);
+                ->addTitle(title: "Git Diff for Commit Range: {$source->commit}")
+                ->addTitle(title: $source->getDescription(), level: 2)
+                ->addTitle(title: "Summary of Changes", level: 2)
+                ->addTreeView(treeView: $treeView);
 
             // Get the appropriate render strategy
-            $strategy = $this->getRenderStrategy($source->renderConfig->strategy);
+            $strategy = $this->getRenderStrategy(strategy: $source->renderConfig->strategy);
 
             // Use the strategy to render the output
             $content = $builder
-                ->merge($strategy->render($diffs, $source->renderConfig))
+                ->merge(builder: $strategy->render($diffs, $source->renderConfig))
                 ->build();
 
             $this->logger?->debug('Output rendered using strategy', [
-                'contentLength' => \strlen($content),
+                'contentLength' => \strlen(string: $content),
             ]);
 
             return $content;
@@ -218,6 +218,6 @@ final readonly class GitDiffSourceFetcher implements SourceFetcherInterface
      */
     private function getRenderStrategy(RenderStrategyEnum $strategy): RenderStrategyInterface
     {
-        return $this->renderStrategyFactory->create($strategy);
+        return $this->renderStrategyFactory->create(strategy: $strategy);
     }
 }

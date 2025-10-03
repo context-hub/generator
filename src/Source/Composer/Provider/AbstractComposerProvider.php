@@ -34,9 +34,9 @@ abstract readonly class AbstractComposerProvider implements ComposerProviderInte
         $versions = [];
 
         // Process regular packages
-        if (isset($lockData['packages']) && \is_array($lockData['packages'])) {
+        if (isset($lockData['packages']) && \is_array(value: $lockData['packages'])) {
             foreach ($lockData['packages'] as $package) {
-                if (!isset($package['name']) || !\is_string($package['name'])) {
+                if (!isset($package['name']) || !\is_string(value: $package['name'])) {
                     continue;
                 }
 
@@ -50,9 +50,9 @@ abstract readonly class AbstractComposerProvider implements ComposerProviderInte
         }
 
         // Process dev packages if requested
-        if ($includeDevDependencies && isset($lockData['packages-dev']) && \is_array($lockData['packages-dev'])) {
+        if ($includeDevDependencies && isset($lockData['packages-dev']) && \is_array(value: $lockData['packages-dev'])) {
             foreach ($lockData['packages-dev'] as $package) {
-                if (!isset($package['name']) || !\is_string($package['name'])) {
+                if (!isset($package['name']) || !\is_string(value: $package['name'])) {
                     continue;
                 }
 

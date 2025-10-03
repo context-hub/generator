@@ -46,7 +46,7 @@ final class PromptValidationTest extends ConsoleTestCase
 
         // For now, check that the prompt count is 0
         // If the implementation doesn't reject empty prompts, this test may need adjustment
-        $result->assertPromptCount(0);
+        $result->assertPromptCount(count: 0);
     }
 
     #[Test]
@@ -71,7 +71,7 @@ final class PromptValidationTest extends ConsoleTestCase
         );
 
         // The implementation should reject a prompt with empty messages array
-        $result->assertPromptCount(0);
+        $result->assertPromptCount(count: 0);
     }
 
     #[Test]
@@ -97,7 +97,7 @@ final class PromptValidationTest extends ConsoleTestCase
         );
 
         // The implementation should reject a prompt with invalid message format
-        $result->assertPromptCount(0);
+        $result->assertPromptCount(count: 0);
     }
 
     #[Test]
@@ -124,7 +124,7 @@ final class PromptValidationTest extends ConsoleTestCase
         );
 
         // The implementation should reject a prompt with missing message content
-        $result->assertPromptCount(0);
+        $result->assertPromptCount(count: 0);
     }
 
     #[Test]
@@ -151,7 +151,7 @@ final class PromptValidationTest extends ConsoleTestCase
         );
 
         // The implementation should reject a prompt with missing message role
-        $result->assertPromptCount(0);
+        $result->assertPromptCount(count: 0);
     }
 
     #[Test]
@@ -178,7 +178,7 @@ final class PromptValidationTest extends ConsoleTestCase
         );
 
         // The implementation should reject a prompt with invalid message role
-        $result->assertPromptCount(0);
+        $result->assertPromptCount(count: 0);
     }
 
     #[Test]
@@ -206,7 +206,7 @@ final class PromptValidationTest extends ConsoleTestCase
         );
 
         // The implementation should reject a prompt extending a non-existent template
-        $result->assertPromptCount(0);
+        $result->assertPromptCount(count: 0);
     }
 
     #[Test]
@@ -221,7 +221,7 @@ final class PromptValidationTest extends ConsoleTestCase
                     type: template
                     description: "Template with no messages"
                     # Missing 'messages'
-                
+
                   - id: extending-empty
                     description: "Prompt extending empty template"
                     extend:
@@ -243,7 +243,7 @@ final class PromptValidationTest extends ConsoleTestCase
         // 2. Or warn about the empty template
 
         // For now, check that no valid prompts are compiled
-        $result->assertPromptCount(0);
+        $result->assertPromptCount(count: 0);
     }
 
     #[Test]
@@ -259,7 +259,7 @@ final class PromptValidationTest extends ConsoleTestCase
                     messages:
                       - role: user
                         content: "Template content"
-                
+
                   - id: invalid-extension
                     description: "Prompt with invalid extension format"
                     extend:
@@ -318,7 +318,7 @@ final class PromptValidationTest extends ConsoleTestCase
         );
 
         // The implementation should reject a prompt with no ID
-        $result->assertPromptCount(0);
+        $result->assertPromptCount(count: 0);
     }
 
     #[Test]
@@ -345,7 +345,7 @@ final class PromptValidationTest extends ConsoleTestCase
         );
 
         // The implementation should reject a prompt with an empty ID
-        $result->assertPromptCount(0);
+        $result->assertPromptCount(count: 0);
     }
 
     #[Test]
@@ -361,7 +361,7 @@ final class PromptValidationTest extends ConsoleTestCase
                     messages:
                       - role: user
                         content: "First prompt content"
-                
+
                   - id: duplicate-id
                     description: "Second prompt with the same ID"
                     messages:
@@ -379,8 +379,8 @@ final class PromptValidationTest extends ConsoleTestCase
 
         // The implementation should handle duplicate IDs (either by warning or by overwriting)
         // Expect that only one prompt with this ID exists in the output
-        $result->assertPromptCount(1);
-        $result->assertPromptExists('duplicate-id');
+        $result->assertPromptCount(count: 1);
+        $result->assertPromptExists(id: 'duplicate-id');
 
         // Check which version was kept (likely the last one)
         $rawResult = $result->getResult();
@@ -393,7 +393,7 @@ final class PromptValidationTest extends ConsoleTestCase
                 $content = "";
                 if (isset($prompt['messages'][0]['content']['text'])) {
                     $content = $prompt['messages'][0]['content']['text'];
-                } elseif (isset($prompt['messages'][0]['content']) && \is_string($prompt['messages'][0]['content'])) {
+                } elseif (isset($prompt['messages'][0]['content']) && \is_string(value: $prompt['messages'][0]['content'])) {
                     $content = $prompt['messages'][0]['content'];
                 }
                 $this->assertStringContainsString(
@@ -420,7 +420,7 @@ final class PromptValidationTest extends ConsoleTestCase
                     messages:
                       - role: user
                         content: "Template content with {{var}}."
-                
+
                   - id: valid-combined
                     description: "Prompt with both messages and extensions"
                     extend:
@@ -441,12 +441,12 @@ final class PromptValidationTest extends ConsoleTestCase
         );
 
         // The implementation should accept a prompt with both messages and extensions
-        $result->assertPromptCount(1);
-        $result->assertPromptExists('valid-combined');
-        $result->assertPromptExtends('valid-combined', 'base-template');
+        $result->assertPromptCount(count: 1);
+        $result->assertPromptExists(id: 'valid-combined');
+        $result->assertPromptExtends(id: 'valid-combined', templateId: 'base-template');
 
         // Check that both the template content and additional messages are present
-        $result->assertPromptMessages('valid-combined', [
+        $result->assertPromptMessages(id: 'valid-combined', messageContents: [
             'Template content with template variable.',
             'Additional message content',
         ]);
@@ -469,7 +469,7 @@ final class PromptValidationTest extends ConsoleTestCase
                     messages:
                       - role: user
                         content: "Template A content"
-                
+
                   - id: template-b
                     type: template
                     extend:
@@ -510,7 +510,7 @@ final class PromptValidationTest extends ConsoleTestCase
         string $command = 'generate',
         bool $asJson = true,
     ): CompilingResult {
-        return (new ContextBuilder($this->getConsole()))->build(
+        return (new ContextBuilder(console: $this->getConsole()))->build(
             workDir: $workDir,
             configPath: $configPath,
             inlineJson: $inlineJson,

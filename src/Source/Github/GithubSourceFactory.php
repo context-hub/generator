@@ -27,28 +27,28 @@ final readonly class GithubSourceFactory extends AbstractSourceFactory
         ]);
 
         if (!isset($config['repository'])) {
-            throw new \RuntimeException('GitHub source must have a "repository" property');
+            throw new \RuntimeException(message: 'GitHub source must have a "repository" property');
         }
 
         // Determine source paths (required)
         if (!isset($config['sourcePaths'])) {
-            throw new \RuntimeException('GitHub source must have a "sourcePaths" property');
+            throw new \RuntimeException(message: 'GitHub source must have a "sourcePaths" property');
         }
         $sourcePaths = $config['sourcePaths'];
-        if (!\is_string($sourcePaths) && !\is_array($sourcePaths)) {
-            throw new \RuntimeException('"sourcePaths" must be a string or array in source');
+        if (!\is_string(value: $sourcePaths) && !\is_array(value: $sourcePaths)) {
+            throw new \RuntimeException(message: '"sourcePaths" must be a string or array in source');
         }
 
         // Validate filePattern if present
         if (isset($config['filePattern'])) {
-            if (!\is_string($config['filePattern']) && !\is_array($config['filePattern'])) {
-                throw new \RuntimeException('filePattern must be a string or an array of strings');
+            if (!\is_string(value: $config['filePattern']) && !\is_array(value: $config['filePattern'])) {
+                throw new \RuntimeException(message: 'filePattern must be a string or an array of strings');
             }
             // If it's an array, make sure all elements are strings
-            if (\is_array($config['filePattern'])) {
+            if (\is_array(value: $config['filePattern'])) {
                 foreach ($config['filePattern'] as $pattern) {
-                    if (!\is_string($pattern)) {
-                        throw new \RuntimeException('All elements in filePattern must be strings');
+                    if (!\is_string(value: $pattern)) {
+                        throw new \RuntimeException(message: 'All elements in filePattern must be strings');
                     }
                 }
             }

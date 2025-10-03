@@ -15,12 +15,12 @@ final readonly class TimeRangeGitSource extends AbstractGitSource
     public function supports(string $commitReference): bool
     {
         // Match time-based ranges like HEAD@{1.week.ago}..HEAD
-        if (\preg_match('/HEAD@\{.*\}\.\.HEAD/', $commitReference)) {
+        if (\preg_match(pattern: '/HEAD@\{.*\}\.\.HEAD/', subject: $commitReference)) {
             return true;
         }
 
         // Match --since= format
-        if (\str_contains($commitReference, '--since=')) {
+        if (\str_contains(haystack: $commitReference, needle: '--since=')) {
             return true;
         }
 
@@ -36,19 +36,19 @@ final readonly class TimeRangeGitSource extends AbstractGitSource
             'HEAD@{1.year.ago}..HEAD',
         ];
 
-        return \in_array($commitReference, $timeBasedPresets, true);
+        return \in_array(needle: $commitReference, haystack: $timeBasedPresets, strict: true);
     }
 
     public function getChangedFiles(string $repository, string $commitReference): array
     {
-        if (\str_contains($commitReference, '--since=')) {
+        if (\str_contains(haystack: $commitReference, needle: '--since=')) {
             $output = $this->executeGitCommand(
                 repository: $repository,
                 command: 'log ' . $commitReference . ' --name-only --pretty=format:""',
             );
 
             // Remove empty lines and duplicates
-            return \array_unique(\array_filter($output));
+            return \array_unique(array: \array_filter(array: $output));
         }
 
         return $this->executeGitCommand(
@@ -59,7 +59,7 @@ final readonly class TimeRangeGitSource extends AbstractGitSource
 
     public function getFileDiff(string $repository, string $commitReference, string $file): string
     {
-        if (\str_contains($commitReference, '--since=')) {
+        if (\str_contains(haystack: $commitReference, needle: '--since=')) {
             return $this->executeGitCommandString(
                 repository: $repository,
                 command: \sprintf('log %s -p -- %s', $commitReference, $file),
@@ -90,8 +90,8 @@ final readonly class TimeRangeGitSource extends AbstractGitSource
             return "Changes from " . $humanReadable[$commitReference];
         }
 
-        if (\str_contains($commitReference, '--since=')) {
-            $since = \str_replace('--since=', '', $commitReference);
+        if (\str_contains(haystack: $commitReference, needle: '--since=')) {
+            $since = \str_replace(search: '--since=', replace: '', subject: $commitReference);
             return "Changes since {$since}";
         }
 

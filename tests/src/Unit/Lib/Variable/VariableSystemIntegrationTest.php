@@ -23,7 +23,7 @@ class VariableSystemIntegrationTest extends TestCase
         $input = 'Project: ${PROJECT_NAME}, Version: ${VERSION}';
         $expected = 'Project: context-generator, Version: 1.0.0';
 
-        $result = $this->resolver->resolve($input);
+        $result = $this->resolver->resolve(strings: $input);
 
         $this->assertSame($expected, $result);
     }
@@ -34,7 +34,7 @@ class VariableSystemIntegrationTest extends TestCase
         $input = 'Project: ${PROJECT_NAME}, Version: {{VERSION}}';
         $expected = 'Project: context-generator, Version: 1.0.0';
 
-        $result = $this->resolver->resolve($input);
+        $result = $this->resolver->resolve(strings: $input);
 
         $this->assertSame($expected, $result);
     }
@@ -44,10 +44,10 @@ class VariableSystemIntegrationTest extends TestCase
     {
         $input = 'Current date: ${DATE}, OS: ${OS}';
 
-        $result = $this->resolver->resolve($input);
+        $result = $this->resolver->resolve(strings: $input);
 
         // Verify system variables were replaced
-        $this->assertStringContainsString('Current date: ' . \date('Y-m-d'), $result);
+        $this->assertStringContainsString('Current date: ' . \date(format: 'Y-m-d'), $result);
         $this->assertStringContainsString('OS: ' . PHP_OS, $result);
     }
 
@@ -65,11 +65,11 @@ class VariableSystemIntegrationTest extends TestCase
             ],
         ];
 
-        $result = $this->resolver->resolve($input);
+        $result = $this->resolver->resolve(strings: $input);
 
         $this->assertSame('context-generator', $result['project']);
         $this->assertSame('1.0.0', $result['version']);
-        $this->assertSame(\date('Y-m-d'), $result['date']);
+        $this->assertSame(\date(format: 'Y-m-d'), $result['date']);
         $this->assertSame('test_value', $result['nested']['test']);
         $this->assertSame('', $result['nested']['emptyVar']);
         $this->assertSame('${UNKNOWN_VAR}', $result['nested']['unknownVar']);
@@ -101,10 +101,10 @@ class VariableSystemIntegrationTest extends TestCase
             new PredefinedVariableProvider(),    // Lowest priority
         );
 
-        $processor = new VariableReplacementProcessor($compositeProvider);
-        $resolver = new VariableResolver($processor);
+        $processor = new VariableReplacementProcessor(provider: $compositeProvider);
+        $resolver = new VariableResolver(processor: $processor);
 
-        $result = $resolver->resolve('Date: ${DATE}');
+        $result = $resolver->resolve(strings: 'Date: ${DATE}');
 
         // Should use our custom DATE value, not the system one
         $this->assertSame('Date: CUSTOM_DATE_VALUE', $result);
@@ -116,7 +116,7 @@ class VariableSystemIntegrationTest extends TestCase
         $input = 'Unknown: ${DOES_NOT_EXIST}, Known: ${TEST_VAR}';
         $expected = 'Unknown: ${DOES_NOT_EXIST}, Known: test_value';
 
-        $result = $this->resolver->resolve($input);
+        $result = $this->resolver->resolve(strings: $input);
 
         $this->assertSame($expected, $result);
     }
@@ -126,25 +126,25 @@ class VariableSystemIntegrationTest extends TestCase
     {
         $input = <<<'TEXT'
             # ${PROJECT_NAME} v${VERSION}
-            
+
             Current date: ${DATE}
             Environment: ${OS}
-            
+
             ## Configuration
-            
+
             - Test variable: ${TEST_VAR}
             - Non-existent: ${NON_EXISTENT}
             - Using double braces: {{PROJECT_NAME}}
-            
+
             ## Contact
-            
+
             User: ${USER}
             TEXT;
 
-        $result = $this->resolver->resolve($input);
+        $result = $this->resolver->resolve(strings: $input);
 
         // Check that all variables were properly replaced
-        $this->assertStringContainsString('Current date: ' . \date('Y-m-d'), $result);
+        $this->assertStringContainsString('Current date: ' . \date(format: 'Y-m-d'), $result);
         $this->assertStringContainsString('Environment: ' . PHP_OS, $result);
         $this->assertStringContainsString('Test variable: test_value', $result);
         $this->assertStringContainsString('Non-existent: ${NON_EXISTENT}', $result);
@@ -185,9 +185,9 @@ class VariableSystemIntegrationTest extends TestCase
         );
 
         // Create processor with composite provider
-        $processor = new VariableReplacementProcessor($compositeProvider);
+        $processor = new VariableReplacementProcessor(provider: $compositeProvider);
 
         // Create resolver with processor
-        $this->resolver = new VariableResolver($processor);
+        $this->resolver = new VariableResolver(processor: $processor);
     }
 }

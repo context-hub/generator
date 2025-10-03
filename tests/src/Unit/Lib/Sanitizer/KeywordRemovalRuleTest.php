@@ -13,17 +13,17 @@ class KeywordRemovalRuleTest extends TestCase
     #[Test]
     public function it_should_return_correct_name(): void
     {
-        $rule = new KeywordRemovalRule('test-rule', ['keyword']);
+        $rule = new KeywordRemovalRule(name: 'test-rule', keywords: ['keyword']);
         $this->assertEquals('test-rule', $rule->getName());
     }
 
     #[Test]
     public function it_should_not_modify_content_with_empty_keywords(): void
     {
-        $rule = new KeywordRemovalRule('empty-keywords', []);
+        $rule = new KeywordRemovalRule(name: 'empty-keywords', keywords: []);
         $content = "This content should remain unchanged";
 
-        $this->assertEquals($content, $rule->apply($content));
+        $this->assertEquals($content, $rule->apply(content: $content));
     }
 
     #[Test]
@@ -38,7 +38,7 @@ class KeywordRemovalRuleTest extends TestCase
         $content = "Line with no match\nLine with secret keyword\nAnother normal line";
         $expected = "Line with no match\n[REMOVED]\nAnother normal line";
 
-        $this->assertEquals($expected, $rule->apply($content));
+        $this->assertEquals($expected, $rule->apply(content: $content));
     }
 
     #[Test]
@@ -53,7 +53,7 @@ class KeywordRemovalRuleTest extends TestCase
         $content = "Line with secret\nLine with password\nLine with key\nNormal line";
         $expected = "[REMOVED]\n[REMOVED]\n[REMOVED]\nNormal line";
 
-        $this->assertEquals($expected, $rule->apply($content));
+        $this->assertEquals($expected, $rule->apply(content: $content));
     }
 
     #[Test]
@@ -69,7 +69,7 @@ class KeywordRemovalRuleTest extends TestCase
         $content = "Line with no match\nLine with secret keyword\nAnother normal line";
         $expected = "Line with no match\n[REDACTED]\nAnother normal line";
 
-        $this->assertEquals($expected, $rule->apply($content));
+        $this->assertEquals($expected, $rule->apply(content: $content));
     }
 
     #[Test]
@@ -85,7 +85,7 @@ class KeywordRemovalRuleTest extends TestCase
         $content = "Line with no match\nLine with secret keyword\nAnother normal line";
         $expected = "Line with no match\nLine with [REDACTED] keyword\nAnother normal line";
 
-        $this->assertEquals($expected, $rule->apply($content));
+        $this->assertEquals($expected, $rule->apply(content: $content));
     }
 
     #[Test]
@@ -101,7 +101,7 @@ class KeywordRemovalRuleTest extends TestCase
         $content = "Line with Secret\nLine with secret\nNormal line";
         $expected = "[REMOVED]\nLine with secret\nNormal line";
 
-        $this->assertEquals($expected, $rule->apply($content));
+        $this->assertEquals($expected, $rule->apply(content: $content));
     }
 
     #[Test]
@@ -117,7 +117,7 @@ class KeywordRemovalRuleTest extends TestCase
         $content = "Line with Secret\nLine with secret\nNormal line";
         $expected = "[REMOVED]\n[REMOVED]\nNormal line";
 
-        $this->assertEquals($expected, $rule->apply($content));
+        $this->assertEquals($expected, $rule->apply(content: $content));
     }
 
     #[Test]
@@ -133,6 +133,6 @@ class KeywordRemovalRuleTest extends TestCase
         $content = "Line with secret and password\nNormal line";
         $expected = "Line with [REDACTED] and [REDACTED]\nNormal line";
 
-        $this->assertEquals($expected, $rule->apply($content));
+        $this->assertEquals($expected, $rule->apply(content: $content));
     }
 }

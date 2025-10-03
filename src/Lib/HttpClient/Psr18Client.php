@@ -22,12 +22,12 @@ final readonly class Psr18Client implements HttpClientInterface
 
     public function get(string $url, array $headers = []): HttpResponse
     {
-        return $this->request('GET', $url, $headers);
+        return $this->request(method: 'GET', url: $url, headers: $headers);
     }
 
     public function post(string $url, array $headers = [], ?string $body = null): HttpResponse
     {
-        return $this->request('POST', $url, $headers, $body);
+        return $this->request(method: 'POST', url: $url, headers: $headers, body: $body);
     }
 
     public function getWithRedirects(string $url, array $headers = []): HttpResponse
@@ -36,13 +36,13 @@ final readonly class Psr18Client implements HttpClientInterface
         $currentUrl = $url;
 
         while (true) {
-            $response = $this->get($currentUrl, $headers);
+            $response = $this->get(url: $currentUrl, headers: $headers);
 
             if (!$response->isRedirect() || $redirectCount >= self::MAX_REDIRECTS) {
                 return $response;
             }
 
-            $location = $response->getHeader('Location');
+            $location = $response->getHeader(name: 'Location');
             if ($location === null) {
                 throw HttpRequestException::missingRedirectLocation();
             }
@@ -82,7 +82,7 @@ final readonly class Psr18Client implements HttpClientInterface
 
             $responseHeaders = [];
             foreach ($response->getHeaders() as $name => $values) {
-                $responseHeaders[$name] = \implode(', ', $values);
+                $responseHeaders[$name] = \implode(separator: ', ', array: $values);
             }
 
             return new HttpResponse(
@@ -91,7 +91,7 @@ final readonly class Psr18Client implements HttpClientInterface
                 headers: $responseHeaders,
             );
         } catch (\Throwable $e) {
-            throw new HttpException(\sprintf('Failed to request URL "%s": %s', $url, $e->getMessage()), 0, $e);
+            throw new HttpException(message: \sprintf('Failed to request URL "%s": %s', $url, $e->getMessage()), previous: $e);
         }
     }
 }

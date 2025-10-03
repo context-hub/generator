@@ -59,7 +59,7 @@ final class GitDiffSourceBootloader extends Bootloader
         SourceRegistryInterface $sourceRegistry,
         GitDiffSourceFactory $factory,
     ): void {
-        $registry->register(GitDiffSourceFetcher::class);
+        $registry->register(fetcher: GitDiffSourceFetcher::class);
         $sourceRegistry->register($factory);
     }
 }

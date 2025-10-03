@@ -33,10 +33,10 @@ class VariableReplacementProcessorTest extends TestCase
     #[Test]
     public function it_should_not_modify_text_without_variables(): void
     {
-        $processor = new VariableReplacementProcessor($this->provider);
+        $processor = new VariableReplacementProcessor(provider: $this->provider);
         $text = 'This is a simple text without variables';
 
-        $this->assertSame($text, $processor->process($text));
+        $this->assertSame($text, $processor->process(text: $text));
     }
 
     #[Test]
@@ -46,11 +46,11 @@ class VariableReplacementProcessorTest extends TestCase
         $this->provider->method('has')->with('VAR_NAME')->willReturn(true);
         $this->provider->method('get')->with('VAR_NAME')->willReturn('replacement_value');
 
-        $processor = new VariableReplacementProcessor($this->provider);
+        $processor = new VariableReplacementProcessor(provider: $this->provider);
         $text = 'This text has a ${VAR_NAME} variable';
 
         $expected = 'This text has a replacement_value variable';
-        $this->assertSame($expected, $processor->process($text));
+        $this->assertSame($expected, $processor->process(text: $text));
     }
 
     #[Test]
@@ -60,11 +60,11 @@ class VariableReplacementProcessorTest extends TestCase
         $this->provider->method('has')->with('VAR_NAME')->willReturn(true);
         $this->provider->method('get')->with('VAR_NAME')->willReturn('replacement_value');
 
-        $processor = new VariableReplacementProcessor($this->provider);
+        $processor = new VariableReplacementProcessor(provider: $this->provider);
         $text = 'This text has a {{VAR_NAME}} variable';
 
         $expected = 'This text has a replacement_value variable';
-        $this->assertSame($expected, $processor->process($text));
+        $this->assertSame($expected, $processor->process(text: $text));
     }
 
     #[Test]
@@ -81,11 +81,11 @@ class VariableReplacementProcessorTest extends TestCase
             ['SECOND', 'second_value'],
         ]);
 
-        $processor = new VariableReplacementProcessor($this->provider);
+        $processor = new VariableReplacementProcessor(provider: $this->provider);
         $text = 'First: ${FIRST}, Second: {{SECOND}}';
 
         $expected = 'First: first_value, Second: second_value';
-        $this->assertSame($expected, $processor->process($text));
+        $this->assertSame($expected, $processor->process(text: $text));
     }
 
     #[Test]
@@ -94,11 +94,11 @@ class VariableReplacementProcessorTest extends TestCase
         // Setup provider mock to return false for all has() calls
         $this->provider->method('has')->willReturn(false);
 
-        $processor = new VariableReplacementProcessor($this->provider);
+        $processor = new VariableReplacementProcessor(provider: $this->provider);
         $text = 'Unknown var: ${UNKNOWN_VAR}';
 
         // Should keep the original syntax
-        $this->assertSame($text, $processor->process($text));
+        $this->assertSame($text, $processor->process(text: $text));
     }
 
     #[Test]
@@ -108,11 +108,11 @@ class VariableReplacementProcessorTest extends TestCase
         $this->provider->method('has')->with('EMPTY_VAR')->willReturn(true);
         $this->provider->method('get')->with('EMPTY_VAR')->willReturn('');
 
-        $processor = new VariableReplacementProcessor($this->provider);
+        $processor = new VariableReplacementProcessor(provider: $this->provider);
         $text = 'Empty var: ${EMPTY_VAR}';
 
         $expected = 'Empty var: ';
-        $this->assertSame($expected, $processor->process($text));
+        $this->assertSame($expected, $processor->process(text: $text));
     }
 
     #[Test]
@@ -122,11 +122,11 @@ class VariableReplacementProcessorTest extends TestCase
         $this->provider->method('has')->with('NULL_VAR')->willReturn(true);
         $this->provider->method('get')->with('NULL_VAR')->willReturn(null);
 
-        $processor = new VariableReplacementProcessor($this->provider);
+        $processor = new VariableReplacementProcessor(provider: $this->provider);
         $text = 'Null var: ${NULL_VAR}';
 
         $expected = 'Null var: ';
-        $this->assertSame($expected, $processor->process($text));
+        $this->assertSame($expected, $processor->process(text: $text));
     }
 
     #[Test]
@@ -145,10 +145,10 @@ class VariableReplacementProcessorTest extends TestCase
                 ['name' => 'TEST_VAR', 'value' => 'test_value'],
             );
 
-        $processor = new VariableReplacementProcessor($this->provider, $this->logger);
+        $processor = new VariableReplacementProcessor(provider: $this->provider, logger: $this->logger);
         $text = 'Test var: ${TEST_VAR}';
 
-        $processor->process($text);
+        $processor->process(text: $text);
     }
 
     #[Test]
@@ -159,11 +159,11 @@ class VariableReplacementProcessorTest extends TestCase
         $this->provider->method('has')->with($name)->willReturn(true);
         $this->provider->method('get')->with($name)->willReturn('it_works');
 
-        $processor = new VariableReplacementProcessor($this->provider);
+        $processor = new VariableReplacementProcessor(provider: $this->provider);
         $text = "Testing {$varSyntax}";
 
         $expected = 'Testing it_works';
-        $this->assertSame($expected, $processor->process($text));
+        $this->assertSame($expected, $processor->process(text: $text));
     }
 
     protected function setUp(): void

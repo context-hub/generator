@@ -44,22 +44,22 @@ final readonly class GenerateCommandRenderer
 
     public function renderImports(ImportRegistry $imports): void
     {
-        \assert($this->output instanceof SymfonyStyle);
+        \assert(assertion: $this->output instanceof SymfonyStyle);
         foreach ($imports as $item) {
             $description = $item->getPath();
 
-            if (\strlen($description) > self::MAX_LINE_WIDTH - 40) {
+            if (\strlen(string: $description) > self::MAX_LINE_WIDTH - 40) {
                 $halfLength = (self::MAX_LINE_WIDTH - 40) / 2;
-                $description = \substr($description, 0, $halfLength) . '...' . \substr($description, -$halfLength);
+                $description = \substr(string: $description, offset: 0, length: $halfLength) . '...' . \substr(string: $description, offset: -$halfLength);
             }
 
             // Calculate padding to align the document descriptions
-            $padding = $this->calculatePadding($item->getType(), $description, 12);
+            $padding = $this->calculatePadding(description: $item->getType(), outputPath: $description, additional: 12);
 
             $this->output->writeln(
-                \sprintf(
+                messages: \sprintf(
                     ' <fg=yellow>%s</> Import %s <fg=yellow>[%s]</><fg=gray>%s</>',
-                    $this->padRight(self::SUCCESS_SYMBOL, 1),
+                    $this->padRight(text: self::SUCCESS_SYMBOL, length: 1),
                     $item->getType(),
                     $description,
                     $padding,
@@ -75,21 +75,21 @@ final readonly class GenerateCommandRenderer
      */
     public function renderCompilationResult(Document $document, CompiledDocument $compiledDocument): void
     {
-        \assert($this->output instanceof SymfonyStyle);
+        \assert(assertion: $this->output instanceof SymfonyStyle);
         $hasErrors = $compiledDocument->errors->hasErrors();
         $description = $document->description;
         $outputPath = $document->outputPath;
 
         // Calculate padding to align the document descriptions
-        $stats = $this->getFileStatistics($outputPath);
-        $padding = $this->calculatePadding($description, $outputPath);
+        $stats = $this->getFileStatistics(outputPath: $outputPath);
+        $padding = $this->calculatePadding(description: $description, outputPath: $outputPath);
 
         if ($hasErrors) {
             // Render warning line with document info
             $this->output->writeln(
-                \sprintf(
+                messages: \sprintf(
                     ' <fg=yellow>%s</> %s <fg=yellow>[%s]</><fg=gray>%s</>',
-                    $this->padRight(self::WARNING_SYMBOL, 1),
+                    $this->padRight(text: self::WARNING_SYMBOL, length: 1),
                     $description,
                     $outputPath,
                     $padding,
@@ -98,13 +98,13 @@ final readonly class GenerateCommandRenderer
 
             // Render errors
             foreach ($compiledDocument->errors as $error) {
-                $this->output->writeln(\sprintf('    <fg=red>%s</> %s', self::ERROR_SYMBOL, $error));
+                $this->output->writeln(messages: \sprintf('    <fg=red>%s</> %s', self::ERROR_SYMBOL, $error));
             }
 
             $this->output->newLine();
         } else {
             // Render success line with document info and file statistics
-            $this->renderSuccessWithStats($description, $outputPath, $stats, $padding);
+            $this->renderSuccessWithStats(description: $description, outputPath: $outputPath, stats: $stats, padding: $padding);
         }
     }
 
@@ -121,7 +121,7 @@ final readonly class GenerateCommandRenderer
         $this->output->writeln(
             \sprintf(
                 ' <fg=green>%s</> %s <fg=cyan>[%s]</><fg=gray>%s</>%s',
-                $this->padRight(self::SUCCESS_SYMBOL, 2),
+                $this->padRight(text: self::SUCCESS_SYMBOL, length: 2),
                 $description,
                 $outputPath,
                 $padding,
@@ -141,7 +141,7 @@ final readonly class GenerateCommandRenderer
 
         try {
             $fullPath = $this->basePath . '/' . $outputPath;
-            $fullPath = \str_replace('//', '/', $fullPath);
+            $fullPath = \str_replace(search: '//', replace: '/', subject: $fullPath);
 
             if (!$this->files->exists($fullPath)) {
                 return null;
@@ -149,10 +149,10 @@ final readonly class GenerateCommandRenderer
 
             $fileSize = $this->files->size($fullPath);
             $fileContent = $this->files->read($fullPath);
-            $lineCount = \substr_count($fileContent, "\n") + 1;
+            $lineCount = \substr_count(haystack: $fileContent, needle: "\n") + 1;
 
             return [
-                'size' => $this->formatSize($fileSize),
+                'size' => $this->formatSize(bytes: $fileSize),
                 'lines' => $lineCount,
             ];
         } catch (\Throwable $e) {
@@ -175,15 +175,15 @@ final readonly class GenerateCommandRenderer
         $units = ['B', 'KB', 'MB', 'GB'];
         $i = 0;
 
-        while ($bytes >= 1024 && $i < \count($units) - 1) {
+        while ($bytes >= 1024 && $i < \count(value: $units) - 1) {
             $bytes = (float) $bytes / 1024.0;
             $i++;
         }
 
         // Ensure $i is within bounds
-        $i = \min($i, \count($units) - 1);
+        $i = \min($i, \count(value: $units) - 1);
 
-        return (string) \round($bytes, 1) . ' ' . $units[$i];
+        return (string) \round(num: $bytes, precision: 1) . ' ' . $units[$i];
     }
 
     /**
@@ -191,10 +191,10 @@ final readonly class GenerateCommandRenderer
      */
     private function calculatePadding(string $description, string $outputPath, int $additional = 5): string
     {
-        $totalLength = \strlen($description) + \strlen($outputPath) + $additional;
+        $totalLength = \strlen(string: $description) + \strlen(string: $outputPath) + $additional;
         $padding = \max(0, self::MAX_LINE_WIDTH - $totalLength);
 
-        return \str_repeat('.', $padding);
+        return \str_repeat(string: '.', times: $padding);
     }
 
     /**
@@ -202,6 +202,6 @@ final readonly class GenerateCommandRenderer
      */
     private function padRight(string $text, int $length): string
     {
-        return \str_pad($text, $length, ' ', \STR_PAD_RIGHT);
+        return \str_pad(string: $text, length: $length, pad_type: \STR_PAD_RIGHT);
     }
 }

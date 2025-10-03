@@ -66,7 +66,7 @@ final class ProjectAddCommand extends BaseCommand
         }
 
         // Normalize path to absolute path
-        $projectPath = $this->normalizePath($this->path, $dirs);
+        $projectPath = $this->normalizePath(path: $this->path, dirs: $dirs);
 
         // Validate project path
         if (!$files->exists($projectPath)) {
@@ -81,7 +81,7 @@ final class ProjectAddCommand extends BaseCommand
 
         // Validate env file path if provided
         if ($this->envFile !== null) {
-            $envPath = FSPath::create($projectPath)->join($this->envFile)->toString();
+            $envPath = FSPath::create(path: $projectPath)->join($this->envFile)->toString();
             if (!$files->exists($envPath)) {
                 $this->output->warning(\sprintf("Env file does not exist: %s", $envPath));
                 // Not returning failure here, just warning the user
@@ -128,7 +128,7 @@ final class ProjectAddCommand extends BaseCommand
         }
 
         // If this is the first project, also set it as the current project
-        if (\count($projectService->getProjects()) === 1) {
+        if (\count(value: $projectService->getProjects()) === 1) {
             $projectService->setCurrentProject($projectPath, $this->name, $this->configFile, $this->envFile);
             $this->output->info('Project was automatically set as the current project (first project added).');
         }
@@ -146,7 +146,7 @@ final class ProjectAddCommand extends BaseCommand
             return (string) FSPath::cwd();
         }
 
-        $pathObj = FSPath::create($path);
+        $pathObj = FSPath::create(path: $path);
 
         // If path is relative, make it absolute from the current directory
         if ($pathObj->isRelative()) {

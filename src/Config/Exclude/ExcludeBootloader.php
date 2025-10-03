@@ -22,6 +22,6 @@ final class ExcludeBootloader extends Bootloader
     public function boot(ConfigLoaderBootloader $configLoader, ExcludeParserPlugin $excludeParser): void
     {
         // Register the exclude parser plugin
-        $configLoader->registerParserPlugin($excludeParser);
+        $configLoader->registerParserPlugin(plugin: $excludeParser);
     }
 }

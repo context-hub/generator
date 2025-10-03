@@ -51,8 +51,8 @@ final readonly class ImportResolver
         }
 
         $imports = $config['import'];
-        if (!\is_array($imports)) {
-            throw new ConfigLoaderException('The "import" property must be an array');
+        if (!\is_array(value: $imports)) {
+            throw new ConfigLoaderException(message: 'The "import" property must be an array');
         }
 
         // Process each import
@@ -60,15 +60,15 @@ final readonly class ImportResolver
         $importedConfigs = [];
         foreach ($imports as $importConfig) {
             // Create source configuration from the raw import config
-            $sourceConfig = $this->sourceConfigFactory->createFromArray($importConfig, $basePath);
+            $sourceConfig = $this->sourceConfigFactory->createFromArray(config: $importConfig, basePath: $basePath);
 
             // Handle wildcard paths (only for local sources)
             if ($sourceConfig instanceof LocalSourceConfig && $sourceConfig->hasWildcard()) {
                 $this->processWildcardImport(
-                    $sourceConfig,
-                    $basePath,
-                    $parsedImports,
-                    $importedConfigs,
+                    sourceConfig: $sourceConfig,
+                    basePath: $basePath,
+                    parsedImports: $parsedImports,
+                    importedConfigs: $importedConfigs,
                 );
                 continue;
             }
@@ -76,7 +76,7 @@ final readonly class ImportResolver
             // For local imports, check if already processed
             if ($sourceConfig instanceof LocalSourceConfig) {
                 $absolutePath = $sourceConfig->getAbsolutePath();
-                if (\in_array($absolutePath, $parsedImports, true)) {
+                if (\in_array(needle: $absolutePath, haystack: $parsedImports, strict: true)) {
                     $this->logger?->debug('Skipping already processed import', [
                         'path' => $sourceConfig->getPath(),
                         'type' => $sourceConfig->getType(),
@@ -87,10 +87,10 @@ final readonly class ImportResolver
 
             // Process a single import
             $this->processSingleImport(
-                $sourceConfig,
-                $basePath,
-                $parsedImports,
-                $importedConfigs,
+                sourceConfig: $sourceConfig,
+                basePath: $basePath,
+                parsedImports: $parsedImports,
+                importedConfigs: $importedConfigs,
             );
         }
 
@@ -100,8 +100,8 @@ final readonly class ImportResolver
         return new ResolvedConfig(
             config: $this->configMergerProvider->mergeConfigurations($config, ...$importedConfigs),
             imports: \array_map(
-                static fn(ImportedConfig $config) => $config->sourceConfig,
-                $importedConfigs,
+                callback: static fn(ImportedConfig $config) => $config->sourceConfig,
+                array: $importedConfigs,
             ),
         );
     }
@@ -116,7 +116,7 @@ final readonly class ImportResolver
         array &$importedConfigs,
     ): void {
         // Find all files that match the pattern
-        $matchingPaths = $this->pathFinder->findMatchingPaths($sourceConfig->getPath(), $basePath);
+        $matchingPaths = $this->pathFinder->findMatchingPaths(pattern: $sourceConfig->getPath(), basePath: $basePath);
 
         if (empty($matchingPaths)) {
             $this->logger?->warning('No files match the wildcard pattern', [
@@ -128,14 +128,14 @@ final readonly class ImportResolver
 
         $this->logger?->debug('Found files matching wildcard pattern', [
             'pattern' => $sourceConfig->getPath(),
-            'count' => \count($matchingPaths),
+            'count' => \count(value: $matchingPaths),
             'paths' => $matchingPaths,
         ]);
 
         // Process each matching file
         foreach ($matchingPaths as $matchingPath) {
             // Skip if already processed
-            if (\in_array($matchingPath, $parsedImports, true)) {
+            if (\in_array(needle: $matchingPath, haystack: $parsedImports, strict: true)) {
                 $this->logger?->debug('Skipping already processed wildcard match', [
                     'path' => $matchingPath,
                 ]);
@@ -146,7 +146,7 @@ final readonly class ImportResolver
 
             // Create a local source config for this match
             $localConfig = new LocalSourceConfig(
-                path: \ltrim(\str_replace($rootPathStr, '', $matchingPath), '/'),
+                path: \ltrim(string: \str_replace(search: $rootPathStr, replace: '', subject: $matchingPath), characters: '/'),
                 absolutePath: $matchingPath,
                 hasWildcard: false,
                 pathPrefix: $sourceConfig->getPathPrefix(),
@@ -155,10 +155,10 @@ final readonly class ImportResolver
 
             // Process it using the standard import logic
             $this->processSingleImport(
-                $localConfig,
-                \dirname($matchingPath), // Base path is the directory of the matched file
-                $parsedImports,
-                $importedConfigs,
+                sourceConfig: $localConfig,
+                basePath: \dirname(path: $matchingPath), // Base path is the directory of the matched file
+                parsedImports: $parsedImports,
+                importedConfigs: $importedConfigs,
             );
         }
     }
@@ -183,11 +183,11 @@ final readonly class ImportResolver
 
         try {
             // Find an appropriate import source using the provider
-            $importSource = $this->sourceProvider->findSourceForConfig($sourceConfig);
+            $importSource = $this->sourceProvider->findSourceForConfig(config: $sourceConfig);
 
             if (!$importSource) {
                 throw new ImportSourceException(
-                    \sprintf(
+                    message: \sprintf(
                         'No import source found for type "%s" and path "%s"',
                         $sourceConfig->getType(),
                         $sourceConfig->getPath(),
@@ -207,9 +207,9 @@ final readonly class ImportResolver
 
             // Recursively process nested imports
             $importedConfig = $this->resolveImports(
-                $importedConfig,
-                $importBasePath,
-                $parsedImports,
+                config: $importedConfig,
+                basePath: $importBasePath,
+                parsedImports: $parsedImports,
             );
 
             // Apply source path prefix for local imports
@@ -217,16 +217,16 @@ final readonly class ImportResolver
                 if ($sourceConfig->getPathPrefix() !== null) {
                     $importedConfig = new ResolvedConfig(
                         config: $this->documentPrefixer->applyPrefix(
-                            $importedConfig->config,
-                            $sourceConfig->getPathPrefix(),
+                            config: $importedConfig->config,
+                            pathPrefix: $sourceConfig->getPathPrefix(),
                         ),
                         imports: $importedConfig->imports,
                     );
                 }
                 $importedConfig = new ResolvedConfig(
                     config: $this->sourcePrefixer->applyPrefix(
-                        $importedConfig->config,
-                        $sourceConfig->getConfigDirectory(),
+                        config: $importedConfig->config,
+                        pathPrefix: $sourceConfig->getConfigDirectory(),
                     ),
                     imports: $importedConfig->imports,
                 );

@@ -23,10 +23,10 @@ final readonly class DocumentOutputPathPrefixer extends PathPrefixer
     public function applyPrefix(array $config, string $pathPrefix): array
     {
         // Apply to document outputPath values
-        if (isset($config['documents']) && \is_array($config['documents'])) {
+        if (isset($config['documents']) && \is_array(value: $config['documents'])) {
             foreach ($config['documents'] as &$document) {
                 if (isset($document['outputPath'])) {
-                    $document['outputPath'] = $this->combinePaths($pathPrefix, $document['outputPath']);
+                    $document['outputPath'] = $this->combinePaths(prefix: $pathPrefix, path: $document['outputPath']);
                 }
             }
         }

@@ -35,37 +35,37 @@ final readonly class ConfigLoaderFactory implements ConfigLoaderFactoryInterface
         // Create composite parser using the injected plugin registry
         $compositeParser = new CompositeConfigParser(
             new ConfigParser(
-                (string) $configPathObj,
-                $this->pluginRegistry,
-                $this->logger,
+                rootPath: (string) $configPathObj,
+                pluginRegistry: $this->pluginRegistry,
+                logger: $this->logger,
             ),
         );
 
         // Try different file extensions
         $jsonLoader = new ConfigLoader(
             configPath: (string) $configPathObj->join('context.json'),
-            reader: $this->readers->get('json'),
+            reader: $this->readers->get(ext: 'json'),
             parser: $compositeParser,
             logger: $this->logger,
         );
 
         $yamlLoader = new ConfigLoader(
             configPath: (string) $configPathObj->join('context.yaml'),
-            reader: $this->readers->get('yaml'),
+            reader: $this->readers->get(ext: 'yaml'),
             parser: $compositeParser,
             logger: $this->logger,
         );
 
         $ymlLoader = new ConfigLoader(
             configPath: (string) $configPathObj->join('context.yml'),
-            reader: $this->readers->get('yml'),
+            reader: $this->readers->get(ext: 'yml'),
             parser: $compositeParser,
             logger: $this->logger,
         );
 
         $phpLoader = new ConfigLoader(
             configPath: (string) $configPathObj->join('context.php'),
-            reader: $this->readers->get('php'),
+            reader: $this->readers->get(ext: 'php'),
             parser: $compositeParser,
             logger: $this->logger,
         );
@@ -93,12 +93,12 @@ final readonly class ConfigLoaderFactory implements ConfigLoaderFactoryInterface
         $compositeParser = new CompositeConfigParser($parser);
 
         // Determine the file extension
-        $extension = \pathinfo((string) $configPathObj, PATHINFO_EXTENSION);
+        $extension = \pathinfo(path: (string) $configPathObj, flags: PATHINFO_EXTENSION);
 
         // Create loader for the specific file
         return new ConfigLoader(
             configPath: (string) $configPathObj,
-            reader: $this->readers->get($extension),
+            reader: $this->readers->get(ext: $extension),
             parser: $compositeParser,
             logger: $this->logger,
         );

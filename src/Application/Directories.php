@@ -16,26 +16,26 @@ final class Directories implements DirectoriesInterface
         private array $directories = [],
     ) {
         foreach ($directories as $name => $directory) {
-            $this->set($name, $directory);
+            $this->set(name: $name, path: $directory);
         }
     }
 
     public function has(string $name): bool
     {
-        return \array_key_exists($name, $this->directories);
+        return \array_key_exists(key: $name, array: $this->directories);
     }
 
     public function set(string $name, string $path): DirectoriesInterface
     {
-        $this->directories[$name] = \rtrim($path, '/') . '/';
+        $this->directories[$name] = \rtrim(string: $path, characters: '/') . '/';
 
         return $this;
     }
 
     public function get(string $name): string
     {
-        if (!$this->has($name)) {
-            throw new DirectoryException("Undefined directory '{$name}'");
+        if (!$this->has(name: $name)) {
+            throw new DirectoryException(message: "Undefined directory '{$name}'");
         }
 
         return $this->directories[$name];

@@ -35,7 +35,7 @@ final class MockGithubClient implements GithubClientInterface
             return $this->fileContents[$repoKey][$path];
         }
 
-        throw new \RuntimeException("File content not found for {$path} in repository {$repository->repository}");
+        throw new \RuntimeException(message: "File content not found for {$path} in repository {$repository->repository}");
     }
 
     public function setToken(?string $token): void
@@ -45,7 +45,7 @@ final class MockGithubClient implements GithubClientInterface
 
     public function getReleaseManager(GithubRepository $repository): ReleaseManager
     {
-        throw new \RuntimeException('ReleaseManager is not implemented in this mock');
+        throw new \RuntimeException(message: 'ReleaseManager is not implemented in this mock');
     }
 
     /**

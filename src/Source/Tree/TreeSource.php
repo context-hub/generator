@@ -80,7 +80,7 @@ final class TreeSource extends BaseSource implements FilterableSourceInterface
         $directories = [];
 
         foreach ((array) $this->sourcePaths as $path) {
-            if (\is_dir($path)) {
+            if (\is_dir(filename: $path)) {
                 $directories[] = $path;
             }
         }
@@ -93,7 +93,7 @@ final class TreeSource extends BaseSource implements FilterableSourceInterface
         $files = [];
 
         foreach ((array) $this->sourcePaths as $path) {
-            if (\is_file($path)) {
+            if (\is_file(filename: $path)) {
                 $files[] = $path;
             }
         }
@@ -141,6 +141,6 @@ final class TreeSource extends BaseSource implements FilterableSourceInterface
             $result['dirContext'] = $this->dirContext;
         }
 
-        return \array_filter($result);
+        return \array_filter(array: $result);
     }
 }

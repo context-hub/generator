@@ -21,8 +21,8 @@ final readonly class PhpReader extends AbstractReader
             'path' => $path,
         ]);
 
-        if (!$this->supports($path)) {
-            throw new ReaderException(\sprintf('Unsupported configuration file: %s', $path));
+        if (!$this->supports(path: $path)) {
+            throw new ReaderException(message: \sprintf('Unsupported configuration file: %s', $path));
         }
 
         // PHP files are special since they can return Registry objects directly
@@ -34,14 +34,14 @@ final readonly class PhpReader extends AbstractReader
         }
 
         // If it's an array, return it directly
-        if (\is_array($result)) {
+        if (\is_array(value: $result)) {
             return $result;
         }
 
         throw new ReaderException(
-            \sprintf(
+            message: \sprintf(
                 'PHP configuration file must return an array or a RegistryInterface instance, got %s',
-                \gettype($result),
+                \gettype(value: $result),
             ),
         );
     }
@@ -54,6 +54,6 @@ final readonly class PhpReader extends AbstractReader
     protected function parseContent(string $content): array
     {
         // Not used for PHP files since we use require directly
-        throw new \LogicException('PHP files are not parsed from content, this method should not be called');
+        throw new \LogicException(message: 'PHP files are not parsed from content, this method should not be called');
     }
 }

@@ -50,21 +50,21 @@ final readonly class ModifiersApplier implements ModifiersApplierInterface
 
         $this->logger->debug('Applying modifiers to content', [
             'contentType' => $filename,
-            'modifierCount' => \count($this->modifiers),
+            'modifierCount' => \count(value: $this->modifiers),
         ]);
 
-        $originalLength = \strlen($content);
+        $originalLength = \strlen(string: $content);
         $modifiedContent = $content;
 
         foreach ($this->modifiers as $modifierId) {
-            if (!$this->registry->has($modifierId)) {
+            if (!$this->registry->has(identifier: $modifierId)) {
                 $this->logger->warning('Modifier not found', [
                     'modifierId' => (string) $modifierId,
                 ]);
                 continue;
             }
 
-            $modifier = $this->registry->get($modifierId);
+            $modifier = $this->registry->get(identifier: $modifierId);
             if (!$modifier->supports($filename)) {
                 $this->logger->debug('Modifier not applicable to content type', [
                     'modifierId' => (string) $modifierId,
@@ -85,7 +85,7 @@ final readonly class ModifiersApplier implements ModifiersApplierInterface
                 'modifierId' => (string) $modifierId,
                 'contentType' => $filename,
                 'beforeLength' => $originalLength,
-                'afterLength' => \strlen($modifiedContent),
+                'afterLength' => \strlen(string: $modifiedContent),
             ]);
         }
 

@@ -19,11 +19,11 @@ class VariableResolverTest extends TestCase
     {
         // Create a custom processor to use instead of a mock
         $customProcessor = new VariableReplacementProcessor(
-            $this->createCustomProvider(),
+            provider: $this->createCustomProvider(),
         );
 
-        $resolver = new VariableResolver($customProcessor);
-        $this->assertNull($resolver->resolve(null));
+        $resolver = new VariableResolver(processor: $customProcessor);
+        $this->assertNull($resolver->resolve());
     }
 
     #[Test]
@@ -35,10 +35,10 @@ class VariableResolverTest extends TestCase
             'VAR' => 'processed string',
         ]);
 
-        $processor = new VariableReplacementProcessor($provider);
-        $resolver = new VariableResolver($processor);
+        $processor = new VariableReplacementProcessor(provider: $provider);
+        $resolver = new VariableResolver(processor: $processor);
 
-        $result = $resolver->resolve('${VAR}');
+        $result = $resolver->resolve(strings: '${VAR}');
 
         $this->assertSame('processed string', $result);
     }
@@ -52,8 +52,8 @@ class VariableResolverTest extends TestCase
             'OTHER_VAR' => 'also processed',
         ]);
 
-        $processor = new VariableReplacementProcessor($provider);
-        $resolver = new VariableResolver($processor);
+        $processor = new VariableReplacementProcessor(provider: $provider);
+        $resolver = new VariableResolver(processor: $processor);
 
         $input = [
             'first ${VAR}',
@@ -67,7 +67,7 @@ class VariableResolverTest extends TestCase
             'third also processed',
         ];
 
-        $this->assertSame($expected, $resolver->resolve($input));
+        $this->assertSame($expected, $resolver->resolve(strings: $input));
     }
 
     #[Test]
@@ -78,8 +78,8 @@ class VariableResolverTest extends TestCase
             'VAR' => 'processed',
         ]);
 
-        $processor = new VariableReplacementProcessor($provider);
-        $resolver = new VariableResolver($processor);
+        $processor = new VariableReplacementProcessor(provider: $provider);
+        $resolver = new VariableResolver(processor: $processor);
 
         $input = [
             'outer ${VAR}',
@@ -97,27 +97,27 @@ class VariableResolverTest extends TestCase
             ],
         ];
 
-        $this->assertSame($expected, $resolver->resolve($input));
+        $this->assertSame($expected, $resolver->resolve(strings: $input));
     }
 
     #[Test]
     public function it_should_handle_empty_string(): void
     {
         $provider = $this->createCustomProvider();
-        $processor = new VariableReplacementProcessor($provider);
-        $resolver = new VariableResolver($processor);
+        $processor = new VariableReplacementProcessor(provider: $provider);
+        $resolver = new VariableResolver(processor: $processor);
 
-        $this->assertSame('', $resolver->resolve(''));
+        $this->assertSame('', $resolver->resolve(strings: ''));
     }
 
     #[Test]
     public function it_should_handle_empty_array(): void
     {
         $provider = $this->createCustomProvider();
-        $processor = new VariableReplacementProcessor($provider);
-        $resolver = new VariableResolver($processor);
+        $processor = new VariableReplacementProcessor(provider: $provider);
+        $resolver = new VariableResolver(processor: $processor);
 
-        $this->assertSame([], $resolver->resolve([]));
+        $this->assertSame([], $resolver->resolve(strings: []));
     }
 
     #[Test]
@@ -136,8 +136,8 @@ class VariableResolverTest extends TestCase
             }
         };
 
-        $processor = new VariableReplacementProcessor($provider);
-        $resolver = new VariableResolver($processor);
+        $processor = new VariableReplacementProcessor(provider: $provider);
+        $resolver = new VariableResolver(processor: $processor);
 
         $input = [
             '${PREFIX}first',
@@ -151,7 +151,7 @@ class VariableResolverTest extends TestCase
             'processed:third',
         ];
 
-        $this->assertSame($expected, $resolver->resolve($input));
+        $this->assertSame($expected, $resolver->resolve(strings: $input));
     }
 
     /**

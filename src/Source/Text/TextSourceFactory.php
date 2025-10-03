@@ -25,8 +25,8 @@ final readonly class TextSourceFactory extends AbstractSourceFactory
             'config' => $config,
         ]);
 
-        if (!isset($config['content']) || !\is_string($config['content'])) {
-            throw new \RuntimeException('Text source must have a "content" string property');
+        if (!isset($config['content']) || !\is_string(value: $config['content'])) {
+            throw new \RuntimeException(message: 'Text source must have a "content" string property');
         }
 
         return new TextSource(

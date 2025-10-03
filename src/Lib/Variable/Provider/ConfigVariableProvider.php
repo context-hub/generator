@@ -19,7 +19,7 @@ final class ConfigVariableProvider implements VariableProviderInterface
 
     public function __construct(array $variables = [])
     {
-        $this->setVariables($variables);
+        $this->setVariables(variables: $variables);
     }
 
     /**
@@ -34,7 +34,7 @@ final class ConfigVariableProvider implements VariableProviderInterface
         // Convert all values to strings
         foreach ($variables as $key => $value) {
             // Skip non-scalar values
-            if (!\is_scalar($value)) {
+            if (!\is_scalar(value: $value)) {
                 continue;
             }
 
@@ -46,7 +46,7 @@ final class ConfigVariableProvider implements VariableProviderInterface
 
     public function has(string $name): bool
     {
-        return \array_key_exists($name, $this->variables);
+        return \array_key_exists(key: $name, array: $this->variables);
     }
 
     public function get(string $name): ?string

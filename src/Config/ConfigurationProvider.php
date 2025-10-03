@@ -41,7 +41,7 @@ final readonly class ConfigurationProvider
      */
     public function fromPath(string $configPath): ConfigLoaderInterface
     {
-        $resolvedPath = $this->resolvePath($configPath);
+        $resolvedPath = $this->resolvePath(path: $configPath);
 
         if ($resolvedPath->isDir()) {
             $this->logger?->info('Looking for configuration files in directory', [
@@ -74,7 +74,7 @@ final readonly class ConfigurationProvider
      */
     private function resolvePath(string $path): FSPath
     {
-        $pathObj = FSPath::create($path);
+        $pathObj = FSPath::create(path: $path);
 
         // If it's an absolute path, use it directly
         if ($pathObj->isAbsolute()) {
@@ -86,7 +86,7 @@ final readonly class ConfigurationProvider
 
         // Check if the path exists
         if (!$resolvedPath->exists()) {
-            throw new ConfigLoaderException(\sprintf('Path not found: %s', $resolvedPath));
+            throw new ConfigLoaderException(message: \sprintf('Path not found: %s', $resolvedPath));
         }
 
         return $resolvedPath;

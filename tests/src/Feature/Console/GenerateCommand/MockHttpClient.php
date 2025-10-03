@@ -41,7 +41,7 @@ final class MockHttpClient implements HttpClientInterface
 
     public function getWithRedirects(string $url, array $headers = []): HttpResponse
     {
-        return $this->get($url, $headers);
+        return $this->get(url: $url, headers: $headers);
     }
 
     public function addResponse(string $url, HttpResponse $response): void

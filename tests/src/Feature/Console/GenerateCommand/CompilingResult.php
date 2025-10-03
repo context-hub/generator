@@ -112,7 +112,7 @@ final readonly class CompilingResult
                     $contextPath = $documentData['output_path'] . '/' . $documentData['context_path'],
                 );
 
-                $content = \file_get_contents($contextPath);
+                $content = \file_get_contents(filename: $contextPath);
                 foreach ($contains as $string) {
                     TestCase::assertStringContainsString(
                         $string,
@@ -195,7 +195,7 @@ final readonly class CompilingResult
                 foreach ($contains as $string) {
                     TestCase::assertStringContainsString(
                         $string,
-                        \implode("\n", $documentData['errors']),
+                        \implode(separator: "\n", array: $documentData['errors']),
                         \sprintf(
                             'Document [%s] does not contain error [%s]',
                             $documentData['context_path'],

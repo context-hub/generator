@@ -28,7 +28,7 @@ final class RawRenderStrategyTest extends TestCase
             ],
         ];
 
-        $result = $this->strategy->render($diffs, new RenderConfig(strategy: RenderStrategyEnum::Raw));
+        $result = $this->strategy->render(diffs: $diffs, config: new RenderConfig(strategy: RenderStrategyEnum::Raw));
         $content = $this->getContentFromBuilder($result);
 
         $this->assertInstanceOf(ContentBuilder::class, $result);
@@ -60,7 +60,7 @@ final class RawRenderStrategyTest extends TestCase
             ],
         ];
 
-        $result = $this->strategy->render($diffs, new RenderConfig(strategy: RenderStrategyEnum::Raw));
+        $result = $this->strategy->render(diffs: $diffs, config: new RenderConfig(strategy: RenderStrategyEnum::Raw));
         $content = $this->getContentFromBuilder($result);
 
         $this->assertInstanceOf(ContentBuilder::class, $result);
@@ -73,7 +73,7 @@ final class RawRenderStrategyTest extends TestCase
     #[Test]
     public function it_should_handle_empty_diff_array(): void
     {
-        $result = $this->strategy->render([], new RenderConfig(strategy: RenderStrategyEnum::Raw));
+        $result = $this->strategy->render(diffs: [], config: new RenderConfig(strategy: RenderStrategyEnum::Raw));
 
         $this->assertInstanceOf(ContentBuilder::class, $result);
         // Empty diff array should result in empty content

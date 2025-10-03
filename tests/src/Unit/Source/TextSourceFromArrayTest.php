@@ -99,6 +99,6 @@ class TextSourceFromArrayTest extends TestCase
     {
         parent::setUp();
 
-        $this->factory = new TextSourceFactory($this->createDirectories());
+        $this->factory = new TextSourceFactory(dirs: $this->createDirectories());
     }
 }

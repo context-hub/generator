@@ -34,9 +34,9 @@ final class LocalImportSource extends AbstractImportSource
         parent::__construct($logger);
 
         // Initialize markdown-related dependencies
-        $markdownReader = new MarkdownMetadataReader($files, $logger);
-        $this->markdownDirectoryReader = new MarkdownDirectoryReader($markdownReader, $reporter, $logger);
-        $this->markdownTransformer = new MarkdownToResourceTransformer($logger);
+        $markdownReader = new MarkdownMetadataReader(files: $files, logger: $logger);
+        $this->markdownDirectoryReader = new MarkdownDirectoryReader(markdownReader: $markdownReader, reporter: $reporter, logger: $logger);
+        $this->markdownTransformer = new MarkdownToResourceTransformer(logger: $logger);
     }
 
     public function getName(): string
@@ -53,7 +53,7 @@ final class LocalImportSource extends AbstractImportSource
 
         // For markdown imports, check if path is a directory
         if ($config->isMarkdownImport()) {
-            return \is_dir($config->getAbsolutePath());
+            return \is_dir(filename: $config->getAbsolutePath());
         }
 
         // For regular config imports, check if the file exists
@@ -64,25 +64,25 @@ final class LocalImportSource extends AbstractImportSource
     {
         if (!$config instanceof LocalSourceConfig) {
             throw Exception\ImportSourceException::sourceNotSupported(
-                $config->getPath(),
-                $config->getType(),
+                path: $config->getPath(),
+                type: $config->getType(),
             );
         }
 
-        if (!$this->supports($config)) {
+        if (!$this->supports(config: $config)) {
             throw Exception\ImportSourceException::sourceNotSupported(
-                $config->getPath(),
-                $config->getType(),
+                path: $config->getPath(),
+                type: $config->getType(),
             );
         }
 
         // Handle markdown imports differently
         if ($config->isMarkdownImport()) {
-            return $this->loadMarkdownImport($config);
+            return $this->loadMarkdownImport(config: $config);
         }
 
         // Handle regular config file imports
-        return $this->loadConfigImport($config);
+        return $this->loadConfigImport(config: $config);
     }
 
     public function allowedSections(): array
@@ -102,13 +102,13 @@ final class LocalImportSource extends AbstractImportSource
         ]);
 
         // Read all markdown files from the directory
-        $markdownData = $this->markdownDirectoryReader->read($config->getAbsolutePath());
+        $markdownData = $this->markdownDirectoryReader->read(path: $config->getAbsolutePath());
 
         // Transform markdown files into CTX resources
-        $transformedConfig = $this->markdownTransformer->transform($markdownData);
+        $transformedConfig = $this->markdownTransformer->transform(markdownData: $markdownData);
 
         // Process selective imports if specified
-        return $this->processSelectiveImports($transformedConfig, $config);
+        return $this->processSelectiveImports(config: $transformedConfig, sourceConfig: $config);
     }
 
     /**
@@ -123,19 +123,19 @@ final class LocalImportSource extends AbstractImportSource
         ]);
 
         // Find an appropriate reader for the file
-        $reader = $this->getReaderForFile($config->getAbsolutePath());
+        $reader = $this->getReaderForFile(path: $config->getAbsolutePath());
 
         if (!$reader) {
             throw new Exception\ImportSourceException(
-                \sprintf('Unsupported file format for import: %s', $config->getAbsolutePath()),
+                message: \sprintf('Unsupported file format for import: %s', $config->getAbsolutePath()),
             );
         }
 
         // Read and parse the configuration
-        $importedConfig = $this->readConfig($config->getAbsolutePath(), $reader);
+        $importedConfig = $this->readConfig(path: $config->getAbsolutePath(), reader: $reader);
 
         // Process selective imports if specified
-        return $this->processSelectiveImports($importedConfig, $config);
+        return $this->processSelectiveImports(config: $importedConfig, sourceConfig: $config);
     }
 
     /**
@@ -143,10 +143,10 @@ final class LocalImportSource extends AbstractImportSource
      */
     private function getReaderForFile(string $path): ?ReaderInterface
     {
-        $extension = \pathinfo($path, PATHINFO_EXTENSION);
+        $extension = \pathinfo(path: $path, flags: PATHINFO_EXTENSION);
 
-        if ($this->readers->has($extension)) {
-            return $this->readers->get($extension);
+        if ($this->readers->has(ext: $extension)) {
+            return $this->readers->get(ext: $extension);
         }
 
         return null;

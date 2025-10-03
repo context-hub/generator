@@ -106,7 +106,7 @@ final class GitDiffSource extends SourceWithModifiers implements FilterableSourc
     #[\Override]
     public function jsonSerialize(): array
     {
-        return \array_filter([
+        return \array_filter(array: [
             'type' => 'git_diff',
             ...parent::jsonSerialize(),
             'repository' => $this->repository,
@@ -117,6 +117,6 @@ final class GitDiffSource extends SourceWithModifiers implements FilterableSourc
             'contains' => $this->contains,
             'notContains' => $this->notContains,
             'render' => $this->renderConfig,
-        ], static fn($value) => $value !== null && $value !== '' && $value !== []);
+        ], callback: static fn($value) => $value !== null && $value !== '' && $value !== []);
     }
 }

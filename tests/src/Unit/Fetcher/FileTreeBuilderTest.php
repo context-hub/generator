@@ -22,10 +22,10 @@ class FileTreeBuilderTest extends TestCase
             '/root/project/tests/file4.php',
         ];
         $basePath = '/root/project';
-        $expected = $this->treeBuilder->buildTree($files, $basePath);
+        $expected = $this->treeBuilder->buildTree(files: $files, basePath: $basePath);
 
         // Get the actual output to match against
-        $result = $this->treeBuilder->buildTree($files, $basePath);
+        $result = $this->treeBuilder->buildTree(files: $files, basePath: $basePath);
 
         // We'll verify tree structure exists with all the files rather than exact format
         $this->assertStringContainsString('└── src', $result);
@@ -44,7 +44,7 @@ class FileTreeBuilderTest extends TestCase
     {
         $files = [];
         $basePath = '/root/project';
-        $result = $this->treeBuilder->buildTree($files, $basePath);
+        $result = $this->treeBuilder->buildTree(files: $files, basePath: $basePath);
 
         // Check that result contains the "No files found" message or is empty
         $this->assertTrue(
@@ -62,7 +62,7 @@ class FileTreeBuilderTest extends TestCase
             'tests/file3.php',
         ];
         $basePath = '';
-        $result = $this->treeBuilder->buildTree($files, $basePath);
+        $result = $this->treeBuilder->buildTree(files: $files, basePath: $basePath);
 
         // Verify tree structure contains all the files rather than exact format
         $this->assertStringContainsString('src', $result);

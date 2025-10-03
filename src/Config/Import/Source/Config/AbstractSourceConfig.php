@@ -41,6 +41,6 @@ abstract class AbstractSourceConfig implements SourceConfigInterface
 
     public function getConfigDirectory(): string
     {
-        return \dirname($this->getPath());
+        return \dirname(path: $this->getPath());
     }
 }

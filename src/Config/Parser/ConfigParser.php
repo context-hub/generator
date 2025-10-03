@@ -23,7 +23,7 @@ final readonly class ConfigParser implements ConfigParserInterface
         $registry = new ConfigRegistry();
 
         // First, allow plugins to update the configuration (imports etc.)
-        $currentConfig = $this->preprocessConfig($config);
+        $currentConfig = $this->preprocessConfig(config: $config);
 
         foreach ($this->pluginRegistry->getPlugins() as $plugin) {
             try {
@@ -34,7 +34,7 @@ final readonly class ConfigParser implements ConfigParserInterface
                 $parsedRegistry = $plugin->parse($currentConfig, $this->rootPath);
 
                 if ($parsedRegistry !== null) {
-                    $registry->register($parsedRegistry);
+                    $registry->register(registry: $parsedRegistry);
                 }
             } catch (\Throwable $e) {
                 // Log the error and continue with other plugins

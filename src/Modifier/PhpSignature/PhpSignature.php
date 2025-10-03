@@ -32,13 +32,13 @@ final class PhpSignature implements SourceModifierInterface
 
     public function supports(string $contentType): bool
     {
-        return \str_ends_with($contentType, '.php');
+        return \str_ends_with(haystack: $contentType, needle: '.php');
     }
 
     public function modify(string $content, array $context = []): string
     {
         try {
-            $file = PhpFile::fromCode($content);
+            $file = PhpFile::fromCode(code: $content);
 
             $output = '';
             foreach ($file->getNamespaces() as $namespace) {
@@ -49,7 +49,7 @@ final class PhpSignature implements SourceModifierInterface
                 }
 
                 foreach ($namespace->getClasses() as $class) {
-                    $output .= $this->processClass($class);
+                    $output .= $this->processClass(class: $class);
                 }
             }
 
@@ -68,13 +68,13 @@ final class PhpSignature implements SourceModifierInterface
 
         // Determine class type and generate signature
         if ($class->isInterface()) {
-            $output .= $this->generateInterfaceSignature($class);
+            $output .= $this->generateInterfaceSignature(interface: $class);
         } elseif ($class->isTrait()) {
-            $output .= $this->generateTraitSignature($class);
-        } elseif (PHP_VERSION_ID >= 80100 && \method_exists($class, 'isEnum') && $class->isEnum()) {
-            $output .= $this->generateEnumSignature($class);
+            $output .= $this->generateTraitSignature(trait: $class);
+        } elseif (PHP_VERSION_ID >= 80100 && \method_exists(object_or_class: $class, method: 'isEnum') && $class->isEnum()) {
+            $output .= $this->generateEnumSignature(enum: $class);
         } else {
-            $output .= $this->generateClassSignature($class);
+            $output .= $this->generateClassSignature(class: $class);
         }
 
         return $output . "\n";
@@ -88,14 +88,14 @@ final class PhpSignature implements SourceModifierInterface
         // Remove not public properties
         foreach ($class->getProperties() as $property) {
             if (!$property->isPublic()) {
-                $class->removeProperty($property->getName());
+                $class->removeProperty(name: $property->getName());
             }
         }
 
         // Remove not public constants
         foreach ($class->getConstants() as $constant) {
             if (!$constant->isPublic()) {
-                $class->removeConstant($constant->getName());
+                $class->removeConstant(name: $constant->getName());
             }
         }
 
@@ -103,15 +103,15 @@ final class PhpSignature implements SourceModifierInterface
         // Remove method bodies
         foreach ($class->getMethods() as $method) {
             // if is magic method, skip
-            if (\in_array($method->getName(), self::MAGIC_METHODS, true)) {
+            if (\in_array(needle: $method->getName(), haystack: self::MAGIC_METHODS, strict: true)) {
                 continue;
             }
 
             if (!$method->isPublic()) {
-                $class->removeMethod($method->getName());
+                $class->removeMethod(name: $method->getName());
             }
 
-            $method->setBody($method->isAbstract() ? '' : '/* ... */');
+            $method->setBody(code: $method->isAbstract() ? '' : '/* ... */');
         }
 
         // Generate the class code
@@ -135,22 +135,22 @@ final class PhpSignature implements SourceModifierInterface
         // Remove not public properties
         foreach ($trait->getProperties() as $property) {
             if (!$property->isPublic()) {
-                $trait->removeProperty($property->getName());
+                $trait->removeProperty(name: $property->getName());
             }
         }
 
         // Remove not public constants
         foreach ($trait->getConstants() as $constant) {
             if (!$constant->isPublic()) {
-                $trait->removeConstant($constant->getName());
+                $trait->removeConstant(name: $constant->getName());
             }
         }
 
         foreach ($trait->getMethods() as $method) {
             if (!$method->isPublic()) {
-                $trait->removeMethod($method->getName());
+                $trait->removeMethod(name: $method->getName());
             }
-            $method->setBody('/* ... */');
+            $method->setBody(code: '/* ... */');
         }
 
         // Generate the trait code
@@ -165,9 +165,9 @@ final class PhpSignature implements SourceModifierInterface
         // Remove method bodies
         foreach ($enum->getMethods() as $method) {
             if (!$method->isPublic()) {
-                $enum->removeMethod($method->getName());
+                $enum->removeMethod(name: $method->getName());
             }
-            $method->setBody('/* ... */');
+            $method->setBody(code: '/* ... */');
         }
 
         // Generate the enum code

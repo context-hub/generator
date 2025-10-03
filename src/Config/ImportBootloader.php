@@ -38,8 +38,8 @@ final class ImportBootloader extends Bootloader
                     logger: $logger->withPrefix('import-source-registry'),
                 );
 
-                $registry->register($localImportSource);
-                $registry->register($urlImportSource);
+                $registry->register(source: $localImportSource);
+                $registry->register(source: $urlImportSource);
 
                 return $registry;
             },
@@ -54,6 +54,6 @@ final class ImportBootloader extends Bootloader
         ConfigLoaderBootloader $parserRegistry,
         ImportParserPlugin $importParserPlugin,
     ): void {
-        $parserRegistry->registerParserPlugin($importParserPlugin);
+        $parserRegistry->registerParserPlugin(plugin: $importParserPlugin);
     }
 }

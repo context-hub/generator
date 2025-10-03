@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Rector\Config\RectorConfig;
 use Rector\Set\ValueObject\LevelSetList;
 use Rector\Set\ValueObject\SetList;
+use SavinMikhail\AddNamedArgumentsRector\AddNamedArgumentsRector;
 
 return static function (RectorConfig $rectorConfig): void {
     $rectorConfig->paths([
@@ -21,5 +22,9 @@ return static function (RectorConfig $rectorConfig): void {
     // Skip vendor directories
     $rectorConfig->skip([
         __DIR__ . '/vendor',
+    ]);
+
+    $rectorConfig->rules([
+        AddNamedArgumentsRector::class,
     ]);
 };

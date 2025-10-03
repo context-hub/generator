@@ -38,7 +38,7 @@ final class FileSourceTreeViewTest extends AbstractFileSourceTestCase
         $this->assertEquals(2, $treeView->maxDepth);
 
         // Compile and verify tree view output
-        $compiledDocument = $compiler->compile($document);
+        $compiledDocument = $compiler->compile(document: $document);
         $content = (string) $compiledDocument->content;
 
         // Check that the tree view formatting shows the configured information

@@ -23,7 +23,7 @@ final class TextSourceBootloader extends Bootloader
         SourceRegistryInterface $sourceRegistry,
         TextSourceFactory $factory,
     ): void {
-        $registry->register(TextSourceFetcher::class);
+        $registry->register(fetcher: TextSourceFetcher::class);
         $sourceRegistry->register($factory);
     }
 }

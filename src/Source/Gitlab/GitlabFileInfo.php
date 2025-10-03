@@ -38,7 +38,7 @@ final class GitlabFileInfo extends SplFileInfo
             return $this->fetchedContent;
         }
 
-        return $this->fetchedContent = \call_user_func($this->content);
+        return $this->fetchedContent = \call_user_func(callback: $this->content);
     }
 
     public function getSize(): int

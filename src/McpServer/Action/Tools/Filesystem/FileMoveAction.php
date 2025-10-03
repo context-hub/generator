@@ -40,24 +40,24 @@ final readonly class FileMoveAction
         $createDirectory = $request->createDirectory;
 
         if (empty($source)) {
-            return ToolResult::error('Missing source parameter');
+            return ToolResult::error(error: 'Missing source parameter');
         }
 
         if (empty($destination)) {
-            return ToolResult::error('Missing destination parameter');
+            return ToolResult::error(error: 'Missing destination parameter');
         }
 
         try {
             if (!$this->files->exists($source)) {
-                return ToolResult::error(\sprintf("Source file '%s' does not exist", $source));
+                return ToolResult::error(error: \sprintf("Source file '%s' does not exist", $source));
             }
 
             // Ensure destination directory exists if requested
             if ($createDirectory) {
-                $directory = \dirname($destination);
+                $directory = \dirname(path: $destination);
                 if (!$this->files->exists($directory)) {
                     if (!$this->files->ensureDirectory($directory)) {
-                        return ToolResult::error(\sprintf("Could not create directory '%s'", $directory));
+                        return ToolResult::error(error: \sprintf("Could not create directory '%s'", $directory));
                     }
                 }
             }
@@ -66,13 +66,13 @@ final readonly class FileMoveAction
             try {
                 $content = $this->files->read($source);
             } catch (FilesException) {
-                return ToolResult::error(\sprintf("Could not read source file '%s'", $source));
+                return ToolResult::error(error: \sprintf("Could not read source file '%s'", $source));
             }
 
             // Write to destination
             $writeSuccess = $this->files->write($destination, $content);
             if (!$writeSuccess) {
-                return ToolResult::error(\sprintf("Could not write to destination file '%s'", $destination));
+                return ToolResult::error(error: \sprintf("Could not write to destination file '%s'", $destination));
             }
 
             // Delete source file
@@ -80,7 +80,7 @@ final readonly class FileMoveAction
             if (!$deleteSuccess) {
                 // Even if delete fails, the move operation is partially successful
                 return ToolResult::text(
-                    \sprintf(
+                    text: \sprintf(
                         "Warning: File copied to '%s' but could not delete source file '%s'",
                         $destination,
                         $source,
@@ -88,7 +88,7 @@ final readonly class FileMoveAction
                 );
             }
 
-            return ToolResult::text(\sprintf("Successfully moved '%s' to '%s'", $source, $destination));
+            return ToolResult::text(text: \sprintf("Successfully moved '%s' to '%s'", $source, $destination));
         } catch (\Throwable $e) {
             $this->logger->error('Error moving file', [
                 'source' => $source,
@@ -96,7 +96,7 @@ final readonly class FileMoveAction
                 'error' => $e->getMessage(),
             ]);
 
-            return ToolResult::error($e->getMessage());
+            return ToolResult::error(error: $e->getMessage());
         }
     }
 }

@@ -27,7 +27,7 @@ class ContextSanitizerTest extends TestCase
         $rule2 = $this->createMock(RuleInterface::class);
         $rule2->method('getName')->willReturn('rule2');
 
-        $sanitizer = new ContextSanitizer([
+        $sanitizer = new ContextSanitizer(rules: [
             'rule1' => $rule1,
             'rule2' => $rule2,
         ]);
@@ -45,7 +45,7 @@ class ContextSanitizerTest extends TestCase
         $rule = $this->createMock(RuleInterface::class);
         $rule->method('getName')->willReturn('test-rule');
 
-        $result = $sanitizer->addRule($rule);
+        $result = $sanitizer->addRule(rule: $rule);
 
         $this->assertSame($sanitizer, $result);
         $this->assertCount(1, $sanitizer->getRules());
@@ -63,8 +63,8 @@ class ContextSanitizerTest extends TestCase
         $rule2 = $this->createMock(RuleInterface::class);
         $rule2->method('getName')->willReturn('rule2');
 
-        $sanitizer->addRule($rule1);
-        $sanitizer->addRule($rule2);
+        $sanitizer->addRule(rule: $rule1);
+        $sanitizer->addRule(rule: $rule2);
 
         $this->assertCount(2, $sanitizer->getRules());
         $this->assertSame($rule1, $sanitizer->getRules()['rule1']);
@@ -82,8 +82,8 @@ class ContextSanitizerTest extends TestCase
         $rule2 = $this->createMock(RuleInterface::class);
         $rule2->method('getName')->willReturn('same-name');
 
-        $sanitizer->addRule($rule1);
-        $sanitizer->addRule($rule2);
+        $sanitizer->addRule(rule: $rule1);
+        $sanitizer->addRule(rule: $rule2);
 
         $this->assertCount(1, $sanitizer->getRules());
         $this->assertSame($rule2, $sanitizer->getRules()['same-name']);
@@ -98,7 +98,7 @@ class ContextSanitizerTest extends TestCase
         $rule2 = $this->createMock(RuleInterface::class);
         $rule2->method('getName')->willReturn('rule2');
 
-        $sanitizer = new ContextSanitizer([
+        $sanitizer = new ContextSanitizer(rules: [
             'rule1' => $rule1,
             'rule2' => $rule2,
         ]);
@@ -116,7 +116,7 @@ class ContextSanitizerTest extends TestCase
         $sanitizer = new ContextSanitizer();
         $content = "This content should remain unchanged";
 
-        $this->assertEquals($content, $sanitizer->sanitize($content));
+        $this->assertEquals($content, $sanitizer->sanitize(content: $content));
     }
 
     #[Test]
@@ -126,10 +126,10 @@ class ContextSanitizerTest extends TestCase
         $rule->method('getName')->willReturn('test-rule');
         $rule->method('apply')->willReturnCallback(static fn($content) => $content . ' (sanitized)');
 
-        $sanitizer = new ContextSanitizer(['test-rule' => $rule]);
+        $sanitizer = new ContextSanitizer(rules: ['test-rule' => $rule]);
         $content = "Original content";
 
-        $this->assertEquals("Original content (sanitized)", $sanitizer->sanitize($content));
+        $this->assertEquals("Original content (sanitized)", $sanitizer->sanitize(content: $content));
     }
 
     #[Test]
@@ -143,14 +143,14 @@ class ContextSanitizerTest extends TestCase
         $rule2->method('getName')->willReturn('rule2');
         $rule2->method('apply')->willReturnCallback(static fn($content) => $content . ' (rule2)');
 
-        $sanitizer = new ContextSanitizer([
+        $sanitizer = new ContextSanitizer(rules: [
             'rule1' => $rule1,
             'rule2' => $rule2,
         ]);
 
         $content = "Original content";
 
-        $this->assertEquals("Original content (rule1) (rule2)", $sanitizer->sanitize($content));
+        $this->assertEquals("Original content (rule1) (rule2)", $sanitizer->sanitize(content: $content));
     }
 
     #[Test]
@@ -166,11 +166,11 @@ class ContextSanitizerTest extends TestCase
 
         // Add rules in specific order
         $sanitizer = new ContextSanitizer();
-        $sanitizer->addRule($rule1);
-        $sanitizer->addRule($rule2);
+        $sanitizer->addRule(rule: $rule1);
+        $sanitizer->addRule(rule: $rule2);
 
         $content = "Original";
 
-        $this->assertEquals("Original (first) (second)", $sanitizer->sanitize($content));
+        $this->assertEquals("Original (first) (second)", $sanitizer->sanitize(content: $content));
     }
 }

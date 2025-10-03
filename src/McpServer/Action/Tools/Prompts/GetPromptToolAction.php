@@ -40,18 +40,18 @@ final readonly class GetPromptToolAction
         $id = $request->id;
 
         if (empty($id)) {
-            return ToolResult::error('Missing prompt ID parameter');
+            return ToolResult::error(error: 'Missing prompt ID parameter');
         }
 
         try {
             // Check if prompt exists
             if (!$this->prompts->has($id)) {
-                return ToolResult::error(\sprintf("Prompt with ID '%s' not found", $id));
+                return ToolResult::error(error: \sprintf("Prompt with ID '%s' not found", $id));
             }
 
             // Get prompt and process messages
             $prompt = $this->prompts->get($id);
-            $messages = $this->processMessageTemplates($prompt->messages, $serverRequest->getAttributes());
+            $messages = $this->processMessageTemplates(messages: $prompt->messages, arguments: $serverRequest->getAttributes());
 
             // Format the messages for return
             $formattedMessages = [];
@@ -63,7 +63,7 @@ final readonly class GetPromptToolAction
                 ];
             }
 
-            return ToolResult::success([
+            return ToolResult::success(data: [
                 'id' => $id,
                 'description' => $prompt->prompt->description,
                 'messages' => $formattedMessages,
@@ -75,7 +75,7 @@ final readonly class GetPromptToolAction
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return ToolResult::error($e->getMessage());
+            return ToolResult::error(error: $e->getMessage());
         }
     }
 
@@ -89,25 +89,25 @@ final readonly class GetPromptToolAction
     private function processMessageTemplates(array $messages, array $arguments): array
     {
         $arguments = \array_combine(
-            \array_map(static fn($key) => '{{' . $key . '}}', \array_keys($arguments)),
-            \array_values($arguments),
+            keys: \array_map(callback: static fn($key) => '{{' . $key . '}}', array: \array_keys(array: $arguments)),
+            values: \array_values(array: $arguments),
         );
         $variables = $this->variables;
 
-        return \array_map(static function ($message) use ($variables, $arguments) {
+        return \array_map(callback: static function ($message) use ($variables, $arguments) {
             $content = $message->content;
 
             if ($content instanceof TextContent) {
                 $text = \strtr($content->text, $arguments);
-                $text = $variables->resolve($text);
+                $text = $variables->resolve(strings: $text);
 
-                $content = new TextContent($text);
+                $content = new TextContent(text: $text);
             }
 
             return new PromptMessage(
                 role: $message->role,
                 content: $content,
             );
-        }, $messages);
+        }, array: $messages);
     }
 }

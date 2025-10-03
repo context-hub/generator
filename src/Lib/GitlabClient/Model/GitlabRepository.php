@@ -22,7 +22,7 @@ final readonly class GitlabRepository
         public string $branch = 'main',
     ) {
         // Convert repository name to URL-encoded project ID for API calls
-        $this->projectId = \urlencode($repository);
+        $this->projectId = \urlencode(string: $repository);
     }
 
     /**
@@ -40,6 +40,6 @@ final readonly class GitlabRepository
      */
     public function getUrl(string $serverUrl = 'https://gitlab.com'): string
     {
-        return \rtrim($serverUrl, '/') . '/' . $this->repository;
+        return \rtrim(string: $serverUrl, characters: '/') . '/' . $this->repository;
     }
 }

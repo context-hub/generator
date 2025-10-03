@@ -36,7 +36,7 @@ final readonly class BinaryUpdater
 
         // Create the target directory if needed
         if ($createDirectory) {
-            $targetDir = \dirname($targetPath);
+            $targetDir = \dirname(path: $targetPath);
             $this->files->ensureDirectory($targetDir);
         }
 
@@ -54,12 +54,12 @@ final readonly class BinaryUpdater
 
             // Write to target
             if (!$this->files->write($targetPath, $content)) {
-                throw new \RuntimeException(\sprintf("Failed to write to target file: %s", $targetPath));
+                throw new \RuntimeException(message: \sprintf("Failed to write to target file: %s", $targetPath));
             }
 
             // Make executable (except on Windows)
             if (\PHP_OS_FAMILY !== 'Windows') {
-                \chmod($targetPath, 0755);
+                \chmod(filename: $targetPath, permissions: 0755);
             }
 
             $this->logger?->info("Direct update successful");

@@ -21,7 +21,7 @@ final class CompositeComposerProvider implements ComposerProviderInterface
         ComposerProviderInterface ...$providers,
     ) {
         foreach ($providers as $provider) {
-            $this->addProvider($provider);
+            $this->addProvider(provider: $provider);
         }
     }
 
@@ -45,7 +45,7 @@ final class CompositeComposerProvider implements ComposerProviderInterface
         $this->logger->info('Getting packages from composite provider', [
             'composerPath' => $composerPath,
             'includeDevDependencies' => $includeDevDependencies,
-            'providerCount' => \count($this->providers),
+            'providerCount' => \count(value: $this->providers),
         ]);
 
         // If no providers, return empty collection
@@ -72,12 +72,12 @@ final class CompositeComposerProvider implements ComposerProviderInterface
 
                 // Merge packages into combined collection, new packages override existing ones
                 foreach ($packages as $packageName => $package) {
-                    if ($combinedPackages->has($packageName)) {
+                    if ($combinedPackages->has(name: $packageName)) {
                         $this->logger->debug('Package already exists in collection, overriding', [
                             'package' => $packageName,
                         ]);
                     }
-                    $combinedPackages->add($package);
+                    $combinedPackages->add(package: $package);
                 }
 
                 $this->logger->info('Successfully fetched packages from provider', [

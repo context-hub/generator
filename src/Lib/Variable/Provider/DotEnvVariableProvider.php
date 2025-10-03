@@ -17,7 +17,7 @@ final readonly class DotEnvVariableProvider implements VariableProviderInterface
         private ?string $envFileName = null,
     ) {
         if ($this->rootPath) {
-            $dotenv = Dotenv::create($repository, $this->rootPath, $this->envFileName);
+            $dotenv = Dotenv::create(repository: $repository, paths: $this->rootPath, names: $this->envFileName);
             $dotenv->load();
         }
 

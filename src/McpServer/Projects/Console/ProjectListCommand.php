@@ -41,24 +41,24 @@ final class ProjectListCommand extends BaseCommand
         }
 
         // Create and configure table
-        $table = new Table($this->output);
-        $table->setHeaders(['Path', 'Config File', 'Env File', 'Aliases', 'Added', 'Current']);
+        $table = new Table(output: $this->output);
+        $table->setHeaders(headers: ['Path', 'Config File', 'Env File', 'Aliases', 'Added', 'Current']);
 
         // Add rows to table
         foreach ($projects as $path => $info) {
             $isCurrent = $currentProject && $currentProject->path === $path ? '✓' : '';
 
             $aliasesStr = !empty($pathToAliases[$path])
-                ? \implode(', ', $pathToAliases[$path])
+                ? \implode(separator: ', ', array: $pathToAliases[$path])
                 : '';
 
-            $table->addRow([
-                Style::property($path),
+            $table->addRow(row: [
+                Style::property(text: $path),
                 $info->configFile ?? '',
                 $info->envFile ?? '',
                 $aliasesStr,
                 $info->addedAt,
-                $isCurrent ? Style::highlight($isCurrent) : '',
+                $isCurrent ? Style::highlight(text: $isCurrent) : '',
             ]);
         }
 

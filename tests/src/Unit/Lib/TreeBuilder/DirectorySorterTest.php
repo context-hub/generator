@@ -15,14 +15,14 @@ final class DirectorySorterTest extends TestCase
     #[Test]
     public function it_should_sort_empty_array(): void
     {
-        $this->assertSame([], DirectorySorter::sort([]));
+        $this->assertSame([], DirectorySorter::sort(directories: []));
     }
 
     #[Test]
     public function it_should_not_sort_single_item_array(): void
     {
         $dirs = ['/path/to/dir'];
-        $this->assertSame($dirs, DirectorySorter::sort($dirs));
+        $this->assertSame($dirs, DirectorySorter::sort(directories: $dirs));
     }
 
     #[Test]
@@ -44,7 +44,7 @@ final class DirectorySorterTest extends TestCase
             '/c/deep/path',
         ];
 
-        $this->assertSame($expected, DirectorySorter::sort($dirs));
+        $this->assertSame($expected, DirectorySorter::sort(directories: $dirs));
     }
 
     #[Test]
@@ -64,7 +64,7 @@ final class DirectorySorterTest extends TestCase
             '/parent/child/grandchild',
         ];
 
-        $this->assertSame($expected, DirectorySorter::sort($dirs));
+        $this->assertSame($expected, DirectorySorter::sort(directories: $dirs));
     }
 
     #[Test]
@@ -82,7 +82,7 @@ final class DirectorySorterTest extends TestCase
             'parent/child',
         ];
 
-        $this->assertSame($expected, DirectorySorter::sort($dirs));
+        $this->assertSame($expected, DirectorySorter::sort(directories: $dirs));
     }
 
     #[Test]
@@ -100,7 +100,7 @@ final class DirectorySorterTest extends TestCase
             '/parent/child',
         ];
 
-        $this->assertSame($expected, DirectorySorter::sort($dirs));
+        $this->assertSame($expected, DirectorySorter::sort(directories: $dirs));
     }
 
     #[Test]
@@ -120,13 +120,13 @@ final class DirectorySorterTest extends TestCase
             '/path/two',
         ];
 
-        $this->assertSame($expected, DirectorySorter::sort($dirs));
+        $this->assertSame($expected, DirectorySorter::sort(directories: $dirs));
     }
 
     #[Test]
     public function it_should_handle_iterator_input(): void
     {
-        $dirs = new \ArrayIterator([
+        $dirs = new \ArrayIterator(array: [
             '/path/b',
             '/path/a',
         ]);
@@ -136,7 +136,7 @@ final class DirectorySorterTest extends TestCase
             '/path/b',
         ];
 
-        $this->assertSame($expected, DirectorySorter::sort($dirs));
+        $this->assertSame($expected, DirectorySorter::sort(directories: $dirs));
     }
 
     #[Test]
@@ -148,7 +148,7 @@ final class DirectorySorterTest extends TestCase
             'windows\\another',
         ];
 
-        $sorted = DirectorySorter::sortPreservingSeparators($dirs);
+        $sorted = DirectorySorter::sortPreservingSeparators(directories: $dirs);
 
         // We should get another, path, unix/path in alphabetical order
         $this->assertContains('windows\\another', $sorted);
@@ -156,12 +156,12 @@ final class DirectorySorterTest extends TestCase
         $this->assertContains('/unix/path', $sorted);
 
         // Check that windows\another comes before windows\path
-        $anotherPos = \array_search('windows\\another', $sorted);
-        $pathPos = \array_search('windows\\path', $sorted);
+        $anotherPos = \array_search(needle: 'windows\\another', haystack: $sorted);
+        $pathPos = \array_search(needle: 'windows\\path', haystack: $sorted);
         $this->assertLessThan($pathPos, $anotherPos, "windows\\another should come before windows\\path");
 
         // Check that we have the same number of items
-        $this->assertCount(\count($dirs), $sorted);
+        $this->assertCount(\count(value: $dirs), $sorted);
     }
 
     #[Test]
@@ -173,7 +173,7 @@ final class DirectorySorterTest extends TestCase
             'C:\\windows\\another',
         ];
 
-        $sorted = DirectorySorter::sortPreservingSeparators($dirs);
+        $sorted = DirectorySorter::sortPreservingSeparators(directories: $dirs);
 
         // The original format with drive letters should be preserved
         foreach ($sorted as $path) {
@@ -181,11 +181,11 @@ final class DirectorySorterTest extends TestCase
         }
 
         // All items should be included
-        $this->assertCount(\count($dirs), $sorted);
+        $this->assertCount(\count(value: $dirs), $sorted);
 
         // Check that C:\windows\another comes before C:\windows\path alphabetically
-        $anotherPos = \array_search('C:\\windows\\another', $sorted);
-        $pathPos = \array_search('C:\\windows\\path', $sorted);
+        $anotherPos = \array_search(needle: 'C:\\windows\\another', haystack: $sorted);
+        $pathPos = \array_search(needle: 'C:\\windows\\path', haystack: $sorted);
         if ($anotherPos !== false && $pathPos !== false) {
             $this->assertLessThan($pathPos, $anotherPos, "C:\\windows\\another should come before C:\\windows\\path");
         }
@@ -194,7 +194,7 @@ final class DirectorySorterTest extends TestCase
     #[Test]
     public function it_should_handle_empty_array_when_preserving_separators(): void
     {
-        $this->assertSame([], DirectorySorter::sortPreservingSeparators([]));
+        $this->assertSame([], DirectorySorter::sortPreservingSeparators(directories: []));
     }
 
     #[Test]
@@ -206,7 +206,7 @@ final class DirectorySorterTest extends TestCase
             'C:\\Users\\user\\Documents',
         ];
 
-        $sorted = DirectorySorter::sortPreservingSeparators($dirs);
+        $sorted = DirectorySorter::sortPreservingSeparators(directories: $dirs);
 
         // The order might change but the original format should be preserved
         foreach ($sorted as $path) {
@@ -214,7 +214,7 @@ final class DirectorySorterTest extends TestCase
         }
 
         // Check that we have the same number of items
-        $this->assertCount(\count($dirs), $sorted);
+        $this->assertCount(\count(value: $dirs), $sorted);
     }
 
     #[Test]
@@ -226,7 +226,7 @@ final class DirectorySorterTest extends TestCase
             'D:\\other\\file.txt',
         ];
 
-        $sortedPaths = DirectorySorter::sort($dirs);
+        $sortedPaths = DirectorySorter::sort(directories: $dirs);
 
         // Check for correct alphabetical sorting and parent-child relationships
         $this->assertEquals('/other/file.txt', $sortedPaths[0]);

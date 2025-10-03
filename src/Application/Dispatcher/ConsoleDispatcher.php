@@ -35,14 +35,14 @@ final readonly class ConsoleDispatcher implements DispatcherInterface
     {
         $input ??= new ArgvInput();
         // On demand to save some memory.
-        $output ??= new SymfonyStyle($input, new ConsoleOutput());
+        $output ??= new SymfonyStyle(input: $input, output: new ConsoleOutput());
 
         return $this->container->runScope(
             bindings: new Scope(
                 name: 'console',
             ),
             scope: function (Container $container) use ($input, $output) {
-                $console = $container->get(Console::class);
+                $console = $container->get(id: Console::class);
 
                 try {
                     return $console->run(
@@ -51,7 +51,7 @@ final readonly class ConsoleDispatcher implements DispatcherInterface
                         $output,
                     )->getCode();
                 } catch (\Throwable $e) {
-                    $this->handleException($e, $output);
+                    $this->handleException(exception: $e, output: $output);
 
                     return 255;
                 } finally {
@@ -67,7 +67,7 @@ final readonly class ConsoleDispatcher implements DispatcherInterface
         $output->write(
             $this->errorHandler->render(
                 $exception,
-                verbosity: $this->mapVerbosity($output),
+                verbosity: $this->mapVerbosity(output: $output),
                 format: 'cli',
             ),
         );

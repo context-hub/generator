@@ -89,7 +89,7 @@ final class FileSource extends SourceWithModifiers implements FilterableSourceIn
 
         // Extract directories from sourcePaths
         foreach ((array) $this->sourcePaths as $path) {
-            if (\is_dir($path)) {
+            if (\is_dir(filename: $path)) {
                 $directories[] = $path;
             }
         }
@@ -103,7 +103,7 @@ final class FileSource extends SourceWithModifiers implements FilterableSourceIn
 
         // Extract files from sourcePaths
         foreach ((array) $this->sourcePaths as $path) {
-            if (\is_file($path)) {
+            if (\is_file(filename: $path)) {
                 $files[] = $path;
             }
         }
@@ -163,6 +163,6 @@ final class FileSource extends SourceWithModifiers implements FilterableSourceIn
             $result['maxFiles'] = $this->maxFiles;
         }
 
-        return \array_filter($result);
+        return \array_filter(array: $result);
     }
 }

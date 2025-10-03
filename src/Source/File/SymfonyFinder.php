@@ -40,53 +40,53 @@ final readonly class SymfonyFinder implements FinderInterface
         $files = $source->files();
 
         if (!empty($directories)) {
-            $finder->in($directories);
+            $finder->in(dirs: $directories);
         }
 
         if (!empty($files)) {
-            $finder->append($files);
+            $finder->append(iterator: $files);
         }
 
         // Configure name pattern for file matching
         $namePattern = $source->name();
         if ($namePattern !== null) {
-            $finder->name($namePattern);
+            $finder->name(patterns: $namePattern);
         }
 
         // Configure path pattern
         $pathPattern = $source->path();
         if ($pathPattern !== null) {
-            $finder->path($pathPattern);
+            $finder->path(patterns: $pathPattern);
         }
 
         // Configure notPath pattern
         $notPathPattern = $source->notPath();
         if ($notPathPattern !== null) {
-            $finder->notPath($notPathPattern);
+            $finder->notPath(patterns: $notPathPattern);
         }
 
         // Configure contains pattern
         $containsPattern = $source->contains();
         if ($containsPattern !== null) {
-            $finder->contains($containsPattern);
+            $finder->contains(patterns: $containsPattern);
         }
 
         // Configure notContains pattern
         $notContainsPattern = $source->notContains();
         if ($notContainsPattern !== null) {
-            $finder->notContains($notContainsPattern);
+            $finder->notContains(patterns: $notContainsPattern);
         }
 
         // Configure size constraints
         $sizeConstraints = $source->size();
         if ($sizeConstraints !== null) {
-            $finder->size($sizeConstraints);
+            $finder->size(sizes: $sizeConstraints);
         }
 
         // Configure date constraints
         $dateConstraints = $source->date();
         if ($dateConstraints !== null) {
-            $finder->date($dateConstraints);
+            $finder->date(dates: $dateConstraints);
         }
 
         // Configure ignoreUnreadableDirs
@@ -96,7 +96,7 @@ final readonly class SymfonyFinder implements FinderInterface
 
         // Apply depth constraint if maxDepth is set
         if (isset($options['maxDepth']) && $options['maxDepth'] > 0) {
-            $finder->depth('<= ' . $options['maxDepth']);
+            $finder->depth(levels: '<= ' . $options['maxDepth']);
         }
 
         $finder->sortByName();
@@ -106,7 +106,7 @@ final readonly class SymfonyFinder implements FinderInterface
         $hasLimit = $maxFiles !== null && $maxFiles > 0;
 
         // Generate tree view (always on all files for consistency)
-        $treeView = $this->generateTreeView($finder, $basePath, $options);
+        $treeView = $this->generateTreeView(finder: $finder, basePath: $basePath, options: $options);
 
         // Get files with limit if needed
         if ($hasLimit) {
@@ -132,7 +132,7 @@ final readonly class SymfonyFinder implements FinderInterface
         $files = [];
         foreach ($finder as $file) {
             // Skip files that would be excluded by path patterns
-            if ($this->shouldExcludeFile($this->getPath($file, $basePath))) {
+            if ($this->shouldExcludeFile(filePath: $this->getPath(file: $file, basePath: $basePath))) {
                 continue;
             }
 
@@ -160,7 +160,7 @@ final readonly class SymfonyFinder implements FinderInterface
 
         foreach ($finder as $file) {
             // Skip excluded files in tree view
-            if ($this->shouldExcludeFile($this->getPath($file, $basePath))) {
+            if ($this->shouldExcludeFile(filePath: $this->getPath(file: $file, basePath: $basePath))) {
                 continue;
             }
 
@@ -171,7 +171,7 @@ final readonly class SymfonyFinder implements FinderInterface
             return "No files found.\n";
         }
 
-        return $this->fileTreeBuilder->buildTree($filePaths, $basePath, $options);
+        return $this->fileTreeBuilder->buildTree(files: $filePaths, basePath: $basePath, options: $options);
     }
 
     /**
@@ -188,6 +188,6 @@ final readonly class SymfonyFinder implements FinderInterface
             return $file->getRelativePathname();
         }
 
-        return \ltrim(\str_replace($basePath, '', $file->getRealPath()), '/');
+        return \ltrim(string: \str_replace(search: $basePath, replace: '', subject: $file->getRealPath()), characters: '/');
     }
 }

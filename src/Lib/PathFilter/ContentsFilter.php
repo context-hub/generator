@@ -23,7 +23,7 @@ final class ContentsFilter extends AbstractFilter
         }
 
         /** @psalm-suppress InvalidArgument */
-        return \array_filter($items, function (SplFileInfo $item): bool {
+        return \array_filter(array: $items, callback: function (SplFileInfo $item): bool {
             if ($item->isDir()) {
                 return true;
             }
@@ -33,12 +33,12 @@ final class ContentsFilter extends AbstractFilter
                 $content = $item->getContents();
 
                 // Check "contains" patterns
-                if (!empty($this->contains) && !$this->contentContains($content, $this->contains)) {
+                if (!empty($this->contains) && !$this->contentContains(content: $content, patterns: $this->contains)) {
                     return false;
                 }
 
                 // Check "notContains" patterns
-                if (!empty($this->notContains) && $this->contentContains($content, $this->notContains)) {
+                if (!empty($this->notContains) && $this->contentContains(content: $content, patterns: $this->notContains)) {
                     return false;
                 }
 
@@ -59,16 +59,16 @@ final class ContentsFilter extends AbstractFilter
      */
     private function contentContains(string $content, string|array $patterns): bool
     {
-        $patternArray = \is_array($patterns) ? $patterns : [$patterns];
+        $patternArray = \is_array(value: $patterns) ? $patterns : [$patterns];
 
         foreach ($patternArray as $pattern) {
-            if (\str_contains($content, $pattern)) {
+            if (\str_contains(haystack: $content, needle: $pattern)) {
                 return true;
             }
 
             // Also check if it's a regex pattern
-            if (FileHelper::isRegex($pattern)) {
-                if (\preg_match($pattern, $content)) {
+            if (FileHelper::isRegex(str: $pattern)) {
+                if (\preg_match(pattern: $pattern, subject: $content)) {
                     return true;
                 }
             }

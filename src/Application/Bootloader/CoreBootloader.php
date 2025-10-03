@@ -47,7 +47,7 @@ final class CoreBootloader extends Bootloader
 
     public function init(DirectoriesInterface $dirs, EnvironmentInterface $env): void
     {
-        $this->loadEnvVariables($dirs, $env);
+        $this->loadEnvVariables(dirs: $dirs, env: $env);
     }
 
     public function boot(ConsoleBootloader $console): void
@@ -70,14 +70,14 @@ final class CoreBootloader extends Bootloader
 
         $dotenvPath = $env->get('DOTENV_PATH', $dirs->get('root') . '.env');
 
-        if (!\file_exists($dotenvPath)) {
+        if (!\file_exists(filename: $dotenvPath)) {
             return;
         }
 
-        $path = \dirname((string) $dotenvPath);
-        $file = \basename((string) $dotenvPath);
+        $path = \dirname(path: (string) $dotenvPath);
+        $file = \basename(path: (string) $dotenvPath);
 
-        foreach (Dotenv::createImmutable($path, $file)->load() as $key => $value) {
+        foreach (Dotenv::createImmutable(paths: $path, names: $file)->load() as $key => $value) {
             $env->set($key, $value);
         }
     }

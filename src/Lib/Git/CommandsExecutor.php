@@ -31,61 +31,61 @@ final class CommandsExecutor implements CommandsExecutorInterface
     public function executeString(Command $command): string
     {
         $repository = $command->repository;
-        $repositoryPath = $this->resolvePath($repository);
+        $repositoryPath = $this->resolvePath(repository: $repository);
 
-        if (!$this->isValidRepository($repositoryPath)) {
+        if (!$this->isValidRepository(repository: $repositoryPath)) {
             $this->logger?->error('Not a valid Git repository', [
                 'repository' => $repositoryPath,
             ]);
 
-            throw new \InvalidArgumentException(\sprintf('"%s" is not a valid Git repository', $repositoryPath));
+            throw new \InvalidArgumentException(message: \sprintf('"%s" is not a valid Git repository', $repositoryPath));
         }
 
         $commandParts = ['git', ...$command->getCommandParts()];
 
         $this->logger?->debug('Executing Git command', [
-            'command' => \implode(' ', $commandParts),
+            'command' => \implode(separator: ' ', array: $commandParts),
             'repository' => $repositoryPath,
         ]);
 
         try {
-            $process = new Process($commandParts, $repositoryPath);
+            $process = new Process(command: $commandParts, cwd: $repositoryPath);
             $process->run();
 
             if (!$process->isSuccessful()) {
                 $this->logger?->error('Git command failed', [
-                    'command' => \implode(' ', $commandParts),
+                    'command' => \implode(separator: ' ', array: $commandParts),
                     'exitCode' => $process->getExitCode(),
                     'errorOutput' => $process->getErrorOutput(),
                 ]);
 
                 throw new GitCommandException(
-                    \sprintf(
+                    message: \sprintf(
                         'Git command "%s" failed with exit code %d: %s',
-                        \implode(' ', $commandParts),
+                        \implode(separator: ' ', array: $commandParts),
                         $process->getExitCode(),
                         $process->getErrorOutput(),
                     ),
-                    $process->getExitCode(),
+                    code: $process->getExitCode(),
                 );
             }
 
             $this->logger?->debug('Git command executed successfully', [
-                'command' => \implode(' ', $commandParts),
-                'outputLength' => \strlen($process->getOutput()),
+                'command' => \implode(separator: ' ', array: $commandParts),
+                'outputLength' => \strlen(string: $process->getOutput()),
             ]);
 
             return $process->getOutput();
         } catch (ProcessFailedException $e) {
             $this->logger?->error('Git command process failed', [
-                'command' => \implode(' ', $commandParts),
+                'command' => \implode(separator: ' ', array: $commandParts),
                 'error' => $e->getMessage(),
             ]);
 
             throw new GitCommandException(
-                \sprintf('Git command process failed: %s', $e->getMessage()),
-                $e->getCode(),
-                $e,
+                message: \sprintf('Git command process failed: %s', $e->getMessage()),
+                code: $e->getCode(),
+                previous: $e,
             );
         }
     }
@@ -101,9 +101,9 @@ final class CommandsExecutor implements CommandsExecutorInterface
             return self::$validatedRepositories[$repository];
         }
 
-        $repositoryPath = $this->resolvePath($repository);
+        $repositoryPath = $this->resolvePath(repository: $repository);
 
-        if (!\is_dir($repositoryPath)) {
+        if (!\is_dir(filename: $repositoryPath)) {
             $this->logger?->debug('Repository directory does not exist', [
                 'repository' => $repository,
             ]);
@@ -113,13 +113,13 @@ final class CommandsExecutor implements CommandsExecutorInterface
 
         try {
             $process = new Process(
-                ['git', 'rev-parse', '--is-inside-work-tree'],
-                $repositoryPath,
+                command: ['git', 'rev-parse', '--is-inside-work-tree'],
+                cwd: $repositoryPath,
             );
 
             $process->run();
 
-            $isValid = $process->isSuccessful() && \trim($process->getOutput()) === 'true';
+            $isValid = $process->isSuccessful() && \trim(string: $process->getOutput()) === 'true';
 
             $this->logger?->debug('Repository validation result', [
                 'repository' => $repository,
@@ -144,19 +144,19 @@ final class CommandsExecutor implements CommandsExecutorInterface
     {
         $rootPath = $this->dirs->getRootPath();
 
-        if (!$this->isValidRepository((string) $rootPath)) {
+        if (!$this->isValidRepository(repository: (string) $rootPath)) {
             $this->logger?->error('Not a valid Git repository', [
                 'repository' => (string) $rootPath,
             ]);
 
-            throw new \InvalidArgumentException(\sprintf('"%s" is not a valid Git repository', $rootPath));
+            throw new \InvalidArgumentException(message: \sprintf('"%s" is not a valid Git repository', $rootPath));
         }
 
         $file = $rootPath->join($filePath);
 
         // Ensure the file exists
         if (!$file->exists()) {
-            throw new GitCommandException(\sprintf('File "%s" does not exist', $filePath));
+            throw new GitCommandException(message: \sprintf('File "%s" does not exist', $filePath));
         }
 
         // Create a temporary file for the patch
@@ -167,7 +167,7 @@ final class CommandsExecutor implements CommandsExecutorInterface
                 'error' => $e->getMessage(),
             ]);
 
-            throw new GitCommandException('Failed to create temporary file for patch', 0, $e);
+            throw new GitCommandException(message: 'Failed to create temporary file for patch', previous: $e);
         }
 
         try {
@@ -176,8 +176,8 @@ final class CommandsExecutor implements CommandsExecutorInterface
 
             // Apply the patch using git apply command
             $process = new Process(
-                ['git', 'apply', '--whitespace=nowarn', $patchFile],
-                (string) $rootPath,
+                command: ['git', 'apply', '--whitespace=nowarn', $patchFile],
+                cwd: (string) $rootPath,
             );
 
             $process->run();
@@ -185,8 +185,8 @@ final class CommandsExecutor implements CommandsExecutorInterface
             // Check if the command was successful
             if (!$process->isSuccessful()) {
                 throw new GitCommandException(
-                    \sprintf('Failed to apply patch: %s', $process->getErrorOutput()),
-                    $process->getExitCode(),
+                    message: \sprintf('Failed to apply patch: %s', $process->getErrorOutput()),
+                    code: $process->getExitCode(),
                 );
             }
 

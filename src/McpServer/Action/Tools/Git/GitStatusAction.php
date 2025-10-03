@@ -40,7 +40,7 @@ final readonly class GitStatusAction
 
         // Check if we're in a valid git repository
         if (!$this->commandsExecutor->isValidRepository($repository)) {
-            return ToolResult::error('Not a git repository (or any of the parent directories)');
+            return ToolResult::error(error: 'Not a git repository (or any of the parent directories)');
         }
 
         try {
@@ -66,20 +66,20 @@ final readonly class GitStatusAction
                 $commandParts[] = '--untracked-files=no';
             }
 
-            $command = new Command($repository, $commandParts);
+            $command = new Command(repository: $repository, command: $commandParts);
             $result = $this->commandsExecutor->executeString($command);
 
             // If result is empty, indicate clean working tree
-            if (empty(\trim($result))) {
+            if (empty(\trim(string: $result))) {
                 $result = \sprintf(
                     'On branch %s nothing to commit, working tree clean',
                     $this->getCurrentBranch(
-                        $repository,
+                        repository: $repository,
                     ),
                 );
             }
 
-            return ToolResult::text($result);
+            return ToolResult::text(text: $result);
         } catch (GitCommandException $e) {
             $this->logger->error('Error executing git status', [
                 'repository' => $repository,
@@ -87,22 +87,22 @@ final readonly class GitStatusAction
                 'code' => $e->getCode(),
             ]);
 
-            return ToolResult::error($e->getMessage());
+            return ToolResult::error(error: $e->getMessage());
         } catch (\Throwable $e) {
             $this->logger->error('Unexpected error during git status', [
                 'repository' => $repository,
                 'error' => $e->getMessage(),
             ]);
 
-            return ToolResult::error($e->getMessage());
+            return ToolResult::error(error: $e->getMessage());
         }
     }
 
     private function getCurrentBranch(string $repository): string
     {
         try {
-            $command = new Command($repository, ['branch', '--show-current']);
-            $branch = \trim($this->commandsExecutor->executeString($command));
+            $command = new Command(repository: $repository, command: ['branch', '--show-current']);
+            $branch = \trim(string: $this->commandsExecutor->executeString($command));
             return !empty($branch) ? $branch : 'HEAD';
         } catch (\Throwable) {
             return 'HEAD';

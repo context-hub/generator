@@ -27,17 +27,17 @@ final readonly class MarkdownDirectoryReader implements ReaderInterface
             'path' => $path,
         ]);
 
-        if (!\is_dir($path)) {
-            throw new ReaderException("Directory does not exist: {$path}");
+        if (!\is_dir(filename: $path)) {
+            throw new ReaderException(message: "Directory does not exist: {$path}");
         }
 
         try {
             $finder = new Finder();
             $finder
                 ->files()
-                ->in($path)
-                ->name('*.md')
-                ->name('*.markdown')
+                ->in(dirs: $path)
+                ->name(patterns: '*.md')
+                ->name(patterns: '*.markdown')
                 ->followLinks()
                 ->sortByName();
 
@@ -48,15 +48,15 @@ final readonly class MarkdownDirectoryReader implements ReaderInterface
 
                 try {
                     // Read and parse the markdown file
-                    $parsedContent = $this->markdownReader->read($filePath);
+                    $parsedContent = $this->markdownReader->read(path: $filePath);
 
                     // Add file information to the parsed content
                     $markdownFiles[] = [
                         'file' => $filePath,
                         'relativePath' => $file->getRelativePathname(),
                         'name' => match ($file->getExtension()) {
-                            'md' => $file->getBasename('.md'),
-                            'markdown' => $file->getBasename('.markdown'),
+                            'md' => $file->getBasename(suffix: '.md'),
+                            'markdown' => $file->getBasename(suffix: '.markdown'),
                             default => $file->getBasename(),
                         },
                         'metadata' => $parsedContent['metadata'] ?? [],
@@ -74,13 +74,13 @@ final readonly class MarkdownDirectoryReader implements ReaderInterface
 
             $this->logger?->debug('Directory scan completed', [
                 'path' => $path,
-                'filesFound' => \count($markdownFiles),
+                'filesFound' => \count(value: $markdownFiles),
             ]);
 
             return [
                 'markdownFiles' => $markdownFiles,
                 'scannedPath' => $path,
-                'totalFiles' => \count($markdownFiles),
+                'totalFiles' => \count(value: $markdownFiles),
             ];
 
         } catch (\Throwable $e) {
@@ -95,7 +95,7 @@ final readonly class MarkdownDirectoryReader implements ReaderInterface
     public function supports(string $path): bool
     {
         // This reader supports directories
-        return \is_dir($path);
+        return \is_dir(filename: $path);
     }
 
     public function getSupportedExtensions(): array
