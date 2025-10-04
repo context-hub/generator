@@ -26,44 +26,9 @@ documents:
           - '*Interface.php'
         showTreeView: true
 
-  - description: Project Templates
-    outputPath: core/templates.md
-    sources:
-      - type: file
-        sourcePaths:
-          - src/Template
-          - vendor/spiral/files/src/FilesInterface.php
-        showTreeView: true
-
-  - description: Research Templates
-    outputPath: core/drafling.md
-    sources:
-      - type: file
-        sourcePaths:
-          - src/Research/Config
-          - src/Research/Domain
-          - src/Research/Repository
-          - src/Research/Service
-          - src/Research/Storage/StorageDriverInterface.php
-
-  - description: Research FileStorage
-    outputPath: drafling/file-storage.md
-    sources:
-      - type: file
-        sourcePaths:
-          - src/Research/Storage
-
-  - description: Research MCP
-    outputPath: drafling/mcp.md
-    sources:
-      - type: file
-        sourcePaths:
-          - src/Research/MCP
-          - src/McpServer/McpServerBootloader.php
-
-
   - description: "Changes in the Project"
     outputPath: "changes.md"
     sources:
       - type: git_diff
         commit: unstaged
+

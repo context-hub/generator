@@ -4,11 +4,17 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Lib\Variable\Provider;
 
+use Butschster\ContextGenerator\DirectoriesInterface;
+
 /**
  * Provider with predefined system variables
  */
 final readonly class PredefinedVariableProvider implements VariableProviderInterface
 {
+    public function __construct(
+        private DirectoriesInterface $dirs,
+    ) {}
+
     public function has(string $name): bool
     {
         return \array_key_exists($name, $this->getPredefinedVariables());
@@ -37,6 +43,11 @@ final readonly class PredefinedVariableProvider implements VariableProviderInter
             'OS' => PHP_OS,
             'HOSTNAME' => \gethostname() ?: 'unknown',
             'PWD' => \getcwd() ?: '.',
+
+            'ROOT_PATH' => (string) $this->dirs->getRootPath(),
+            'CONFIG_PATH' => (string) $this->dirs->getConfigPath(),
+            'ENV_PATH' => (string) $this->dirs->getEnvFilePath(),
+            'BINARY_PATH' => (string) $this->dirs->getBinaryPath(),
         ];
     }
 }

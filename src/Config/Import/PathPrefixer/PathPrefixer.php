@@ -4,11 +4,17 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Config\Import\PathPrefixer;
 
+use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
+
 /**
  * Abstract base class for path prefix operations
  */
 abstract readonly class PathPrefixer
 {
+    public function __construct(
+        protected VariableResolver $variables,
+    ) {}
+
     /**
      * Apply a path prefix to the appropriate paths in a configuration
      */
@@ -20,6 +26,7 @@ abstract readonly class PathPrefixer
     protected function combinePaths(string $prefix, string $path): string
     {
         $combined = \rtrim($prefix, '/') . '/' . \ltrim($path, '/');
+
         return $this->normalizePath($combined);
     }
 

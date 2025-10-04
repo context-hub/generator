@@ -9,8 +9,8 @@ use Butschster\ContextGenerator\Config\Exception\ConfigLoaderException;
 use Butschster\ContextGenerator\Config\Import\Merger\ConfigMergerProviderInterface;
 use Butschster\ContextGenerator\Config\Import\PathPrefixer\DocumentOutputPathPrefixer;
 use Butschster\ContextGenerator\Config\Import\PathPrefixer\SourcePathPrefixer;
-use Butschster\ContextGenerator\Config\Import\Source\Config\SourceConfigInterface;
 use Butschster\ContextGenerator\Config\Import\Source\Config\SourceConfigFactory;
+use Butschster\ContextGenerator\Config\Import\Source\Config\SourceConfigInterface;
 use Butschster\ContextGenerator\Config\Import\Source\Exception\ImportSourceException;
 use Butschster\ContextGenerator\Config\Import\Source\ImportedConfig;
 use Butschster\ContextGenerator\Config\Import\Source\ImportSourceProvider;
@@ -31,8 +31,8 @@ final readonly class ImportResolver
         private ImportSourceProvider $sourceProvider,
         private WildcardPathFinder $pathFinder,
         private ConfigMergerProviderInterface $configMergerProvider,
-        private DocumentOutputPathPrefixer $documentPrefixer = new DocumentOutputPathPrefixer(),
-        private SourcePathPrefixer $sourcePrefixer = new SourcePathPrefixer(),
+        private DocumentOutputPathPrefixer $documentPrefixer,
+        private SourcePathPrefixer $sourcePrefixer,
         private SourceConfigFactory $sourceConfigFactory = new SourceConfigFactory(),
         private CircularImportDetectorInterface $detector = new CircularImportDetector(),
         #[LoggerPrefix(prefix: 'import-resolver')]
