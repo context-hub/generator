@@ -6,10 +6,9 @@ namespace Butschster\ContextGenerator\McpServer\Console;
 
 use Butschster\ContextGenerator\Console\BaseCommand;
 use Butschster\ContextGenerator\DirectoriesInterface;
-use Butschster\ContextGenerator\McpServer\McpConfig\ConfigGeneratorInterface;
-use Butschster\ContextGenerator\McpServer\McpConfig\Renderer\McpConfigRenderer;
-use Butschster\ContextGenerator\McpServer\McpConfig\Service\OsDetectionService;
 use Butschster\ContextGenerator\McpServer\McpConfig\Client\ClientStrategyRegistry;
+use Butschster\ContextGenerator\McpServer\McpConfig\ConfigGeneratorInterface;
+use Butschster\ContextGenerator\McpServer\McpConfig\Service\OsDetectionService;
 use Spiral\Console\Attribute\Option;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -35,18 +34,11 @@ final class McpConfigCommand extends BaseCommand
     protected bool $explain = false;
 
     #[Option(
-        name: 'interactive',
-        shortcut: 'i',
-        description: 'Interactive mode with guided questions',
-    )]
-    protected bool $interactive = false;
-
-    #[Option(
         name: 'client',
         shortcut: 'c',
         description: 'MCP client type (claude, codex, cursor, generic)',
     )]
-    protected string $client = 'generic';
+    protected ?string $client = null;
 
     #[Option(
         name: 'project-path',
@@ -62,30 +54,47 @@ final class McpConfigCommand extends BaseCommand
     )]
     protected bool $useGlobal = true;
 
+    #[Option(
+        name: 'sse',
+        description: 'Enable SSE (Server-Sent Events) transport mode',
+    )]
+    protected bool $useSse = false;
+
+    #[Option(
+        name: 'host',
+        description: 'SSE host to bind to (default: 127.0.0.1)',
+    )]
+    protected string $sseHost = '127.0.0.1';
+
+    #[Option(
+        name: 'port',
+        description: 'SSE port to bind to (default: 8080)',
+    )]
+    protected int $ssePort = 8080;
+
     public function __invoke(
         OsDetectionService $osDetection,
         ConfigGeneratorInterface $configGenerator,
         DirectoriesInterface $dirs,
+        ClientStrategyRegistry $registry,
     ): int {
-        $renderer = new McpConfigRenderer($this->output);
-        $renderer->renderHeader();
+        $this->output->title('MCP Configuration Generator');
 
         // Handle interactive mode
-        if ($this->interactive) {
-            return $this->runInteractiveMode($osDetection, $configGenerator, $renderer, $dirs);
+        if ($this->client === null) {
+            return $this->runInteractiveMode($osDetection, $configGenerator, $registry, $dirs);
         }
 
-        // Detect operating system and environment
+        // Detect operating system
         $osInfo = $osDetection->detect($this->forceWsl);
 
-        // Determine configuration approach
+        // Build configuration options
         $options = $this->buildConfigOptions($dirs);
 
-        // Resolve selected client strategy
-        $registry = new ClientStrategyRegistry();
+        // Get client strategy
         $strategy = $registry->getByKey($this->client) ?? $registry->getDefault();
 
-        // Generate configuration via vendor generator (supports claude/generic)
+        // Generate configuration
         $config = $configGenerator->generate(
             client: $strategy->getGeneratorClientKey(),
             osInfo: $osInfo,
@@ -94,10 +103,8 @@ final class McpConfigCommand extends BaseCommand
         );
 
         // Render using strategy
-        $strategy->renderConfiguration($renderer, $config, $osInfo, $options, $this->output);
-        if ($this->explain) {
-            $strategy->renderExplanation($renderer, $config, $osInfo, $options, $this->output);
-        }
+        $strategy->renderConfiguration($config, $osInfo, $options, $this->output);
+        $strategy->renderInstructions($config, $osInfo, $options, $this->output);
 
         return Command::SUCCESS;
     }
@@ -105,37 +112,38 @@ final class McpConfigCommand extends BaseCommand
     private function runInteractiveMode(
         OsDetectionService $osDetection,
         ConfigGeneratorInterface $configGenerator,
-        McpConfigRenderer $renderer,
+        ClientStrategyRegistry $registry,
         DirectoriesInterface $dirs,
     ): int {
-        $renderer->renderInteractiveWelcome();
+        $this->output->section('Interactive Configuration');
+        $this->output->text('Let\'s configure your MCP client step by step...');
+        $this->output->newLine();
 
         // Ask about client type
-        $registry = new ClientStrategyRegistry();
-
-        // Build interactive choices. We pass human labels for display, but
-        // also accept typed keys (e.g. "codex") as valid input.
         $choice = $this->output->choice(
             'Which MCP client are you configuring?',
             $registry->getChoiceLabels(),
             $registry->getDefault()->getLabel(),
         );
 
-        // Resolve strategy by label first, then by key (case-insensitive).
-        // This fixes a bug where typing a key like "codex" fell back to the
-        // default (Claude) because we only matched by label.
         $strategy = $registry->getByLabel($choice)
             ?? $registry->getByKey(\strtolower(\trim((string) $choice)))
             ?? $registry->getDefault();
 
-        // Auto-detect OS
+        // Detect OS
         $osInfo = $osDetection->detect();
-        $renderer->renderDetectedEnvironment($osInfo);
+
+        $this->output->section('Environment');
+        $this->output->definitionList(
+            ['Operating System' => $osInfo->getDisplayName()],
+            ['Architecture' => $osInfo->additionalInfo['architecture'] ?? 'Unknown'],
+        );
+        $this->output->newLine();
 
         // Ask about WSL if on Windows
         if ($osInfo->isWindows() && !$osInfo->isWsl()) {
             $useWsl = $this->output->confirm(
-                'Are you planning to run CTX inside WSL (Windows Subsystem for Linux)?',
+                'Are you using WSL (Windows Subsystem for Linux)?',
                 false,
             );
 
@@ -144,12 +152,12 @@ final class McpConfigCommand extends BaseCommand
             }
         }
 
-        // Ask about project configuration approach
+        // Ask about project configuration
         $configChoice = $this->output->choice(
             'How do you want to configure project access?',
             [
-                'global' => 'Use global project registry (switch between projects dynamically)',
-                'specific' => 'Use specific project path (single project)',
+                'global' => 'Global project registry (switch projects dynamically)',
+                'specific' => 'Specific project path (single project)',
             ],
             'global',
         );
@@ -159,31 +167,29 @@ final class McpConfigCommand extends BaseCommand
 
         if ($configChoice === 'specific') {
             $options['use_project_path'] = true;
-
-            // Ask about project path
-            $defaultPath = (string) $dirs->getRootPath();
             $projectPath = $this->output->ask(
-                'What is the path to your CTX project?',
-                $defaultPath,
+                'Project path:',
+                (string) $dirs->getRootPath(),
             );
 
-            // Validate project path
             if (!\is_dir($projectPath)) {
-                $this->output->warning("Warning: The specified path does not exist: {$projectPath}");
-
+                $this->output->warning("Path does not exist: {$projectPath}");
                 if (!$this->output->confirm('Continue anyway?', true)) {
                     return Command::FAILURE;
                 }
             }
         }
 
-        // Ask about environment variables
-        if ($this->output->confirm('Do you need to configure environment variables (e.g., GitHub token)?', false)) {
-            $options['enable_file_operations'] = $this->output->confirm('Enable file operations?', true);
+        // Ask about SSE mode
+        $useSse = $this->output->confirm(
+            'Enable SSE (Server-Sent Events) transport mode for remote access?',
+            false,
+        );
 
-            if ($this->output->confirm('Do you have a GitHub personal access token?', false)) {
-                $options['github_token'] = $this->output->askHidden('GitHub Token (input will be hidden):');
-            }
+        if ($useSse) {
+            $options['use_sse'] = true;
+            $options['sse_host'] = $this->output->ask('SSE host:', '127.0.0.1');
+            $options['sse_port'] = (int) $this->output->ask('SSE port:', '8080');
         }
 
         // Generate and display configuration
@@ -194,8 +200,8 @@ final class McpConfigCommand extends BaseCommand
             options: $options,
         );
 
-        $strategy->renderConfiguration($renderer, $config, $osInfo, $options, $this->output);
-        $strategy->renderExplanation($renderer, $config, $osInfo, $options, $this->output);
+        $strategy->renderConfiguration($config, $osInfo, $options, $this->output);
+        $strategy->renderInstructions($config, $osInfo, $options, $this->output);
 
         return Command::SUCCESS;
     }
@@ -204,16 +210,21 @@ final class McpConfigCommand extends BaseCommand
     {
         $options = [];
 
-        // Determine if we should use project path
         if ($this->projectPath !== null) {
             $options['use_project_path'] = true;
             $options['project_path'] = $this->projectPath;
         } elseif (!$this->useGlobal) {
-            // If not explicitly global and we have a project path, use it
             $options['use_project_path'] = true;
             $options['project_path'] = (string) $dirs->getRootPath();
         } else {
             $options['use_project_path'] = false;
+        }
+
+        // Add SSE options if enabled
+        if ($this->useSse) {
+            $options['use_sse'] = true;
+            $options['sse_host'] = $this->sseHost;
+            $options['sse_port'] = $this->ssePort;
         }
 
         return $options;
