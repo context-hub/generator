@@ -9,7 +9,7 @@ use Butschster\ContextGenerator\Source\SourceInterface;
 use Butschster\ContextGenerator\Source\Text\TextSource;
 use Butschster\ContextGenerator\Source\Text\TextSourceFetcher;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 class TextSourceFetcherTest extends TestCase
 {

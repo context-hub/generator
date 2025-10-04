@@ -9,7 +9,7 @@ use Butschster\ContextGenerator\Lib\Variable\VariableReplacementProcessor;
 use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 #[CoversClass(VariableResolver::class)]
 class VariableResolverTest extends TestCase

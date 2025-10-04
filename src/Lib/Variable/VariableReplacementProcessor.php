@@ -7,6 +7,7 @@ namespace Butschster\ContextGenerator\Lib\Variable;
 use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Lib\Variable\Provider\VariableProviderInterface;
 use Psr\Log\LoggerInterface;
+use Spiral\Core\Attribute\Proxy;
 
 /**
  * Processor that replaces variable references in text
@@ -14,6 +15,7 @@ use Psr\Log\LoggerInterface;
 final readonly class VariableReplacementProcessor implements VariableReplacementProcessorInterface
 {
     public function __construct(
+        #[Proxy]
         private VariableProviderInterface $provider,
         #[LoggerPrefix(prefix: 'variable-replacement')]
         private ?LoggerInterface $logger = null,

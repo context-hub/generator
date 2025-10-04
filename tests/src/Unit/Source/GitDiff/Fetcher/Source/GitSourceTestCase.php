@@ -7,7 +7,7 @@ namespace Tests\Unit\Source\GitDiff\Fetcher\Source;
 use Butschster\ContextGenerator\Lib\Git\Command;
 use Butschster\ContextGenerator\Lib\Git\CommandsExecutorInterface;
 use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 

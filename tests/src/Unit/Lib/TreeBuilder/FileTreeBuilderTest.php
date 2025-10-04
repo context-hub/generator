@@ -8,7 +8,7 @@ use Butschster\ContextGenerator\Lib\TreeBuilder\FileTreeBuilder;
 use Butschster\ContextGenerator\Lib\TreeBuilder\TreeRendererInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 #[CoversClass(FileTreeBuilder::class)]
 final class FileTreeBuilderTest extends TestCase

@@ -6,7 +6,7 @@ namespace Tests\Unit\Fetcher;
 
 use Butschster\ContextGenerator\Lib\TreeBuilder\FileTreeBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 class FileTreeBuilderTest extends TestCase
 {

@@ -8,7 +8,7 @@ use Butschster\ContextGenerator\Lib\Variable\Provider\DotEnvVariableProvider;
 use Dotenv\Repository\RepositoryInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 #[CoversClass(DotEnvVariableProvider::class)]
 class DotEnvVariableProviderTest extends TestCase

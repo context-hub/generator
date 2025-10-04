@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests;
 
 use Butschster\ContextGenerator\Directories;
+use Butschster\ContextGenerator\DirectoriesInterface;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 
 /**
@@ -25,6 +26,11 @@ abstract class TestCase extends BaseTestCase
      * @var array<string> Temporary directories to clean up
      */
     private array $tempDirs = [];
+
+    public function getDirs(): DirectoriesInterface
+    {
+        return $this->createDirectories();
+    }
 
     /**
      * Clean up temporary files and directories

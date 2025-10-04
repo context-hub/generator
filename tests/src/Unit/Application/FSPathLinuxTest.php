@@ -8,7 +8,7 @@ use Butschster\ContextGenerator\Application\FSPath;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 #[CoversClass(FSPath::class)]
 final class FSPathLinuxTest extends TestCase

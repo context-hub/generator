@@ -7,7 +7,7 @@ namespace Tests\Unit\Lib\Html;
 use Butschster\ContextGenerator\Lib\Html\HtmlCleaner;
 use League\HTMLToMarkdown\HtmlConverter;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 class HtmlCleanerTest extends TestCase
 {
