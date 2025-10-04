@@ -14,26 +14,6 @@ use Tests\Feature\Console\ConsoleTestCase;
 
 final class McpConfigCommandTest extends ConsoleTestCase
 {
-    private function runMcpConfig(array $args = [], ?int $verbosity = null): string
-    {
-        /** @var Console $console */
-        $console = $this->getConsole();
-
-        // Prepare explicit input/output so our BaseCommand receives SymfonyStyle
-        $input = new ArrayInput($args);
-        $input->setInteractive(false);
-
-        $buffer = new BufferedOutput();
-        /** @psalm-suppress ArgumentTypeCoercion */
-        $buffer->setVerbosity($verbosity ?? OutputInterface::VERBOSITY_NORMAL);
-
-        $style = new SymfonyStyle($input, $buffer);
-
-        $console->run('mcp:config', $input, $style);
-
-        return $buffer->fetch();
-    }
-
     #[Test]
     public function default_client_is_claude(): void
     {
@@ -77,5 +57,25 @@ final class McpConfigCommandTest extends ConsoleTestCase
         $this->assertStringContainsString('Generated Configuration', $out);
         $this->assertStringContainsString('Configuration type: generic', $out);
         $this->assertStringContainsString('Generic MCP client configuration', $out);
+    }
+
+    private function runMcpConfig(array $args = [], ?int $verbosity = null): string
+    {
+        /** @var Console $console */
+        $console = $this->getConsole();
+
+        // Prepare explicit input/output so our BaseCommand receives SymfonyStyle
+        $input = new ArrayInput($args);
+        $input->setInteractive(false);
+
+        $buffer = new BufferedOutput();
+        /** @psalm-suppress ArgumentTypeCoercion */
+        $buffer->setVerbosity($verbosity ?? OutputInterface::VERBOSITY_NORMAL);
+
+        $style = new SymfonyStyle($input, $buffer);
+
+        $console->run('mcp:config', $input, $style);
+
+        return $buffer->fetch();
     }
 }

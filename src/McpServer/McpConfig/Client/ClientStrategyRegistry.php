@@ -26,7 +26,7 @@ final class ClientStrategyRegistry
 
     public function getByKey(string $key): ?ClientStrategyInterface
     {
-        $key = strtolower($key);
+        $key = \strtolower($key);
         return $this->strategies[$key] ?? null;
     }
 
@@ -45,7 +45,7 @@ final class ClientStrategyRegistry
      */
     public function getChoiceLabels(): array
     {
-        return array_map(static fn(ClientStrategyInterface $s) => $s->getLabel(), $this->strategies);
+        return \array_map(static fn(ClientStrategyInterface $s) => $s->getLabel(), $this->strategies);
     }
 
     public function getDefault(): ClientStrategyInterface
@@ -53,4 +53,3 @@ final class ClientStrategyRegistry
         return $this->strategies['claude'];
     }
 }
-

@@ -37,4 +37,3 @@ abstract class AbstractClientStrategy implements ClientStrategyInterface
 
     protected function renderAdditionalNotes(SymfonyStyle $output, OsInfo $osInfo, array $options): void {}
 }
-

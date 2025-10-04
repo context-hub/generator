@@ -40,14 +40,13 @@ final class CodexClientStrategy extends AbstractClientStrategy
         $output->text('Codex configuration (TOML):');
         $output->newLine();
 
-        $args = array_map(static function (string $arg): string {
+        $args = \array_map(static fn(string $arg): string =>
             // Basic escaping for double quotes
-            return '"' . str_replace('"', '\\"', $arg) . '"';
-        }, $config->args);
+            '"' . \str_replace('"', '\\"', $arg) . '"', $config->args);
 
         $toml = "[mcp_servers.ctx]\n"
             . "command = \"{$config->command}\"\n"
-            . 'args = [' . implode(', ', $args) . "]\n";
+            . 'args = [' . \implode(', ', $args) . "]\n";
 
         $output->writeln('<comment>' . $toml . '</comment>');
         $output->newLine();
@@ -76,4 +75,3 @@ final class CodexClientStrategy extends AbstractClientStrategy
         $output->newLine();
     }
 }
-

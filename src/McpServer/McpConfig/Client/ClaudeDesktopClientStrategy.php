@@ -21,4 +21,3 @@ final class ClaudeDesktopClientStrategy extends AbstractClientStrategy
         return 'claude';
     }
 }
-

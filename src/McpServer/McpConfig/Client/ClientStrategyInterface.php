@@ -36,4 +36,3 @@ interface ClientStrategyInterface
         SymfonyStyle $output,
     ): void;
 }
-

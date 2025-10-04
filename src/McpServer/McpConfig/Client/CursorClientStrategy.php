@@ -36,4 +36,3 @@ final class CursorClientStrategy extends AbstractClientStrategy
         ]);
     }
 }
-

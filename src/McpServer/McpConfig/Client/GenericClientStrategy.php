@@ -21,4 +21,3 @@ final class GenericClientStrategy extends AbstractClientStrategy
         return 'generic';
     }
 }
-
