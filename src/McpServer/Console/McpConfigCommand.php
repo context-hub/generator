@@ -46,7 +46,7 @@ final class McpConfigCommand extends BaseCommand
         shortcut: 'c',
         description: 'MCP client type (claude, codex, cursor, generic)',
     )]
-    protected string $client = 'claude';
+    protected string $client = 'generic';
 
     #[Option(
         name: 'project-path',
