@@ -7,7 +7,7 @@ namespace Tests\Unit\Lib\Variable\Provider;
 use Butschster\ContextGenerator\Lib\Variable\Provider\PredefinedVariableProvider;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 #[CoversClass(PredefinedVariableProvider::class)]
 class PredefinedVariableProviderTest extends TestCase
@@ -83,6 +83,6 @@ class PredefinedVariableProviderTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->provider = new PredefinedVariableProvider();
+        $this->provider = new PredefinedVariableProvider(dirs: $this->getDirs());
     }
 }

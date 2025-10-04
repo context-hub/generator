@@ -10,7 +10,7 @@ use Butschster\ContextGenerator\Source\GitDiff\RenderStrategy\Enum\RenderStrateg
 use Butschster\ContextGenerator\Source\GitDiff\RenderStrategy\LLMFriendlyRenderStrategy;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 #[CoversClass(LLMFriendlyRenderStrategy::class)]
 final class LLMFriendlyRenderStrategyTest extends TestCase

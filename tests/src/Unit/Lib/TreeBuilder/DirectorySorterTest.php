@@ -7,7 +7,7 @@ namespace Tests\Unit\Lib\TreeBuilder;
 use Butschster\ContextGenerator\Lib\TreeBuilder\DirectorySorter;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 #[CoversClass(DirectorySorter::class)]
 final class DirectorySorterTest extends TestCase

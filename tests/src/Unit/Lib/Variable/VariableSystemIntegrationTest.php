@@ -98,7 +98,7 @@ class VariableSystemIntegrationTest extends TestCase
         $compositeProvider = new CompositeVariableProvider(
             $customProviderWithOverride,          // Highest priority
             $this->customProvider,               // Middle priority
-            new PredefinedVariableProvider(),    // Lowest priority
+            new PredefinedVariableProvider(dirs: $this->getDirs()),    // Lowest priority
         );
 
         $processor = new VariableReplacementProcessor($compositeProvider);
@@ -180,7 +180,7 @@ class VariableSystemIntegrationTest extends TestCase
 
         // Create a composite provider with predefined variables and our custom provider
         $compositeProvider = new CompositeVariableProvider(
-            new PredefinedVariableProvider(),  // Lower priority (system variables)
+            new PredefinedVariableProvider(dirs: $this->getDirs()),  // Lower priority (system variables)
             $this->customProvider,              // Higher priority (custom variables)
         );
 

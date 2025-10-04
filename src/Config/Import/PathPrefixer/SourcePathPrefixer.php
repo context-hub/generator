@@ -58,10 +58,13 @@ final readonly class SourcePathPrefixer extends PathPrefixer
     private function applyPrefixToPaths(mixed $paths, string $prefix): mixed
     {
         if (\is_string($paths)) {
+            $paths = $this->variables->resolve($paths);
+
             // Skip absolute paths
             if ($this->isAbsolutePath($paths)) {
                 return $paths;
             }
+
             return $this->combinePaths($prefix, $paths);
         }
 

@@ -6,7 +6,7 @@ namespace Tests\Feature\Drafling\Storage\FileStorage;
 
 use Butschster\ContextGenerator\Research\Storage\FileStorage\DirectoryScanner;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 use Spiral\Exceptions\ExceptionReporterInterface;
 use Spiral\Files\Files;
 
@@ -245,6 +245,7 @@ MARKDOWN;
         $this->scanner = new DirectoryScanner($files, $reporter);
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
         // Clean up temp directory

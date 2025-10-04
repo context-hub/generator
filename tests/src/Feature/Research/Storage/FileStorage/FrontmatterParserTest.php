@@ -6,7 +6,7 @@ namespace Tests\Feature\Drafling\Storage\FileStorage;
 
 use Butschster\ContextGenerator\Research\Storage\FileStorage\FrontmatterParser;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 final class FrontmatterParserTest extends TestCase
 {

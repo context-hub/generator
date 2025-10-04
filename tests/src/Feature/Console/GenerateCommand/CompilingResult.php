@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Console\GenerateCommand;
 
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 /**
  * Wrapper for generate command result assertions

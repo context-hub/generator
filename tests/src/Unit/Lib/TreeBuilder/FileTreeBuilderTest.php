@@ -8,7 +8,7 @@ use Butschster\ContextGenerator\Lib\TreeBuilder\FileTreeBuilder;
 use Butschster\ContextGenerator\Lib\TreeBuilder\TreeRendererInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 #[CoversClass(FileTreeBuilder::class)]
 final class FileTreeBuilderTest extends TestCase
@@ -261,6 +261,7 @@ final class FileTreeBuilderTest extends TestCase
         \file_put_contents($this->tempDir . '/dir2/subdir/file4.txt', 'content');
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
         $this->removeDirectory($this->tempDir);

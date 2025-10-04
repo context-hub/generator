@@ -10,7 +10,7 @@ use Butschster\ContextGenerator\Source\GitDiff\RenderStrategy\Enum\RenderStrateg
 use Butschster\ContextGenerator\Source\GitDiff\RenderStrategy\RawRenderStrategy;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 #[CoversClass(RawRenderStrategy::class)]
 final class RawRenderStrategyTest extends TestCase

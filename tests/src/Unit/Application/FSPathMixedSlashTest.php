@@ -8,7 +8,7 @@ use Butschster\ContextGenerator\Application\FSPath;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 #[CoversClass(FSPath::class)]
 final class FSPathMixedSlashTest extends TestCase
@@ -220,6 +220,7 @@ final class FSPathMixedSlashTest extends TestCase
         $this->assertSame('C:/Users/test/documents/file.txt', $path->toString());
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
         // Always reset directory separator at the end of each test

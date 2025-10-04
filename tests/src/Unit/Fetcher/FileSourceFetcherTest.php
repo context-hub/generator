@@ -10,7 +10,7 @@ use Butschster\ContextGenerator\Modifier\SourceModifierRegistry;
 use Butschster\ContextGenerator\Source\File\FileSourceFetcher;
 use Butschster\ContextGenerator\Source\SourceInterface;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 class FileSourceFetcherTest extends TestCase
 {

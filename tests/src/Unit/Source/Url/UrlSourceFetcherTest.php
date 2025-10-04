@@ -9,6 +9,7 @@ use Butschster\ContextGenerator\Lib\Html\HtmlCleanerInterface;
 use Butschster\ContextGenerator\Lib\Html\SelectorContentExtractorInterface;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpResponse;
+use Butschster\ContextGenerator\Lib\Variable\Provider\PredefinedVariableProvider;
 use Butschster\ContextGenerator\Lib\Variable\VariableReplacementProcessor;
 use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
 use Butschster\ContextGenerator\Modifier\ModifiersApplierInterface;
@@ -18,8 +19,8 @@ use Butschster\ContextGenerator\Source\Url\UrlSourceFetcher;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use Tests\TestCase;
 
 #[CoversClass(UrlSourceFetcher::class)]
 class UrlSourceFetcherTest extends TestCase
@@ -316,7 +317,7 @@ class UrlSourceFetcherTest extends TestCase
     {
         $this->httpClient = $this->createMock(HttpClientInterface::class);
         $this->variableResolver = new VariableResolver(
-            new VariableReplacementProcessor(),
+            new VariableReplacementProcessor(new PredefinedVariableProvider(dirs: $this->getDirs())),
         );
         $this->cleaner = $this->createMock(HtmlCleanerInterface::class);
         $this->selectorExtractor = $this->createMock(SelectorContentExtractorInterface::class);

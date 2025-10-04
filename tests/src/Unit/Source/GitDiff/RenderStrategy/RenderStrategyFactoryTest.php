@@ -11,7 +11,7 @@ use Butschster\ContextGenerator\Source\GitDiff\RenderStrategy\RenderStrategyFact
 use Butschster\ContextGenerator\Source\GitDiff\RenderStrategy\RenderStrategyInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 #[CoversClass(RenderStrategyFactory::class)]
 final class RenderStrategyFactoryTest extends TestCase

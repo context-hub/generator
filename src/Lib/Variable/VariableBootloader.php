@@ -49,7 +49,7 @@ final class VariableBootloader extends Bootloader
                     ),
 
                     // Predefined system variables have lowest priority
-                    new PredefinedVariableProvider(),
+                    new PredefinedVariableProvider(dirs: $dirs),
                 );
             },
 

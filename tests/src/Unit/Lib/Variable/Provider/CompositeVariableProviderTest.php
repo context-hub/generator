@@ -8,7 +8,7 @@ use Butschster\ContextGenerator\Lib\Variable\Provider\CompositeVariableProvider;
 use Butschster\ContextGenerator\Lib\Variable\Provider\VariableProviderInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 #[CoversClass(CompositeVariableProvider::class)]
 class CompositeVariableProviderTest extends TestCase
