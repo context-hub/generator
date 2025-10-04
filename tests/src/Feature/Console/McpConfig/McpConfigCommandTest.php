@@ -15,9 +15,9 @@ use Tests\Feature\Console\ConsoleTestCase;
 final class McpConfigCommandTest extends ConsoleTestCase
 {
     #[Test]
-    public function default_client_is_claude(): void
+    public function claude_client_ouptuts_correct_json(): void
     {
-        $out = $this->runMcpConfig();
+        $out = $this->runMcpConfig(['--client' => 'claude']);
 
         $this->assertStringContainsString('Generated Configuration', $out);
         $this->assertStringContainsString('Configuration type: claude', $out);
