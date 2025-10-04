@@ -245,6 +245,7 @@ MARKDOWN;
         $this->scanner = new DirectoryScanner($files, $reporter);
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
         // Clean up temp directory

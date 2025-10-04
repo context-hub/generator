@@ -220,6 +220,7 @@ final class FSPathMixedSlashTest extends TestCase
         $this->assertSame('C:/Users/test/documents/file.txt', $path->toString());
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
         // Always reset directory separator at the end of each test

@@ -261,6 +261,7 @@ final class FileTreeBuilderTest extends TestCase
         \file_put_contents($this->tempDir . '/dir2/subdir/file4.txt', 'content');
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
         $this->removeDirectory($this->tempDir);

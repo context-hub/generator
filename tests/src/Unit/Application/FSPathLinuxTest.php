@@ -265,6 +265,7 @@ final class FSPathLinuxTest extends TestCase
         }
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
         // Reset directory separator if it was overridden
