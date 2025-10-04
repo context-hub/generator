@@ -9,6 +9,7 @@ use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\McpServer\McpConfig\ConfigGeneratorInterface;
 use Butschster\ContextGenerator\McpServer\McpConfig\Renderer\McpConfigRenderer;
 use Butschster\ContextGenerator\McpServer\McpConfig\Service\OsDetectionService;
+use Butschster\ContextGenerator\McpServer\McpConfig\Client\ClientStrategyRegistry;
 use Spiral\Console\Attribute\Option;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -43,9 +44,9 @@ final class McpConfigCommand extends BaseCommand
     #[Option(
         name: 'client',
         shortcut: 'c',
-        description: 'MCP client type (claude, generic)',
+        description: 'MCP client type (claude, codex, cursor, generic)',
     )]
-    protected string $client = 'generic';
+    protected string $client = 'claude';
 
     #[Option(
         name: 'project-path',
@@ -80,20 +81,22 @@ final class McpConfigCommand extends BaseCommand
         // Determine configuration approach
         $options = $this->buildConfigOptions($dirs);
 
-        // Generate configuration
+        // Resolve selected client strategy
+        $registry = new ClientStrategyRegistry();
+        $strategy = $registry->getByKey($this->client) ?? $registry->getDefault();
+
+        // Generate configuration via vendor generator (supports claude/generic)
         $config = $configGenerator->generate(
-            client: $this->client,
+            client: $strategy->getGeneratorClientKey(),
             osInfo: $osInfo,
             projectPath: $options['project_path'] ?? (string) $dirs->getRootPath(),
             options: $options,
         );
 
-        // Render the configuration
-        $renderer->renderConfiguration($config, $osInfo, $options);
-
-        // Show explanations if requested
+        // Render using strategy
+        $strategy->renderConfiguration($renderer, $config, $osInfo, $options, $this->output);
         if ($this->explain) {
-            $renderer->renderExplanation($config, $osInfo, $options);
+            $strategy->renderExplanation($renderer, $config, $osInfo, $options, $this->output);
         }
 
         return Command::SUCCESS;
@@ -108,11 +111,13 @@ final class McpConfigCommand extends BaseCommand
         $renderer->renderInteractiveWelcome();
 
         // Ask about client type
-        $clientType = $this->output->choice(
+        $registry = new ClientStrategyRegistry();
+        $choice = $this->output->choice(
             'Which MCP client are you configuring?',
-            ['claude' => 'Claude Desktop', 'generic' => 'Generic MCP Client'],
-            'generic',
+            $registry->getChoiceLabels(),
+            $registry->getDefault()->getLabel(),
         );
+        $strategy = $registry->getByLabel($choice) ?? $registry->getDefault();
 
         // Auto-detect OS
         $osInfo = $osDetection->detect();
@@ -174,14 +179,14 @@ final class McpConfigCommand extends BaseCommand
 
         // Generate and display configuration
         $config = $configGenerator->generate(
-            client: $clientType,
+            client: $strategy->getGeneratorClientKey(),
             osInfo: $osInfo,
             projectPath: $projectPath,
             options: $options,
         );
 
-        $renderer->renderConfiguration($config, $osInfo, $options);
-        $renderer->renderExplanation($config, $osInfo, $options);
+        $strategy->renderConfiguration($renderer, $config, $osInfo, $options, $this->output);
+        $strategy->renderExplanation($renderer, $config, $osInfo, $options, $this->output);
 
         return Command::SUCCESS;
     }
