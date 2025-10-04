@@ -112,12 +112,21 @@ final class McpConfigCommand extends BaseCommand
 
         // Ask about client type
         $registry = new ClientStrategyRegistry();
+
+        // Build interactive choices. We pass human labels for display, but
+        // also accept typed keys (e.g. "codex") as valid input.
         $choice = $this->output->choice(
             'Which MCP client are you configuring?',
             $registry->getChoiceLabels(),
             $registry->getDefault()->getLabel(),
         );
-        $strategy = $registry->getByLabel($choice) ?? $registry->getDefault();
+
+        // Resolve strategy by label first, then by key (case-insensitive).
+        // This fixes a bug where typing a key like "codex" fell back to the
+        // default (Claude) because we only matched by label.
+        $strategy = $registry->getByLabel($choice)
+            ?? $registry->getByKey(\strtolower(\trim((string) $choice)))
+            ?? $registry->getDefault();
 
         // Auto-detect OS
         $osInfo = $osDetection->detect();
