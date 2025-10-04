@@ -127,7 +127,7 @@ ctx generate
 3. Use with your favorite AI:
 
 - Copy the generated markdown files to your AI chat
-- Or use the built-in MCP server with Claude Desktop
+- Or use the built-in MCP server with your MCP client (e.g., Claude Desktop, Cursor, Continue, Windsurf)
 - Or process locally with open-source models
 
 ## Real-World Use Cases
@@ -220,23 +220,24 @@ Configuration → Sources → Filters → Modifiers → Output
 - **Modifiers**: How to transform content (extract signatures, remove comments)
 - **Output**: Structured markdown ready for AI consumption
 
-## Connect to Claude Desktop (Optional)
+## Connect to an MCP Client (Optional)
 
-For a more seamless experience, you can connect Context Generator directly to Claude AI using the MCP server.
+For a more seamless experience, you can connect CTX to any MCP-compatible client using the built-in MCP server.
 
 ```bash
-# Auto-detect OS and generate configuration
-ctx mcp:config
+# Interactive setup: detect OS and install config for your client
+ctx mcp:config -i
 ```
 
 This command:
 
-- 🔍 **Auto-detects your OS** (Windows, Linux, macOS, WSL)
-- 🎯 **Generates the right config** for your environment
-- 📋 **Provides copy-paste ready** JSON for Claude Desktop
-- 🧭 **Includes setup instructions** and troubleshooting tips
+- 🔍 Auto-detects your OS (Windows, Linux, macOS, WSL)
+- 🧩 Lets you choose your MCP client (e.g., Claude Desktop, Cursor, Continue, Windsurf)
+- 🎯 Generates and optionally installs the correct config for your environment
+- 📋 Provides copy‑paste ready JSON if you prefer manual setup
+- 🧭 Includes setup instructions and troubleshooting tips
 
-**Global Registry Mode** (recommended for multiple projects):
+**Global Registry Mode** (recommended for multiple projects/clients):
 
 ```json
 {
@@ -251,7 +252,7 @@ This command:
 }
 ```
 
-If you prefer manual setup, point the MCP client to the Context Generator server:
+If you prefer manual setup, point your MCP client to the CTX server:
 
 ```json
 {
@@ -268,10 +269,9 @@ If you prefer manual setup, point the MCP client to the Context Generator server
 }
 ```
 
-> **Note:** Read more about [MCP Server](https://docs.ctxgithub.com/mcp/#setting-up) for detailed setup
-> instructions and troubleshooting.
+> Note: Read more about the [MCP server](https://docs.ctxgithub.com/mcp/#setting-up) for detailed setup instructions and troubleshooting. Specific config file locations vary by client.
 
-Now you can ask Claude questions about your codebase without manually uploading context files!
+Now you can use your preferred MCP client (including Claude Desktop) to ask questions about your codebase without manually uploading context files.
 
 ## Custom Tools
 
