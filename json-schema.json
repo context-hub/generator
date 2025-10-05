@@ -4,7 +4,7 @@
     "context.json",
     "context.yaml"
   ],
-  "id": "https://ctxgithub.com/",
+  "id": "https://ctxllm.com",
   "title": "ContextHub Configuration",
   "description": "Configuration schema for ContextHub document generator",
   "type": "object",
