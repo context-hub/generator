@@ -3,7 +3,7 @@
 > Create LLM-ready contexts in minutes
 
 <p>
-    <a href="https://docs.ctxgithub.com/"><img alt="Docs" src="https://img.shields.io/badge/docs-green"></a>
+    <a href="https://docs.ctxllm.com"><img alt="Docs" src="https://img.shields.io/badge/docs-green"></a>
     <a href="https://raw.githubusercontent.com/context-hub/generator/refs/heads/main/json-schema.json"><img alt="Json schema" src="https://img.shields.io/badge/json_schema-blue"></a>
     <a href="https://discord.gg/YmFckwVkQM"><img src="https://img.shields.io/badge/discord-chat-magenta.svg"></a>
     <a href="https://t.me/spiralphp/2504"><img alt="Telegram" src="https://img.shields.io/badge/telegram-blue.svg?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTEyIDI0YzYuNjI3IDAgMTItNS4zNzMgMTItMTJTMTguNjI3IDAgMTIgMCAwIDUuMzczIDAgMTJzNS4zNzMgMTIgMTIgMTJaIiBmaWxsPSJ1cmwoI2EpIi8+PHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik01LjQyNSAxMS44NzFhNzk2LjQxNCA3OTYuNDE0IDAgMCAxIDYuOTk0LTMuMDE4YzMuMzI4LTEuMzg4IDQuMDI3LTEuNjI4IDQuNDc3LTEuNjM4LjEgMCAuMzIuMDIuNDcuMTQuMTIuMS4xNS4yMy4xNy4zMy4wMi4xLjA0LjMxLjAyLjQ3LS4xOCAxLjg5OC0uOTYgNi41MDQtMS4zNiA4LjYyMi0uMTcuOS0uNSAxLjE5OS0uODE5IDEuMjI5LS43LjA2LTEuMjI5LS40Ni0xLjg5OC0uOS0xLjA2LS42ODktMS42NDktMS4xMTktMi42NzgtMS43OTgtMS4xOS0uNzgtLjQyLTEuMjA5LjI2LTEuOTA4LjE4LS4xOCAzLjI0Ny0yLjk3OCAzLjMwNy0zLjIyOC4wMS0uMDMuMDEtLjE1LS4wNi0uMjEtLjA3LS4wNi0uMTctLjA0LS4yNS0uMDItLjExLjAyLTEuNzg4IDEuMTQtNS4wNTYgMy4zNDgtLjQ4LjMzLS45MDkuNDktMS4yOTkuNDgtLjQzLS4wMS0xLjI0OC0uMjQtMS44NjgtLjQ0LS43NS0uMjQtMS4zNDktLjM3LTEuMjk5LS43OS4wMy0uMjIuMzMtLjQ0Ljg5LS42NjlaIiBmaWxsPSIjZmZmIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhIiB4MT0iMTEuOTkiIHkxPSIwIiB4Mj0iMTEuOTkiIHkyPSIyMy44MSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIHN0b3AtY29sb3I9IiMyQUFCRUUiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMyMjlFRDkiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48L3N2Zz4K"></a>
@@ -16,7 +16,7 @@
 ## Table of Contents
 
 - [Quick Start](#quick-start)
-- [Full Documentation](https://docs.ctxgithub.com)
+- [Full Documentation](https://docs.ctxllm.com)
 - [License](#license)
 
 During development, your codebase constantly evolves. Files are added, modified, and removed. Each time you need to
@@ -60,7 +60,7 @@ documents:
 
 This configuration will gather all PHP files from the `src/Auth` directory and any PHP files containing "**User**" in
 their name from the `src/Models` directory into a single context file `.context/auth.md`. This file can then be pasted
-into a chat session or provided via the built-in [MCP server](https://docs.ctxgithub.com/mcp/).
+into a chat session or provided via the built-in [MCP server](https://docs.ctxllm.com/mcp/).
 
 ### Why CTX?
 
@@ -99,7 +99,7 @@ powershell -c "& ([ScriptBlock]::Create((irm 'https://raw.githubusercontent.com/
 
 This installs the `ctx` command to your system (typically in `/usr/local/bin`).
 
-> **Want more options?** See the complete [Installation Guide](https://docs.ctxgithub.com/getting-started.html) for
+> **Want more options?** See the complete [Installation Guide](https://docs.ctxllm.com/getting-started.html) for
 > alternative installation methods.
 
 ## 5-Minute Setup
@@ -115,7 +115,7 @@ ctx init
 This generates a `context.yaml` file with a basic configuration and shows your project structure, helping you understand
 what contexts might be useful.
 
-> Check the [Command Reference](https://docs.ctxgithub.com/getting-started/command-reference.html) for all available
+> Check the [Command Reference](https://docs.ctxllm.com/getting-started/command-reference.html) for all available
 > commands and options.
 
 2. Create your first context:
@@ -226,7 +226,7 @@ For a more seamless experience, you can connect CTX to any MCP-compatible client
 
 ```bash
 # Interactive setup: detect OS and install config for your client
-ctx mcp:config -i
+ctx mcp:config
 ```
 
 This command:
@@ -269,7 +269,7 @@ If you prefer manual setup, point your MCP client to the CTX server:
 }
 ```
 
-> Note: Read more about the [MCP server](https://docs.ctxgithub.com/mcp/#setting-up) for detailed setup instructions and troubleshooting. Specific config file locations vary by client.
+> Note: Read more about the [MCP server](https://docs.ctxllm.com/mcp/#setting-up) for detailed setup instructions and troubleshooting. Specific config file locations vary by client.
 
 Now you can use your preferred MCP client (including Claude Desktop) to ask questions about your codebase without manually uploading context files.
 
@@ -291,7 +291,7 @@ tools:
 
 For complete documentation, including all available features and configuration options, please visit:
 
-https://docs.ctxgithub.com
+https://docs.ctxllm.com
 
 ## Join Our Community
 
