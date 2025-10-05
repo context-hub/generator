@@ -6,7 +6,34 @@ namespace Butschster\ContextGenerator\McpServer;
 
 use Butschster\ContextGenerator\Application\Bootloader\ConsoleBootloader;
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
+use Butschster\ContextGenerator\McpServer\Action\Prompts\FilesystemOperationsAction;
+use Butschster\ContextGenerator\McpServer\Action\Prompts\GetPromptAction;
+use Butschster\ContextGenerator\McpServer\Action\Prompts\ListPromptsAction;
+use Butschster\ContextGenerator\McpServer\Action\Prompts\ProjectStructurePromptAction;
+use Butschster\ContextGenerator\McpServer\Action\Resources\GenerateConfigAction;
+use Butschster\ContextGenerator\McpServer\Action\Resources\GetDocumentContentResourceAction;
+use Butschster\ContextGenerator\McpServer\Action\Resources\JsonSchemaResourceAction;
+use Butschster\ContextGenerator\McpServer\Action\Resources\ListResourcesAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Context\ContextAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Context\ContextGetAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Context\ContextRequestAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Docs\FetchLibraryDocsAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Docs\LibrarySearchAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\ExecuteCustomToolAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\DirectoryListAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileReadAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileReplaceContentAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileWriteAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Git\GitAddAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Git\GitCommitAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Git\GitStatusAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\ListToolsAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Prompts\GetPromptToolAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Prompts\ListPromptsToolAction;
 use Butschster\ContextGenerator\McpServer\Console\McpConfigCommand;
+use Butschster\ContextGenerator\McpServer\Console\MCPServerCommand;
+use Butschster\ContextGenerator\McpServer\Projects\Actions\ProjectsListToolAction;
+use Butschster\ContextGenerator\McpServer\Projects\Actions\ProjectSwitchToolAction;
 use Butschster\ContextGenerator\McpServer\Projects\Console\ProjectAddCommand;
 use Butschster\ContextGenerator\McpServer\Projects\Console\ProjectCommand;
 use Butschster\ContextGenerator\McpServer\Projects\Console\ProjectListCommand;
@@ -23,34 +50,6 @@ use Butschster\ContextGenerator\Research\MCP\Tools\ListTemplatesToolAction;
 use Butschster\ContextGenerator\Research\MCP\Tools\ReadEntryToolAction;
 use Butschster\ContextGenerator\Research\MCP\Tools\UpdateEntryToolAction;
 use Butschster\ContextGenerator\Research\MCP\Tools\UpdateResearchToolAction;
-use Butschster\ContextGenerator\McpServer\Action\Prompts\FilesystemOperationsAction;
-use Butschster\ContextGenerator\McpServer\Action\Prompts\GetPromptAction;
-use Butschster\ContextGenerator\McpServer\Action\Prompts\ListPromptsAction;
-use Butschster\ContextGenerator\McpServer\Action\Prompts\ProjectStructurePromptAction;
-use Butschster\ContextGenerator\McpServer\Action\Resources\GetDocumentContentResourceAction;
-use Butschster\ContextGenerator\McpServer\Action\Resources\JsonSchemaResourceAction;
-use Butschster\ContextGenerator\McpServer\Action\Resources\ListResourcesAction;
-use Butschster\ContextGenerator\McpServer\Action\Resources\GenerateConfigAction;
-use Butschster\ContextGenerator\McpServer\Action\Tools\Context\ContextAction;
-use Butschster\ContextGenerator\McpServer\Action\Tools\Context\ContextGetAction;
-use Butschster\ContextGenerator\McpServer\Action\Tools\Context\ContextRequestAction;
-use Butschster\ContextGenerator\McpServer\Action\Tools\Docs\FetchLibraryDocsAction;
-use Butschster\ContextGenerator\McpServer\Action\Tools\Docs\LibrarySearchAction;
-use Butschster\ContextGenerator\McpServer\Action\Tools\ExecuteCustomToolAction;
-use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\DirectoryListAction;
-use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileApplyPatchAction;
-use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileMoveAction;
-use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileReadAction;
-use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileWriteAction;
-use Butschster\ContextGenerator\McpServer\Action\Tools\Git\GitAddAction;
-use Butschster\ContextGenerator\McpServer\Action\Tools\Git\GitCommitAction;
-use Butschster\ContextGenerator\McpServer\Action\Tools\Git\GitStatusAction;
-use Butschster\ContextGenerator\McpServer\Action\Tools\ListToolsAction;
-use Butschster\ContextGenerator\McpServer\Action\Tools\Prompts\GetPromptToolAction;
-use Butschster\ContextGenerator\McpServer\Action\Tools\Prompts\ListPromptsToolAction;
-use Butschster\ContextGenerator\McpServer\Console\MCPServerCommand;
-use Butschster\ContextGenerator\McpServer\Projects\Actions\ProjectsListToolAction;
-use Butschster\ContextGenerator\McpServer\Projects\Actions\ProjectSwitchToolAction;
 use Spiral\Boot\Bootloader\Bootloader;
 use Spiral\Boot\EnvironmentInterface;
 use Spiral\Config\ConfiguratorInterface;
@@ -80,9 +79,6 @@ final class ActionsBootloader extends Bootloader
                 'document_name_format' => $env->get('MCP_DOCUMENT_NAME_FORMAT', '[{path}] {description}'),
                 'file_operations' => [
                     'enable' => (bool) $env->get('MCP_FILE_OPERATIONS', !$isCommonProject),
-                    'write' => (bool) $env->get('MCP_FILE_WRITE', true),
-                    'apply-patch' => (bool) $env->get('MCP_FILE_APPLY_PATCH', false),
-                    'directories-list' => (bool) $env->get('MCP_FILE_DIRECTORIES_LIST', true),
                 ],
                 'context_operations' => [
                     'enable' => (bool) $env->get('MCP_CONTEXT_OPERATIONS', !$isCommonProject),
@@ -202,20 +198,10 @@ final class ActionsBootloader extends Bootloader
             $actions = [
                 ...$actions,
                 FileReadAction::class,
-                FileMoveAction::class,
+                FileReplaceContentAction::class,
+                FileWriteAction::class,
+                DirectoryListAction::class,
             ];
-
-            if ($config->isFileDirectoriesListEnabled()) {
-                $actions[] = DirectoryListAction::class;
-            }
-
-            if ($config->isFileApplyPatchEnabled()) {
-                $actions[] = FileApplyPatchAction::class;
-            }
-
-            if ($config->isFileWriteEnabled()) {
-                $actions[] = FileWriteAction::class;
-            }
         }
 
         if ($config->isProjectOperationsEnabled()) {
