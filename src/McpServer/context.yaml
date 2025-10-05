@@ -4,9 +4,11 @@ documents:
     sources:
       - type: file
         sourcePaths:
-          - ../Console/MCPServerCommand.php
-          - ../Application/Bootloader/MCPServerBootloader.php
-          - ./McpConfig.php
+          - Console/MCPServerCommand.php
+          - HttpTransportBootloader.php
+          - McpServer/Middleware
+          - "{{ROOT_PATH}}/vendor/ctx/mcp-server/src/McpServerCoreBootloader.php"
+          - "{{ROOT_PATH}}/vendor/ctx/mcp-server/src/OauthConfig.php"
 
   - description: "MCP Server Actions"
     outputPath: "mcp/actions.md"
@@ -32,22 +34,20 @@ documents:
           - ./Tool
           - ./Action/Tools
 
-  - description: "MCP Server routing"
-    outputPath: "mcp/routing.md"
-    sources:
-      - type: file
-        sourcePaths:
-          - ./Routing
-          - ./Server.php
-          - ./ServerFactory.php
-
   - description: "MCP Server Projects"
     outputPath: "mcp/projects.md"
     sources:
       - type: file
         sourcePaths:
-          - ./Projects
+          - Projects
 
+  - description: MCP file tools
+    outputPath: "mcp/filesystem.md"
+    sources:
+      - type: file
+        sourcePaths:
+          - Action/Tools/Filesystem
+          - "{{ROOT_PATH}}/vendor/spiral/files/src/FilesInterface.php"
 
   - description: "MCP Docs search"
     outputPath: "mcp/docs-search.md"
