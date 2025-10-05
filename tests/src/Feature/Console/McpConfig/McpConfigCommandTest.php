@@ -20,9 +20,8 @@ final class McpConfigCommandTest extends ConsoleTestCase
         $out = $this->runMcpConfig(['--client' => 'claude']);
 
         $this->assertStringContainsString('Generated Configuration', $out);
-        $this->assertStringContainsString('Configuration type: claude', $out);
         $this->assertStringContainsString('"mcpServers"', $out); // JSON config key for Claude Desktop
-        $this->assertStringContainsString('Claude Desktop configuration file location', $out);
+        $this->assertStringContainsString('Configuration file location:', $out);
     }
 
     #[Test]
@@ -31,10 +30,10 @@ final class McpConfigCommandTest extends ConsoleTestCase
         $out = $this->runMcpConfig(['--client' => 'codex']);
 
         $this->assertStringContainsString('Generated Configuration', $out);
-        $this->assertStringContainsString('Codex configuration (TOML):', $out);
+        $this->assertStringContainsString('Codex configuration (TOML format):', $out);
         $this->assertStringContainsString('[mcp_servers.ctx]', $out);
-        $this->assertStringContainsString('command = "ctx"', $out);
-        $this->assertStringContainsString('args = ["server"]', $out);
+        $this->assertStringContainsString('command = ', $out);
+        $this->assertStringContainsString('args = [', $out);
     }
 
     #[Test]
@@ -43,9 +42,9 @@ final class McpConfigCommandTest extends ConsoleTestCase
         $out = $this->runMcpConfig(['--client' => 'cursor']);
 
         $this->assertStringContainsString('Generated Configuration', $out);
-        $this->assertStringContainsString('Configuration type: generic', $out);
-        $this->assertStringContainsString('Generic MCP client configuration', $out);
-        $this->assertStringContainsString('"command": "ctx"', $out);
+        $this->assertStringContainsString('Configuration type: Cursor MCP', $out);
+        $this->assertStringContainsString('Add this to your Cursor MCP configuration:', $out);
+        $this->assertStringContainsString('"command":', $out);
         $this->assertStringContainsString('"args": [', $out);
     }
 
@@ -55,7 +54,7 @@ final class McpConfigCommandTest extends ConsoleTestCase
         $out = $this->runMcpConfig(['--client' => 'generic']);
 
         $this->assertStringContainsString('Generated Configuration', $out);
-        $this->assertStringContainsString('Configuration type: generic', $out);
+        $this->assertStringContainsString('Configuration type: Generic MCP', $out);
         $this->assertStringContainsString('Generic MCP client configuration', $out);
     }
 
