@@ -41,7 +41,6 @@ jobs:
         uses: ramsey/composer-install@v3
         with:
           composer-options: "--no-dev"
-          ignore-cache: "yes"
 
       - name: Build PHAR
         run: box compile

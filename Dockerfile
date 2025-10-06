@@ -11,14 +11,18 @@ WORKDIR /app
 
 # Copy source code
 COPY . .
+RUN rm composer.lock
+RUN rm -rf vendor
+RUN composer --version
 
-RUN composer install --no-dev --prefer-dist --ignore-platform-reqs
+RUN composer install --ignore-platform-reqs
 
 # Create build directories
 RUN mkdir -p .build/phar .build/bin
 
 # Build PHAR file
-RUN /usr/local/bin/box compile -v
+RUN /usr/local/bin/box compile
+RUN /usr/local/bin/box info .build/phar/ctx.phar --ansi
 
 RUN mkdir -p ./buildroot/bin
 RUN cp /build-tools/build/bin/micro.sfx ./buildroot/bin
