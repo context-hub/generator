@@ -47,7 +47,8 @@
   },
   "autoload": {
     "psr-4": {
-      "Butschster\\ContextGenerator\\": "src"
+      "Butschster\\ContextGenerator\\": "src",
+      "PhpMcp\\Schema\\": "schema"
     }
   },
   "autoload-dev": {
