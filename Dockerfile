@@ -11,9 +11,8 @@ WORKDIR /app
 
 # Copy source code
 COPY . .
-RUN rm composer.lock
+RUN rm -f composer.lock
 RUN rm -rf vendor
-RUN composer --version
 
 RUN composer install --ignore-platform-reqs
 
