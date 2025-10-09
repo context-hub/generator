@@ -51,6 +51,13 @@ final class ProjectAddCommand extends BaseCommand
     )]
     protected ?string $envFile = null;
 
+    #[Option(
+        name: 'switch',
+        shortcut: 's',
+        description: 'Switch to this project after adding it',
+    )]
+    protected bool $switch = false;
+
     public function __invoke(
         Container $container,
         DirectoriesInterface $dirs,
@@ -131,6 +138,19 @@ final class ProjectAddCommand extends BaseCommand
         if (\count($projectService->getProjects()) === 1) {
             $projectService->setCurrentProject($projectPath, $this->name, $this->configFile, $this->envFile);
             $this->output->info('Project was automatically set as the current project (first project added).');
+        }
+        // If --switch flag is set for subsequent projects, switch to it
+        elseif ($this->switch) {
+            if ($projectService->switchToProject($projectPath)) {
+                $this->output->info('Successfully switched to this project.');
+            } else {
+                $this->output->warning(
+                    \sprintf(
+                        "Project added but failed to switch. Use 'ctx project %s' to switch manually.",
+                        $this->name ?? $projectPath,
+                    ),
+                );
+            }
         }
 
         return Command::SUCCESS;
