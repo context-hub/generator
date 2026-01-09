@@ -26,7 +26,7 @@
     "ext-curl": "*",
     "ctx/module-research": "^1.0",
     "ctx/module-config-templates": "^1.0",
-    "ctx/mcp-server": "^1.3",
+    "ctx/mcp-server": "^1.3.2",
     "league/html-to-markdown": "^5.1",
     "php-mcp/schema": "dev-main as 1.0",
     "psr/log": "^3.0",
