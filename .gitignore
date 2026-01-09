@@ -4,7 +4,6 @@
 .phpunit.result.cache
 .build
 .output
-composer.lock
 coverage
 vendor
 node_modules
