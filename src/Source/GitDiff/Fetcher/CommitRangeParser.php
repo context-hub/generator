@@ -65,7 +65,7 @@ final readonly class CommitRangeParser
     public function resolve(string|array $commitRange): string|array
     {
         if (\is_array($commitRange)) {
-            return \array_map(fn(string $range): string => $this->resolveExpression($range), $commitRange);
+            return \array_map($this->resolveExpression(...), $commitRange);
         }
 
         return $this->resolveExpression($commitRange);

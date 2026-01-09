@@ -25,7 +25,7 @@ final class DirectoryScannerTest extends TestCase
         $this->assertCount(2, $projects);
 
         // Verify project paths
-        $projectNames = \array_map('basename', $projects);
+        $projectNames = \array_map(basename(...), $projects);
         $this->assertContains('test_project_1', $projectNames);
         $this->assertContains('test_project_2', $projectNames);
 
@@ -58,7 +58,7 @@ final class DirectoryScannerTest extends TestCase
         // Should still only find the 2 valid projects
         $this->assertCount(2, $projects);
 
-        $projectNames = \array_map('basename', $projects);
+        $projectNames = \array_map(basename(...), $projects);
         $this->assertNotContains('invalid_project', $projectNames);
     }
 
@@ -72,7 +72,7 @@ final class DirectoryScannerTest extends TestCase
         $this->assertCount(3, $entries);
 
         // Verify entry file paths
-        $entryFiles = \array_map('basename', $entries);
+        $entryFiles = \array_map(basename(...), $entries);
         $this->assertContains('sample_story.md', $entryFiles);
         $this->assertContains('api_design.md', $entryFiles);
     }
