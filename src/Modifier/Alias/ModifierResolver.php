@@ -52,7 +52,7 @@ final readonly class ModifierResolver
     public function resolveAll(array $references): array
     {
         return \array_map(
-            fn($reference) => $this->resolve($reference),
+            $this->resolve(...),
             $references,
         );
     }
