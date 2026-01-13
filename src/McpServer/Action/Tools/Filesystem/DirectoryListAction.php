@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem;
 
+use Butschster\ContextGenerator\Config\Exclude\ExcludeRegistryInterface;
 use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\Lib\TreeBuilder\FileTreeBuilder;
+use Butschster\ContextGenerator\Lib\TreeBuilder\TreeViewConfig;
+use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\Dto\DirectoryListRequest;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
-use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use PhpMcp\Schema\Result\CallToolResult;
 use Psr\Log\LoggerInterface;
@@ -28,6 +30,7 @@ final readonly class DirectoryListAction
         private LoggerInterface $logger,
         #[Proxy] private DirectoriesInterface $dirs,
         private FileTreeBuilder $treeBuilder,
+        private ExcludeRegistryInterface $excludeRegistry,
     ) {}
 
     #[Post(path: '/tools/call/directory-list', name: 'tools.directory-list')]
@@ -109,11 +112,16 @@ final readonly class DirectoryListAction
 
             try {
                 foreach ($finder as $file) {
-                    $relativePath = \str_replace((string) $this->dirs->getRootPath() . '/', '', $file->getRealPath());
+                    $fileRelativePath = \str_replace((string) $this->dirs->getRootPath() . '/', '', $file->getRealPath());
+
+                    // Skip excluded files and directories
+                    if ($this->excludeRegistry->shouldExclude($fileRelativePath)) {
+                        continue;
+                    }
 
                     $files[] = [
                         'name' => $file->getFilename(),
-                        'path' => $relativePath,
+                        'path' => $fileRelativePath,
                         'fullPath' => $file->getRealPath(),
                         'isDirectory' => $file->isDir(),
                         'size' => $file->isFile() ? $file->getSize() : null,
@@ -133,11 +141,11 @@ final readonly class DirectoryListAction
             // Generate tree view if requested
             $treeView = null;
             if ($request->showTree === true) {
-                $treeViewConfig = new \Butschster\ContextGenerator\Lib\TreeBuilder\TreeViewConfig();
+                $treeViewConfig = new TreeViewConfig();
 
                 // Apply tree view configuration if provided
                 if ($request->treeView !== null) {
-                    $treeViewConfig = new \Butschster\ContextGenerator\Lib\TreeBuilder\TreeViewConfig(
+                    $treeViewConfig = new TreeViewConfig(
                         enabled: true,
                         showSize: $request->treeView->showSize,
                         showLastModified: $request->treeView->showLastModified,

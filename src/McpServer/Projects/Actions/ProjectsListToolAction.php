@@ -89,7 +89,7 @@ final readonly class ProjectsListToolAction
             }
 
             $response = new ProjectsListResponse(
-                projects: $projectInfos,
+                projects: [],
                 currentProject: $currentProjectResponse,
                 totalProjects: \count($projects),
                 whitelistedProjects: $whitelistedProjects,
