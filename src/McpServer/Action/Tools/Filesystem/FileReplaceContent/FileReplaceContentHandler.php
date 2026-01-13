@@ -7,6 +7,7 @@ namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileRepl
 use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileReplaceContent\Dto\FileReplaceContentRequest;
 use Psr\Log\LoggerInterface;
+use Spiral\Core\Attribute\Proxy;
 use Spiral\Files\FilesInterface;
 
 /**
@@ -18,7 +19,7 @@ final readonly class FileReplaceContentHandler
 {
     public function __construct(
         private FilesInterface $files,
-        private DirectoriesInterface $dirs,
+        #[Proxy] private DirectoriesInterface $dirs,
         private LineEndingNormalizer $normalizer,
         private LoggerInterface $logger,
     ) {}

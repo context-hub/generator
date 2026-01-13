@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileRead\Dto;
 
+use Butschster\ContextGenerator\McpServer\Project\ProjectAwareRequest;
 use Spiral\JsonSchemaGenerator\Attribute\Field;
 
-final readonly class FileReadRequest
+final readonly class FileReadRequest implements ProjectAwareRequest
 {
     /**
      * @param string|null $path Single file path (backward compatible)
@@ -66,5 +67,10 @@ final readonly class FileReadRequest
         return $this->path !== null
             && $this->path !== ''
             && ($this->paths === null || $this->paths === []);
+    }
+
+    public function getProject(): ?string
+    {
+        return $this->project;
     }
 }

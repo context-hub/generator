@@ -21,6 +21,7 @@ use Butschster\ContextGenerator\Source\Fetcher\SourceFetcherBootloader;
 use Butschster\ContextGenerator\Lib\Variable\VariableBootloader;
 use Butschster\ContextGenerator\Research\ResearchBootloader;
 use Butschster\ContextGenerator\McpServer\ActionsBootloader;
+use Butschster\ContextGenerator\McpServer\Project\ProjectBootloader;
 use Butschster\ContextGenerator\Template\TemplateSystemBootloader;
 use Butschster\ContextGenerator\Modifier\PhpContentFilter\PhpContentFilterBootloader;
 use Butschster\ContextGenerator\Modifier\PhpDocs\PhpDocsModifierBootloader;
@@ -112,6 +113,7 @@ class Kernel extends AbstractKernel
 
             // MCP Server
             ActionsBootloader::class,
+            ProjectBootloader::class,
         ];
     }
 

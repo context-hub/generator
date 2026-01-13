@@ -165,4 +165,55 @@ PHP;
         $this->assertContentContains($result, 'namespace App');
         $this->assertContentContains($result, 'final class TestClass');
     }
+
+    #[Test]
+    public function it_fails_with_invalid_project_parameter(): void
+    {
+        // Arrange
+        $this->createFile('test.txt', 'Hello, World!');
+
+        // Act - Call with non-existent project
+        $result = $this->inspector->callTool('file-read', [
+            'path' => 'test.txt',
+            'project' => 'non-existent-project',
+        ]);
+
+        // Assert
+        $this->assertInspectorSuccess($result); // CLI succeeds
+        $this->assertToolError($result);        // But tool returns error
+        $this->assertContentContains($result, 'not available');
+    }
+
+    #[Test]
+    public function it_reads_file_without_project_parameter(): void
+    {
+        // Arrange
+        $this->createFile('current-project.txt', 'Current project content');
+
+        // Act - Call without project parameter (uses current project)
+        $result = $this->inspector->callTool('file-read', [
+            'path' => 'current-project.txt',
+        ]);
+
+        // Assert
+        $this->assertInspectorSuccess($result);
+        $this->assertContentContains($result, 'Current project content');
+    }
+
+    #[Test]
+    public function it_shows_helpful_error_for_invalid_project(): void
+    {
+        // Arrange
+        $this->createFile('test.txt', 'Content');
+
+        // Act
+        $result = $this->inspector->callTool('file-read', [
+            'path' => 'test.txt',
+            'project' => 'unknown-project',
+        ]);
+
+        // Assert - Error message should suggest using projects-list
+        $this->assertToolError($result);
+        $this->assertContentContains($result, 'projects-list');
+    }
 }

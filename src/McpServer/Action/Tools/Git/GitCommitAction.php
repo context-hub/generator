@@ -15,6 +15,7 @@ use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use PhpMcp\Schema\Result\CallToolResult;
 use Psr\Log\LoggerInterface;
+use Spiral\Core\Attribute\Proxy;
 
 #[Tool(
     name: 'git-commit',
@@ -27,7 +28,7 @@ final readonly class GitCommitAction
     public function __construct(
         private LoggerInterface $logger,
         private CommandsExecutorInterface $commandsExecutor,
-        private DirectoriesInterface $dirs,
+        #[Proxy] private DirectoriesInterface $dirs,
     ) {}
 
     #[Post(path: '/tools/call/git-commit', name: 'tools.git.commit')]

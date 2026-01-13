@@ -12,6 +12,7 @@ final readonly class McpInspectorClient
     public function __construct(
         private string $ctxBinary = './ctx',
         private ?string $configPath = null,
+        private ?string $stateDir = null,
     ) {}
 
     /**
@@ -156,6 +157,11 @@ final readonly class McpInspectorClient
         if ($this->configPath !== null) {
             $parts[] = '-c';
             $parts[] = \escapeshellarg($this->configPath);
+        }
+
+        if ($this->stateDir !== null) {
+            $parts[] = '-s';
+            $parts[] = \escapeshellarg($this->stateDir);
         }
 
         $parts[] = '--method';

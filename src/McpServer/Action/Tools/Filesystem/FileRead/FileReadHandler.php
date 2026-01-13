@@ -6,6 +6,7 @@ namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileRead
 
 use Butschster\ContextGenerator\DirectoriesInterface;
 use Psr\Log\LoggerInterface;
+use Spiral\Core\Attribute\Proxy;
 use Spiral\Files\Exception\FilesException;
 use Spiral\Files\FilesInterface;
 
@@ -18,7 +19,7 @@ final readonly class FileReadHandler
 
     public function __construct(
         private FilesInterface $files,
-        private DirectoriesInterface $dirs,
+        #[Proxy] private DirectoriesInterface $dirs,
         private LoggerInterface $logger,
     ) {}
 

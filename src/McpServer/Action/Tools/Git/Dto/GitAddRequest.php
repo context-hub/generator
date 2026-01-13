@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer\Action\Tools\Git\Dto;
 
+use Butschster\ContextGenerator\McpServer\Project\ProjectAwareRequest;
 use Spiral\JsonSchemaGenerator\Attribute\Field;
 
-final readonly class GitAddRequest
+final readonly class GitAddRequest implements ProjectAwareRequest
 {
     public function __construct(
         #[Field(
@@ -24,5 +25,14 @@ final readonly class GitAddRequest
             default: true,
         )]
         public bool $addNew = true,
+        #[Field(
+            description: 'Project identifier if multiple projects are supported. Optional.',
+        )]
+        public ?string $project = null,
     ) {}
+
+    public function getProject(): ?string
+    {
+        return $this->project;
+    }
 }

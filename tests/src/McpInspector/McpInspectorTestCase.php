@@ -37,11 +37,12 @@ abstract class McpInspectorTestCase extends TestCase
     /**
      * Create inspector client instance.
      */
-    protected function createInspector(?string $configPath = null): McpInspectorClient
+    protected function createInspector(?string $configPath = null, ?string $stateDir = null): McpInspectorClient
     {
         return new McpInspectorClient(
             ctxBinary: $this->getCtxBinary(),
             configPath: $configPath ?? $this->workDir,
+            stateDir: $stateDir,
         );
     }
 
@@ -95,7 +96,7 @@ abstract class McpInspectorTestCase extends TestCase
     }
 
     /**
-     * Assert npx is available.
+     * Assert npx is available and MCP Inspector works.
      */
     protected function assertNpxAvailable(): void
     {
@@ -105,6 +106,15 @@ abstract class McpInspectorTestCase extends TestCase
 
         if ($code !== 0) {
             $this->markTestSkipped('npx is not available. Install Node.js to run MCP Inspector tests.');
+        }
+
+        // Check if MCP Inspector can run (Node.js version compatibility)
+        $testOutput = [];
+        \exec('npx @modelcontextprotocol/inspector --help 2>&1', $testOutput, $testCode);
+        $outputStr = \implode("\n", $testOutput);
+
+        if (\str_contains($outputStr, 'import attribute of type "json"')) {
+            $this->markTestSkipped('MCP Inspector requires Node.js 20+ for JSON module imports.');
         }
     }
 

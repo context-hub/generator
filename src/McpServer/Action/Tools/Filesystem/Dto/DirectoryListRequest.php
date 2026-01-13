@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\Dto;
 
+use Butschster\ContextGenerator\McpServer\Project\ProjectAwareRequest;
 use Spiral\JsonSchemaGenerator\Attribute\Constraint\Enum;
 use Spiral\JsonSchemaGenerator\Attribute\Constraint\Range;
 use Spiral\JsonSchemaGenerator\Attribute\Field;
 
-final readonly class DirectoryListRequest
+final readonly class DirectoryListRequest implements ProjectAwareRequest
 {
     public function __construct(
         #[Field(
@@ -63,4 +64,9 @@ final readonly class DirectoryListRequest
         )]
         public ?string $project = null,
     ) {}
+
+    public function getProject(): ?string
+    {
+        return $this->project;
+    }
 }

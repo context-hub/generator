@@ -13,6 +13,7 @@ use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use PhpMcp\Schema\Result\CallToolResult;
 use Psr\Log\LoggerInterface;
+use Spiral\Core\Attribute\Proxy;
 use Symfony\Component\Finder\Finder;
 
 #[Tool(
@@ -25,7 +26,7 @@ final readonly class DirectoryListAction
 {
     public function __construct(
         private LoggerInterface $logger,
-        private DirectoriesInterface $dirs,
+        #[Proxy] private DirectoriesInterface $dirs,
         private FileTreeBuilder $treeBuilder,
     ) {}
 

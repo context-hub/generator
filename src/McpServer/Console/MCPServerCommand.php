@@ -17,6 +17,7 @@ use Butschster\ContextGenerator\McpServer\ServerRunnerInterface;
 use Butschster\ContextGenerator\McpServer\Tool\Command\CommandExecutor;
 use Butschster\ContextGenerator\McpServer\Tool\Command\CommandExecutorInterface;
 use Psr\Log\LoggerInterface;
+use Spiral\Boot\DirectoriesInterface as SpiralDirectoriesInterface;
 use Spiral\Boot\EnvironmentInterface;
 use Spiral\Console\Attribute\Option;
 use Spiral\Core\Container;
@@ -69,12 +70,31 @@ final class MCPServerCommand extends BaseCommand
     )]
     protected ?string $workDir = null;
 
+    #[Option(
+        name: 'state-dir',
+        shortcut: 's',
+        description: 'Path to directory containing .project-state.json file. If not provided, uses default global state location.',
+    )]
+    protected ?string $stateDir = null;
+
     public function __invoke(
         Container $container,
         DirectoriesInterface $dirs,
+        SpiralDirectoriesInterface $spiralDirs,
         Application $app,
-        ProjectService $projects,
     ): int {
+        $this->logger->info('Starting MCP server...');
+
+        // Set custom state directory if provided (must be done before getting ProjectService)
+        if ($this->stateDir !== null) {
+            $stateDir = \realpath($this->stateDir) ?: $this->stateDir;
+            $spiralDirs->set('global-state', $stateDir);
+            $this->logger->info('Using custom state directory', ['stateDir' => $stateDir]);
+        }
+
+        // Now get ProjectService (will use the updated global-state directory)
+        $projects = $container->get(ProjectService::class);
+
         $currentProject = $projects->getCurrentProject();
         if ($this->configPath === null && $currentProject) {
             $this->configPath = $currentProject->hasConfigFile()
@@ -99,8 +119,6 @@ final class MCPServerCommand extends BaseCommand
             DirectoriesInterface::class,
             $dirs,
         );
-
-        $this->logger->info('Starting MCP server...');
 
         $envs = [];
         if ($this->isSse) {
@@ -156,18 +174,21 @@ final class MCPServerCommand extends BaseCommand
                     return Command::FAILURE;
                 }
 
+                // Prepare scope bindings
+                $scopeBindings = [
+                    DirectoriesInterface::class => $dirs,
+                    HasPrefixLoggerInterface::class => $logger,
+                    ConfigLoaderInterface::class => $loader,
+                    CommandExecutorInterface::class => $container->make(CommandExecutor::class, [
+                        'projectRoot' => (string) $dirs->getRootPath(),
+                    ]),
+                    EnvironmentInterface::class => $env,
+                ];
+
                 $container->runScope(
                     bindings: new Scope(
                         name: AppScope::Mcp,
-                        bindings: [
-                            DirectoriesInterface::class => $dirs,
-                            HasPrefixLoggerInterface::class => $logger,
-                            ConfigLoaderInterface::class => $loader,
-                            CommandExecutorInterface::class => $container->make(CommandExecutor::class, [
-                                'projectRoot' => (string) $dirs->getRootPath(),
-                            ]),
-                            EnvironmentInterface::class => $env,
-                        ],
+                        bindings: $scopeBindings,
                     ),
                     scope: static function (ServerRunnerInterface $factory) use ($app): void {
                         $factory->run(name: \sprintf('%s %s', $app->name, $app->version));
