@@ -10,16 +10,20 @@
         </include>
     </coverage>
     <testsuites>
-        <testsuite name="Test Suite">
-            <directory>tests/src</directory>
+        <testsuite name="application-tests">
+            <directory>tests/src/Unit</directory>
+            <directory>tests/src/Feature</directory>
+        </testsuite>
+        <testsuite name="mcp-inspector">
+            <directory>tests/src/McpInspector</directory>
         </testsuite>
     </testsuites>
     <php>
-        <env name="OAUTH_ENABLED" value="false" />
-        <env name="OAUTH_ISSUER_URL" value="http://127.0.0.1:8090" />
-        <env name="OAUTH_SERVER_URL" value="http://127.0.0.1:8090" />
-        <env name="OAUTH_CLIENT_ID" value="test-id" />
-        <env name="OAUTH_CLIENT_SECRET" value="test-secret" />
+        <env name="OAUTH_ENABLED" value="false"/>
+        <env name="OAUTH_ISSUER_URL" value="http://127.0.0.1:8090"/>
+        <env name="OAUTH_SERVER_URL" value="http://127.0.0.1:8090"/>
+        <env name="OAUTH_CLIENT_ID" value="test-id"/>
+        <env name="OAUTH_CLIENT_SECRET" value="test-secret"/>
 
         <ini name="error_reporting" value="-1"/>
         <ini name="memory_limit" value="-1"/>

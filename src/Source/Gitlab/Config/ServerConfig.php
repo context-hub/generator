@@ -51,7 +51,7 @@ final readonly class ServerConfig implements \JsonSerializable
 
     public function withResolvedVariables(VariableResolver $resolver): self
     {
-        $resolvedHeaders = \array_map(static fn($value) => $resolver->resolve($value), $this->headers);
+        $resolvedHeaders = \array_map($resolver->resolve(...), $this->headers);
 
         return new self(
             url: $resolver->resolve($this->url),

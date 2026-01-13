@@ -58,5 +58,9 @@ final readonly class DirectoryListRequest
             description: 'Configuration options for tree view visualization',
         )]
         public ?TreeViewConfig $treeView = null,
+        #[Field(
+            description: 'Project identifier if multiple projects are supported. Optional.',
+        )]
+        public ?string $project = null,
     ) {}
 }

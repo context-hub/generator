@@ -22,5 +22,9 @@ final readonly class FileWriteRequest
             default: true,
         )]
         public bool $createDirectory = true,
+        #[Field(
+            description: 'Project identifier if multiple projects are supported. Optional.',
+        )]
+        public ?string $project = null,
     ) {}
 }

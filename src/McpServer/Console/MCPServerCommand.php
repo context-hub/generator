@@ -62,6 +62,13 @@ final class MCPServerCommand extends BaseCommand
     )]
     protected ?string $envFileName = null;
 
+    #[Option(
+        name: 'work-dir',
+        shortcut: 'w',
+        description: 'Path to working directory. If not provided, will use "./.context"',
+    )]
+    protected ?string $workDir = null;
+
     public function __invoke(
         Container $container,
         DirectoriesInterface $dirs,
@@ -84,6 +91,7 @@ final class MCPServerCommand extends BaseCommand
         // Determine the effective root path based on config file path
         $dirs = $dirs
             ->determineRootPath($this->configPath)
+            ->withOutputPath($this->workDir)
             ->withEnvFile($this->envFileName);
 
         $binder = $container->getBinder('root');

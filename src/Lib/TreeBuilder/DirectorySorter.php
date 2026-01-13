@@ -20,7 +20,7 @@ final class DirectorySorter
     {
         // First, remove any duplicates and ensure consistent path separators
         $normalized = \array_map(
-            static fn(string $path): string => self::normalizePath($path),
+            self::normalizePath(...),
             \array_unique((array) $directories),
         );
 
