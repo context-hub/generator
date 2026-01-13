@@ -11,17 +11,6 @@ use Tests\McpInspector\McpInspectorTestCase;
 #[Group('mcp-inspector')]
 final class GitStatusToolTest extends McpInspectorTestCase
 {
-    #[\Override]
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        // Initialize git repo in work directory
-        \exec("cd {$this->workDir} && git init -q");
-        \exec("cd {$this->workDir} && git config user.email 'test@test.com'");
-        \exec("cd {$this->workDir} && git config user.name 'Test'");
-    }
-
     #[Test]
     public function it_shows_git_status(): void
     {
@@ -60,5 +49,16 @@ final class GitStatusToolTest extends McpInspectorTestCase
         // Assert
         $this->assertInspectorSuccess($result);
         $this->assertContentContains($result, 'tracked.txt');
+    }
+
+    #[\Override]
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Initialize git repo in work directory
+        \exec("cd {$this->workDir} && git init -q");
+        \exec("cd {$this->workDir} && git config user.email 'test@test.com'");
+        \exec("cd {$this->workDir} && git config user.name 'Test'");
     }
 }
