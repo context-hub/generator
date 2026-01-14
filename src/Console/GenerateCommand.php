@@ -11,10 +11,10 @@ use Butschster\ContextGenerator\Config\Registry\ConfigRegistryAccessor;
 use Butschster\ContextGenerator\Console\Renderer\GenerateCommandRenderer;
 use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\Document\Compiler\DocumentCompiler;
-use Spiral\Files\FilesInterface;
 use Spiral\Console\Attribute\Option;
 use Spiral\Core\Container;
 use Spiral\Core\Scope;
+use Spiral\Files\FilesInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 
@@ -42,7 +42,7 @@ final class GenerateCommand extends BaseCommand
     #[Option(
         name: 'work-dir',
         shortcut: 'w',
-        description: 'Path to working directory. If not provided, will use the current working directory',
+        description: 'Path to working directory. If not provided, will use "./.context"',
     )]
     protected ?string $workDir = null;
 

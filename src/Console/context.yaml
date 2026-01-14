@@ -15,6 +15,12 @@ documents:
         filePattern: '*.php'
         showTreeView: true
 
+  - description: Console UI
+    outputPath: console/ui.md
+    sources:
+      - type: file
+        sourcePaths: ./UI
+
   - description: Init command
     outputPath: console/init.md
     sources:

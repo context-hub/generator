@@ -23,6 +23,7 @@ use Butschster\ContextGenerator\McpServer\Action\Tools\ExecuteCustomToolAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\DirectoryListAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileRead\FileReadAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileReplaceContent\FileReplaceContentAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileSearch\FileSearchAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileWriteAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Git\GitAddAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Git\GitCommitAction;
@@ -202,6 +203,7 @@ final class ActionsBootloader extends Bootloader
                 FileReadAction::class,
                 FileReplaceContentAction::class,
                 FileWriteAction::class,
+                FileSearchAction::class,
                 DirectoryListAction::class,
             ];
         }
