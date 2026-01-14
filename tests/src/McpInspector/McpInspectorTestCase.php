@@ -55,6 +55,11 @@ abstract class McpInspectorTestCase extends TestCase
         return \dirname(__DIR__, 3) . '/ctx';
     }
 
+    protected function vendorDir(string $path = ''): string
+    {
+        return \dirname(__DIR__, 3) . '/vendor/' . $path;
+    }
+
     /**
      * Create a temporary directory for tests.
      */

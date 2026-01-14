@@ -8,7 +8,6 @@ use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Project\ProjectWhitelistRegistryInterface;
 use Butschster\ContextGenerator\McpServer\Projects\Actions\Dto\CurrentProjectResponse;
-use Butschster\ContextGenerator\McpServer\Projects\Actions\Dto\ProjectInfoResponse;
 use Butschster\ContextGenerator\McpServer\Projects\Actions\Dto\ProjectsListResponse;
 use Butschster\ContextGenerator\McpServer\Projects\ProjectServiceInterface;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
@@ -36,46 +35,8 @@ final readonly class ProjectsListToolAction
         $this->logger->info('Processing projects-list tool');
 
         try {
-            $projects = $this->projectService->getProjects();
-            $aliases = $this->projectService->getAliases();
             $currentProject = $this->projectService->getCurrentProject();
-
-            // Get whitelisted projects from context.yaml configuration
             $whitelistedProjects = $this->whitelistRegistry->getProjects();
-
-            if (empty($projects)) {
-                $response = new ProjectsListResponse(
-                    projects: [],
-                    currentProject: null,
-                    totalProjects: 0,
-                    whitelistedProjects: $whitelistedProjects,
-                    message: 'No projects registered. Use project:add command to add projects.',
-                );
-
-                return ToolResult::success($response);
-            }
-
-            // Create inverse alias map for quick lookups
-            $pathToAliases = [];
-            foreach ($aliases as $alias => $path) {
-                if (!isset($pathToAliases[$path])) {
-                    $pathToAliases[$path] = [];
-                }
-                $pathToAliases[$path][] = $alias;
-            }
-
-            // Build project info responses
-            $projectInfos = [];
-            foreach ($projects as $path => $info) {
-                $projectInfos[] = new ProjectInfoResponse(
-                    path: $path,
-                    configFile: $info->configFile,
-                    envFile: $info->envFile,
-                    addedAt: $info->addedAt,
-                    aliases: $pathToAliases[$path] ?? [],
-                    isCurrent: $currentProject && $currentProject->path === $path,
-                );
-            }
 
             // Build current project response
             $currentProjectResponse = null;
@@ -89,10 +50,9 @@ final readonly class ProjectsListToolAction
             }
 
             $response = new ProjectsListResponse(
-                projects: [],
+                projects: $whitelistedProjects,
                 currentProject: $currentProjectResponse,
-                totalProjects: \count($projects),
-                whitelistedProjects: $whitelistedProjects,
+                totalProjects: \count($whitelistedProjects),
             );
 
             return ToolResult::success($response);

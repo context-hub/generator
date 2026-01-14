@@ -24,7 +24,7 @@ final class MultiProjectProjectsListTest extends McpInspectorTestCase
 
         // Assert
         $this->assertInspectorSuccess($result);
-        $this->assertContentContains($result, 'whitelisted_projects');
+        $this->assertContentContains($result, 'projects');
         $this->assertContentContains($result, 'project-a');
         $this->assertContentContains($result, 'project-b');
     }
