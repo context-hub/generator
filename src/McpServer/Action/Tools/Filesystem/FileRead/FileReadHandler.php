@@ -28,9 +28,15 @@ final readonly class FileReadHandler
      *
      * @param string $relativePath Path relative to project root
      * @param string $encoding File encoding (currently unused, reserved for future)
+     * @param int|null $startLine First line to read (1-based, inclusive)
+     * @param int|null $endLine Last line to read (1-based, inclusive)
      */
-    public function read(string $relativePath, string $encoding = 'utf-8'): FileReadResult
-    {
+    public function read(
+        string $relativePath,
+        string $encoding = 'utf-8',
+        ?int $startLine = null,
+        ?int $endLine = null,
+    ): FileReadResult {
         $fullPath = (string) $this->dirs->getRootPath()->join($relativePath);
 
         // Validate file exists
@@ -76,6 +82,11 @@ final readonly class FileReadHandler
         try {
             $content = $this->files->read($fullPath);
 
+            // Handle line range if specified
+            if ($startLine !== null || $endLine !== null) {
+                return $this->extractLineRange($relativePath, $content, $startLine, $endLine);
+            }
+
             $this->logger->info('Successfully read file', [
                 'path' => $relativePath,
                 'size' => \strlen($content),
@@ -93,5 +104,65 @@ final readonly class FileReadHandler
                 \sprintf("Could not read file '%s': %s", $relativePath, $e->getMessage()),
             );
         }
+    }
+
+    /**
+     * Extract a range of lines from content.
+     */
+    private function extractLineRange(
+        string $relativePath,
+        string $content,
+        ?int $startLine,
+        ?int $endLine,
+    ): FileReadResult {
+        $lines = \explode("\n", $content);
+        $totalLines = \count($lines);
+
+        // Normalize line numbers (1-based to 0-based index)
+        $effectiveStart = \max(1, $startLine ?? 1);
+        $effectiveEnd = $endLine !== null ? \min($endLine, $totalLines) : $totalLines;
+
+        // Validate range
+        if ($effectiveStart > $totalLines) {
+            return FileReadResult::error(
+                $relativePath,
+                \sprintf(
+                    "Start line %d exceeds file length (%d lines)",
+                    $effectiveStart,
+                    $totalLines,
+                ),
+            );
+        }
+
+        if ($effectiveStart > $effectiveEnd) {
+            return FileReadResult::error(
+                $relativePath,
+                \sprintf(
+                    "Invalid line range: start (%d) is greater than end (%d)",
+                    $effectiveStart,
+                    $effectiveEnd,
+                ),
+            );
+        }
+
+        // Extract lines (convert to 0-based index)
+        $selectedLines = \array_slice($lines, $effectiveStart - 1, $effectiveEnd - $effectiveStart + 1);
+        $extractedContent = \implode("\n", $selectedLines);
+
+        $this->logger->info('Successfully read file with line range', [
+            'path' => $relativePath,
+            'totalLines' => $totalLines,
+            'startLine' => $effectiveStart,
+            'endLine' => $effectiveEnd,
+            'extractedLines' => \count($selectedLines),
+        ]);
+
+        return FileReadResult::successWithLineRange(
+            $relativePath,
+            $extractedContent,
+            $totalLines,
+            $effectiveStart,
+            $effectiveEnd,
+        );
     }
 }
