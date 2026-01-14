@@ -15,6 +15,8 @@ final readonly class FileSearchResult
      * @param SearchMatch[] $matches Array of matches found
      * @param string|null $error Error message if search failed
      * @param bool $truncated Whether results were truncated due to limits
+     * @param int $fileSize File size in bytes
+     * @param int|null $lastModified Last modification timestamp (unix)
      */
     public function __construct(
         public string $file,
@@ -22,15 +24,24 @@ final readonly class FileSearchResult
         public array $matches = [],
         public ?string $error = null,
         public bool $truncated = false,
+        public int $fileSize = 0,
+        public ?int $lastModified = null,
     ) {}
 
-    public static function success(string $file, array $matches, bool $truncated = false): self
-    {
+    public static function success(
+        string $file,
+        array $matches,
+        bool $truncated = false,
+        int $fileSize = 0,
+        ?int $lastModified = null,
+    ): self {
         return new self(
             file: $file,
             success: true,
             matches: $matches,
             truncated: $truncated,
+            fileSize: $fileSize,
+            lastModified: $lastModified,
         );
     }
 
@@ -64,7 +75,8 @@ final readonly class FileSearchResult
         $maxLineNum = \max(\array_map(fn(SearchMatch $m) => $m->lineNumber, $this->matches));
         $lineNumWidth = \strlen((string) $maxLineNum);
 
-        $parts = [\sprintf('=== %s ===', $this->file)];
+        $header = \sprintf('=== %s %s===', $this->file, $this->formatMetadata());
+        $parts = [$header];
 
         foreach ($this->matches as $match) {
             $parts[] = '';
@@ -78,5 +90,57 @@ final readonly class FileSearchResult
         }
 
         return \implode("\n", $parts);
+    }
+
+    /**
+     * Format file metadata (size and last modified) for display.
+     */
+    private function formatMetadata(): string
+    {
+        $parts = [];
+
+        if ($this->fileSize > 0) {
+            $parts[] = $this->formatFileSize($this->fileSize);
+        }
+
+        if ($this->lastModified !== null) {
+            $parts[] = 'modified ' . $this->formatRelativeTime($this->lastModified);
+        }
+
+        return $parts !== [] ? '[' . \implode(', ', $parts) . '] ' : '';
+    }
+
+    private function formatFileSize(int $bytes): string
+    {
+        if ($bytes >= 1024 * 1024) {
+            return \sprintf('%.1f MB', $bytes / (1024 * 1024));
+        }
+        if ($bytes >= 1024) {
+            return \sprintf('%.1f KB', $bytes / 1024);
+        }
+        return \sprintf('%d B', $bytes);
+    }
+
+    private function formatRelativeTime(int $timestamp): string
+    {
+        $diff = \time() - $timestamp;
+
+        if ($diff < 60) {
+            return 'just now';
+        }
+        if ($diff < 3600) {
+            $mins = (int) ($diff / 60);
+            return $mins . 'm ago';
+        }
+        if ($diff < 86400) {
+            $hours = (int) ($diff / 3600);
+            return $hours . 'h ago';
+        }
+        if ($diff < 86400 * 30) {
+            $days = (int) ($diff / 86400);
+            return $days . 'd ago';
+        }
+
+        return \date('Y-m-d', $timestamp);
     }
 }

@@ -74,6 +74,8 @@ final readonly class FileSearchHandler
                 $request->contextLines,
                 $request->maxMatchesPerFile,
                 $maxTotal - $totalMatches,
+                $file->getSize(),
+                $file->getMTime(),
             );
 
             if ($result->success && $result->getMatchCount() > 0) {
@@ -116,6 +118,8 @@ final readonly class FileSearchHandler
         int $contextLines,
         int $maxPerFile,
         int $remainingTotal,
+        int $fileSize,
+        int $lastModified,
     ): FileSearchResult {
         try {
             $content = $this->files->read($fullPath);
@@ -151,7 +155,13 @@ final readonly class FileSearchHandler
             }
         }
 
-        return FileSearchResult::success($relativePath, $matches, $truncated);
+        return FileSearchResult::success(
+            file: $relativePath,
+            matches: $matches,
+            truncated: $truncated,
+            fileSize: $fileSize,
+            lastModified: $lastModified,
+        );
     }
 
     private function createMatch(
