@@ -45,7 +45,7 @@ final class InitCommand extends BaseCommand
         // Check if config file already exists
         if ($files->exists($configPath)) {
             $this->output->warning(\sprintf('Config file already exists: %s', $this->configFile));
-            
+
             if (!$this->output->confirm('Do you want to overwrite it?', false)) {
                 return Command::SUCCESS;
             }
@@ -61,13 +61,13 @@ final class InitCommand extends BaseCommand
     private function createEmptyContext(FilesInterface $files, string $configPath): void
     {
         $this->output->writeln('');
-        
+
         if ($this->template !== null) {
             $this->output->warning(\sprintf('Template "%s" not found.', $this->template));
         } else {
             $this->output->warning('No specific project type detected.');
         }
-        
+
         $this->output->writeln('');
         $this->output->writeln('Creating an empty context.yaml file...');
         $this->output->writeln('');
