@@ -19,7 +19,7 @@ final class ProjectsListToolTest extends McpInspectorTestCase
 
         // Assert
         $this->assertInspectorSuccess($result);
-        $this->assertContentContains($result, 'whitelisted_projects');
+        $this->assertContentContains($result, 'projects');
     }
 
     #[Test]
@@ -43,9 +43,9 @@ YAML);
 
         // Assert
         $this->assertInspectorSuccess($result);
-        // The project won't appear in whitelist unless it exists in .project-state.json
+        // The project won't appear in projects list unless it exists in .project-state.json
         // But the response structure should be valid
-        $this->assertContentContains($result, 'whitelisted_projects');
+        $this->assertContentContains($result, 'projects');
     }
 
     #[Test]
@@ -68,6 +68,5 @@ YAML);
         $this->assertArrayHasKey('projects', $data);
         $this->assertArrayHasKey('current_project', $data);
         $this->assertArrayHasKey('total_projects', $data);
-        $this->assertArrayHasKey('whitelisted_projects', $data);
     }
 }
