@@ -72,7 +72,7 @@ final readonly class FileSearchResult
             return '';
         }
 
-        $maxLineNum = \max(\array_map(fn(SearchMatch $m) => $m->lineNumber, $this->matches));
+        $maxLineNum = \max(\array_map(static fn(SearchMatch $m) => $m->lineNumber, $this->matches));
         $lineNumWidth = \strlen((string) $maxLineNum);
 
         $header = \sprintf('=== %s %s===', $this->file, $this->formatMetadata());
