@@ -132,3 +132,47 @@ jobs:
 
       - name: 🧪 Run unit tests using phpunit/phpunit
         run: composer test
+
+  mcp-inspector:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    concurrency:
+      cancel-in-progress: true
+      group: mcp-inspector-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+    steps:
+      - name: 📦 Check out the codebase
+        uses: actions/checkout@v4
+
+      - name: 🛠️ Setup PHP
+        uses: shivammathur/setup-php@2.32.0
+        with:
+          php-version: '8.3'
+          extensions: none, ctype, curl, dom, json, mbstring, phar, simplexml, tokenizer, xml, xmlwriter, sockets, opcache, pcntl, posix, fileinfo
+          ini-values: error_reporting=E_ALL
+          coverage: none
+
+      - name: 🛠️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 📥 Install MCP Inspector
+        run: npm install -g @modelcontextprotocol/inspector
+
+      - name: 🔍 Get composer cache directory
+        uses: wayofdev/gh-actions/actions/composer/get-cache-directory@v3.2.0
+
+      - name: ♻️ Restore cached dependencies installed with composer
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.COMPOSER_CACHE_DIR }}
+          key: php-8.3-composer-locked-${{ hashFiles('composer.lock') }}
+          restore-keys: php-8.3-composer-locked-
+
+      - name: 📥 Install composer dependencies
+        uses: wayofdev/gh-actions/actions/composer/install@v3.2.0
+        with:
+          dependencies: locked
+
+      - name: 🧪 Run MCP Inspector tests
+        run: composer test-mcp

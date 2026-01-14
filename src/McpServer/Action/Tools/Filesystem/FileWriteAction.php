@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem;
 
 use Butschster\ContextGenerator\DirectoriesInterface;
+use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\Dto\FileWriteRequest;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
-use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use PhpMcp\Schema\Result\CallToolResult;
 use Psr\Log\LoggerInterface;
+use Spiral\Core\Attribute\Proxy;
 use Spiral\Files\FilesInterface;
 
 #[Tool(
@@ -25,7 +26,7 @@ final readonly class FileWriteAction
     public function __construct(
         private LoggerInterface $logger,
         private FilesInterface $files,
-        private DirectoriesInterface $dirs,
+        #[Proxy] private DirectoriesInterface $dirs,
     ) {}
 
     #[Post(path: '/tools/call/file-write', name: 'tools.file-write')]

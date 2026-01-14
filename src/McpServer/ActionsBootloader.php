@@ -21,8 +21,8 @@ use Butschster\ContextGenerator\McpServer\Action\Tools\Docs\FetchLibraryDocsActi
 use Butschster\ContextGenerator\McpServer\Action\Tools\Docs\LibrarySearchAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\ExecuteCustomToolAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\DirectoryListAction;
-use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileReadAction;
-use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileReplaceContentAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileRead\FileReadAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileReplaceContent\FileReplaceContentAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileWriteAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Git\GitAddAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Git\GitCommitAction;
@@ -41,6 +41,7 @@ use Butschster\ContextGenerator\McpServer\Prompt\Console\ListPromptsCommand;
 use Butschster\ContextGenerator\McpServer\Prompt\Console\ShowPromptCommand;
 use Butschster\ContextGenerator\McpServer\Tool\Console\ToolListCommand;
 use Butschster\ContextGenerator\McpServer\Tool\Console\ToolRunCommand;
+use Butschster\ContextGenerator\McpServer\Tool\Console\ToolSchemaCommand;
 use Butschster\ContextGenerator\Research\MCP\Tools\CreateEntryToolAction;
 use Butschster\ContextGenerator\Research\MCP\Tools\CreateResearchToolAction;
 use Butschster\ContextGenerator\Research\MCP\Tools\GetResearchToolAction;
@@ -110,6 +111,7 @@ final class ActionsBootloader extends Bootloader
     {
         $console->addCommand(ToolListCommand::class);
         $console->addCommand(ToolRunCommand::class);
+        $console->addCommand(ToolSchemaCommand::class);
 
         $console->addCommand(MCPServerCommand::class);
         $console->addCommand(McpConfigCommand::class);

@@ -4,27 +4,30 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer\Projects\Actions;
 
+use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
+use Butschster\ContextGenerator\McpServer\Project\ProjectWhitelistRegistryInterface;
 use Butschster\ContextGenerator\McpServer\Projects\Actions\Dto\CurrentProjectResponse;
 use Butschster\ContextGenerator\McpServer\Projects\Actions\Dto\ProjectInfoResponse;
 use Butschster\ContextGenerator\McpServer\Projects\Actions\Dto\ProjectsListResponse;
 use Butschster\ContextGenerator\McpServer\Projects\ProjectServiceInterface;
-use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use PhpMcp\Schema\Result\CallToolResult;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
+use Spiral\Core\Attribute\Proxy;
 
 #[Tool(
     name: 'projects-list',
-    description: 'List all registered projects with their paths, aliases, and configuration details',
+    description: 'List all registered projects with their paths, aliases, and configuration details. Also shows whitelisted projects available for the "project" parameter in tools.',
     title: 'Projects List',
 )]
 final readonly class ProjectsListToolAction
 {
     public function __construct(
         private LoggerInterface $logger,
-        private ProjectServiceInterface $projectService,
+        #[Proxy] private ProjectServiceInterface $projectService,
+        private ProjectWhitelistRegistryInterface $whitelistRegistry,
     ) {}
 
     #[Post(path: '/tools/call/projects-list', name: 'tools.projects-list')]
@@ -37,11 +40,15 @@ final readonly class ProjectsListToolAction
             $aliases = $this->projectService->getAliases();
             $currentProject = $this->projectService->getCurrentProject();
 
+            // Get whitelisted projects from context.yaml configuration
+            $whitelistedProjects = $this->whitelistRegistry->getProjects();
+
             if (empty($projects)) {
                 $response = new ProjectsListResponse(
                     projects: [],
                     currentProject: null,
                     totalProjects: 0,
+                    whitelistedProjects: $whitelistedProjects,
                     message: 'No projects registered. Use project:add command to add projects.',
                 );
 
@@ -82,9 +89,10 @@ final readonly class ProjectsListToolAction
             }
 
             $response = new ProjectsListResponse(
-                projects: $projectInfos,
+                projects: [],
                 currentProject: $currentProjectResponse,
                 totalProjects: \count($projects),
+                whitelistedProjects: $whitelistedProjects,
             );
 
             return ToolResult::success($response);

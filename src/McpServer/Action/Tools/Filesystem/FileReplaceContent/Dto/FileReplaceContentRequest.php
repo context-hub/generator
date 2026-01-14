@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\Dto;
+namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileReplaceContent\Dto;
 
+use Butschster\ContextGenerator\McpServer\Project\ProjectAwareRequest;
 use Spiral\JsonSchemaGenerator\Attribute\Field;
 
-final readonly class FileReplaceContentRequest
+final readonly class FileReplaceContentRequest implements ProjectAwareRequest
 {
     public function __construct(
         #[Field(
@@ -21,5 +22,14 @@ final readonly class FileReplaceContentRequest
             description: 'Content to replace the matched text with. Can include the original text plus additions for insertions.',
         )]
         public string $replace,
+        #[Field(
+            description: 'Project identifier if multiple projects are supported. Optional.',
+        )]
+        public ?string $project = null,
     ) {}
+
+    public function getProject(): ?string
+    {
+        return $this->project;
+    }
 }

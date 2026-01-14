@@ -59,6 +59,25 @@ final class ToolRunCommand extends BaseCommand
     )]
     protected ?string $envFileName = null;
 
+    #[Option(
+        name: 'json',
+        shortcut: 'j',
+        description: 'Tool arguments as JSON string',
+    )]
+    protected ?string $jsonArgs = null;
+
+    #[Option(
+        name: 'stdin',
+        description: 'Read JSON arguments from stdin',
+    )]
+    protected bool $readStdin = false;
+
+    #[Option(
+        name: 'output-json',
+        description: 'Output result as JSON for machine parsing',
+    )]
+    protected bool $outputJson = false;
+
     public function __invoke(Container $container, DirectoriesInterface $dirs): int
     {
         return $container->runScope(
@@ -112,7 +131,9 @@ final class ToolRunCommand extends BaseCommand
                         ToolProviderInterface $toolProvider,
                     ): int {
                         $toolId = $this->toolId;
-                        $providedArgs = $this->parseProvidedArguments($this->argOptions);
+
+                        // Gather arguments from all sources (--arg, --json, --stdin)
+                        $providedArgs = $this->gatherAllArguments();
 
                         // If no tool ID is provided, list available tools and prompt for selection
                         if (empty($toolId) && $this->input->isInteractive()) {
@@ -154,14 +175,16 @@ final class ToolRunCommand extends BaseCommand
                         }
 
                         // Execute tool
-                        $this->output->writeln(\sprintf('<info>Executing tool "%s"...</info>', $tool->id));
+                        if (!$this->outputJson) {
+                            $this->output->writeln(\sprintf('<info>Executing tool "%s"...</info>', $tool->id));
+                        }
 
                         try {
                             $startTime = \microtime(true);
 
-                            // Create progress indicator
+                            // Create progress indicator (skip for JSON output)
                             $progressBar = null;
-                            if (!$this->output->isVerbose()) {
+                            if (!$this->output->isVerbose() && !$this->outputJson) {
                                 $progressBar = new ProgressBar($this->output);
                                 $progressBar->setFormat(' %percent:3s%% [%bar%] %elapsed:6s%');
                                 $progressBar->start();
@@ -180,11 +203,19 @@ final class ToolRunCommand extends BaseCommand
                             }
 
                             // Display results
-                            $this->displayResults($tool, $result, $executionTime);
+                            if ($this->outputJson) {
+                                $this->outputJsonResult($tool, $result, $executionTime);
+                            } else {
+                                $this->displayResults($tool, $result, $executionTime);
+                            }
 
                             return isset($result['success']) && $result['success'] === false ? Command::FAILURE : Command::SUCCESS;
                         } catch (\Throwable $e) {
-                            $this->output->error(\sprintf('Error executing tool: %s', $e->getMessage()));
+                            if ($this->outputJson) {
+                                $this->outputJsonError($tool->id, $e->getMessage());
+                            } else {
+                                $this->output->error(\sprintf('Error executing tool: %s', $e->getMessage()));
+                            }
                             $this->logger->error('Tool execution failed', [
                                 'id' => $tool->id,
                                 'error' => $e->getMessage(),
@@ -516,5 +547,101 @@ final class ToolRunCommand extends BaseCommand
                 $this->output->writeln($outputData);
             }
         }
+    }
+
+    /**
+     * Gather arguments from all sources (--arg, --json, --stdin).
+     * Priority: stdin > json > arg options (later sources override earlier ones).
+     */
+    private function gatherAllArguments(): array
+    {
+        // Start with --arg options
+        $args = $this->parseProvidedArguments($this->argOptions);
+
+        // Merge --json arguments (overrides --arg)
+        if ($this->jsonArgs !== null) {
+            $jsonArgs = $this->parseJsonArguments($this->jsonArgs);
+            $args = \array_merge($args, $jsonArgs);
+        }
+
+        // Merge --stdin arguments (overrides both --arg and --json)
+        if ($this->readStdin) {
+            $stdinArgs = $this->readStdinArguments();
+            $args = \array_merge($args, $stdinArgs);
+        }
+
+        return $args;
+    }
+
+    /**
+     * Parse JSON string into arguments array.
+     */
+    private function parseJsonArguments(string $json): array
+    {
+        $decoded = \json_decode($json, true);
+
+        if (\json_last_error() !== JSON_ERROR_NONE) {
+            $this->output->warning(\sprintf('Invalid JSON arguments: %s', \json_last_error_msg()));
+            return [];
+        }
+
+        if (!\is_array($decoded)) {
+            $this->output->warning('JSON arguments must be an object');
+            return [];
+        }
+
+        return $decoded;
+    }
+
+    /**
+     * Read JSON arguments from stdin.
+     */
+    private function readStdinArguments(): array
+    {
+        $stdin = '';
+
+        // Check if stdin has data (non-blocking check)
+        $read = [\STDIN];
+        $write = null;
+        $except = null;
+
+        if (\stream_select($read, $write, $except, 0) > 0) {
+            $stdin = \stream_get_contents(\STDIN);
+        }
+
+        if (empty($stdin)) {
+            return [];
+        }
+
+        return $this->parseJsonArguments(\trim($stdin));
+    }
+
+    /**
+     * Output result as JSON for machine parsing.
+     */
+    private function outputJsonResult(ToolDefinition $tool, array $result, float $executionTime): void
+    {
+        $jsonOutput = [
+            'success' => !isset($result['success']) || $result['success'] !== false,
+            'toolId' => $tool->id,
+            'executionTime' => \round($executionTime, 4),
+            'result' => $result,
+        ];
+
+        $this->output->writeln(\json_encode($jsonOutput, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+    }
+
+    /**
+     * Output error as JSON for machine parsing.
+     */
+    private function outputJsonError(string $toolId, string $error): void
+    {
+        $jsonOutput = [
+            'success' => false,
+            'toolId' => $toolId,
+            'error' => $error,
+        ];
+
+        $this->output->writeln(\json_encode($jsonOutput, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
     }
 }

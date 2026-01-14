@@ -15,7 +15,7 @@ use Spiral\Core\Options;
 //  Prepare Global Environment
 // -----------------------------------------------------------------------------
 \mb_internal_encoding('UTF-8');
-\error_reporting(E_ALL ^ E_DEPRECATED);
+\error_reporting(E_ALL ^ E_DEPRECATED ^ E_USER_DEPRECATED);
 
 
 // -----------------------------------------------------------------------------

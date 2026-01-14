@@ -27,7 +27,7 @@
     "ext-posix": "*",
     "ctx/module-research": "^1.0",
     "ctx/module-config-templates": "^1.0",
-    "ctx/mcp-server": "^1.3.2",
+    "ctx/mcp-server": "^1.4.0",
     "league/html-to-markdown": "^5.1",
     "php-mcp/schema": "dev-main as 1.0",
     "psr/log": "^3.0",
@@ -73,10 +73,11 @@
     "psalm:ci": "vendor/bin/psalm --config=psalm.xml ./src --output-format=github --shepherd --show-info=false --stats --threads=4 --no-cache",
     "refactor": "rector process --config=rector.php",
     "refactor:ci": "rector process --config=rector.php --dry-run --ansi",
-    "test": "vendor/bin/phpunit",
+    "test": "vendor/bin/phpunit --testsuite application-tests",
+    "test-mcp": "vendor/bin/phpunit --testsuite mcp-inspector",
     "test:cc": [
       "@putenv XDEBUG_MODE=coverage",
-      "phpunit --coverage-clover=.build/phpunit/logs/clover.xml --color=always"
+      "phpunit --testsuite application-tests --coverage-clover=.build/phpunit/logs/clover.xml --color=always"
     ]
   },
   "minimum-stability": "dev",

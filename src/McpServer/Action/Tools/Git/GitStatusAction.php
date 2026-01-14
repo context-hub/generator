@@ -16,6 +16,7 @@ use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use PhpMcp\Schema\Result\CallToolResult;
 use Psr\Log\LoggerInterface;
+use Spiral\Core\Attribute\Proxy;
 
 #[Tool(
     name: 'git-status',
@@ -28,7 +29,7 @@ final readonly class GitStatusAction
     public function __construct(
         private LoggerInterface $logger,
         private CommandsExecutorInterface $commandsExecutor,
-        private DirectoriesInterface $dirs,
+        #[Proxy] private DirectoriesInterface $dirs,
     ) {}
 
     #[Post(path: '/tools/call/git-status', name: 'tools.git.status')]
