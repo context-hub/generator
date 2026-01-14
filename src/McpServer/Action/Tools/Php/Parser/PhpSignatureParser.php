@@ -70,7 +70,7 @@ final class PhpSignatureParser
             /** @var string[] */
             public array $attributes = [];
 
-            /** @var array<array{name: string, visibility: string, type: ?string, default: bool}> */
+            /** @var array<array{name: string, visibility: string, type: ?string, default: bool, readonly?: bool, static?: bool}> */
             public array $properties = [];
 
             /** @var array<array{name: string, visibility: string, params: string, returnType: ?string, isAbstract: bool, isStatic: bool}> */
@@ -324,7 +324,9 @@ final class PhpSignatureParser
                     }
 
                     // Name
-                    $part .= '$' . $param->var->name;
+                    if ($param->var instanceof \PhpParser\Node\Expr\Variable && \is_string($param->var->name)) {
+                        $part .= '$' . $param->var->name;
+                    }
 
                     $parts[] = $part;
                 }

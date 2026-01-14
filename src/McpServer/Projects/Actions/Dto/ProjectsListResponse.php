@@ -12,14 +12,12 @@ use Butschster\ContextGenerator\McpServer\Project\ProjectConfig;
 final readonly class ProjectsListResponse implements \JsonSerializable
 {
     /**
-     * @param ProjectInfoResponse[] $projects
-     * @param ProjectConfig[] $whitelistedProjects
+     * @param ProjectConfig[] $projects
      */
     public function __construct(
         public array $projects,
         public ?CurrentProjectResponse $currentProject,
         public int $totalProjects,
-        public array $whitelistedProjects = [],
         public ?string $message = null,
     ) {}
 
@@ -29,7 +27,6 @@ final readonly class ProjectsListResponse implements \JsonSerializable
             'projects' => $this->projects,
             'current_project' => $this->currentProject,
             'total_projects' => $this->totalProjects,
-            'whitelisted_projects' => $this->whitelistedProjects,
             'message' => $this->message,
         ];
     }

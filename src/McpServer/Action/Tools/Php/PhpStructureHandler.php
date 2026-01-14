@@ -20,7 +20,7 @@ final readonly class PhpStructureHandler
     /**
      * Parse PHP file and follow relationships up to specified depth.
      *
-     * @return PhpSignature[] Array of signatures, primary file first
+     * @return array<array{signature: PhpSignature, depth: int}> Array of signatures with depth info
      */
     public function analyze(string $path, int $depth, bool $showPrivate): array
     {
@@ -152,7 +152,7 @@ final readonly class PhpStructureHandler
     {
         $result = [];
 
-        foreach ($signature->useStatements as $alias => $fqcn) {
+        foreach ($signature->useStatements as $fqcn) {
             $ref = $this->findReference($signature, $fqcn);
             $pathComment = $ref !== null ? $ref->formatComment() : '(unknown)';
             $result[$fqcn] = $pathComment;

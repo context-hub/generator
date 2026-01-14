@@ -19,7 +19,7 @@ final readonly class PhpSignature
      * @param string[] $uses Used traits FQCNs
      * @param array<string, string> $useStatements Import statements [alias => FQCN]
      * @param string[] $attributes Class attribute FQCNs
-     * @param array<array{name: string, visibility: string, type: ?string, default: bool}> $properties
+     * @param array<array{name: string, visibility: string, type: ?string, default: bool, readonly?: bool, static?: bool}> $properties
      * @param array<array{name: string, visibility: string, params: string, returnType: ?string, isAbstract: bool, isStatic: bool}> $methods
      * @param FileReference[] $references All file references
      */
