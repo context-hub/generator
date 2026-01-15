@@ -14,7 +14,7 @@ COPY . .
 RUN rm -f composer.lock
 RUN rm -rf vendor
 
-RUN composer install --ignore-platform-reqs
+RUN composer install --no-dev --ignore-platform-reqs
 
 # Create build directories
 RUN mkdir -p .build/phar .build/bin

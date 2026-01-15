@@ -6,6 +6,39 @@ import:
   - path: ./docs
     format: md
 
+exclude:
+  patterns:
+    - ".env*"
+  paths:
+    - ".claude"
+    - ".context"
+
+rag:
+  enabled: true
+  store:
+    driver: qdrant
+    qdrant:
+      endpoint_url: ${RAG_QDRANT_URL:-http://localhost:6333}
+      api_key: ${RAG_QDRANT_API_KEY}
+      collection: ${RAG_COLLECTION:-ctx_knowledge}
+      embeddings_dimension: 1536
+      embeddings_distance: Cosine
+  vectorizer:
+    platform: openai
+    model: text-embedding-3-small
+    api_key: ${OPENAI_API_KEY}
+  transformer:
+    chunk_size: 1000
+    overlap: 200
+
+projects:
+  - name: ctx-mcp-server
+    description: MCP server for CTX
+  - name: ctx-docs
+    description: CTX application docs
+  - name: module-config-templates
+    description: Initial config templates and CLI command
+
 documents:
   - description: 'Project structure overview'
     outputPath: project-structure.md

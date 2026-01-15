@@ -11,6 +11,12 @@ use Spiral\Core\Attribute\Proxy;
 
 /**
  * Processor that replaces variable references in text
+ *
+ * Supports:
+ * - ${VAR_NAME} - simple variable reference
+ * - ${VAR_NAME:-default} - variable with default value
+ * - {{VAR_NAME}} - alternative syntax
+ * - {{VAR_NAME:-default}} - alternative syntax with default
  */
 final readonly class VariableReplacementProcessor implements VariableReplacementProcessorInterface
 {
@@ -29,17 +35,25 @@ final readonly class VariableReplacementProcessor implements VariableReplacement
      */
     public function process(string $text): string
     {
-        // Replace ${VAR_NAME} syntax
+        // Replace ${VAR_NAME} and ${VAR_NAME:-default} syntax
         $result = \preg_replace_callback(
-            '/\${([a-zA-Z0-9_]+)}/',
-            fn(array $matches) => $this->replaceVariable($matches[1], '${%s}'),
+            '/\${([a-zA-Z0-9_]+)(?::-([^}]*))?}/',
+            fn(array $matches) => $this->replaceVariable(
+                name: $matches[1],
+                default: $matches[2] ?? null,
+                format: '${%s}',
+            ),
             $text,
         );
 
-        // Replace {{VAR_NAME}} syntax
+        // Replace {{VAR_NAME}} and {{VAR_NAME:-default}} syntax
         return (string) \preg_replace_callback(
-            '/{{([a-zA-Z0-9_]+)}}/',
-            fn(array $matches) => $this->replaceVariable($matches[1], '{{%s}}'),
+            '/{{([a-zA-Z0-9_]+)(?::-([^}]*))?}}/',
+            fn(array $matches) => $this->replaceVariable(
+                name: $matches[1],
+                default: $matches[2] ?? null,
+                format: '{{%s}}',
+            ),
             (string) $result,
         );
     }
@@ -48,24 +62,34 @@ final readonly class VariableReplacementProcessor implements VariableReplacement
      * Replace a single variable reference
      *
      * @param string $name Variable name
-     * @return string Variable value or original reference if not found
+     * @param string|null $default Default value if variable not found
+     * @param string $format Format for unreplaced variable
+     * @return string Variable value, default value, or original reference
      */
-    private function replaceVariable(string $name, string $format): string
+    private function replaceVariable(string $name, ?string $default, string $format): string
     {
-        if (!$this->provider->has($name)) {
-            // Keep the original reference if not found and not failing
-            return \sprintf($format, $name);
+        if ($this->provider->has($name)) {
+            $value = $this->provider->get($name);
+
+            $this->logger?->debug('Replacing variable', [
+                'name' => $name,
+                'value' => $value,
+            ]);
+
+            return $value ?? '';
         }
 
-        // Get the variable value
-        $value = $this->provider->get($name);
+        // Variable not found - use default if provided
+        if ($default !== null) {
+            $this->logger?->debug('Using default value for variable', [
+                'name' => $name,
+                'default' => $default,
+            ]);
 
-        $this->logger?->debug('Replacing variable', [
-            'name' => $name,
-            'value' => $value,
-        ]);
+            return $default;
+        }
 
-        // If value is null (should not happen due to has() check), return empty string
-        return $value ?? '';
+        // Keep the original reference if not found and no default
+        return \sprintf($format, $name);
     }
 }

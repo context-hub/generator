@@ -64,6 +64,97 @@
         }
       }
     },
+    "rag": {
+      "type": "object",
+      "description": "RAG (Retrieval-Augmented Generation) knowledge store configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable RAG knowledge store"
+        },
+        "store": {
+          "type": "object",
+          "description": "Vector store configuration",
+          "properties": {
+            "driver": {
+              "type": "string",
+              "enum": ["qdrant", "memory"],
+              "default": "qdrant",
+              "description": "Store backend driver"
+            },
+            "qdrant": {
+              "type": "object",
+              "description": "Qdrant-specific configuration",
+              "properties": {
+                "endpoint_url": {
+                  "type": "string",
+                  "default": "http://localhost:6333",
+                  "description": "Qdrant server endpoint URL"
+                },
+                "api_key": {
+                  "type": "string",
+                  "description": "Qdrant API key (optional for local instances)"
+                },
+                "collection": {
+                  "type": "string",
+                  "default": "ctx_knowledge",
+                  "description": "Collection name"
+                },
+                "embeddings_dimension": {
+                  "type": "integer",
+                  "default": 1536,
+                  "description": "Vector embeddings dimension"
+                },
+                "embeddings_distance": {
+                  "type": "string",
+                  "enum": ["Cosine", "Euclid", "Dot"],
+                  "default": "Cosine",
+                  "description": "Distance metric for similarity search"
+                }
+              }
+            }
+          }
+        },
+        "vectorizer": {
+          "type": "object",
+          "description": "Embedding/vectorizer configuration",
+          "properties": {
+            "platform": {
+              "type": "string",
+              "enum": ["openai"],
+              "default": "openai",
+              "description": "Embedding platform"
+            },
+            "model": {
+              "type": "string",
+              "default": "text-embedding-3-small",
+              "description": "Embedding model name"
+            },
+            "api_key": {
+              "type": "string",
+              "description": "API key for the embedding platform (can use environment variable)"
+            }
+          }
+        },
+        "transformer": {
+          "type": "object",
+          "description": "Text chunking configuration",
+          "properties": {
+            "chunk_size": {
+              "type": "integer",
+              "default": 1000,
+              "description": "Maximum chunk size in characters"
+            },
+            "overlap": {
+              "type": "integer",
+              "default": 200,
+              "description": "Overlap between chunks in characters"
+            }
+          }
+        }
+      }
+    },
     "variables": {
       "type": "object",
       "description": "Custom variables to use throughout the configuration",

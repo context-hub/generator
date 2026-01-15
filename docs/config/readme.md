@@ -2,7 +2,9 @@
 
 ## Overview
 
-The CTX Configuration System provides a robust, extensible architecture for loading, parsing, and managing configuration files. It supports multiple formats (JSON, YAML, PHP), complex import mechanisms, variable substitution, and plugin-based extensibility.
+The CTX Configuration System provides a robust, extensible architecture for loading, parsing, and managing configuration
+files. It supports multiple formats (JSON, YAML, PHP), complex import mechanisms, variable substitution, and
+plugin-based extensibility.
 
 ## Architecture Components
 
@@ -29,23 +31,31 @@ Butschster\ContextGenerator\Config\ConfigurationProvider (Entry Point)
 ## Key Design Principles
 
 ### 1. Plugin-Based Extensibility
-The system uses plugins to handle different configuration sections, making it easy to add new functionality without modifying core components.
+
+The system uses plugins to handle different configuration sections, making it easy to add new functionality without
+modifying core components.
 
 ### 2. Format Agnostic
+
 Supports multiple configuration formats through a reader pattern, allowing users to choose their preferred format.
 
 ### 3. Import & Composition
-Complex configurations can be split across multiple files and composed through imports, supporting both local files and remote URLs.
+
+Complex configurations can be split across multiple files and composed through imports, supporting both local files and
+remote URLs.
 
 ### 4. Variable Substitution
+
 Dynamic configuration through environment variables and custom variables.
 
 ### 5. Error Resilience
+
 Graceful handling of missing files, circular imports, and parsing errors.
 
 ## When to Use Different Components
 
 ### ConfigurationProvider
+
 **Use when:** You need to load configuration from different sources (inline JSON, file paths, default locations).
 
 ```php
@@ -62,18 +72,22 @@ $loader = $provider->fromDefaultLocation();
 ```
 
 ### ConfigLoader vs CompositeConfigLoader
+
 **ConfigLoader:** Single configuration file
 **CompositeConfigLoader:** Try multiple file formats/locations
 
 The factory automatically creates composite loaders when scanning directories.
 
 ### Reader Selection
+
 The system automatically selects the appropriate reader based on file extension:
+
 - `.json` → `Butschster\ContextGenerator\Config\Reader\JsonReader`
 - `.yaml`, `.yml` → `Butschster\ContextGenerator\Config\Reader\YamlReader`
 - `.php` → `Butschster\ContextGenerator\Config\Reader\PhpReader`
 
 ### Parser Plugins
+
 **ImportParserPlugin:** Handles `import` sections, resolves file dependencies
 **VariablesParserPlugin:** Processes `variables` sections for substitution  
 **ExcludeParserPlugin:** Manages file exclusion patterns
@@ -93,33 +107,29 @@ sequenceDiagram
     participant IP as ImportParserPlugin
     participant VP as VariablesParserPlugin
     participant CR as ConfigRegistry
+    App ->> CP: fromPath(configPath)
+    CP ->> CLF: create(configPath)
+    CLF ->> CL: new ConfigLoader(reader, parser)
+    CL ->> RR: get(extension)
+    RR ->> R: appropriate reader
+    App ->> CL: load()
+    CL ->> R: read(configPath)
+    R -->> CL: raw config array
+    CL ->> P: parse(config)
+    P ->> PPR: getPlugins()
+    PPR -->> P: [ImportPlugin, VariablesPlugin, ...]
 
-    App->>CP: fromPath(configPath)
-    CP->>CLF: create(configPath)
-    CLF->>CL: new ConfigLoader(reader, parser)
-    CL->>RR: get(extension)
-    RR->>R: appropriate reader
-    
-    App->>CL: load()
-    CL->>R: read(configPath)
-    R-->>CL: raw config array
-    
-    CL->>P: parse(config)
-    P->>PPR: getPlugins()
-    PPR-->>P: [ImportPlugin, VariablesPlugin, ...]
-    
     loop For each plugin
-        P->>IP: updateConfig(config, rootPath)
-        IP->>IP: resolve imports
-        IP-->>P: updated config
-        
-        P->>VP: parse(config, rootPath)
-        VP->>VP: extract variables
-        VP-->>P: variables registry
+        P ->> IP: updateConfig(config, rootPath)
+        IP ->> IP: resolve imports
+        IP -->> P: updated config
+        P ->> VP: parse(config, rootPath)
+        VP ->> VP: extract variables
+        VP -->> P: variables registry
     end
-    
-    P-->>CL: ConfigRegistry
-    CL-->>App: ConfigRegistry
+
+    P -->> CL: ConfigRegistry
+    CL -->> App: ConfigRegistry
 ```
 
 ## Import System Deep Dive
@@ -127,14 +137,16 @@ sequenceDiagram
 The import system allows configuration composition across multiple files and sources.
 
 ### Local File Imports
+
 ```yaml
 import:
   - path: "services/api/context.yaml"
     pathPrefix: "/api"
-    docs: ["*.md"]  # Selective import
+    docs: [ "*.md" ]  # Selective import
 ```
 
 ### URL Imports
+
 ```yaml
 import:
   - type: url
@@ -145,6 +157,7 @@ import:
 ```
 
 ### Wildcard Imports
+
 ```yaml
 import:
   - path: "services/*/context.yaml"
@@ -161,47 +174,48 @@ sequenceDiagram
     participant IS as ImportSource
     participant WPF as WildcardPathFinder
     participant CMP as ConfigMergerProvider
+    IP ->> IR: resolveImports(config, basePath)
 
-    IP->>IR: resolveImports(config, basePath)
-    
     loop For each import
-        IR->>ISP: findSourceForConfig(sourceConfig)
-        ISP-->>IR: ImportSource
-        
+        IR ->> ISP: findSourceForConfig(sourceConfig)
+        ISP -->> IR: ImportSource
+
         alt Wildcard path
-            IR->>WPF: findMatchingPaths(pattern)
-            WPF-->>IR: matching file paths
+            IR ->> WPF: findMatchingPaths(pattern)
+            WPF -->> IR: matching file paths
             loop For each match
-                IR->>IS: load(config)
-                IS-->>IR: imported config
+                IR ->> IS: load(config)
+                IS -->> IR: imported config
             end
         else Regular import
-            IR->>IS: load(config)
-            IS-->>IR: imported config
+            IR ->> IS: load(config)
+            IS -->> IR: imported config
         end
-        
-        IR->>IR: processSelectiveImports()
-        IR->>IR: applyPathPrefixes()
+
+        IR ->> IR: processSelectiveImports()
+        IR ->> IR: applyPathPrefixes()
     end
-    
-    IR->>CMP: mergeConfigurations(mainConfig, ...imports)
-    CMP-->>IR: merged config
-    IR-->>IP: ResolvedConfig
+
+    IR ->> CMP: mergeConfigurations(mainConfig, ...imports)
+    CMP -->> IR: merged config
+    IR -->> IP: ResolvedConfig
 ```
 
 ## Variable System
 
 ### Variable Resolution Priority
+
 1. **Custom Configuration Variables** (highest priority)
 2. **Environment Variables**
 3. **Predefined Variables** (lowest priority)
 
 ### Built-in Variables
+
 ```yaml
 variables:
   project_name: "My Project"
   version: "1.0.0"
-  
+
 documents:
   - description: "${project_name} Documentation"
     outputPath: "docs/${version}/overview.md"
@@ -215,6 +229,7 @@ documents:
 ```
 
 ### Environment Variable Integration
+
 ```bash
 # CLI usage
 ctx --env=.env.local
@@ -228,6 +243,7 @@ MCP_FILE_OPERATIONS=true ctx server
 The exclusion system allows filtering out unwanted files and directories.
 
 ### Pattern Types
+
 ```yaml
 exclude:
   patterns:
@@ -240,28 +256,28 @@ exclude:
 ```
 
 ### Exclusion Resolution
+
 ```mermaid
 sequenceDiagram
     participant ER as ExcludeRegistry
     participant PE as PatternExclusion
     participant PATH as PathExclusion
     participant PM as PathMatcher
-
     Note over ER: shouldExclude(path)
-    
+
     loop For each exclusion pattern
         alt Pattern-based exclusion
-            ER->>PE: matches(path)
-            PE->>PM: isMatch(path)
-            PM-->>PE: boolean result
-            PE-->>ER: boolean result
+            ER ->> PE: matches(path)
+            PE ->> PM: isMatch(path)
+            PM -->> PE: boolean result
+            PE -->> ER: boolean result
         else Path-based exclusion
-            ER->>PATH: matches(path)
-            PATH-->>ER: boolean result
+            ER ->> PATH: matches(path)
+            PATH -->> ER: boolean result
         end
     end
-    
-    ER-->>ER: return final decision
+
+    ER -->> ER: return final decision
 ```
 
 ## Adding Custom Parser Plugins
@@ -315,6 +331,7 @@ public function boot(ParserPluginRegistry $registry): void
 ## Error Handling Strategies
 
 ### 1. Graceful Degradation
+
 The system continues processing other components when one fails:
 
 ```php
@@ -331,6 +348,7 @@ try {
 ```
 
 ### 2. Circular Import Detection
+
 Prevents infinite loops in import chains:
 
 ```php
@@ -345,6 +363,7 @@ try {
 ```
 
 ### 3. Validation at Multiple Layers
+
 - **Reader Level:** File format validation
 - **Parser Level:** Structure validation
 - **Registry Level:** Semantic validation
@@ -352,14 +371,17 @@ try {
 ## Performance Considerations
 
 ### 1. Caching Strategies
+
 - **URL Imports:** TTL-based caching to avoid repeated network requests
 - **File Watching:** Consider implementing file modification time checks for development
 
 ### 2. Lazy Loading
+
 - **Import Resolution:** Only resolve imports when configuration is actually used
 - **Plugin Registration:** Defer heavy initialization until needed
 
 ### 3. Memory Management
+
 - **Registry Cleanup:** Clear unused registries after processing
 - **Stream Processing:** For large configuration files, consider streaming readers
 
@@ -420,6 +442,7 @@ public function testImportResolution(): void
 ## Common Patterns and Best Practices
 
 ### 1. Configuration Composition
+
 ```yaml
 # Main configuration
 import:
@@ -433,6 +456,7 @@ documents:
 ```
 
 ### 2. Environment-Specific Overrides
+
 ```yaml
 # base/common.yaml
 variables:
@@ -444,6 +468,7 @@ variables:
 ```
 
 ### 3. Modular Plugin Architecture
+
 ```php
 use Butschster\ContextGenerator\Config\Parser\ConfigParserPluginInterface;
 
@@ -464,6 +489,7 @@ abstract class BaseParserPlugin implements ConfigParserPluginInterface
 ## Debugging Configuration Issues
 
 ### 1. Enable Debug Logging
+
 ```php
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
@@ -476,6 +502,7 @@ $provider = new ConfigurationProvider($factory, $dirs, $logger);
 ```
 
 ### 2. Inspect Registry Contents
+
 ```php
 use Butschster\ContextGenerator\Config\Registry\ConfigRegistry;
 
@@ -487,6 +514,7 @@ foreach ($registry->all() as $type => $typeRegistry) {
 ```
 
 ### 3. Validate Import Resolution
+
 ```php
 use Butschster\ContextGenerator\Config\Import\ImportResolver;
 
@@ -498,4 +526,5 @@ foreach ($result->imports as $import) {
 }
 ```
 
-This configuration system provides a solid foundation for complex, maintainable configuration management while remaining flexible enough to adapt to evolving requirements.
+This configuration system provides a solid foundation for complex, maintainable configuration management while remaining
+flexible enough to adapt to evolving requirements.
