@@ -14,6 +14,7 @@ use Tests\McpInspector\McpInspectorTestCase;
 #[Group('mcp-inspector')]
 final class FlexibleArgsToolTest extends McpInspectorTestCase
 {
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
