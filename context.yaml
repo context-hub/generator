@@ -6,6 +6,28 @@ import:
   - path: ./docs
     format: md
 
+tools:
+  - id: ctx-docs
+    description: 'CTX docs'
+    type: http
+    schema:
+      type: object
+      properties:
+        query:
+          type: string
+          description: "Question or task to get documentation for"
+    requests:
+      - url: "https://context7.com/api/v2/context"
+        method: "GET"
+        query:
+          libraryId: "/context-hub/generator"
+          type: "txt"
+          query: "{{query}}"
+
+projects:
+  - name: ctx-mcp-server
+    description: MCP server library
+
 documents:
   - description: 'Project structure overview'
     outputPath: project-structure.md
