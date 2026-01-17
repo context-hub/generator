@@ -63,6 +63,11 @@ final readonly class ListToolsAction
             $schemaData['required'] = $required;
         }
 
+        // Allow any additional properties when allowAny is enabled
+        if ($toolDefinition->schema->allowsAnyProperties()) {
+            $schemaData['additionalProperties'] = true;
+        }
+
         // Use the fromArray method to create the ToolInputSchema
         return $schemaData;
     }
