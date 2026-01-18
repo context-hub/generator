@@ -14,15 +14,6 @@ use Tests\McpInspector\McpInspectorTestCase;
 #[Group('mcp-inspector')]
 final class FlexibleArgsToolTest extends McpInspectorTestCase
 {
-    #[\Override]
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        // Create context.yaml with test tools
-        $this->createFile('context.yaml', $this->getTestConfig());
-    }
-
     #[Test]
     public function it_unpacks_flexible_args_from_object(): void
     {
@@ -195,6 +186,15 @@ final class FlexibleArgsToolTest extends McpInspectorTestCase
         // Assert
         $this->assertInspectorSuccess($result);
         $this->assertContentContains($result, 'message=Test');
+    }
+
+    #[\Override]
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Create context.yaml with test tools
+        $this->createFile('context.yaml', $this->getTestConfig());
     }
 
     /**
