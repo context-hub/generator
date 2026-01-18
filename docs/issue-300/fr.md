@@ -12,19 +12,22 @@ RAG system for CTX using **Symfony AI Store** component to accumulate, index, an
 
 > "As a developer, I want the AI assistant to remember my project's context between sessions."
 
-**Scenario**: Developer works on microservice architecture. In first session, AI studies the authorization service and documents its API. In next session, AI can find that information via RAG search.
+**Scenario**: Developer works on microservice architecture. In first session, AI studies the authorization service and
+documents its API. In next session, AI can find that information via RAG search.
 
 ### For Teams
 
 > "As a team lead, I want project knowledge to accumulate and be accessible to the entire team."
 
-**Scenario**: New developer joins. Instead of weeks studying codebase, they get access to accumulated documentation that AI generated.
+**Scenario**: New developer joins. Instead of weeks studying codebase, they get access to accumulated documentation that
+AI generated.
 
 ### For AI Assistants
 
 > "As an AI assistant, I want access to previously learned information about the project."
 
-**Scenario**: When asked "how to write a test for the payment service," AI searches RAG for existing testing patterns and generates code matching project style.
+**Scenario**: When asked "how to write a test for the payment service," AI searches RAG for existing testing patterns
+and generates code matching project style.
 
 ---
 
@@ -37,6 +40,7 @@ RAG system for CTX using **Symfony AI Store** component to accumulate, index, an
 Store documentation and knowledge.
 
 **Parameters:**
+
 - `content` (required): Content to store
 - `type`: Documentation type (architecture, api, testing, convention, general, tutorial, reference)
 - `sourcePath`: Related source file path
@@ -47,6 +51,7 @@ Store documentation and knowledge.
 Semantic search across knowledge base.
 
 **Parameters:**
+
 - `query` (required): Natural language search query
 - `type`: Filter by documentation type
 - `pathPrefix`: Filter by path prefix
@@ -58,6 +63,7 @@ Semantic search across knowledge base.
 Manage RAG entries.
 
 **Parameters:**
+
 - `action`: stats (more actions in future)
 
 ---
@@ -73,6 +79,7 @@ ctx rag:index ./docs --pattern="*.md" --recursive --type=api-docs
 ```
 
 **Options:**
+
 - `--pattern, -p`: File glob pattern (default: `*.md`)
 - `--type, -t`: Documentation type tag
 - `--recursive, -r`: Process subdirectories
@@ -160,7 +167,7 @@ name: Update RAG Index
 
 on:
   push:
-    paths: ['docs/**']
+    paths: [ 'docs/**' ]
 
 jobs:
   reindex:
@@ -177,11 +184,11 @@ jobs:
 
 ### For AI Response Quality
 
-| Without RAG | With RAG |
-|-------------|----------|
-| "Write a test" → generic test | "Write a test" → matches project style |
+| Without RAG                           | With RAG                               |
+|---------------------------------------|----------------------------------------|
+| "Write a test" → generic test         | "Write a test" → matches project style |
 | "How does auth work?" → re-reads code | "How does auth work?" → instant answer |
-| Each session starts from zero | Accumulated context |
+| Each session starts from zero         | Accumulated context                    |
 
 ### For Development Teams
 

@@ -2,7 +2,8 @@
 
 ## Overview
 
-The RAG (Retrieval-Augmented Generation) system provides vector-based knowledge storage and retrieval. It follows the same plugin pattern as `ExcludeParserPlugin` for configuration parsing.
+The RAG (Retrieval-Augmented Generation) system provides vector-based knowledge storage and retrieval. It follows the
+same plugin pattern as `ExcludeParserPlugin` for configuration parsing.
 
 ## Architecture
 
@@ -45,6 +46,7 @@ Butschster\ContextGenerator\Rag\
 ## Dependencies
 
 Uses Symfony AI components (already in composer.json):
+
 - `symfony/ai-store` - Core store abstractions
 - `symfony/ai-platform` - Platform integrations (OpenAI, etc.)
 - `symfony/ai-qdrant-store` - Qdrant vector store
@@ -581,22 +583,24 @@ rag:
    - IndexerService/RetrieverService use the resolved store
 ```
 
-**Important**: Services that depend on resolved config values (like `StoreInterface`, `IndexerService`) must be retrieved from the container **after** `$configLoader->load()` is called. This ensures the `RagRegistry` is populated and factories can resolve variables.
+**Important**: Services that depend on resolved config values (like `StoreInterface`, `IndexerService`) must be
+retrieved from the container **after** `$configLoader->load()` is called. This ensures the `RagRegistry` is populated
+and factories can resolve variables.
 
 ## Files Reference
 
-| File | Purpose |
-|------|---------|
-| `rag/RagBootloader.php` | DI registration, command registration |
-| `rag/RagParserPlugin.php` | Parses `rag:` section from config |
-| `rag/RagRegistry.php` | Holds parsed RagConfig |
-| `rag/Config/*.php` | Configuration DTOs |
-| `rag/Store/StoreFactory.php` | Creates vector store with variable resolution |
-| `rag/Vectorizer/VectorizerFactory.php` | Creates vectorizer with variable resolution |
-| `rag/Service/IndexerService.php` | Document indexing |
-| `rag/Service/RetrieverService.php` | Semantic search |
-| `rag/Console/*.php` | CLI commands |
-| `rag/MCP/Tools/*/` | MCP tool implementations |
+| File                                   | Purpose                                       |
+|----------------------------------------|-----------------------------------------------|
+| `rag/RagBootloader.php`                | DI registration, command registration         |
+| `rag/RagParserPlugin.php`              | Parses `rag:` section from config             |
+| `rag/RagRegistry.php`                  | Holds parsed RagConfig                        |
+| `rag/Config/*.php`                     | Configuration DTOs                            |
+| `rag/Store/StoreFactory.php`           | Creates vector store with variable resolution |
+| `rag/Vectorizer/VectorizerFactory.php` | Creates vectorizer with variable resolution   |
+| `rag/Service/IndexerService.php`       | Document indexing                             |
+| `rag/Service/RetrieverService.php`     | Semantic search                               |
+| `rag/Console/*.php`                    | CLI commands                                  |
+| `rag/MCP/Tools/*/`                     | MCP tool implementations                      |
 
 ## Adding New Store Driver
 

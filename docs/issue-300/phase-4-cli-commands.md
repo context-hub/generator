@@ -311,11 +311,11 @@ RagClearCommandTest.php
 
 ## Estimated Effort
 
-| Task         | Complexity | Time   |
-|--------------|------------|--------|
-| rag:status   | Low        | 1h     |
-| rag:index    | Medium     | 2h     |
-| rag:clear    | Low        | 1h     |
-| rag:reindex  | Medium     | 2h     |
-| Tests        | Medium     | 2h     |
-| **Total**    |            | **~8h** |
+| Task        | Complexity | Time    |
+|-------------|------------|---------|
+| rag:status  | Low        | 1h      |
+| rag:index   | Medium     | 2h      |
+| rag:clear   | Low        | 1h      |
+| rag:reindex | Medium     | 2h      |
+| Tests       | Medium     | 2h      |
+| **Total**   |            | **~8h** |

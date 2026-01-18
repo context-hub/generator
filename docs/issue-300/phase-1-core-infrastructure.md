@@ -2,7 +2,8 @@
 
 ## Objective
 
-Configure Symfony AI Store for CTX using the same parser plugin pattern as `Exclude`. Configuration lives in `context.yaml` under the `rag` key.
+Configure Symfony AI Store for CTX using the same parser plugin pattern as `Exclude`. Configuration lives in
+`context.yaml` under the `rag` key.
 
 ---
 
@@ -20,7 +21,7 @@ ExcludeBootloader     → RagBootloader         (registers plugin, defines singl
 
 ## Configuration in context.yaml
 
-> See [docs/config/config-system-guide.md] 
+> See [docs/config/config-system-guide.md]
 
 ```yaml
 # context.yaml
@@ -28,18 +29,18 @@ $schema: '...'
 
 rag:
   enabled: true
-  
+
   store:
     driver: qdrant
     qdrant:
       host: ${RAG_QDRANT_HOST:-localhost}
       port: ${RAG_QDRANT_PORT:-6333}
       collection: ${RAG_COLLECTION:-ctx_knowledge}
-    
+
   vectorizer:
     platform: openai
     model: text-embedding-3-small
-    
+
   transformer:
     chunk_size: 1000
     overlap: 200
@@ -517,11 +518,11 @@ Store/StoreFactoryTest.php
 
 ## Estimated Effort
 
-| Task              | Complexity | Time   |
-|-------------------|------------|--------|
-| Config DTOs       | Low        | 1.5h   |
-| Registry + Plugin | Medium     | 2h     |
-| Document helpers  | Low        | 1h     |
-| Factories         | Medium     | 2h     |
-| Tests             | Medium     | 2h     |
+| Task              | Complexity | Time    |
+|-------------------|------------|---------|
+| Config DTOs       | Low        | 1.5h    |
+| Registry + Plugin | Medium     | 2h      |
+| Document helpers  | Low        | 1h      |
+| Factories         | Medium     | 2h      |
+| Tests             | Medium     | 2h      |
 | **Total**         |            | **~8h** |

@@ -2,7 +2,8 @@
 
 ## Objective
 
-Implement three MCP tools: `rag-store`, `rag-search`, `rag-manage`. All tools use IndexerService and RetrieverService from Phase 2.
+Implement three MCP tools: `rag-store`, `rag-search`, `rag-manage`. All tools use IndexerService and RetrieverService
+from Phase 2.
 
 ---
 
@@ -390,7 +391,7 @@ final readonly class RagManageAction
 ## Implementation Order
 
 1. RagStore: Request → Handler → Action
-2. RagSearch: Request → Handler → Action  
+2. RagSearch: Request → Handler → Action
 3. RagManage: Request → Handler → Action
 
 ---
@@ -427,10 +428,10 @@ RagManageToolTest.php
 
 ## Estimated Effort
 
-| Task           | Complexity | Time   |
-|----------------|------------|--------|
-| rag-store      | Medium     | 2h     |
-| rag-search     | Medium     | 2h     |
-| rag-manage     | Low        | 1h     |
-| Tests          | Medium     | 2h     |
-| **Total**      |            | **~7h** |
+| Task       | Complexity | Time    |
+|------------|------------|---------|
+| rag-store  | Medium     | 2h      |
+| rag-search | Medium     | 2h      |
+| rag-manage | Low        | 1h      |
+| Tests      | Medium     | 2h      |
+| **Total**  |            | **~7h** |

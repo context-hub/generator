@@ -2,7 +2,8 @@
 
 ## Objective
 
-Create CTX service wrappers around Symfony AI Store's Indexer and Retriever, configure text transformation, and create a filesystem document loader.
+Create CTX service wrappers around Symfony AI Store's Indexer and Retriever, configure text transformation, and create a
+filesystem document loader.
 
 ---
 
@@ -354,11 +355,11 @@ FileSystemLoaderTest.php
 
 ## Estimated Effort
 
-| Task             | Complexity | Time   |
-|------------------|------------|--------|
-| IndexerService   | Medium     | 2h     |
-| RetrieverService | Medium     | 2h     |
-| FileSystemLoader | Low        | 1.5h   |
-| Value objects    | Low        | 1h     |
-| Tests            | Medium     | 2h     |
+| Task             | Complexity | Time    |
+|------------------|------------|---------|
+| IndexerService   | Medium     | 2h      |
+| RetrieverService | Medium     | 2h      |
+| FileSystemLoader | Low        | 1.5h    |
+| Value objects    | Low        | 1h      |
+| Tests            | Medium     | 2h      |
 | **Total**        |            | **~8h** |
