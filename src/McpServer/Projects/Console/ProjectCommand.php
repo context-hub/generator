@@ -98,7 +98,6 @@ final class ProjectCommand extends BaseCommand
         // Build choice list
         $choices = [];
         $choiceMap = [];
-        $i = 1;
 
         foreach ($projects as $path => $_) {
             $aliases = $projectService->getAliasesForPath($path);

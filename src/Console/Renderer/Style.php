@@ -252,8 +252,8 @@ final class Style
     public static function statusIndicator(bool $isCurrent): string
     {
         return $isCurrent
-            ? \sprintf('<fg=bright-green>●</>')
-            : \sprintf('<fg=gray>○</>');
+            ? '<fg=bright-green>●</>'
+            : '<fg=gray>○</>';
     }
 
     /**
