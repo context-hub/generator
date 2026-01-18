@@ -118,7 +118,15 @@ final class ProjectCommand extends BaseCommand
         $helper = $this->getHelper('question');
         \assert($helper instanceof QuestionHelper);
 
-        $question = new ChoiceQuestion('Select a project to switch to:', $choices, \count($choices) - 1);
+        $this->output->writeln(Style::muted('Navigate with ↑↓ arrows, press Enter to select.'));
+        $this->output->writeln(Style::muted('Tip: You can also run ') . Style::command('ctx project <alias>') . Style::muted(' or ') . Style::command('ctx project .') . Style::muted(' for current folder.'));
+        $this->output->writeln('');
+
+        $question = new ChoiceQuestion(
+            'Select a project to switch to:',
+            $choices,
+            \count($choices) - 1,
+        );
         $question->setErrorMessage('Invalid selection.');
 
         $selectedChoice = $helper->ask($this->input, $this->output, $question);
