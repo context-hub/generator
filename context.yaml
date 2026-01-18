@@ -6,6 +6,14 @@ import:
   - path: ./docs
     format: md
 
+projects:
+    - name: ctx-mcp-server
+      description: MCP server library
+    - name: ctx-docs
+      description: CTX documentation
+    - name: mcp-server-core
+      description: Core MCP server functionality
+
 documents:
   - description: 'Project structure overview'
     outputPath: project-structure.md

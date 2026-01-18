@@ -53,6 +53,8 @@ use Butschster\ContextGenerator\Research\MCP\Tools\ListTemplatesToolAction;
 use Butschster\ContextGenerator\Research\MCP\Tools\ReadEntryToolAction;
 use Butschster\ContextGenerator\Research\MCP\Tools\UpdateEntryToolAction;
 use Butschster\ContextGenerator\Research\MCP\Tools\UpdateResearchToolAction;
+use Butschster\ContextGenerator\McpServer\Watcher\ConfigWatcherConfig;
+use Butschster\ContextGenerator\McpServer\Watcher\ConfigWatcherConfigFactory;
 use Spiral\Boot\Bootloader\Bootloader;
 use Spiral\Boot\EnvironmentInterface;
 use Spiral\Config\ConfiguratorInterface;
@@ -145,6 +147,12 @@ final class ActionsBootloader extends Bootloader
 
                 return $factory;
             },
+
+            ConfigWatcherConfigFactory::class => ConfigWatcherConfigFactory::class,
+
+            ConfigWatcherConfig::class => static fn(
+                ConfigWatcherConfigFactory $factory,
+            ): ConfigWatcherConfig => $factory->create(),
         ];
     }
 
