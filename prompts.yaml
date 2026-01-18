@@ -1,35 +1,679 @@
-$schema: 'https://raw.githubusercontent.com/context-hub/generator/refs/heads/main/json-schema.json'
+$schema: https://raw.githubusercontent.com/context-hub/generator/refs/heads/main/json-schema.json
 
 prompts:
-  - id: json-schema-update
-    description: 'Update JSON Schema for new feature'
+  - id: feature-splitter
+    description: Feature Breakdown System Prompt
     messages:
       - role: user
         content: |
-          You are an expert in JSON Schema development tasked with updating an existing schema to support new 
-          functionality.
-          
-          I'll provide you with:
-            1. The current JSON schema file
-            2. Source code for a new feature implementation
-            3. Example configuration files using the new feature
-          
-          Your job is to:
-            1. Analyze the provided context carefully to understand the new feature's structure and requirements
-            2. Identify all necessary additions to the schema to properly validate the new feature
-            3. Create appropriate JSON Schema definitions that match the implementation's capabilities
-            4. Update all relevant sections of the schema (types, enums, definitions, properties, etc.)
-            5. Ensure backward compatibility with existing schema validation
-            6. Provide only the necessary changes as precise JSON fragments that can be integrated into the schema
-          
-          Important guidelines:
-            - Match the schema structure and naming conventions with the existing code
-            - Create reusable definitions for complex components when appropriate
-            - Include proper validation patterns, required fields, and defaults based on the implementation
-            - Do not modify unrelated parts of the schema
-            - Provide clear explanations of your changes and how they support the new feature
-          
-          After analyzing the provided context, explain your approach briefly, then provide the exact JSON fragments 
-          needed to update the schema with clear indications of where each fragment should be inserted.
+          You are an expert software architect breaking down feature requests into sequential development stages for AI-assisted implementation.
+          ## Core Principles
+          **Audience**: LLMs implementing code - prioritize clarity and actionable guidance
+          **Output Language**: Always English, regardless of input
+          **Granularity**: Target 5-7 balanced stages (adjust for complexity)
+          **Stage Requirements**:
+          - Functional completeness (code works after each stage)
+          - Testability (clear verification criteria)
+          - Single focus area (one logical change domain)
+          - Natural dependencies (proper sequencing)
+          ## Stage Breakdown Process
+          1. **Analyze scope**: Identify components, data/control flow, architectural layers, integration points
+          2. **Find boundaries**: Group related changes, ensure independence, map dependencies
+          3. **Sequence logically**: Foundation → Core Logic → Integration → Enhancement
+          4. **Balance size**: No stage should be 3x larger than others
+          5. **Add context**: Link to codebase examples, explain patterns, highlight pitfalls
+          6. **Define success**: Specific, verifiable completion criteria
+          ## Output Artifacts
+          ### A) Individual Stage Files (stage-01.md, stage-02.md, etc.)
+          ```markdown
+          # Stage N: [Descriptive Name]
+          ## Overview
+          [What this accomplishes, why it exists, how it fits overall]
+          ## Files
+          CREATE:
+          - path/to/NewFile.php - Purpose
+          MODIFY:
+          - path/to/Existing.php - What changes
+          ## Code References
+          - src/Example/Class.php:20-45 - Pattern for initialization
+          - config/service.yaml:10-30 - Configuration approach
+          [Link to codebase examples with WHY they're relevant]
+          ## Implementation Details
+          - Key architectural patterns to follow
+          - Naming conventions and integration points
+          - Data/control flow descriptions
+          - Technical decisions
+          ## Definition of Done
+          - [ ] Specific verifiable criterion
+          - [ ] Another concrete check
+          - [ ] Integration point verified
+          - [ ] No breaking changes
+          ## Dependencies
+          **Requires**: Stage X (foundation needed)
+          **Enables**: Stage Y, Z (what this unlocks)
+          ```
+          ### B) Master Checklist (master-checklist.md)
+          ```markdown
+          # Feature: [Name]
+          ## Overview
+          [Complete feature description]
+          ## Stage Dependencies
+          ```
+          Stage 1 → Stage 2 → Stage 4
+          → Stage 3 → Stage 4 → Stage 5
+          ```
+          ## Development Progress
+          ### Stage 1: [Name]
+          - [ ] Substep 1.1: [Concrete action - e.g., Create base class]
+          - [ ] Substep 1.2: [Concrete action - e.g., Implement interface]
+          - [ ] Substep 1.3: [Concrete action - e.g., Add config]
+          - [ ] Substep 1.4: [Concrete action - e.g., Verify works]
+          **Notes**: [Developer observations, issues, decisions]
+          **Status**: Not Started / In Progress / Completed
+          **Completed**: [Date]
+          ---
+          [Repeat for each stage with 3-5 substeps]
+          ## Codebase References
+          - src/Path/File.php - Shows pattern X
+          - config/file.yaml - Configuration approach
+          ## Usage Instructions
+          ⚠️ Keep this checklist updated:
+            - Mark completed substeps immediately with [x]
+            - Add notes about deviations or challenges
+            - Document decisions differing from plan
+            - Update status when starting/completing stages
+          ```
+          ## Special Guidance
+          **Module Isolation**: Use dedicated namespace, minimize parent dependencies, document clean interfaces
+          **Multi-Service Features**: Complete one service per stage, document contracts (APIs/events)
+          **Architectural Patterns**: Reference Repository, Service Layer, Factory, Observer, DI when applicable
+          **Existing Code**: Respect conventions, note refactoring opportunities, highlight good examples
+           ## Checklist Requirements
+           - 3-5 concrete substeps per stage
+           - Checkbox [ ] for every substep
+           - Space for notes after each stage
+           - Status tracking fields
+           - Visual dependency diagram
+           - All codebase references listed
+           ## Critical Rules
+           - Later stages can depend on earlier ones
+           - Each stage leaves system working
+           - Use codebase references extensively
+           - Definition of done must be unambiguous
+           - Think about context switching between sessions
+           - Balance detail with clarity
+          Analyze the provided feature request and codebase context, then create both stage files and master checklist.
 
+  - id: commit-text-generator
+    description: Commit text generataor
+    messages:
+      - role: user
+        content: |
+          You are an expert in writing clear, informative Git commit messages that help teams understand code changes at a glance.
+          Your task is to analyze code changes and write commit messages that follow best practices for readability and usefulness.
+          Input you'll receive:
+          * Git diffs showing added, modified, or deleted code
+          * File names and paths of changed files
+          * Context about the codebase or project when available
+          Output format: Provide a commit message in this structure:
+          1. Subject line (50 characters or less): Brief summary in imperative mood
+          2. Body (optional, wrapped at 72 characters): Detailed explanation when needed
+          Rules to follow:
+          * Use imperative mood in subject line (e.g., "Fix bug" not "Fixed bug" or "Fixes bug")
+          * Capitalize the first letter of the subject line
+          * No period at the end of the subject line
+          * Separate subject and body with a blank line
+          * Focus on what and why the change was made, not how
+          * Use bullet points in the body for multiple changes
+          * Reference issue numbers when applicable (e.g., "Fixes #123")
+          Message types and examples:
+          * feat: Add new feature → "Add user authentication endpoint"
+          * fix: Bug fix → "Fix null pointer exception in user service"
+          * refactor: Code restructuring → "Refactor database connection logic"
+          * docs: Documentation → "Update API documentation for auth endpoints"
+          * style: Formatting/style → "Fix indentation in user controller"
+          * test: Testing → "Add unit tests for payment processing"
+          * chore: Maintenance → "Update dependencies to latest versions"
+          For complex changes, include:
+          * Brief context about the problem
+          * Key changes made
+          * Impact on users or system behavior
+          Write commit messages that help future developers (including yourself) quickly understand the purpose and scope of each change.
 
+  - id: internal-readme-generator
+    description: Internal Service Component README Generator Instruction
+    messages:
+      - role: user
+        content: |
+          You're an expert in documenting internal services. Your job is to make clean, simple, and useful README files
+          for each PHP 8.3 component in a way that helps both developers and non-tech team members (like business
+          analysts and marketing) understand how everything works.
+
+          #### 📌 Each README should include:
+          ### ✅ **Component Name**
+          - Just the name of the service or module.
+          - Use the same name as in the repo or directory.
+
+          ### 🧭 **Purpose of the Component**
+          - Tree to five sentences explaining **what this component does**.
+          - Keep it short and clear.
+
+          ### 📝 **Detailed Description for Business Analyst and Marketing**
+          - Explain **why this component exists**, **what business problem it solves**, and **how it fits in the whole system**.
+          - Use simple words, avoid code talk.
+          - Mention **value it adds** for clients or business users.
+
+          ### 🔄 **Mermaid Sequence Diagram for Business Analyst and Marketing**
+          - Add Mermaid diagrams that show the **flow of how components works**.
+          - If there multiple components, show diagrams for each.
+          - Include requests, responses, and interaction with other services or systems.
+
+          ### 🧍 **List of Actors**
+          - Who interacts with the component?
+          - Real users (e.g. “Customer”, “Admin”)
+          - Other systems or services (e.g. “Payment Gateway”, “CRM API”)
+          - Provide short descriptions of each actor and how they interact with the component.
+
+          ### 📐 **List of Business Rules**
+          - Plain list of business rules this component has.
+          - One rule per bullet with detailed description.
+          - If there are many rules, group them by category.
+          - If there some validation rules or business logic, add them here in table form if possible.
+          - Helps analysts and testers understand the logic.
+
+          ### 📚 **Domain Ubiquitous Terminology**
+          - List of special terms used in this component that **mean something specific in your business domain**.
+          - Explain each term in a short sentence.
+          - Helps make sure everyone uses the same language.
+
+          ### 🧪 **Simple Use Cases**
+          - Write 2–3 example use cases.
+          - Describe what the user does and what the system does in response.
+          - Easy to follow, like a mini story.
+
+          #### 🧩 **Known Limitations / TODO**
+          - Anything not yet finished or needs improvement.
+          - Helps keep track of missing features.
+          - If there are any known issues or bugs, mention them here.
+
+  - id: mermaid-schema-generator
+    description: Mermaid schema generator
+    messages:
+      - role: user
+        content: |
+          You are an expert in schema design and tasked with building a workflow using Mermaid to visualize complex
+          task management. Here’s how to create an effective workflow diagram:
+
+          1. **Workflow Specification**:
+          a. **Name**:
+          - Choose a clear, descriptive name for your workflow (format: lowercase with underscores).
+          - The name should summarize the workflow’s overall goal.
+          b. **Description**:
+          - Write a detailed description of the workflow's purpose and how it integrates various LLM tools.
+          - Explain the sequence of steps and the role of each tool in the workflow.
+          - Discuss potential bottlenecks and how the workflow addresses them.
+          - Provide context on when and how this workflow should be implemented.
+
+          2. **Mermaid Schema Design**:
+          a. **Define Start and End Points**:
+          - Clearly mark the beginning and end of the workflow.
+          - Identify key decision points or branches in the workflow.
+          b. **Detail Each Step**:
+          - Use descriptive labels for each step to explain what happens.
+          - Include conditional logic or loops if the workflow requires them.
+
+  - id: feature-focused-structure
+    description: Feature-focused code structure
+    messages:
+      - role: user
+        content: |
+          This architecture provides a solid foundation for building complex applications while maintaining flexibility
+          for future changes in service boundaries. It combines the best aspects of domain-driven design,
+          feature-focused organization, and clean architecture principles.
+
+          ```
+          src/
+          ├── Domain/                          # Core domain models, interfaces, and business concepts
+          │   ├── Package/                     # Package domain (repository registration and tracking)
+          │   │   ├── Entity/                  # Domain entities
+          │   │   │   ├── Package.php          # Core package entity
+          │   │   │   ├── PackageBranch.php    # Branch representation
+          │   │   │   └── PackageCommit.php    # Commit representation
+          │   │   ├── Command/                 # Domain commands (intentions to change state)
+          │   │   │   ├── SubmitPackageCommand.php
+          │   │   │   └── UpdatePackageCommand.php
+          │   │   ├── Event/                   # Domain events (notifications of state changes)
+          │   │   │   ├── PackageSubmittedEvent.php
+          │   │   │   └── PackageUpdatedEvent.php
+          │   │   ├── Repository/              # Repository interfaces for data access
+          │   │   │   ├── PackageRepositoryInterface.php
+          │   │   │   └── BranchRepositoryInterface.php
+          │   │   ├── Factory/                 # Factory interfaces for entity creation
+          │   │   │   └── PackageFactoryInterface.php
+          │   │   ├── Exception/               # Domain-specific exceptions
+          │   │   │   └── PackageNotFoundException.php
+          │   │   └── ValueObject/             # Value objects used in this domain
+          │   │       └── PackageName.php
+          │   │
+          │   ├── Context/                     # Context document domain
+          │   │   ├── Entity/
+          │   │   ├── Command/
+          │   │   ├── Event/
+          │   │   └── Repository/
+          │   │
+          │   ├── User/                        # User and authentication domain
+          │   │   ├── Entity/
+          │   │   │   ├── User.php
+          │   │   │   └── ApiToken.php
+          │   │   ├── Command/
+          │   │   ├── Event/
+          │   │   └── Repository/
+          │   │
+          │   └── Workflow/                    # Workflow domain
+          │       ├── Entity/
+          │       ├── Command/
+          │       ├── Event/
+          │       └── Repository/
+          │
+          ├── Feature/                         # Business features organized by capability
+          │   ├── PackageManagement/           # Features related to package management
+          │   │   ├── SubmitPackage/           # Feature for submitting new packages
+          │   │   │   ├── Handler/             # Command handlers (business logic)
+          │   │   │   │   └── SubmitPackageHandler.php
+          │   │   │   ├── DTO/                 # Data Transfer Objects
+          │   │   │   │   └── SubmitPackageResponse.php
+          │   │   │   ├── Service/             # Feature-specific services
+          │   │   │   │   └── PackageValidator.php
+          │   │   │   ├── UI/                  # User interfaces
+          │   │   │   │   ├── Http/            # HTTP interface
+          │   │   │   │   │   ├── Action/      # Single-purpose HTTP actions
+          │   │   │   │   │   │   └── SubmitPackageAction.php
+          │   │   │   │   │   ├── Filter/      # Request validation and mapping
+          │   │   │   │   │   │   └── SubmitPackageFilter.php
+          │   │   │   │   │   └── Resource/    # Response formatting
+          │   │   │   │   │       └── PackageResource.php
+          │   │   │   │   └── Console/         # CLI interface
+          │   │   │   │       └── SubmitPackageCommand.php
+          │   │   │   └── Workflow/            # Temporal workflows
+          │   │   │       ├── SubmitPackageWorkflow.php
+          │   │   │       └── Activity/        # Workflow activities
+          │   │   │           └── PackageActivity.php
+          │   │   │
+          │   │   ├── UpdatePackage/           # Feature for updating packages
+          │   │   │   ├── Handler/
+          │   │   │   ├── DTO/
+          │   │   │   ├── UI/
+          │   │   │   │   ├── Http/
+          │   │   │   │   └── Console/
+          │   │   │   └── Workflow/
+          │   │   │
+          │   │   └── BrowsePackages/          # Feature for browsing packages
+          │   │       ├── Handler/
+          │   │       ├── DTO/
+          │   │       └── UI/
+          │   │           └── Http/
+          │   │
+          │   ├── ContextGeneration/           # Features for context generation
+          │   │   ├── GenerateContext/         # Creating context docs from a package
+          │   │   │   ├── Handler/
+          │   │   │   ├── Service/
+          │   │   │   └── Workflow/
+          │   │   │
+          │   │   ├── BuildContext/            # Building context from various sources
+          │   │   │   ├── Handler/
+          │   │   │   ├── Service/
+          │   │   │   │   ├── SourceProcessor.php
+          │   │   │   │   └── DocumentBuilder.php
+          │   │   │   └── Workflow/
+          │   │   │
+          │   │   └── RetrieveContext/         # Retrieving context documents
+          │   │       ├── Handler/
+          │   │       ├── DTO/
+          │   │       └── UI/
+          │   │           └── Http/
+          │   │
+          │   ├── Authentication/              # Authentication features
+          │   │   ├── SocialLogin/             # Social auth (GitHub, etc.)
+          │   │   │   ├── Handler/
+          │   │   │   ├── Service/
+          │   │   │   ├── Provider/
+          │   │   │   └── UI/
+          │   │   │       └── Http/
+          │   │   │
+          │   │   └── ApiTokens/               # API token management
+          │   │       ├── Handler/
+          │   │       ├── Service/
+          │   │       └── UI/
+          │   │
+          │   └── WebhookProcessing/           # Webhook processing features
+          │       ├── ReceiveWebhook/          # Receiving external webhooks
+          │       │   ├── Handler/
+          │       │   ├── Service/
+          │       │   └── UI/
+          │       │       └── Http/
+          │       │
+          │       └── DispatchWebhook/         # Dispatching webhook workflows
+          │           ├── Handler/
+          │           └── Workflow/
+          │
+          ├── Infrastructure/                  # Technical implementations and external services
+          │   ├── Persistence/                 # Data persistence implementations
+          │   │   ├── CycleOrm/                # CycleORM implementation
+          │   │   │   ├── Repository/          # Repository implementations
+          │   │   │   │   ├── PackageRepository.php
+          │   │   │   │   └── ContextDocumentRepository.php
+          │   │   │   ├── Factory/             # Entity factory implementations
+          │   │   │   │   └── PackageFactory.php
+          │   │   │   └── Table/               # Database table schemas
+          │   │   │       ├── PackageTable.php
+          │   │   │       └── BranchTable.php
+          │   │   │
+          │   │   └── SearchIndex/             # Search index implementation
+          │   │       ├── MeilisearchIndexerService.php
+          │   │       └── MeilisearchSearchService.php
+          │   │
+          │   ├── ExternalService/             # External service integrations
+          │   │   ├── GitHub/                  # GitHub integration
+          │   │   │   ├── GitHubClient.php
+          │   │   │   └── RepositoryService.php
+          │   │   ├── OpenAI/                  # OpenAI integration
+          │   │   │   └── OpenAIClient.php
+          │   │   └── CloudStorage/            # Cloud storage integration
+          │   │       └── S3StorageService.php
+          │   │
+          │   ├── Bus/                         # Command and event bus implementations
+          │   │   ├── CommandBus/              # Command dispatching
+          │   │   │   ├── InMemoryCommandBus.php
+          │   │   │   └── MessageQueueCommandBus.php
+          │   │   └── EventBus/                # Event publishing
+          │   │       ├── InMemoryEventBus.php
+          │   │       └── MessageQueueEventBus.php
+          │   │
+          │   └── Workflow/                    # Workflow infrastructure
+          │       └── Temporal/                # Temporal implementation
+          │           ├── AbstractWorkflow.php
+          │           ├── WorkflowRunner.php
+          │           └── ActivityFactory.php
+          │
+          ├── Application/                     # Application services and bootstrapping
+          │   ├── Bootloader/                  # Application initialization
+          │   │   ├── AppBootloader.php
+          │   │   ├── RoutesBootloader.php
+          │   │   └── Infrastructure/
+          │   │       ├── CycleOrmBootloader.php
+          │   │       └── TemporalBootloader.php
+          │   │
+          │   ├── Middleware/                  # HTTP middleware
+          │   │   ├── ApiAuthMiddleware.php
+          │   │   ├── FirewallMiddleware.php
+          │   │   └── CorsMiddleware.php
+          │   │
+          │   ├── Interceptor/                 # HTTP interceptors
+          │   │   ├── ExceptionHandlerInterceptor.php
+          │   │   └── JsonResourceInterceptor.php
+          │   │
+          │   ├── Response/                    # Shared response formatting
+          │   │   ├── JsonResource.php
+          │   │   └── ResourceCollection.php
+          │   │
+          │   ├── Bus/                         # Command and event bus interfaces
+          │   │   ├── CommandBusInterface.php
+          │   │   └── EventBusInterface.php
+          │   │
+          │   ├── Service/                     # Application-wide services
+          │   │   ├── TokenizerService.php
+          │   │   └── UrlGenerator.php
+          │   │
+          │   └── Kernel.php                   # Application kernel
+          │
+          └── UI/                              # Shared UI components
+          ├── Http/                        # HTTP UI components
+          │   ├── Action/                  # Base action classes
+          │   │   └── AbstractAction.php
+          │   └── Filter/                  # Base filter classes
+          │       └── AbstractFilter.php
+          │
+          └── Console/                     # Console UI components
+          └── BaseCommand.php          # Base command class
+          ```
+
+          ## Folder Descriptions:
+
+          ### Domain Layer
+
+          - **Domain/** : Contains the core business concepts, rules, and interfaces.
+              - **Entity/** : Business domain objects with identity.
+              - **Command/** : Immutable objects representing intentions to change system state.
+              - **Event/** : Notifications of state changes that have occurred.
+              - **Repository/** : Interfaces for data access and storage.
+              - **Factory/** : Interfaces for creating domain entities.
+              - **Exception/** : Domain-specific exceptions.
+              - **ValueObject/** : Immutable objects with no identity, only attributes.
+
+          ### Feature Layer
+
+          - **Feature/** : Business capabilities organized by functional area.
+              - **Handler/** : Business logic for processing commands and queries.
+              - **DTO/** : Data Transfer Objects for request/response modeling.
+              - **Service/** : Feature-specific services for business operations.
+              - **UI/** : User interfaces organized by interface type (Http, Console).
+                  - **Action/** : Single-purpose HTTP endpoint classes.
+                  - **Filter/** : Request validation and mapping.
+                  - **Resource/** : Response formatting for HTTP.
+              - **Workflow/** : Temporal workflow definitions.
+                  - **Activity/** : Workflow activity implementations.
+
+          ### Infrastructure Layer
+
+          - **Infrastructure/** : Technical implementations and external integrations.
+              - **Persistence/** : Data storage implementations.
+                  - **CycleOrm/** : ORM implementation for database access.
+                  - **SearchIndex/** : Search indexing implementation.
+              - **ExternalService/** : Integrations with external services.
+              - **Bus/** : Command and event bus implementations.
+              - **Workflow/** : Workflow orchestration implementation.
+
+          ### Application Layer
+
+          - **Application/** : Application services and bootstrapping.
+              - **Bootloader/** : Application initialization.
+              - **Middleware/** : HTTP request preprocessing.
+              - **Interceptor/** : HTTP request/response manipulation.
+              - **Response/** : Shared response formatting.
+              - **Bus/** : Command and event bus interfaces.
+              - **Service/** : Cross-cutting application services.
+
+          ### UI Layer
+
+          - **UI/** : Shared UI components.
+              - **Http/** : Base HTTP component classes.
+              - **Console/** : Base console component classes.
+          1. **Clear Domain Boundaries**: Domain concepts are isolated and well-defined.
+          2. **Feature Cohesion**: Related functionality is grouped together by business capability.
+          3. **Service Boundary Flexibility**: Commands and events at the domain level facilitate service extraction.
+          4. **Implementation Independence**: Domain doesn't depend on infrastructure.
+          5. **Single Responsibility**: Each class has a clear, focused purpose.
+          6. **Clean Testability**: Separation of concerns makes testing easier.
+          7. **Interface-Based Design**: Interfaces define contracts before implementation.
+          8. **Command-Query Separation**: Distinct handling for state changes vs. queries.
+
+  - id: db-design
+    description: Database architecture
+    messages:
+      - role: user
+        content: |
+          You are an expert in Database Design specializing in creating efficient structures.
+          - use dbml syntax to describe database
+          - be creative
+          - suggest your ideas and reasons why you think it should be done
+          - think on every detail of database structure
+          - link tables together
+
+  - id: repository-refactor
+    description: Refactor code to move business logic to repositories
+    messages:
+      - role: user
+        content: |
+          Your task is to **move all business logic for finding entities** from **Activities** and **Controllers** into
+          repositories while ensuring that repositories remain **readonly** (i.e., no creation, updates, or deletions
+          inside repositories).
+
+          ### **Key Guidelines:**
+
+          1. **Encapsulation of Query Logic:**
+             - Analyze the provided code and identify where entity retrieval logic is scattered across **Activities**
+               and **Controllers**.
+             - Extract this logic into **repositories**, ensuring they only handle **query operations**.
+             - Do not modify or introduce logic related to creating, updating, or deleting entities within repositories.
+
+          2. **Interface-Driven Design:**
+             - Identify the required methods for repositories based on actual usage in the application.
+             - Define **interfaces** for repositories and move implementations into their respective repository classes.
+             - Do not add unnecessary methods—only implement those actually used in the application.
+
+          3. **Consistent Method Naming Convention:**
+             - Follow a **clear distinction** between methods that return nullable results and those that must throw exceptions:
+               - **`findXXX(...)`** → Used when an entity **may or may not be found**, returning `null` if not found.
+               - **`getXXX(...)`** → Used when an entity **must exist**, throwing an exception if not found.
+             - If you find code using `findXXX(...)` followed by an explicit exception throw, **replace it with a `getXXX(...)` method** inside the repository.
+
+          4. **Code Optimization & Clean-Up:**
+             - Remove redundant logic from **Controllers** and **Activities** once moved to repositories.
+             - Ensure **repository methods are reusable** to avoid code duplication.
+             - Keep **service layers thin**, delegating data-fetching responsibility fully to repositories.
+
+          By following these principles, repositories will become the **single source of truth** for querying entities,
+          improving maintainability and consistency in the application.
+
+  - id: slim-repository
+    description: Repository compactor into slim repositories
+    messages:
+      - role: user
+        content: |
+          You are an expert in breaking down domain repositories into slim DTOs or projections from an existing domain
+          layer. Your task is to change the current approach—where repositories fetch full entities with all columns
+          and relations—into a service pattern that handles creating, updating, and deleting records using multiple
+          repositories (each tied to a specific feature).
+
+          Here’s what to do:
+          1. **Feature Grouping**
+             - Group your code by feature. Every repository, service, and DTO should be part of a feature, not the
+               domain layer.
+             - Build a dedicated service (persistence layer) for each feature that hides the underlying repositories.
+          2. **Slim DTOs/Projections**
+             - Instead of fetching full entities, design DTOs that include only the necessary columns.
+             - Use these DTOs to transfer data between your services and the rest of your app.
+          5. **No ORM for Slim Repositories**
+             - Do not use any ORM for the slim repositories. Only use cycle/database for database operations.
+          8. **Documentation and Comments**
+             - Write clear documentation on how the service layer interacts with the repositories.
+             - Add comments in the code to explain why certain columns are selected or why DTOs are structured in a
+               specific way.
+
+  - id: feature-request-generator
+    description: Generate feature requests from analazyed code base
+    messages:
+      - role: user
+        content: |
+          I need you to create a detailed Feature Request based on my description and the project context provided.
+
+          Please create a comprehensive Feature Request document that includes:
+
+          1. **Feature Overview**
+          - Clear description of what we're building
+          - Business value and user benefit
+          - Target audience/users
+
+          2. **Technical Architecture**
+          - High-level architectural approach
+          - How it integrates with existing codebase
+          - Technology stack and dependencies
+
+          3. **Class Diagrams** (Mermaid format)
+          - Main entities and their relationships
+          - Key interfaces and contracts
+
+          4. **Sequence Diagrams** (Mermaid format)
+          - User interaction flows
+          - Component interactions
+          - Data flow through the system
+
+          5. **Public API / Interfaces**
+          - All public methods and their signatures
+          - Expected inputs and outputs
+          - Error handling approach
+
+          6. **Directory Structure**
+          - Where new files should be created
+          - Naming conventions
+          - Module organization
+
+          7. **Code References**
+          - Specific files and line numbers from existing code that are relevant
+          - Format: `src/Path/File.php:45-67 - description of relevance`
+          - Integration points with current codebase
+
+          8. **Implementation Considerations**
+          - Potential challenges
+          - Edge cases to handle
+          - Performance considerations
+          - Security concerns
+
+          9. **Testing Strategy**
+          - Unit test requirements
+          - Integration test scenarios
+          - Edge cases to cover
+
+          10. **Acceptance Criteria**
+          - Clear definition of "done"
+          - Measurable success criteria
+
+          Format the document in Markdown with clear sections and subsections. Use Mermaid for all diagrams.
+          Be specific about code references - include exact file paths and line numbers where integration points exist.
+
+  - id: master-checklist-starter
+    description: Implement a feature following a structured plan
+    messages:
+      - role: user
+        content: |
+          I need you to help me implement a feature following a structured plan. Here's how we'll work:
+          ## Working Instructions
+
+          1. **Follow the Master Plan**: The master-checklist.md is your roadmap. Work through stages sequentially.
+
+          2. **One Stage at a Time**:
+            - Start with Stage 1
+            - Complete all sub-tasks for that stage
+            - Wait for my review before moving to next stage
+
+          3. **Access Stage Details**:
+            - For each stage, I will provide the detailed stage file (stage-N-{name}.md)
+            - Read it carefully before starting implementation
+
+          4. **Track Progress**:
+            - After completing each sub-task, update the checklist with ✓
+            - Show me the updated progress after each stage
+
+          5. **Code References**:
+            - Pay attention to code references in stage files (src/Path/File.php:45-67)
+            - These point to relevant existing code - read them for context
+            - Integrate your changes following existing patterns
+
+          6. **Follow Guidelines**:
+            - Adhere to the project's coding standards from agents.md
+            - Match the style of existing code
+            - Use the same patterns and conventions
+
+          7. **Ask Questions**:
+            - If something is unclear in the stage description, ask before implementing
+            - If you need to see more existing code, request specific files
+
+          8. **Report Completion**:
+            - After finishing a stage, report what you did
+            - List all files created/modified
+            - Show the updated checklist with progress
+
+          Let's start with Stage 1.
+            Here are the details:
+            Please implement Stage 1 according to the detailed instructions.
+            Show me all changes and updated progress when done.

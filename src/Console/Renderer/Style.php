@@ -245,4 +245,43 @@ final class Style
     {
         return \sprintf('<fg=blue;options=underscore>%s</>', $url);
     }
+
+    /**
+     * Create a status indicator (filled circle for current, empty for others)
+     */
+    public static function statusIndicator(bool $isCurrent): string
+    {
+        return $isCurrent
+            ? \sprintf('<fg=bright-green>●</>')
+            : \sprintf('<fg=gray>○</>');
+    }
+
+    /**
+     * Create a box border line
+     */
+    public static function boxLine(string $content, int $width = 70): string
+    {
+        return \sprintf('<fg=gray>│</>  %s', $content);
+    }
+
+    /**
+     * Create a horizontal rule with optional label
+     */
+    public static function horizontalRule(int $width = 70, ?string $label = null): string
+    {
+        if ($label === null) {
+            return \sprintf('<fg=gray>%s</>', \str_repeat('─', $width));
+        }
+
+        $labelLength = \mb_strlen($label) + 2; // +2 for spaces around label
+        $sideWidth = (int) (($width - $labelLength) / 2);
+        $remainder = $width - $labelLength - ($sideWidth * 2);
+
+        return \sprintf(
+            '<fg=gray>%s</> %s <fg=gray>%s</>',
+            \str_repeat('─', $sideWidth),
+            self::muted($label),
+            \str_repeat('─', $sideWidth + $remainder),
+        );
+    }
 }

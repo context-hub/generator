@@ -5,6 +5,8 @@ import:
   - path: prompts.yaml
   - path: ./docs
     format: md
+  - url: https://gist.githubusercontent.com/butschster/29e84fb9c976ac837181141f88049a35/raw/ed38539950f8c9c45ca8c67f9e026a837c97bc66/01-dev-prompts.yaml
+    type: url
 
 tools:
   - id: ctx-docs
@@ -24,9 +26,31 @@ tools:
           type: "txt"
           query: "{{query}}"
 
+  # CTX CLI Testing Tools
+  - id: ctx-run
+    description: 'Run any CTX command with arguments'
+    schema:
+      type: object
+      properties:
+        command:
+          type: string
+          description: "The CTX command to run (e.g., 'project:list', 'project', 'project:add')"
+        args:
+          type: string
+          description: "Additional arguments for the command (optional)"
+          default: ""
+      required:
+        - command
+    commands:
+      - cmd: ./ctx
+        args: ['{{command}}', '{{args}}']
+        workingDir: .
+
 projects:
   - name: ctx-mcp-server
     description: MCP server library
+  - name: ctx-docs
+    description: Docs for CTX
 
 documents:
   - description: 'Project structure overview'

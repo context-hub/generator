@@ -6,6 +6,8 @@ namespace Butschster\ContextGenerator\McpServer\Projects\Console;
 
 use Butschster\ContextGenerator\Application\FSPath;
 use Butschster\ContextGenerator\Console\BaseCommand;
+use Butschster\ContextGenerator\Console\Renderer\ProjectRenderer;
+use Butschster\ContextGenerator\Console\Renderer\Style;
 use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\McpServer\Projects\ProjectServiceInterface;
 use Spiral\Console\Attribute\Argument;
@@ -45,120 +47,114 @@ final class ProjectCommand extends BaseCommand
 
         // First, try to switch to this project if it exists
         if ($projectService->switchToProject($projectPath)) {
-            $this->output->success(\sprintf("Switched to project: %s", $projectPath));
+            $this->output->writeln('');
+            $this->output->writeln(\sprintf(
+                '  %s Switched to project: %s',
+                Style::success('✓'),
+                Style::path($projectPath),
+            ));
+
+            $aliases = $projectService->getAliasesForPath($projectPath);
+            if (!empty($aliases)) {
+                $this->output->writeln(\sprintf(
+                    '    %s %s',
+                    Style::muted('Aliases:'),
+                    Style::label(\implode(', ', $aliases)),
+                ));
+            }
+
+            $this->output->writeln('');
             return Command::SUCCESS;
         }
 
-        $this->output->error(\sprintf("Project path does not exist: %s", $projectPath));
-
+        $this->output->error(\sprintf("Project not found: %s", $this->path));
         return Command::FAILURE;
     }
 
-    /**
-     * Show interactive project selection
-     */
     private function selectProjectInteractively(ProjectServiceInterface $projectService): int
     {
         $projects = $projectService->getProjects();
         $currentProject = $projectService->getCurrentProject();
 
         if (empty($projects)) {
-            $this->output->info("No projects registered. Use 'ctx project <path>' to add a project.");
+            $this->output->writeln('');
+            $this->output->info("No projects registered. Use 'ctx project:add <path>' to add a project.");
             return Command::SUCCESS;
         }
 
-        // Show current project first
+        // Show current project card if set
         if ($currentProject !== null) {
-            $this->output->title("Current Project");
-            $this->output->text(\sprintf("Path: %s", $currentProject->path));
+            $this->output->writeln('');
+            $renderer = new ProjectRenderer($this->output);
+            $project = $projects[$currentProject->path] ?? null;
 
-            if ($currentProject->hasConfigFile()) {
-                $this->output->text(\sprintf("Config File: %s", $currentProject->getConfigFile()));
+            if ($project !== null) {
+                $aliases = $projectService->getAliasesForPath($currentProject->path);
+                $renderer->renderProjectCard($currentProject->path, $project, $aliases, true);
+                $this->output->writeln('');
             }
-
-            if ($currentProject->hasEnvFile()) {
-                $this->output->text(\sprintf("Env File: %s", $currentProject->getEnvFile()));
-            }
-
-            $aliases = $projectService->getAliasesForPath($currentProject->path);
-            if (!empty($aliases)) {
-                $this->output->text(\sprintf("Aliases: %s", \implode(', ', $aliases)));
-            }
-
-            $this->output->newLine();
         }
 
-        // Build choice list with formatted options
+        // Build choice list
         $choices = [];
-        $choiceMap = []; // Maps display strings back to project paths
+        $choiceMap = [];
         $i = 1;
 
         foreach ($projects as $path => $_) {
             $aliases = $projectService->getAliasesForPath($path);
             $aliasString = !empty($aliases) ? ' [' . \implode(', ', $aliases) . ']' : '';
-            $isCurrent = ($currentProject && $currentProject->path === $path) ? ' (CURRENT)' : '';
+            $isCurrent = ($currentProject && $currentProject->path === $path);
+            $indicator = $isCurrent ? Style::success('●') : Style::muted('○');
 
-            $displayString = \sprintf(
-                "%d) %s%s%s",
-                $i++,
-                $path,
-                $aliasString,
-                $isCurrent,
-            );
-
+            $displayString = \sprintf('%s %s%s', $indicator, $path, $aliasString);
             $choices[] = $displayString;
             $choiceMap[$displayString] = $path;
         }
 
-        // Add option to cancel
-        $cancelOption = 'Cancel - keep current project';
+        // Add cancel option
+        $cancelOption = Style::muted('  Cancel');
         $choices[] = $cancelOption;
 
-        // Create the question with all choices
         $helper = $this->getHelper('question');
         \assert($helper instanceof QuestionHelper);
-        $question = new ChoiceQuestion(
-            'Select a project to switch to:',
-            $choices,
-            0, // Default to first option
-        );
+
+        $question = new ChoiceQuestion('Select a project to switch to:', $choices, \count($choices) - 1);
         $question->setErrorMessage('Invalid selection.');
 
         $selectedChoice = $helper->ask($this->input, $this->output, $question);
 
-        // Handle cancel option
         if ($selectedChoice === $cancelOption) {
-            $this->output->info('Operation cancelled. Current project unchanged.');
+            $this->output->writeln('');
+            $this->output->writeln(Style::muted('  Operation cancelled.'));
+            $this->output->writeln('');
             return Command::SUCCESS;
         }
 
-        // Get the actual path from the selection
         $selectedPath = $choiceMap[$selectedChoice];
 
-        // Switch to the selected project
         if ($projectService->switchToProject($selectedPath)) {
-            $this->output->success(\sprintf("Switched to project: %s", $selectedPath));
+            $this->output->writeln('');
+            $this->output->writeln(\sprintf(
+                '  %s Switched to: %s',
+                Style::success('✓'),
+                Style::path($selectedPath),
+            ));
+            $this->output->writeln('');
             return Command::SUCCESS;
         }
 
-        // This should not happen as we're selecting from existing projects
         $this->output->error('Failed to switch to selected project.');
         return Command::FAILURE;
     }
 
-    /**
-     * Normalize a path to an absolute path
-     */
     private function normalizePath(string $path, DirectoriesInterface $dirs): string
     {
-        // Handle special case for current directory
         if ($path === '.') {
             return (string) FSPath::cwd();
         }
 
         $pathObj = FSPath::create($path);
 
-        // If path is relative, make it absolute from the current directory
         if ($pathObj->isRelative()) {
             $pathObj = $pathObj->absolute();
         }
