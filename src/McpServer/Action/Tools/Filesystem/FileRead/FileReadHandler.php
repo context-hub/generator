@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileRead;
 
+use Butschster\ContextGenerator\Config\Exclude\ExcludeRegistryInterface;
 use Butschster\ContextGenerator\DirectoriesInterface;
 use Psr\Log\LoggerInterface;
 use Spiral\Core\Attribute\Proxy;
@@ -20,6 +21,7 @@ final readonly class FileReadHandler
     public function __construct(
         private FilesInterface $files,
         #[Proxy] private DirectoriesInterface $dirs,
+        private ExcludeRegistryInterface $excludeRegistry,
         private LoggerInterface $logger,
     ) {}
 
@@ -38,6 +40,14 @@ final readonly class FileReadHandler
         ?int $endLine = null,
     ): FileReadResult {
         $fullPath = (string) $this->dirs->getRootPath()->join($relativePath);
+
+        // Check if path is excluded
+        if ($this->excludeRegistry->shouldExclude($relativePath)) {
+            return FileReadResult::error(
+                $relativePath,
+                \sprintf("Path '%s' is excluded by project configuration", $relativePath),
+            );
+        }
 
         // Validate file exists
         if (!$this->files->exists($fullPath)) {

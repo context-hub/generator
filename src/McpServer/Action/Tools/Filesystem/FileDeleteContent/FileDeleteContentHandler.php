@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileDeleteContent;
 
+use Butschster\ContextGenerator\Config\Exclude\ExcludeRegistryInterface;
 use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileDeleteContent\Dto\FileDeleteContentRequest;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileReplaceContent\LineEnding;
@@ -23,6 +24,7 @@ final readonly class FileDeleteContentHandler
         private FilesInterface $files,
         #[Proxy] private DirectoriesInterface $dirs,
         private LineEndingNormalizer $normalizer,
+        private ExcludeRegistryInterface $excludeRegistry,
         private LoggerInterface $logger,
     ) {}
 
@@ -32,6 +34,13 @@ final readonly class FileDeleteContentHandler
     public function handle(FileDeleteContentRequest $request): FileDeleteResult
     {
         $path = (string) $this->dirs->getRootPath()->join($request->path);
+
+        // Check if path is excluded
+        if ($this->excludeRegistry->shouldExclude($request->path)) {
+            return FileDeleteResult::error(
+                \sprintf("Path '%s' is excluded by project configuration", $request->path),
+            );
+        }
 
         // Validate file exists
         if (!$this->files->exists($path)) {

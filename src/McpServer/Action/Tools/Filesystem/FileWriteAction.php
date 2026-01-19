@@ -4,16 +4,14 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem;
 
-use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\Dto\FileWriteRequest;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileWrite\FileWriteHandler;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use PhpMcp\Schema\Result\CallToolResult;
 use Psr\Log\LoggerInterface;
-use Spiral\Core\Attribute\Proxy;
-use Spiral\Files\FilesInterface;
 
 #[Tool(
     name: 'file-write',
@@ -25,8 +23,7 @@ final readonly class FileWriteAction
 {
     public function __construct(
         private LoggerInterface $logger,
-        private FilesInterface $files,
-        #[Proxy] private DirectoriesInterface $dirs,
+        private FileWriteHandler $handler,
     ) {}
 
     #[Post(path: '/tools/call/file-write', name: 'tools.file-write')]
@@ -34,42 +31,12 @@ final readonly class FileWriteAction
     {
         $this->logger->info('Processing file-write tool');
 
-        // Get params from the parsed body for POST requests
-        $path = (string) $this->dirs->getRootPath()->join($request->path);
+        $result = $this->handler->handle($request);
 
-        if (empty($path)) {
-            return ToolResult::error('Missing path parameter');
+        if (!$result->success) {
+            return ToolResult::error($result->error ?? 'Unknown error');
         }
 
-        try {
-            // Ensure directory exists if requested
-            if ($request->createDirectory) {
-                $directory = \dirname($path);
-                if (!$this->files->exists($directory)) {
-                    if (!$this->files->ensureDirectory($directory)) {
-                        return ToolResult::error(\sprintf("Could not create directory '%s'", $directory));
-                    }
-                }
-            }
-
-            if (\is_dir($path)) {
-                return ToolResult::error(\sprintf("'%s' is a directory", $path));
-            }
-
-            $success = $this->files->write($path, $request->content);
-
-            if (!$success) {
-                return ToolResult::error(\sprintf("Could not write to file '%s'", $path));
-            }
-
-            return ToolResult::text(\sprintf("Successfully wrote %d bytes to file '%s'", \strlen($request->content), $path));
-        } catch (\Throwable $e) {
-            $this->logger->error('Error writing file', [
-                'path' => $path,
-                'error' => $e->getMessage(),
-            ]);
-
-            return ToolResult::error($e->getMessage());
-        }
+        return ToolResult::text($result->message ?? 'File written successfully');
     }
 }
