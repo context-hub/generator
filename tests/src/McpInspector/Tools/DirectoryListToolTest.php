@@ -135,7 +135,7 @@ final class DirectoryListToolTest extends McpInspectorTestCase
         // Assert
         $this->assertInspectorSuccess($result);
         $content = $result->getContent();
-        $data = \json_decode($content, true);
+        $data = \json_decode((string) $content, true);
 
         $this->assertSame(5, $data['count']);
         $this->assertSame(11, $data['totalMatched']); // 10 files + context.yaml
@@ -160,7 +160,7 @@ final class DirectoryListToolTest extends McpInspectorTestCase
         // Assert
         $this->assertInspectorSuccess($result);
         $content = $result->getContent();
-        $data = \json_decode($content, true);
+        $data = \json_decode((string) $content, true);
 
         $this->assertSame($data['count'], $data['totalMatched']);
         $this->assertArrayNotHasKey('truncated', $data);
@@ -184,7 +184,7 @@ final class DirectoryListToolTest extends McpInspectorTestCase
         // Assert
         $this->assertInspectorSuccess($result);
         $content = $result->getContent();
-        $data = \json_decode($content, true);
+        $data = \json_decode((string) $content, true);
 
         $this->assertSame(21, $data['count']); // 20 files + context.yaml
         $this->assertSame(21, $data['totalMatched']);
@@ -206,7 +206,7 @@ final class DirectoryListToolTest extends McpInspectorTestCase
         // Assert
         $this->assertInspectorSuccess($result);
         $content = $result->getContent();
-        $data = \json_decode($content, true);
+        $data = \json_decode((string) $content, true);
 
         $this->assertArrayHasKey('totalMatched', $data);
         $this->assertSame($data['count'], $data['totalMatched']);
@@ -230,7 +230,7 @@ final class DirectoryListToolTest extends McpInspectorTestCase
         // Assert
         $this->assertInspectorSuccess($result);
         $content = $result->getContent();
-        $data = \json_decode($content, true);
+        $data = \json_decode((string) $content, true);
 
         $this->assertSame(3, $data['count']);
         $this->assertTrue($data['truncated']);

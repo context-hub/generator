@@ -55,11 +55,11 @@ final readonly class DirectoryListHandler
         try {
             $finder = $this->createFinder($path, $request);
             $allFiles = $this->collectFiles($finder);
-            
+
             $totalMatched = \count($allFiles);
             $truncated = false;
             $warning = null;
-            
+
             // Apply maxResults limit
             if ($request->maxResults > 0 && $totalMatched > $request->maxResults) {
                 $allFiles = \array_slice($allFiles, 0, $request->maxResults);
