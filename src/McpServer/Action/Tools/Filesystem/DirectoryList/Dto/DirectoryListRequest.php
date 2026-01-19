@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\Dto;
+namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\DirectoryList\Dto;
 
 use Butschster\ContextGenerator\McpServer\Project\ProjectAwareRequest;
 use Spiral\JsonSchemaGenerator\Attribute\Constraint\Enum;
@@ -50,6 +50,12 @@ final readonly class DirectoryListRequest implements ProjectAwareRequest
         )]
         #[Enum(values: ['name', 'type', 'date', 'size'])]
         public string $sort = 'name',
+        #[Field(
+            description: 'Maximum number of results to return (0 = unlimited)',
+            default: 500,
+        )]
+        #[Range(min: 0, max: 10000)]
+        public int $maxResults = 500,
         #[Field(
             description: 'Whether to include visual ASCII tree in the response',
             default: false,

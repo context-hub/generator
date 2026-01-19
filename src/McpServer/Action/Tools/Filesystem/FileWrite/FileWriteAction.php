@@ -2,11 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem;
+namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileWrite;
 
 use Butschster\ContextGenerator\McpServer\Action\ToolResult;
-use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\Dto\FileWriteRequest;
-use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileWrite\FileWriteHandler;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileWrite\Dto\FileWriteRequest;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;

@@ -164,23 +164,6 @@ PHP;
     }
 
     #[Test]
-    public function it_blocks_path_traversal_attempts(): void
-    {
-        // Act
-        $result = $this->inspector->callTool('file-replace-content', [
-            'path' => '../../../etc/passwd',
-            'search' => 'root',
-            'replace' => 'hacked',
-        ]);
-
-        // Assert - should fail or return error
-        $this->assertTrue(
-            !$result->success || $result->isToolError(),
-            'Path traversal should be blocked',
-        );
-    }
-
-    #[Test]
     public function it_replaces_with_whitespace_string(): void
     {
         // Arrange

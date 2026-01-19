@@ -7,7 +7,7 @@ namespace Tests\Unit\McpServer\Action\Tools\Filesystem\FileWrite;
 use Butschster\ContextGenerator\Application\FSPath;
 use Butschster\ContextGenerator\Config\Exclude\ExcludeRegistryInterface;
 use Butschster\ContextGenerator\DirectoriesInterface;
-use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\Dto\FileWriteRequest;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileWrite\Dto\FileWriteRequest;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileWrite\FileWriteHandler;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

@@ -26,26 +26,6 @@ tools:
           type: "txt"
           query: "{{query}}"
 
-  # CTX CLI Testing Tools
-  - id: ctx-run
-    description: 'Run any CTX command with arguments'
-    schema:
-      type: object
-      properties:
-        command:
-          type: string
-          description: "The CTX command to run (e.g., 'project:list', 'project', 'project:add')"
-        args:
-          type: string
-          description: "Additional arguments for the command (optional)"
-          default: ""
-      required:
-        - command
-    commands:
-      - cmd: ./ctx
-        args: ['{{command}}', '{{args}}']
-        workingDir: .
-
 projects:
   - name: ctx-mcp-server
     description: MCP server library
@@ -76,14 +56,6 @@ rag:
   transformer:
     chunk_size: 1000
     overlap: 200
-
-projects:
-  - name: ctx-mcp-server
-    description: MCP server for CTX
-  - name: ctx-docs
-    description: CTX application docs
-  - name: module-config-templates
-    description: Initial config templates and CLI command
 
 documents:
   - description: 'Project structure overview'
