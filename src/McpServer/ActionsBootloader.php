@@ -22,6 +22,8 @@ use Butschster\ContextGenerator\McpServer\Action\Tools\Docs\LibrarySearchAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\ExecuteCustomToolAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\DirectoryListAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileRead\FileReadAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileDeleteContent\FileDeleteContentAction;
+use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileInsertContent\FileInsertContentAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileReplaceContent\FileReplaceContentAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileSearch\FileSearchAction;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileWriteAction;
@@ -203,6 +205,8 @@ final class ActionsBootloader extends Bootloader
                 ...$actions,
                 FileReadAction::class,
                 FileReplaceContentAction::class,
+                FileInsertContentAction::class,
+                FileDeleteContentAction::class,
                 FileWriteAction::class,
                 FileSearchAction::class,
                 DirectoryListAction::class,
