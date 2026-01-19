@@ -41,6 +41,7 @@ use Butschster\ContextGenerator\McpServer\Projects\Actions\ProjectSwitchToolActi
 use Butschster\ContextGenerator\McpServer\Projects\Console\ProjectAddCommand;
 use Butschster\ContextGenerator\McpServer\Projects\Console\ProjectCommand;
 use Butschster\ContextGenerator\McpServer\Projects\Console\ProjectListCommand;
+use Butschster\ContextGenerator\McpServer\Projects\Console\ProjectRemoveCommand;
 use Butschster\ContextGenerator\McpServer\Prompt\Console\ListPromptsCommand;
 use Butschster\ContextGenerator\McpServer\Prompt\Console\ShowPromptCommand;
 use Butschster\ContextGenerator\McpServer\Tool\Console\ToolListCommand;
@@ -127,6 +128,7 @@ final class ActionsBootloader extends Bootloader
             ProjectCommand::class,
             ProjectAddCommand::class,
             ProjectListCommand::class,
+            ProjectRemoveCommand::class,
         );
     }
 

@@ -9,6 +9,8 @@ use Butschster\ContextGenerator\Application\FSPath;
 use Butschster\ContextGenerator\Config\ConfigurationProvider;
 use Butschster\ContextGenerator\Config\Exception\ConfigLoaderException;
 use Butschster\ContextGenerator\Console\BaseCommand;
+use Butschster\ContextGenerator\Console\Renderer\ProjectRenderer;
+use Butschster\ContextGenerator\Console\Renderer\Style;
 use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\McpServer\Projects\ProjectServiceInterface;
 use Spiral\Console\Attribute\Argument;
@@ -91,7 +93,6 @@ final class ProjectAddCommand extends BaseCommand
             $envPath = FSPath::create($projectPath)->join($this->envFile)->toString();
             if (!$files->exists($envPath)) {
                 $this->output->warning(\sprintf("Env file does not exist: %s", $envPath));
-                // Not returning failure here, just warning the user
             }
         }
 
@@ -124,25 +125,41 @@ final class ProjectAddCommand extends BaseCommand
         // Add the project
         $projectService->addProject($projectPath, $this->name, $this->configFile, $this->envFile);
 
-        $this->output->success(\sprintf("Added project: %s", $projectPath));
+        // Render success output
+        $this->output->writeln('');
+        $this->output->writeln(\sprintf(
+            '  %s Project added successfully',
+            Style::success('✓'),
+        ));
+        $this->output->writeln('');
 
-        if ($this->name) {
-            $this->output->info(\sprintf("Project alias '%s' has been set", $this->name));
-        }
+        // Show project card
+        $renderer = new ProjectRenderer($this->output);
+        $project = $projectService->getProjects()[$projectPath];
+        $aliases = $projectService->getAliasesForPath($projectPath);
+        $currentProject = $projectService->getCurrentProject();
+        $isCurrent = $currentProject && $currentProject->path === $projectPath;
 
-        if ($this->envFile) {
-            $this->output->info(\sprintf("Project env file '%s' has been set", $this->envFile));
-        }
+        $renderer->renderProjectCard($projectPath, $project, $aliases, $isCurrent);
+        $this->output->writeln('');
 
         // If this is the first project, also set it as the current project
         if (\count($projectService->getProjects()) === 1) {
             $projectService->setCurrentProject($projectPath, $this->name, $this->configFile, $this->envFile);
-            $this->output->info('Project was automatically set as the current project (first project added).');
-        }
-        // If --switch flag is set for subsequent projects, switch to it
-        elseif ($this->switch) {
+            $this->output->writeln(\sprintf(
+                '  %s Set as current project %s',
+                Style::info('→'),
+                Style::muted('(first project added)'),
+            ));
+            $this->output->writeln('');
+        } elseif ($this->switch) {
+            // If --switch flag is set for subsequent projects, switch to it
             if ($projectService->switchToProject($projectPath)) {
-                $this->output->info('Successfully switched to this project.');
+                $this->output->writeln(\sprintf(
+                    '  %s Switched to this project',
+                    Style::info('→'),
+                ));
+                $this->output->writeln('');
             } else {
                 $this->output->warning(
                     \sprintf(
@@ -156,19 +173,14 @@ final class ProjectAddCommand extends BaseCommand
         return Command::SUCCESS;
     }
 
-    /**
-     * Normalize a path to an absolute path
-     */
     private function normalizePath(string $path, DirectoriesInterface $dirs): string
     {
-        // Handle special case for current directory
         if ($path === '.') {
             return (string) FSPath::cwd();
         }
 
         $pathObj = FSPath::create($path);
 
-        // If path is relative, make it absolute from the current directory
         if ($pathObj->isRelative()) {
             $pathObj = $pathObj->absolute();
         }
