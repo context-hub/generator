@@ -24,6 +24,7 @@ use Butschster\ContextGenerator\Research\ResearchBootloader;
 use Butschster\ContextGenerator\McpServer\ActionsBootloader;
 use Butschster\ContextGenerator\McpServer\Project\ProjectBootloader;
 use Butschster\ContextGenerator\Template\TemplateSystemBootloader;
+use Butschster\ContextGenerator\JsonSchema\SchemaBuilderBootloader;
 use Butschster\ContextGenerator\Modifier\PhpContentFilter\PhpContentFilterBootloader;
 use Butschster\ContextGenerator\Modifier\PhpDocs\PhpDocsModifierBootloader;
 use Butschster\ContextGenerator\Modifier\PhpSignature\PhpSignatureModifierBootloader;
@@ -116,6 +117,9 @@ class Kernel extends AbstractKernel
             // MCP Server
             ActionsBootloader::class,
             ProjectBootloader::class,
+
+            // JSON Schema Builder (after all sources/modifiers)
+            SchemaBuilderBootloader::class,
         ];
     }
 
