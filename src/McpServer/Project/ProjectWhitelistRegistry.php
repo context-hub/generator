@@ -35,6 +35,11 @@ final class ProjectWhitelistRegistry implements ProjectWhitelistRegistryInterfac
         return isset($this->projects[$projectName]);
     }
 
+    public function get(string $projectName): ?ProjectConfig
+    {
+        return $this->projects[$projectName] ?? null;
+    }
+
     public function getProjects(): array
     {
         return \array_values($this->projects);

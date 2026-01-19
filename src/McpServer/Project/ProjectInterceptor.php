@@ -51,8 +51,10 @@ final readonly class ProjectInterceptor implements ToolInterceptorInterface
             'requestClass' => $request::class,
         ]);
 
-        // Validate against whitelist
-        if (!$this->whitelist->isAllowed($projectName)) {
+        // Get project from whitelist
+        $projectConfig = $this->whitelist->get($projectName);
+
+        if ($projectConfig === null) {
             $availableNames = \array_map(
                 static fn(ProjectConfig $p) => $p->name,
                 $this->whitelist->getProjects(),
@@ -80,8 +82,9 @@ final readonly class ProjectInterceptor implements ToolInterceptorInterface
             return ToolResult::error($message);
         }
 
-        // Resolve alias to path (lazy load ProjectServiceInterface to allow --state-dir to work)
-        $projectPath = $this->projectService->resolvePathOrAlias($projectName);
+        // Use resolved path from config (path-based) or resolve alias (alias-based)
+        $projectPath = $projectConfig->resolvedPath
+            ?? $this->projectService->resolvePathOrAlias($projectName);
 
         $this->logger?->info('Switching to project context', [
             'project' => $projectName,
