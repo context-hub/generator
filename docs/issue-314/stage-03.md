@@ -1,3 +1,54 @@
+# Stage 3: Parser Plugin Two-Pass Resolution
+
+## Overview
+
+Implement the core resolution algorithm in `ProjectsParserPlugin`. This stage introduces a two-pass approach:
+
+1. **First pass**: Process all path-based projects, resolve paths, register them, track claimed paths
+2. **Second pass**: Process alias-based projects, skip if resolved path already claimed
+
+This ensures local path-based definitions always take priority over global aliases pointing to the same physical location.
+
+## Files
+
+**MODIFY**:
+- `src/McpServer/Project/ProjectsParserPlugin.php` — Two-pass resolution algorithm
+- `src/McpServer/Project/ProjectBootloader.php` — Register ProjectPathResolver
+
+**CREATE**:
+- `tests/src/Unit/McpServer/Project/ProjectsParserPluginTest.php` — Resolution tests
+
+## Code References
+
+### Current Parser Implementation
+```
+src/McpServer/Project/ProjectsParserPlugin.php:45-90
+```
+Current implementation iterates once, checking aliases. We restructure to two passes with path priority.
+
+### Bootloader Pattern
+```
+src/McpServer/Project/ProjectBootloader.php:30-55
+```
+Shows how to register singletons and inject into other services.
+
+### Plugin Testing Pattern
+```
+tests/src/Unit/McpServer/Project/ProjectWhitelistRegistryTest.php:1-80
+```
+Shows unit test setup without full app bootstrap.
+
+### Config Parser Flow
+```
+src/Config/Parser/ConfigParser.php:25-35
+```
+Shows how `rootPath` is passed to plugins — this is our `contextDir`.
+
+## Implementation Details
+
+### Updated ProjectsParserPlugin
+
+```php
 <?php
 
 declare(strict_types=1);
@@ -25,7 +76,7 @@ final readonly class ProjectsParserPlugin implements ConfigParserPluginInterface
     public function __construct(
         private ProjectWhitelistRegistry $registry,
         #[Proxy] private ProjectServiceInterface $projectService,
-        private ProjectPathResolverInterface $pathResolver,
+        private ProjectPathResolver $pathResolver,
         private ?LoggerInterface $logger = null,
     ) {}
 
@@ -123,16 +174,8 @@ final readonly class ProjectsParserPlugin implements ConfigParserPluginInterface
                 }
 
                 // Create and register the project
-                /** @var array{name: string, description?: string|null, path: string} $validatedData */
-                $validatedData = [
-                    'name' => $name,
-                    'description' => isset($projectData['description']) && \is_string($projectData['description'])
-                        ? $projectData['description']
-                        : null,
-                    'path' => (string) $projectData['path'],
-                ];
-                $projectConfig = ProjectConfig::fromArray($validatedData, $resolvedPath);
-
+                $projectConfig = ProjectConfig::fromArray($projectData, $resolvedPath);
+                
                 if ($projectConfig === null) {
                     continue;
                 }
@@ -145,6 +188,7 @@ final readonly class ProjectsParserPlugin implements ConfigParserPluginInterface
                     'path' => $projectData['path'],
                     'resolvedPath' => $resolvedPath,
                 ]);
+
             } catch (ProjectPathException $e) {
                 $this->logger?->warning('Failed to resolve project path', [
                     'name' => $name,
@@ -211,7 +255,7 @@ final readonly class ProjectsParserPlugin implements ConfigParserPluginInterface
 
             // Create and register the project
             $projectConfig = ProjectConfig::fromArray($projectData, $resolvedPath);
-
+            
             if ($projectConfig === null) {
                 continue;
             }
@@ -225,3 +269,72 @@ final readonly class ProjectsParserPlugin implements ConfigParserPluginInterface
         }
     }
 }
+```
+
+### Updated ProjectBootloader
+
+Add `ProjectPathResolver` to singletons:
+
+```php
+#[\Override]
+public function defineSingletons(): array
+{
+    return [
+        ProjectWhitelistRegistryInterface::class => ProjectWhitelistRegistry::class,
+        ProjectWhitelistRegistry::class => ProjectWhitelistRegistry::class,
+        ProjectPathResolver::class => ProjectPathResolver::class,  // ADD THIS
+        ProjectsParserPlugin::class => ProjectsParserPlugin::class,
+        ProjectInterceptor::class => ProjectInterceptor::class,
+    ];
+}
+```
+
+### Resolution Algorithm Summary
+
+```
+Input: projects array from YAML + rootPath (context dir)
+
+Pass 1 - Path-based (LOCAL PRIORITY):
+  for each project with 'path':
+    resolve path relative to rootPath
+    if valid and not claimed:
+      register project
+      claim path
+    else:
+      log warning, skip
+
+Pass 2 - Alias-based:
+  get global aliases from ProjectService
+  for each project without 'path':
+    lookup alias in global registry
+    if found and path NOT claimed:
+      register project
+    else:
+      skip (local wins)
+
+Output: ProjectWhitelistRegistry populated
+```
+
+## Definition of Done
+
+- [ ] `ProjectPathResolver` injected into `ProjectsParserPlugin`
+- [ ] First pass processes all path-based projects
+- [ ] First pass tracks claimed paths correctly
+- [ ] Second pass processes alias-based projects
+- [ ] Second pass skips projects with already-claimed paths
+- [ ] `ProjectBootloader` registers `ProjectPathResolver`
+- [ ] Logging added for all resolution decisions
+- [ ] Unit tests cover:
+  - [ ] Path-based project registration
+  - [ ] Alias-based project registration
+  - [ ] Path override (local over global)
+  - [ ] Invalid path handling (logged, skipped)
+  - [ ] Mixed configuration (path + alias)
+  - [ ] Duplicate path in YAML (first wins)
+- [ ] All existing tests pass
+
+## Dependencies
+
+**Requires**: Stage 1 (ProjectPathResolver), Stage 2 (ProjectConfig with path)
+
+**Enables**: Stage 4 (Integration testing)

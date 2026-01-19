@@ -36,6 +36,8 @@ final class ProjectBootloader extends Bootloader
         return [
             ProjectWhitelistRegistryInterface::class => ProjectWhitelistRegistry::class,
             ProjectWhitelistRegistry::class => ProjectWhitelistRegistry::class,
+            ProjectPathResolverInterface::class => ProjectPathResolver::class,
+            ProjectPathResolver::class => ProjectPathResolver::class,
             ProjectsParserPlugin::class => ProjectsParserPlugin::class,
             ProjectInterceptor::class => ProjectInterceptor::class,
         ];

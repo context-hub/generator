@@ -20,6 +20,14 @@ interface ProjectWhitelistRegistryInterface
     public function isAllowed(string $projectName): bool;
 
     /**
+     * Get a specific project by name.
+     *
+     * @param string $projectName Project name to look up
+     * @return ProjectConfig|null Project config if found, null otherwise
+     */
+    public function get(string $projectName): ?ProjectConfig;
+
+    /**
      * Get all whitelisted projects.
      *
      * @return ProjectConfig[]
