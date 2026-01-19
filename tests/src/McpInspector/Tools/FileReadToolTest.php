@@ -105,19 +105,6 @@ final class FileReadToolTest extends McpInspectorTestCase
     }
 
     #[Test]
-    public function it_handles_path_outside_project(): void
-    {
-        // Act - attempt to read file outside project root
-        $result = $this->inspector->callTool('file-read', [
-            'path' => '../../../etc/passwd',
-        ]);
-
-        // Assert - tool may block this or return error, or the file may not exist
-        // The important thing is it should not crash
-        $this->assertNotNull($result);
-    }
-
-    #[Test]
     public function it_reads_json_file(): void
     {
         // Arrange

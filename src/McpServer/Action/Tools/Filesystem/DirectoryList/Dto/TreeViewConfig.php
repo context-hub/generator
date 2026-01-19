@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\Dto;
+namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\DirectoryList\Dto;
 
 use Spiral\JsonSchemaGenerator\Attribute\Field;
 
@@ -13,7 +13,7 @@ final readonly class TreeViewConfig
             description: 'Show file sizes in tree view',
             default: false,
         )]
-        public bool $showSize = false,
+        public bool $showSize = true,
         #[Field(
             description: 'Show last modified dates in tree view',
             default: false,
@@ -23,7 +23,7 @@ final readonly class TreeViewConfig
             description: 'Show character counts in tree view',
             default: false,
         )]
-        public bool $showCharCount = false,
+        public bool $showCharCount = true,
         #[Field(
             description: 'Include files in tree view (false to show only directories)',
             default: true,

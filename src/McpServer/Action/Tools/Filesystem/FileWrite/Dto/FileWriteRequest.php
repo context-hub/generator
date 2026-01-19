@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\Dto;
+namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileWrite\Dto;
 
 use Butschster\ContextGenerator\McpServer\Project\ProjectAwareRequest;
 use Spiral\JsonSchemaGenerator\Attribute\Field;

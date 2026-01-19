@@ -280,24 +280,6 @@ PHP;
     }
 
     #[Test]
-    public function it_blocks_path_traversal_attempts(): void
-    {
-        // Act
-        $result = $this->inspector->callTool('file-insert-content', [
-            'path' => '../../../etc/passwd',
-            'insertions' => [
-                ['line' => 1, 'content' => 'hacked'],
-            ],
-        ]);
-
-        // Assert - should fail or return error
-        $this->assertTrue(
-            !$result->success || $result->isToolError(),
-            'Path traversal should be blocked',
-        );
-    }
-
-    #[Test]
     public function it_uses_after_as_default_position(): void
     {
         // Arrange

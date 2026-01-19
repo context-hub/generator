@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileReplaceContent;
 
+use Butschster\ContextGenerator\Config\Exclude\ExcludeRegistryInterface;
 use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileReplaceContent\Dto\FileReplaceContentRequest;
 use Psr\Log\LoggerInterface;
@@ -21,6 +22,7 @@ final readonly class FileReplaceContentHandler
         private FilesInterface $files,
         #[Proxy] private DirectoriesInterface $dirs,
         private LineEndingNormalizer $normalizer,
+        private ExcludeRegistryInterface $excludeRegistry,
         private LoggerInterface $logger,
     ) {}
 
@@ -30,6 +32,13 @@ final readonly class FileReplaceContentHandler
     public function handle(FileReplaceContentRequest $request): FileReplaceResult
     {
         $path = (string) $this->dirs->getRootPath()->join($request->path);
+
+        // Check if path is excluded
+        if ($this->excludeRegistry->shouldExclude($request->path)) {
+            return FileReplaceResult::error(
+                \sprintf("Path '%s' is excluded by project configuration", $request->path),
+            );
+        }
 
         // Validate file exists
         if (!$this->files->exists($path)) {

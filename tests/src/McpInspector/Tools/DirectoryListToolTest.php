@@ -117,4 +117,124 @@ final class DirectoryListToolTest extends McpInspectorTestCase
         // Assert
         $this->assertToolError($result);
     }
+
+    #[Test]
+    public function it_truncates_results_when_exceeding_max_results(): void
+    {
+        // Arrange - create more files than maxResults
+        for ($i = 1; $i <= 10; $i++) {
+            $this->createFile("file{$i}.txt", 'content');
+        }
+
+        // Act
+        $result = $this->inspector->callTool('directory-list', [
+            'path' => '.',
+            'maxResults' => 5,
+        ]);
+
+        // Assert
+        $this->assertInspectorSuccess($result);
+        $content = $result->getContent();
+        $data = \json_decode((string) $content, true);
+
+        $this->assertSame(5, $data['count']);
+        $this->assertSame(11, $data['totalMatched']); // 10 files + context.yaml
+        $this->assertTrue($data['truncated']);
+        $this->assertArrayHasKey('warning', $data);
+        $this->assertStringContainsString('truncated', $data['warning']);
+    }
+
+    #[Test]
+    public function it_returns_all_results_when_under_max_results(): void
+    {
+        // Arrange
+        $this->createFile('file1.txt', 'content');
+        $this->createFile('file2.txt', 'content');
+
+        // Act
+        $result = $this->inspector->callTool('directory-list', [
+            'path' => '.',
+            'maxResults' => 100,
+        ]);
+
+        // Assert
+        $this->assertInspectorSuccess($result);
+        $content = $result->getContent();
+        $data = \json_decode((string) $content, true);
+
+        $this->assertSame($data['count'], $data['totalMatched']);
+        $this->assertArrayNotHasKey('truncated', $data);
+        $this->assertArrayNotHasKey('warning', $data);
+    }
+
+    #[Test]
+    public function it_returns_unlimited_results_when_max_results_is_zero(): void
+    {
+        // Arrange - create many files
+        for ($i = 1; $i <= 20; $i++) {
+            $this->createFile("file{$i}.txt", 'content');
+        }
+
+        // Act
+        $result = $this->inspector->callTool('directory-list', [
+            'path' => '.',
+            'maxResults' => 0,
+        ]);
+
+        // Assert
+        $this->assertInspectorSuccess($result);
+        $content = $result->getContent();
+        $data = \json_decode((string) $content, true);
+
+        $this->assertSame(21, $data['count']); // 20 files + context.yaml
+        $this->assertSame(21, $data['totalMatched']);
+        $this->assertArrayNotHasKey('truncated', $data);
+    }
+
+    #[Test]
+    public function it_includes_total_matched_in_response(): void
+    {
+        // Arrange
+        $this->createFile('file1.txt', 'content');
+        $this->createFile('file2.txt', 'content');
+
+        // Act
+        $result = $this->inspector->callTool('directory-list', [
+            'path' => '.',
+        ]);
+
+        // Assert
+        $this->assertInspectorSuccess($result);
+        $content = $result->getContent();
+        $data = \json_decode((string) $content, true);
+
+        $this->assertArrayHasKey('totalMatched', $data);
+        $this->assertSame($data['count'], $data['totalMatched']);
+    }
+
+    #[Test]
+    public function it_truncates_with_tree_view(): void
+    {
+        // Arrange
+        for ($i = 1; $i <= 10; $i++) {
+            $this->createFile("file{$i}.txt", 'content');
+        }
+
+        // Act
+        $result = $this->inspector->callTool('directory-list', [
+            'path' => '.',
+            'maxResults' => 3,
+            'showTree' => true,
+        ]);
+
+        // Assert
+        $this->assertInspectorSuccess($result);
+        $content = $result->getContent();
+        $data = \json_decode((string) $content, true);
+
+        $this->assertSame(3, $data['count']);
+        $this->assertTrue($data['truncated']);
+        $this->assertArrayHasKey('treeView', $data);
+        $this->assertArrayHasKey('warning', $data);
+    }
 }

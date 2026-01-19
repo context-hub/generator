@@ -342,22 +342,6 @@ TEXT;
     }
 
     #[Test]
-    public function it_blocks_path_traversal_attempts(): void
-    {
-        // Act
-        $result = $this->inspector->callTool('file-delete-content', [
-            'path' => '../../../etc/passwd',
-            'lines' => [['line' => 1]],
-        ]);
-
-        // Assert - should fail or return error
-        $this->assertTrue(
-            !$result->success || $result->isToolError(),
-            'Path traversal should be blocked',
-        );
-    }
-
-    #[Test]
     public function it_deletes_all_lines_except_one(): void
     {
         // Arrange

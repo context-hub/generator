@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileInsertContent;
 
+use Butschster\ContextGenerator\Config\Exclude\ExcludeRegistryInterface;
 use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileInsertContent\Dto\FileInsertContentRequest;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Filesystem\FileInsertContent\Dto\InsertionItem;
@@ -24,6 +25,7 @@ final readonly class FileInsertContentHandler
         private FilesInterface $files,
         #[Proxy] private DirectoriesInterface $dirs,
         private LineEndingNormalizer $normalizer,
+        private ExcludeRegistryInterface $excludeRegistry,
         private LoggerInterface $logger,
     ) {}
 
@@ -33,6 +35,13 @@ final readonly class FileInsertContentHandler
     public function handle(FileInsertContentRequest $request): FileInsertResult
     {
         $path = (string) $this->dirs->getRootPath()->join($request->path);
+
+        // Check if path is excluded
+        if ($this->excludeRegistry->shouldExclude($request->path)) {
+            return FileInsertResult::error(
+                \sprintf("Path '%s' is excluded by project configuration", $request->path),
+            );
+        }
 
         // Validate file exists
         if (!$this->files->exists($path)) {
