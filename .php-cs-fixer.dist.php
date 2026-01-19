@@ -6,6 +6,7 @@ require_once 'vendor/autoload.php';
 
 return \Spiral\CodeStyle\Builder::create()
     ->include(__DIR__ . '/src')
+    ->include(__DIR__ . '/rag')
     ->include(__DIR__ . '/tests')
     ->include(__DIR__ . '/rector.php')
     ->build();

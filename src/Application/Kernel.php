@@ -17,6 +17,7 @@ use Butschster\ContextGenerator\Lib\GitlabClient\GitlabClientBootloader;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientBootloader;
 use Butschster\ContextGenerator\Application\Bootloader\LoggerBootloader;
 use Butschster\ContextGenerator\Modifier\ModifierBootloader;
+use Butschster\ContextGenerator\Rag\RagBootloader;
 use Butschster\ContextGenerator\Source\Fetcher\SourceFetcherBootloader;
 use Butschster\ContextGenerator\Lib\Variable\VariableBootloader;
 use Butschster\ContextGenerator\Research\ResearchBootloader;
@@ -83,6 +84,7 @@ class Kernel extends AbstractKernel
             ConfigLoaderBootloader::class,
             VariableBootloader::class,
             ExcludeBootloader::class,
+            RagBootloader::class,
             ModifierBootloader::class,
             ContentRendererBootloader::class,
             SourceFetcherBootloader::class,

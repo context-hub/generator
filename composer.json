@@ -44,7 +44,11 @@
     "spiral/boot": "~3.15.8",
     "spiral/files": "~3.15.8",
     "spiral/snapshots": "~3.15.8",
-    "monolog/monolog": "^3.9"
+    "monolog/monolog": "^3.9",
+    "symfony/ai-store": "^0.2.0",
+    "symfony/ai-platform": "^0.2.0",
+    "symfony/ai-qdrant-store": "^0.3",
+    "symfony/ai-open-ai-platform": "^0.2.0"
   },
   "require-dev": {
     "buggregator/trap": "^1.13",
@@ -55,7 +59,8 @@
   },
   "autoload": {
     "psr-4": {
-      "Butschster\\ContextGenerator\\": "src"
+      "Butschster\\ContextGenerator\\": "src",
+      "Butschster\\ContextGenerator\\Rag\\": "rag"
     }
   },
   "autoload-dev": {

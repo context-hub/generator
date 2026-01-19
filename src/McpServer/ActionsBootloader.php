@@ -47,6 +47,10 @@ use Butschster\ContextGenerator\McpServer\Prompt\Console\ShowPromptCommand;
 use Butschster\ContextGenerator\McpServer\Tool\Console\ToolListCommand;
 use Butschster\ContextGenerator\McpServer\Tool\Console\ToolRunCommand;
 use Butschster\ContextGenerator\McpServer\Tool\Console\ToolSchemaCommand;
+use Butschster\ContextGenerator\Rag\MCP\Tools\RagManage\RagManageAction;
+use Butschster\ContextGenerator\Rag\MCP\Tools\RagSearch\RagSearchAction;
+use Butschster\ContextGenerator\Rag\MCP\Tools\RagStore\RagStoreAction;
+use Butschster\ContextGenerator\Rag\RagRegistryInterface;
 use Butschster\ContextGenerator\Research\MCP\Tools\CreateEntryToolAction;
 use Butschster\ContextGenerator\Research\MCP\Tools\CreateResearchToolAction;
 use Butschster\ContextGenerator\Research\MCP\Tools\GetResearchToolAction;
@@ -140,10 +144,11 @@ final class ActionsBootloader extends Bootloader
                 McpConfig $config,
                 ServerRunner $factory,
                 ConfigLoaderInterface $loader,
+                RagRegistryInterface $ragRegistry,
             ) {
                 $loader->load();
 
-                foreach ($this->actions($config) as $action) {
+                foreach ($this->actions($config, $ragRegistry) as $action) {
                     $factory->registerAction($action);
                 }
 
@@ -152,7 +157,7 @@ final class ActionsBootloader extends Bootloader
         ];
     }
 
-    private function actions(McpConfig $config): array
+    private function actions(McpConfig $config, RagRegistryInterface $ragRegistry): array
     {
         $actions = [
             // Prompts controllers
@@ -241,6 +246,13 @@ final class ActionsBootloader extends Bootloader
             $actions[] = GitStatusAction::class;
             $actions[] = GitAddAction::class;
             $actions[] = GitCommitAction::class;
+        }
+
+        // RAG Tools - only if enabled in context.yaml
+        if ($ragRegistry->isEnabled()) {
+            $actions[] = RagStoreAction::class;
+            $actions[] = RagSearchAction::class;
+            $actions[] = RagManageAction::class;
         }
 
         // Should be last
