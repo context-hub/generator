@@ -123,7 +123,15 @@ final readonly class ProjectsParserPlugin implements ConfigParserPluginInterface
                 }
 
                 // Create and register the project
-                $projectConfig = ProjectConfig::fromArray($projectData, $resolvedPath);
+                /** @var array{name: string, description?: string|null, path: string} $validatedData */
+                $validatedData = [
+                    'name' => $name,
+                    'description' => isset($projectData['description']) && \is_string($projectData['description'])
+                        ? $projectData['description']
+                        : null,
+                    'path' => (string) $projectData['path'],
+                ];
+                $projectConfig = ProjectConfig::fromArray($validatedData, $resolvedPath);
 
                 if ($projectConfig === null) {
                     continue;

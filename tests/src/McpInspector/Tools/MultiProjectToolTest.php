@@ -315,6 +315,7 @@ final class MultiProjectToolTest extends McpInspectorTestCase
         $this->assertContentContains($result, 'Deep nested content');
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
         // Clean up sibling project directories

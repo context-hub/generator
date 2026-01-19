@@ -19,19 +19,6 @@ final class ProjectsParserPluginTest extends TestCase
     private ProjectPathResolverInterface $pathResolver;
     private ProjectsParserPlugin $plugin;
 
-    protected function setUp(): void
-    {
-        $this->registry = new ProjectWhitelistRegistry();
-        $this->projectService = $this->createMock(ProjectServiceInterface::class);
-        $this->pathResolver = $this->createMock(ProjectPathResolverInterface::class);
-
-        $this->plugin = new ProjectsParserPlugin(
-            registry: $this->registry,
-            projectService: $this->projectService,
-            pathResolver: $this->pathResolver,
-        );
-    }
-
     #[Test]
     public function it_returns_projects_config_key(): void
     {
@@ -321,5 +308,18 @@ final class ProjectsParserPluginTest extends TestCase
         $result = $this->plugin->updateConfig($config, '/context/dir');
 
         $this->assertEquals($config, $result);
+    }
+
+    protected function setUp(): void
+    {
+        $this->registry = new ProjectWhitelistRegistry();
+        $this->projectService = $this->createMock(ProjectServiceInterface::class);
+        $this->pathResolver = $this->createMock(ProjectPathResolverInterface::class);
+
+        $this->plugin = new ProjectsParserPlugin(
+            registry: $this->registry,
+            projectService: $this->projectService,
+            pathResolver: $this->pathResolver,
+        );
     }
 }

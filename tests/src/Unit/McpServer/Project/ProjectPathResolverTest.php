@@ -14,18 +14,6 @@ final class ProjectPathResolverTest extends TestCase
     private ProjectPathResolver $resolver;
     private string $tempDir;
 
-    protected function setUp(): void
-    {
-        $this->resolver = new ProjectPathResolver();
-        $this->tempDir = \sys_get_temp_dir() . '/project-path-resolver-test-' . \uniqid();
-        \mkdir($this->tempDir, 0755, true);
-    }
-
-    protected function tearDown(): void
-    {
-        $this->removeDirectory($this->tempDir);
-    }
-
     #[Test]
     public function it_resolves_absolute_path(): void
     {
@@ -153,6 +141,18 @@ final class ProjectPathResolverTest extends TestCase
         $result = $this->resolver->resolve('sub/project', $contextDir);
 
         $this->assertEquals($projectDir, $result);
+    }
+
+    protected function setUp(): void
+    {
+        $this->resolver = new ProjectPathResolver();
+        $this->tempDir = \sys_get_temp_dir() . '/project-path-resolver-test-' . \uniqid();
+        \mkdir($this->tempDir, 0755, true);
+    }
+
+    protected function tearDown(): void
+    {
+        $this->removeDirectory($this->tempDir);
     }
 
     private function removeDirectory(string $dir): void
