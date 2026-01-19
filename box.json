@@ -10,6 +10,7 @@
   "git": "git",
   "directories": [
     "src",
+    "rag",
     "vendor"
   ],
   "files": [
