@@ -47,7 +47,7 @@
     "monolog/monolog": "^3.9",
     "symfony/ai-store": "^0.2.0",
     "symfony/ai-platform": "^0.2.0",
-    "symfony/ai-qdrant-store": "^0.3",
+    "symfony/ai-qdrant-store": "^0.2",
     "symfony/ai-open-ai-platform": "^0.2.0"
   },
   "require-dev": {
