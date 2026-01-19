@@ -24,7 +24,7 @@ final class BuildSchemaCommand extends BaseCommand
         shortcut: 'o',
         description: 'Output file path (relative to project root)',
     )]
-    protected string $outputPath = 'json-schema.json';
+    protected string $outputPath = 'json-schema-new.json';
 
     #[Option(
         name: 'validate',
