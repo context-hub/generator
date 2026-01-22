@@ -25,7 +25,7 @@ final readonly class DynamicRagSearchAction
         private LoggerInterface $logger,
     ) {}
 
-    public function getTooId(): string
+    public function getToolId(): string
     {
         return $this->config->getSearchToolId();
     }
@@ -42,7 +42,7 @@ final readonly class DynamicRagSearchAction
 
     public function getToolTitle(): string
     {
-        return \ucfirst(\str_replace(['-', '_'], ' ', $this->config->id));
+        return $this->config->getName() ??  \ucfirst(\str_replace(['-', '_'], ' ', $this->config->id));
     }
 
     /**

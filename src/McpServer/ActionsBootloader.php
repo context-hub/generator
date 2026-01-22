@@ -181,7 +181,7 @@ final class ActionsBootloader extends Bootloader
 
         foreach ($tools['search'] as $action) {
             $schema = new Tool(
-                name: $action->getTooId(),
+                name: $action->getToolId(),
                 inputSchema: $action->getInputSchema(),
                 description: $action->getToolDescription(),
                 annotations: new ToolAnnotations(
@@ -193,7 +193,7 @@ final class ActionsBootloader extends Bootloader
 
         foreach ($tools['store'] as $action) {
             $schema = new Tool(
-                name: $action->getTooId(),
+                name: $action->getToolId(),
                 inputSchema: $action->getInputSchema(),
                 description: $action->getToolDescription(),
                 annotations: new ToolAnnotations(

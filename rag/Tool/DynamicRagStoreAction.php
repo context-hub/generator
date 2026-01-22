@@ -25,9 +25,14 @@ final readonly class DynamicRagStoreAction
         private LoggerInterface $logger,
     ) {}
 
+    public function getToolId(): string
+    {
+        return $this->config->getSearchToolId();
+    }
+
     public function getToolName(): string
     {
-        return $this->config->getStoreToolId();
+        return $this->config->getName();
     }
 
     public function getToolDescription(): string
@@ -37,7 +42,7 @@ final readonly class DynamicRagStoreAction
 
     public function getToolTitle(): string
     {
-        return \ucfirst(\str_replace(['-', '_'], ' ', $this->config->id)) . ' Store';
+        return $this->config->getName() ?? \ucfirst(\str_replace(['-', '_'], ' ', $this->config->id)) . ' Store';
     }
 
     /**
