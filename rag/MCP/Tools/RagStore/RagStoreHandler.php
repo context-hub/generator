@@ -6,12 +6,13 @@ namespace Butschster\ContextGenerator\Rag\MCP\Tools\RagStore;
 
 use Butschster\ContextGenerator\Rag\Document\DocumentType;
 use Butschster\ContextGenerator\Rag\MCP\Tools\RagStore\Dto\RagStoreRequest;
-use Butschster\ContextGenerator\Rag\Service\IndexerService;
+use Butschster\ContextGenerator\Rag\Service\ServiceFactory;
 
 final readonly class RagStoreHandler
 {
     public function __construct(
-        private IndexerService $indexer,
+        private ServiceFactory $serviceFactory,
+        private string $collectionName = 'default',
     ) {}
 
     public function handle(RagStoreRequest $request): string
@@ -21,8 +22,9 @@ final readonly class RagStoreHandler
         }
 
         $type = DocumentType::tryFrom($request->type) ?? DocumentType::General;
+        $indexer = $this->serviceFactory->getIndexer($this->collectionName);
 
-        $result = $this->indexer->index(
+        $result = $indexer->index(
             content: $request->content,
             type: $type,
             sourcePath: $request->sourcePath,
@@ -30,10 +32,19 @@ final readonly class RagStoreHandler
         );
 
         return \sprintf(
-            "Stored in knowledge base.\nType: %s | Chunks: %d | Time: %.2fms",
+            "Stored in knowledge base [%s].\nType: %s | Chunks: %d | Time: %.2fms",
+            $this->collectionName,
             $type->value,
             $result->chunksCreated,
             $result->processingTimeMs,
         );
+    }
+
+    /**
+     * Create handler for specific collection.
+     */
+    public function withCollection(string $collectionName): self
+    {
+        return new self($this->serviceFactory, $collectionName);
     }
 }

@@ -8,36 +8,60 @@ import:
   - url: https://gist.githubusercontent.com/butschster/29e84fb9c976ac837181141f88049a35/raw/ed38539950f8c9c45ca8c67f9e026a837c97bc66/01-dev-prompts.yaml
     type: url
 
+# context.yaml
+rag:
+  servers:
+    default:
+      driver: qdrant
+      endpoint_url: ${RAG_QDRANT_ENDPOINT:-http://qdrant.home.local}
+      api_key: ${RAG_QDRANT_API_KEY:-}
+      embeddings_dimension: 1536
+      embeddings_distance: Cosine
+
+  collections:
+    default:
+      server: default
+      collection: ${RAG_COLLECTION:-intruforce_knowledge}
+      description: "Project knowledge base"
+
+  vectorizer:
+    platform: openai
+    model: text-embedding-3-small
+    api_key: ${OPENAI_API_KEY}
+
+  transformer:
+    chunk_size: 1000
+    overlap: 200
+
 tools:
   - id: ctx-docs
-    description: 'CTX docs'
-    type: http
-    schema:
-      type: object
-      properties:
-        query:
-          type: string
-          description: "Question or task to get documentation for"
-    requests:
-      - url: "https://context7.com/api/v2/context"
-        method: "GET"
-        query:
-          libraryId: "/context-hub/generator"
-          type: "txt"
-          query: "{{query}}"
+    name: CTX docs search
+    type: rag
+    description: |
+      Search the project knowledge base for documentation, code explanations, and insights.
+      Use this when you need to find previously stored information about the codebase.
+    collection: default
+    operations: [ search ]
 
 projects:
   - name: ctx-mcp-server
     description: MCP server library
   - name: ctx-docs
     description: Docs for CTX
+  - name: mcp-schema
+    path: vendor/php-mcp/schema
+    description: PHP DTOs for the MCP specification
 
 exclude:
   patterns:
     - ".env*"
+    - "*cache"
   paths:
     - ".claude"
     - ".context"
+    - ".build"
+    - ".researches"
+    - "runtime"
 
 documents:
   - description: 'Project structure overview'

@@ -60,14 +60,8 @@ final class RagRegistry implements RagRegistryInterface, RegistryInterface
 
     public function jsonSerialize(): array
     {
-        return [
+        $result = [
             'enabled' => $this->config->enabled,
-            'store' => [
-                'driver' => $this->config->store->driver,
-                'endpoint_url' => $this->config->store->endpointUrl,
-                'collection' => $this->config->store->collection,
-                'embeddings_dimension' => $this->config->store->embeddingsDimension,
-            ],
             'vectorizer' => [
                 'platform' => $this->config->vectorizer->platform,
                 'model' => $this->config->vectorizer->model,
@@ -77,5 +71,40 @@ final class RagRegistry implements RagRegistryInterface, RegistryInterface
                 'overlap' => $this->config->transformer->overlap,
             ],
         ];
+
+        // Include legacy store info if present
+        if ($this->config->store !== null) {
+            $result['store'] = [
+                'driver' => $this->config->store->driver,
+                'endpoint_url' => $this->config->store->endpointUrl,
+                'collection' => $this->config->store->collection,
+                'embeddings_dimension' => $this->config->store->embeddingsDimension,
+            ];
+        }
+
+        // Include new format info
+        if (!empty($this->config->servers)) {
+            $result['servers'] = \array_map(
+                static fn($server) => [
+                    'driver' => $server->driver,
+                    'endpoint_url' => $server->endpointUrl,
+                    'embeddings_dimension' => $server->embeddingsDimension,
+                ],
+                $this->config->servers,
+            );
+        }
+
+        if (!empty($this->config->collections)) {
+            $result['collections'] = \array_map(
+                static fn($collection) => [
+                    'server' => $collection->server,
+                    'collection' => $collection->collection,
+                    'description' => $collection->description,
+                ],
+                $this->config->collections,
+            );
+        }
+
+        return $result;
     }
 }
