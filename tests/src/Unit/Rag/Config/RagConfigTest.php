@@ -275,7 +275,7 @@ final class RagConfigTest extends TestCase
         ]);
 
         $this->assertCount(2, $config->servers);
-        $this->assertSame(['0', '1'], $config->getServerNames());
+        $this->assertSame([0, 1], $config->getServerNames());
 
         $server = $config->getServer('0');
         $this->assertSame('http://server0:6333', $server->endpointUrl);
