@@ -44,13 +44,13 @@ use Butschster\ContextGenerator\McpServer\Projects\Console\ProjectListCommand;
 use Butschster\ContextGenerator\McpServer\Projects\Console\ProjectRemoveCommand;
 use Butschster\ContextGenerator\McpServer\Prompt\Console\ListPromptsCommand;
 use Butschster\ContextGenerator\McpServer\Prompt\Console\ShowPromptCommand;
+use Butschster\ContextGenerator\McpServer\Registry\McpItemsRegistry;
 use Butschster\ContextGenerator\McpServer\Tool\Console\ToolListCommand;
 use Butschster\ContextGenerator\McpServer\Tool\Console\ToolRunCommand;
 use Butschster\ContextGenerator\McpServer\Tool\Console\ToolSchemaCommand;
-use Butschster\ContextGenerator\Rag\MCP\Tools\RagManage\RagManageAction;
-use Butschster\ContextGenerator\Rag\MCP\Tools\RagSearch\RagSearchAction;
-use Butschster\ContextGenerator\Rag\MCP\Tools\RagStore\RagStoreAction;
 use Butschster\ContextGenerator\Rag\RagRegistryInterface;
+use Butschster\ContextGenerator\Rag\Tool\RagToolFactory;
+use Butschster\ContextGenerator\Rag\Tool\RagToolRegistryInterface;
 use Butschster\ContextGenerator\Research\MCP\Tools\CreateEntryToolAction;
 use Butschster\ContextGenerator\Research\MCP\Tools\CreateResearchToolAction;
 use Butschster\ContextGenerator\Research\MCP\Tools\GetResearchToolAction;
@@ -60,6 +60,8 @@ use Butschster\ContextGenerator\Research\MCP\Tools\ListTemplatesToolAction;
 use Butschster\ContextGenerator\Research\MCP\Tools\ReadEntryToolAction;
 use Butschster\ContextGenerator\Research\MCP\Tools\UpdateEntryToolAction;
 use Butschster\ContextGenerator\Research\MCP\Tools\UpdateResearchToolAction;
+use PhpMcp\Schema\Tool;
+use PhpMcp\Schema\ToolAnnotations;
 use Spiral\Boot\Bootloader\Bootloader;
 use Spiral\Boot\EnvironmentInterface;
 use Spiral\Config\ConfiguratorInterface;
@@ -145,11 +147,22 @@ final class ActionsBootloader extends Bootloader
                 ServerRunner $factory,
                 ConfigLoaderInterface $loader,
                 RagRegistryInterface $ragRegistry,
+                ?RagToolRegistryInterface $ragToolRegistry = null,
+                ?RagToolFactory $ragToolFactory = null,
             ) {
                 $loader->load();
 
-                foreach ($this->actions($config, $ragRegistry) as $action) {
+                foreach ($this->actions($config, $ragRegistry, $ragToolRegistry) as $action) {
                     $factory->registerAction($action);
+                }
+
+                // Register dynamic RAG tools callback
+                if ($ragToolFactory !== null && $ragToolRegistry !== null && $ragToolRegistry->hasTools()) {
+                    $factory->registerDynamicToolRegistrar(
+                        function (McpItemsRegistry $registry) use ($ragToolFactory): void {
+                            $this->registerDynamicRagTools($registry, $ragToolFactory);
+                        },
+                    );
                 }
 
                 return $factory;
@@ -157,8 +170,45 @@ final class ActionsBootloader extends Bootloader
         ];
     }
 
-    private function actions(McpConfig $config, RagRegistryInterface $ragRegistry): array
-    {
+    /**
+     * Register dynamic RAG tools from configuration.
+     */
+    private function registerDynamicRagTools(
+        McpItemsRegistry $registry,
+        RagToolFactory $factory,
+    ): void {
+        $tools = $factory->createAll();
+
+        foreach ($tools['search'] as $action) {
+            $schema = new Tool(
+                name: $action->getTooId(),
+                inputSchema: $action->getInputSchema(),
+                description: $action->getToolDescription(),
+                annotations: new ToolAnnotations(
+                    title: $action->getToolName(),
+                ),
+            );
+            $registry->registerDynamicTool($schema);
+        }
+
+        foreach ($tools['store'] as $action) {
+            $schema = new Tool(
+                name: $action->getTooId(),
+                inputSchema: $action->getInputSchema(),
+                description: $action->getToolDescription(),
+                annotations: new ToolAnnotations(
+                    title: $action->getToolName(),
+                ),
+            );
+            $registry->registerDynamicTool($schema);
+        }
+    }
+
+    private function actions(
+        McpConfig $config,
+        RagRegistryInterface $ragRegistry,
+        ?RagToolRegistryInterface $ragToolRegistry = null,
+    ): array {
         $actions = [
             // Prompts controllers
             GetPromptAction::class,
@@ -246,13 +296,6 @@ final class ActionsBootloader extends Bootloader
             $actions[] = GitStatusAction::class;
             $actions[] = GitAddAction::class;
             $actions[] = GitCommitAction::class;
-        }
-
-        // RAG Tools - only if enabled in context.yaml
-        if ($ragRegistry->isEnabled()) {
-            $actions[] = RagStoreAction::class;
-            $actions[] = RagSearchAction::class;
-            $actions[] = RagManageAction::class;
         }
 
         // Should be last

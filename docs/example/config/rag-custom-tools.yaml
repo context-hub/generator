@@ -1,0 +1,102 @@
+# Custom RAG Tools Example
+#
+# Define AI-friendly tools with meaningful names and descriptions
+# that help the AI understand when and why to use each tool.
+
+rag:
+  servers:
+    default:
+      driver: qdrant
+      endpoint_url: ${RAG_QDRANT_ENDPOINT:-http://localhost:6333}
+
+  collections:
+    project-docs:
+      server: default
+      collection: project_documentation
+
+    architecture:
+      server: default
+      collection: architecture_decisions
+
+    conventions:
+      server: default
+      collection: coding_conventions
+
+  vectorizer:
+    platform: openai
+    model: text-embedding-3-small
+    api_key: ${OPENAI_API_KEY}
+
+# Custom RAG tools with meaningful names for AI
+tools:
+  # Documentation tools
+  - id: find-documentation
+    type: rag
+    description: |
+      Search project documentation for guides, tutorials, and how-to articles.
+      Use this when you need to understand:
+      - How to use a feature
+      - Setup instructions
+      - Configuration options
+      - Best practices for using the project
+    collection: project-docs
+    operations: [search]
+
+  - id: save-documentation
+    type: rag
+    description: |
+      Store documentation, guides, or explanations about project features.
+      Use this after discovering or documenting:
+      - How a feature works
+      - Setup procedures
+      - Configuration guides
+    collection: project-docs
+    operations: [store]
+
+  # Architecture tools
+  - id: understand-architecture
+    type: rag
+    description: |
+      Search architecture decisions and design patterns.
+      Use this when you need to understand:
+      - Why code is structured a certain way
+      - Design decisions and their rationale
+      - System boundaries and responsibilities
+      - Integration patterns between components
+    collection: architecture
+    operations: [search]
+
+  - id: document-architecture
+    type: rag
+    description: |
+      Store architecture decisions, patterns, and design rationale.
+      Use this after making or discovering:
+      - Important design decisions
+      - New patterns in the codebase
+      - System integration approaches
+    collection: architecture
+    operations: [store]
+
+  # Conventions tools
+  - id: check-conventions
+    type: rag
+    description: |
+      Search coding conventions and style guidelines.
+      Use this BEFORE writing code to ensure:
+      - Naming conventions are followed
+      - Code style matches project standards
+      - Patterns are consistent with existing code
+    collection: conventions
+    operations: [search]
+
+  - id: record-convention
+    type: rag
+    description: |
+      Store coding conventions and guidelines discovered in the codebase.
+      Use this when you identify:
+      - Naming patterns
+      - Code organization rules
+      - Testing conventions
+      - Documentation standards
+    collection: conventions
+    operations: [store]

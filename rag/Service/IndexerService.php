@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Rag\Service;
 
-use Butschster\ContextGenerator\Rag\Config\RagConfig;
+use Butschster\ContextGenerator\Rag\Config\TransformerConfig;
 use Butschster\ContextGenerator\Rag\Document\DocumentType;
 use Butschster\ContextGenerator\Rag\Document\MetadataFactory;
 use Symfony\AI\Store\Document\TextDocument;
@@ -21,11 +21,11 @@ final readonly class IndexerService
         private StoreInterface $store,
         private VectorizerInterface $vectorizer,
         private MetadataFactory $metadataFactory,
-        RagConfig $config,
+        TransformerConfig $transformerConfig,
     ) {
         $this->transformer = new TextSplitTransformer(
-            chunkSize: $config->transformer->chunkSize,
-            overlap: $config->transformer->overlap,
+            chunkSize: $transformerConfig->chunkSize,
+            overlap: $transformerConfig->overlap,
         );
     }
 

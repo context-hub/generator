@@ -48,9 +48,9 @@ final readonly class GenerateCommandRenderer
         foreach ($imports as $item) {
             $description = $item->getPath();
 
-            if (\strlen($description) > self::MAX_LINE_WIDTH - 40) {
+            if (\strlen((string) $description) > self::MAX_LINE_WIDTH - 40) {
                 $halfLength = (self::MAX_LINE_WIDTH - 40) / 2;
-                $description = \substr($description, 0, $halfLength) . '...' . \substr($description, -$halfLength);
+                $description = \substr((string) $description, 0, $halfLength) . '...' . \substr((string) $description, -$halfLength);
             }
 
             // Calculate padding to align the document descriptions

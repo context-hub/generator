@@ -42,12 +42,7 @@ final readonly class RagParserPlugin implements ConfigParserPluginInterface
         $ragConfig = RagConfig::fromArray($config['rag']);
         $this->registry->setConfig($ragConfig);
 
-        $this->logger?->info('Parsed RAG configuration', [
-            'enabled' => $ragConfig->enabled,
-            'store_driver' => $ragConfig->store->driver,
-            'vectorizer_platform' => $ragConfig->vectorizer->platform,
-            'vectorizer_model' => $ragConfig->vectorizer->model,
-        ]);
+        $this->logConfiguration($ragConfig);
 
         return $this->registry;
     }
@@ -55,5 +50,26 @@ final readonly class RagParserPlugin implements ConfigParserPluginInterface
     public function updateConfig(array $config, string $rootPath): array
     {
         return $config;
+    }
+
+    private function logConfiguration(RagConfig $ragConfig): void
+    {
+        if ($ragConfig->isLegacyFormat()) {
+            $this->logger?->info('Parsed RAG configuration (legacy format)', [
+                'enabled' => $ragConfig->enabled,
+                'store_driver' => $ragConfig->store?->driver,
+                'collection' => $ragConfig->store?->collection,
+                'vectorizer_platform' => $ragConfig->vectorizer->platform,
+                'vectorizer_model' => $ragConfig->vectorizer->model,
+            ]);
+        } else {
+            $this->logger?->info('Parsed RAG configuration (new format)', [
+                'enabled' => $ragConfig->enabled,
+                'servers' => $ragConfig->getServerNames(),
+                'collections' => $ragConfig->getCollectionNames(),
+                'vectorizer_platform' => $ragConfig->vectorizer->platform,
+                'vectorizer_model' => $ragConfig->vectorizer->model,
+            ]);
+        }
     }
 }

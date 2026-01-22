@@ -73,9 +73,89 @@
           "default": false,
           "description": "Enable RAG knowledge store"
         },
+        "servers": {
+          "type": "object",
+          "description": "Named server connections for vector stores",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "driver": {
+                "type": "string",
+                "enum": ["qdrant", "memory"],
+                "default": "qdrant",
+                "description": "Store backend driver"
+              },
+              "endpoint_url": {
+                "type": "string",
+                "default": "http://localhost:6333",
+                "description": "Server endpoint URL"
+              },
+              "api_key": {
+                "type": "string",
+                "description": "API key for authentication (optional for local instances)"
+              },
+              "embeddings_dimension": {
+                "type": "integer",
+                "default": 1536,
+                "description": "Vector embeddings dimension"
+              },
+              "embeddings_distance": {
+                "type": "string",
+                "enum": ["Cosine", "Euclid", "Dot"],
+                "default": "Cosine",
+                "description": "Distance metric for similarity search"
+              }
+            }
+          }
+        },
+        "collections": {
+          "type": "object",
+          "description": "Named collections referencing servers",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["server", "collection"],
+            "properties": {
+              "server": {
+                "type": "string",
+                "description": "Reference to server name defined in servers section"
+              },
+              "collection": {
+                "type": "string",
+                "description": "Vector store collection name"
+              },
+              "description": {
+                "type": "string",
+                "description": "Human-readable description of the collection purpose"
+              },
+              "embeddings_dimension": {
+                "type": "integer",
+                "description": "Override server's embeddings dimension for this collection"
+              },
+              "embeddings_distance": {
+                "type": "string",
+                "enum": ["Cosine", "Euclid", "Dot"],
+                "description": "Override server's distance metric for this collection"
+              },
+              "transformer": {
+                "type": "object",
+                "description": "Override global transformer settings for this collection",
+                "properties": {
+                  "chunk_size": {
+                    "type": "integer",
+                    "description": "Maximum chunk size in characters"
+                  },
+                  "overlap": {
+                    "type": "integer",
+                    "description": "Overlap between chunks in characters"
+                  }
+                }
+              }
+            }
+          }
+        },
         "store": {
           "type": "object",
-          "description": "Vector store configuration",
+          "description": "Vector store configuration (LEGACY - use servers/collections instead)",
           "properties": {
             "driver": {
               "type": "string",
@@ -118,7 +198,7 @@
         },
         "vectorizer": {
           "type": "object",
-          "description": "Embedding/vectorizer configuration",
+          "description": "Embedding/vectorizer configuration (shared by all collections)",
           "properties": {
             "platform": {
               "type": "string",
@@ -139,7 +219,7 @@
         },
         "transformer": {
           "type": "object",
-          "description": "Text chunking configuration",
+          "description": "Default text chunking configuration (can be overridden per collection)",
           "properties": {
             "chunk_size": {
               "type": "integer",
@@ -506,9 +586,10 @@
           "type": "string",
           "enum": [
             "run",
-            "http"
+            "http",
+            "rag"
           ],
-          "description": "Type of tool (run = command execution, http = HTTP requests)",
+          "description": "Type of tool (run = command execution, http = HTTP requests, rag = RAG knowledge base)",
           "default": "run"
         },
         "schema": {
@@ -535,6 +616,19 @@
           "items": {
             "$ref": "#/definitions/httpRequest"
           }
+        },
+        "collection": {
+          "type": "string",
+          "description": "Reference to named RAG collection (for 'rag' type tools)"
+        },
+        "operations": {
+          "type": "array",
+          "description": "Available operations for RAG tool (for 'rag' type tools)",
+          "items": {
+            "type": "string",
+            "enum": ["search", "store"]
+          },
+          "default": ["search", "store"]
         }
       },
       "allOf": [
@@ -563,6 +657,20 @@
           "then": {
             "required": [
               "requests"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "rag"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "collection"
             ]
           }
         }

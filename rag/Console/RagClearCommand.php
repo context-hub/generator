@@ -9,11 +9,11 @@ use Butschster\ContextGenerator\Config\Exception\ConfigLoaderException;
 use Butschster\ContextGenerator\Console\BaseCommand;
 use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\Rag\RagRegistryInterface;
+use Butschster\ContextGenerator\Rag\Store\StoreRegistryInterface;
 use Spiral\Console\Attribute\Option;
 use Spiral\Core\Container;
 use Spiral\Core\Scope;
 use Symfony\AI\Store\ManagedStoreInterface;
-use Symfony\AI\Store\StoreInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 
@@ -23,21 +23,15 @@ use Symfony\Component\Console\Command\Command;
 )]
 final class RagClearCommand extends BaseCommand
 {
+    use CollectionAwareTrait;
+
     #[Option(shortcut: 'f', description: 'Force clear without confirmation')]
     protected bool $force = false;
 
-    #[Option(
-        name: 'config-file',
-        shortcut: 'c',
-        description: 'Path to configuration file',
-    )]
+    #[Option(name: 'config-file', shortcut: 'c', description: 'Path to configuration file')]
     protected ?string $configPath = null;
 
-    #[Option(
-        name: 'env',
-        shortcut: 'e',
-        description: 'Path to .env file (e.g., .env.local)',
-    )]
+    #[Option(name: 'env', shortcut: 'e', description: 'Path to .env file (e.g., .env.local)')]
     protected ?string $envFile = null;
 
     public function __invoke(
@@ -49,23 +43,16 @@ final class RagClearCommand extends BaseCommand
             ->withEnvFile($this->envFile);
 
         return $container->runScope(
-            bindings: new Scope(
-                bindings: [
-                    DirectoriesInterface::class => $dirs,
-                ],
-            ),
+            bindings: new Scope(bindings: [DirectoriesInterface::class => $dirs]),
             scope: function (
                 ConfigurationProvider $configProvider,
                 RagRegistryInterface $registry,
-                Container $container,
+                StoreRegistryInterface $storeRegistry,
             ): int {
-                // Load configuration to trigger RagParserPlugin
                 try {
-                    if ($this->configPath !== null) {
-                        $configLoader = $configProvider->fromPath($this->configPath);
-                    } else {
-                        $configLoader = $configProvider->fromDefaultLocation();
-                    }
+                    $configLoader = $this->configPath !== null
+                        ? $configProvider->fromPath($this->configPath)
+                        : $configProvider->fromDefaultLocation();
                     $configLoader->load();
                 } catch (ConfigLoaderException $e) {
                     $this->output->error(\sprintf('Failed to load configuration: %s', $e->getMessage()));
@@ -77,43 +64,64 @@ final class RagClearCommand extends BaseCommand
                     return Command::FAILURE;
                 }
 
-                $config = $registry->getConfig();
-
-                $this->output->title('RAG Clear');
-                $this->output->writeln(\sprintf('Collection: <info>%s</info>', $config->store->collection));
-                $this->output->writeln('');
-
-                // Get store after config is loaded
-                $store = $container->get(StoreInterface::class);
-
-                if (!$store instanceof ManagedStoreInterface) {
-                    $this->output->error('Store does not support clearing operations.');
+                try {
+                    $collections = $this->getTargetCollections($registry);
+                } catch (\InvalidArgumentException $e) {
+                    $this->output->error($e->getMessage());
                     return Command::FAILURE;
                 }
 
-                if (!$this->force) {
-                    $confirm = $this->output->confirm(
-                        'This will delete all entries in the knowledge base. Continue?',
-                        false,
-                    );
+                $this->output->title('RAG Clear');
+                $this->output->writeln(\sprintf('Collections: <info>%s</info>', \implode(', ', $collections)));
+                $this->output->writeln('');
 
-                    if (!$confirm) {
-                        $this->output->writeln('<comment>Operation cancelled.</comment>');
-                        return Command::SUCCESS;
+                $cleared = 0;
+                $skipped = 0;
+
+                foreach ($collections as $collectionName) {
+                    $this->outputCollectionHeader($this->output, $collectionName, 'Clearing');
+
+                    $collectionConfig = $registry->getConfig()->getCollection($collectionName);
+                    $this->output->writeln(\sprintf('  Target: <info>%s</info>', $collectionConfig->collection));
+
+                    $store = $storeRegistry->getStore($collectionName);
+
+                    if (!$store instanceof ManagedStoreInterface) {
+                        $this->output->writeln('  <comment>Store does not support clearing</comment>');
+                        $skipped++;
+                        continue;
+                    }
+
+                    if (!$this->force) {
+                        $confirm = $this->output->confirm(
+                            \sprintf('  Clear all entries in "%s"?', $collectionName),
+                            false,
+                        );
+                        if (!$confirm) {
+                            $this->output->writeln('  <comment>Skipped</comment>');
+                            $skipped++;
+                            continue;
+                        }
+                    }
+
+                    $this->output->write('  Clearing... ');
+                    try {
+                        $store->drop();
+                        $store->setup();
+                        $this->output->writeln('<info>Done</info>');
+                        $cleared++;
+                    } catch (\Throwable $e) {
+                        $this->output->writeln('<error>Failed</error>');
+                        $this->output->error(\sprintf('  Error: %s', $e->getMessage()));
                     }
                 }
 
-                $this->output->write('Clearing knowledge base... ');
-
-                try {
-                    $store->drop();
-                    $store->setup();
-                    $this->output->writeln('<info>Done</info>');
-                    $this->output->success('Knowledge base cleared successfully.');
-                } catch (\Throwable $e) {
-                    $this->output->writeln('<error>Failed</error>');
-                    $this->output->error(\sprintf('Failed to clear knowledge base: %s', $e->getMessage()));
-                    return Command::FAILURE;
+                $this->output->writeln('');
+                if ($cleared > 0) {
+                    $this->output->success(\sprintf('Cleared %d collection(s)', $cleared));
+                }
+                if ($skipped > 0) {
+                    $this->output->writeln(\sprintf('<comment>Skipped %d collection(s)</comment>', $skipped));
                 }
 
                 return Command::SUCCESS;
