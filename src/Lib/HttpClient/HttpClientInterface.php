@@ -32,6 +32,19 @@ interface HttpClientInterface
     public function post(string $url, array $headers = [], ?string $body = null): HttpResponse;
 
     /**
+     * Send a request with the specified HTTP method.
+     *
+     * @param string $method The HTTP method (GET, POST, PUT, PATCH, DELETE, etc.)
+     * @param string $url The URL to request
+     * @param array<string, string> $headers Optional request headers
+     * @param string|null $body Optional request body
+     * @return HttpResponse The response object
+     *
+     * @throws HttpException If the request fails
+     */
+    public function request(string $method, string $url, array $headers = [], ?string $body = null): HttpResponse;
+
+    /**
      * Send a request to the specified URL and follow redirects if needed
      *
      * @param string $url The URL to request

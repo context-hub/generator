@@ -52,18 +52,7 @@ final readonly class Psr18Client implements HttpClientInterface
         }
     }
 
-    /**
-     * Send a request with the specified method to the URL
-     *
-     * @param string $method The HTTP method
-     * @param string $url The URL to request
-     * @param array<string, string> $headers Optional request headers
-     * @param string|null $body Optional request body (for POST, PUT, etc.)
-     * @return HttpResponse The response object
-     *
-     * @throws HttpException If the request fails
-     */
-    private function request(string $method, string $url, array $headers = [], ?string $body = null): HttpResponse
+    public function request(string $method, string $url, array $headers = [], ?string $body = null): HttpResponse
     {
         $request = $this->requestFactory->createRequest($method, $url);
 
