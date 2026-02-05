@@ -44,6 +44,17 @@ final class MockHttpClient implements HttpClientInterface
         return $this->get($url, $headers);
     }
 
+    public function request(string $method, string $url, array $headers = [], ?string $body = null): HttpResponse
+    {
+        $this->requestHeaders[$url] = $headers;
+
+        return $this->responses[$url] ?? new HttpResponse(
+            statusCode: 200,
+            body: "Mock {$method} response for {$url}",
+            headers: [],
+        );
+    }
+
     public function addResponse(string $url, HttpResponse $response): void
     {
         $this->responses[$url] = $response;
