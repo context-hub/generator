@@ -1,6 +1,6 @@
-# CTX: Professional AI Development for Every Developer
+# CTX: Your AI Coding Companion
 
-> Create LLM-ready contexts in minutes
+> MCP-powered development toolkit that gives AI full access to your codebase
 
 <p>
     <a href="https://docs.ctxllm.com"><img alt="Docs" src="https://img.shields.io/badge/docs-green?style=for-the-badge"></a>
@@ -14,231 +14,143 @@
 
 ![Good morning, LLM](https://github.com/user-attachments/assets/8129f227-dc3f-4671-bc0e-0ecd2f3a1888)
 
+## What is CTX?
+
+**CTX** is a single ~20 MB binary with zero dependencies. No Node.js, no Python, no runtime — just download, connect
+to your MCP client, and start coding with AI.
+
+Connect it to [Claude Desktop](https://claude.ai/download), [Cursor](https://cursor.com),
+[Cline](https://github.com/cline/cline), or any MCP-compatible client — and your AI gets direct access to read, write,
+search, and modify files across your projects.
+
+CTX is designed with **Claude Desktop** in mind and works best with it. Claude's deep understanding of code combined
+with CTX's filesystem tools, custom commands, and multi-project support creates a seamless development experience —
+like having a senior developer who knows your entire codebase sitting right next to you.
+
 ## Table of Contents
 
+- [Key Features](#key-features)
 - [Quick Start](#quick-start)
+- [How It Works](#how-it-works)
+- [Use Cases](#use-cases)
 - [Full Documentation](https://docs.ctxllm.com)
 - [License](#license)
 
-During development, your codebase constantly evolves. Files are added, modified, and removed. Each time you need to
-continue working with an LLM, you need to regenerate context to provide updated information about your current codebase
-state.
+## Key Features
 
-**CTX** is a context management tool that gives developers full control over what AI sees from their codebase. Instead
-of letting AI tools guess what's relevant, you define exactly what context to provide - making your AI-assisted
-development more predictable, secure, and efficient.
+### 🛠 MCP Server — AI Develops Directly in Your Project
 
-It helps developers organize contexts and automatically collect information from their codebase into structured
-documents that can be easily shared with LLM.
+CTX provides a built-in MCP server with powerful filesystem tools:
 
-For example, a developer describes what context they need:
+- **Read & write files** — AI creates, modifies, and analyzes code directly
+- **Search across codebase** — text and regex search with context lines
+- **PHP structure analysis** — class hierarchy, interfaces, and dependencies at a glance
+- **Directory exploration** — smart filtering by patterns, dates, sizes, and content
+
+### ⚡ Custom Tools — Turn Any Command into an AI Tool
+
+Define project-specific commands that AI can execute through MCP:
 
 ```yaml
-# context.yaml
+tools:
+  - id: run-tests
+    description: "Run project tests with coverage"
+    type: run
+    commands:
+      - cmd: vendor/bin/phpunit
+        args: [ "--coverage-html", "logs/coverage" ]
+
+  - id: deploy
+    description: "Deploy to staging"
+    type: run
+    schema:
+      type: object
+      properties:
+        branch:
+          type: string
+          default: "main"
+    commands:
+      - cmd: ./deploy.sh
+        args: [ "{{branch}}" ]
+```
+
+Tests, migrations, linters, deployments — anything your terminal can run, AI can trigger.
+
+### 📁 Multi-Project Development
+
+Work across multiple microservices simultaneously. AI sees all your projects and can develop cross-cutting features:
+
+```yaml
+projects:
+  - name: backend-api
+    path: ../backend
+    description: "REST API service"
+
+  - name: auth-service
+    path: ../auth
+    description: "Authentication microservice"
+
+  - name: shared-lib
+    path: ../packages/shared
+    description: "Shared domain models"
+```
+
+Start a session, ask AI to list available projects, and develop features that span multiple services — all in one
+conversation.
+
+### 🎯 Smart Context Generation
+
+Define exactly what context your AI needs. CTX collects code from files, git diffs, GitHub repos, URLs, and more — then
+structures it into clean markdown documents:
+
+```yaml
 documents:
   - description: User Authentication System
     outputPath: auth.md
     sources:
       - type: file
-        description: Authentication Controllers
-        sourcePaths:
-          - src/Auth
+        sourcePaths: [ src/Auth ]
         filePattern: "*.php"
-
-      - type: file
-        description: Authentication Models
-        sourcePaths:
-          - src/Models
-        filePattern: "*User*.php"
-
-  - description: Another Document
-    outputPath: another-document.md
-    sources:
-      - type: file
-        sourcePaths:
-          - src/SomeModule
+      - type: git_diff
+        commit: "last-week"
 ```
 
-This configuration will gather all PHP files from the `src/Auth` directory and any PHP files containing "**User**" in
-their name from the `src/Models` directory into a single context file `.context/auth.md`. This file can then be pasted
-into a chat session or provided via the built-in [MCP server](https://docs.ctxllm.com/mcp/).
+### 📐 Declarative Config with JSON Schema
 
-### Why CTX?
+Everything is configured through `context.yaml` with full JSON Schema support. Your AI assistant can generate and modify
+these configs for you — just describe what you need.
 
-Current AI coding tools automatically scan your entire codebase, which creates several issues:
-
-- **Security risk**: Your sensitive files (env vars, tokens, private code) get uploaded to cloud services
-- **Context dilution**: AI gets overwhelmed with irrelevant code, reducing output quality
-- **No control**: You can't influence what the AI considers when generating responses
-- **Expensive**: Premium tools charge based on how much they scan, not how much you actually need
-
-### The CTX Approach
-
-You know your code better than any AI. CTX puts you in control:
-
-- ✅ Define exactly what context to share - no more, no less
-- ✅ Keep sensitive data local - works with local LLMs or carefully curated cloud contexts
-- ✅ Generate reusable, shareable contexts - commit configurations to your repo
-- ✅ Improve code architecture - designing for AI context windows naturally leads to better modular code
-- ✅ Works with any LLM - Claude, ChatGPT, local models, or future tools
+```bash
+ctx init    # Generate initial config
+ctx generate  # Build context documents
+ctx server  # Start MCP server
+```
 
 ## Quick Start
 
-Download and install the tool using our installation script:
+### Install
 
-### Linux / Wsl
+**Linux / WSL:**
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/context-hub/generator/main/download-latest.sh | sh
 ```
 
-### Windows
+**Windows:**
 
 ```bash
 powershell -c "& ([ScriptBlock]::Create((irm 'https://raw.githubusercontent.com/context-hub/generator/main/download-latest.ps1'))) -AddToPath"
 ```
 
-This installs the `ctx` command to your system (typically in `/usr/local/bin`).
+### Connect to Claude Desktop (or Any MCP Client)
 
-> **Want more options?** See the complete [Installation Guide](https://docs.ctxllm.com/getting-started.html) for
-> alternative installation methods.
-
-## 5-Minute Setup
-
-1. **Initialize your project:**
+The fastest way — auto-detect OS and configure your MCP client:
 
 ```bash
-cd your-project
-
-ctx init
-```
-
-This generates a `context.yaml` file with a basic configuration and shows your project structure, helping you understand
-what contexts might be useful.
-
-> Check the [Command Reference](https://docs.ctxllm.com/getting-started/command-reference.html) for all available
-> commands and options.
-
-2. Create your first context:
-
-```bash
-ctx generate
-```
-
-3. Use with your favorite AI:
-
-- Copy the generated markdown files to your AI chat
-- Or use the built-in MCP server with your MCP client (e.g., Claude Desktop, Cursor, Continue, Windsurf)
-- Or process locally with open-source models
-
-## Real-World Use Cases
-
-### 🚀 Onboarding New Team Member
-
-```yaml
-# Quick project overview for new developers
-documents:
-  - description: "Project Architecture Overview"
-    outputPath: "docs/architecture.md"
-    sources:
-      - type: tree
-        sourcePaths: [ "src" ]
-        maxDepth: 2
-      - type: file
-        description: "Core interfaces and main classes"
-        sourcePaths: [ "src" ]
-        filePattern: "*Interface.php"
-```
-
-### 📝 Feature Development
-
-```yaml
-# Context for developing a new feature
-documents:
-  - description: "User Authentication System"
-    outputPath: "contexts/auth-context.md"
-    sources:
-      - type: file
-        sourcePaths: [ "src/Auth", "src/Models" ]
-        filePattern: "*.php"
-      - type: git_diff
-        description: "Recent auth changes"
-        commit: "last-week"
-```
-
-### 📚 Documentation Generation
-
-```yaml
-# Generate API documentation
-documents:
-  - description: "API Documentation"
-    outputPath: "docs/api.md"
-    sources:
-      - type: file
-        sourcePaths: [ "src/Controllers" ]
-        modifiers: [ "php-signature" ]
-        contains: [ "@Route", "@Api" ]
-```
-
-## Key Features
-
-### 🎯 **Precise Context Control**
-
-- Define exactly which files, directories, or code patterns to include
-- Filter by content, file patterns, date ranges, or size
-- Apply modifiers to extract only relevant parts (e.g., function signatures)
-
-### 🔒 **Security by Design**
-
-- **Local-first**: Generate contexts locally, choose what to share
-- **No automatic uploads**: Unlike tools that scan everything, you control what gets sent
-- **Works with local models**: Use completely offline with Ollama, LM Studio, etc.
-
-### 🔄 **Version Control Integration**
-
-- Context configurations are part of your project
-- Team members get the same contexts
-- Evolve contexts as your codebase changes
-- Include git diffs to show recent changes
-
-### 🛠 **Developer Experience**
-
-- **Fast**: Generate contexts in seconds, not minutes of manual copying
-- **Flexible**: Works with any AI tool or local model
-- **Shareable**: Commit configurations, share with team
-- **Extensible**: Plugin system for custom sources and modifiers
-
-## Architecture
-
-CTX follows a simple pipeline:
-
-```
-Configuration → Sources → Filters → Modifiers → Output
-```
-
-- **Sources**: Where to get content (files, GitHub, git diffs, URLs, etc.)
-- **Filters**: What to include/exclude (patterns, content, dates, sizes)
-- **Modifiers**: How to transform content (extract signatures, remove comments)
-- **Output**: Structured markdown ready for AI consumption
-
-## Connect to an MCP Client (Optional)
-
-For a more seamless experience, you can connect CTX to any MCP-compatible client using the built-in MCP server.
-
-```bash
-# Interactive setup: detect OS and install config for your client
 ctx mcp:config
 ```
 
-This command:
-
-- 🔍 Auto-detects your OS (Windows, Linux, macOS, WSL)
-- 🧩 Lets you choose your MCP client (e.g., Claude Desktop, Cursor, Continue, Windsurf)
-- 🎯 Generates and optionally installs the correct config for your environment
-- 📋 Provides copy‑paste ready JSON if you prefer manual setup
-- 🧭 Includes setup instructions and troubleshooting tips
-
-**Global Registry Mode** (recommended for multiple projects/clients):
+Or add manually to your MCP client config:
 
 ```json
 {
@@ -253,7 +165,7 @@ This command:
 }
 ```
 
-If you prefer manual setup, point your MCP client to the CTX server:
+For a specific project:
 
 ```json
 {
@@ -270,48 +182,84 @@ If you prefer manual setup, point your MCP client to the CTX server:
 }
 ```
 
-> Note: Read more about the [MCP server](https://docs.ctxllm.com/mcp/#setting-up) for detailed setup instructions and troubleshooting. Specific config file locations vary by client.
+That's it. Your AI assistant now has full access to your project through MCP.
 
-Now you can use your preferred MCP client (including Claude Desktop) to ask questions about your codebase without manually uploading context files.
+### Optional: Generate Context Documents
 
-## Custom Tools
+If you also want to generate static context files for copy-paste workflows:
 
-Define project-specific commands that can be executed through the MCP interface:
-
-```yaml
-tools:
-  - id: run-tests
-    description: "Run project tests with coverage"
-    type: run
-    commands:
-      - cmd: npm
-        args: [ "test", "--coverage" ]
+```bash
+cd your-project
+ctx init       # Create context.yaml
+ctx generate   # Build markdown contexts
 ```
+
+## How It Works
+
+CTX operates in two modes that complement each other:
+
+**MCP Server Mode** — AI interacts with your codebase in real-time:
+
+```
+AI Assistant ←→ CTX MCP Server ←→ Your Project Files
+                     ↕
+              Custom Tools (tests, deploy, lint...)
+              Multiple Projects
+              Context Documents
+```
+
+**Context Generation Mode** — build structured documents for any LLM:
+
+```
+context.yaml → Sources → Filters → Modifiers → Markdown Documents
+```
+
+## Use Cases
+
+### 🔧 AI-Powered Development (MCP)
+
+Connect CTX to Claude Desktop or Cursor. Ask your AI to explore the codebase, understand architecture, write new
+features, run tests, and fix issues — all without leaving the conversation.
+
+### 🏗 Multi-Service Feature Development
+
+Working on a feature that touches multiple microservices? Register all projects, and AI can read code from one service,
+understand shared models, and implement changes across the entire stack.
+
+### 📝 Context for Code Review
+
+Generate context documents with recent git diffs, relevant source files, and architecture overview. Share with reviewers
+or AI assistants for thorough, informed reviews.
+
+### 🚀 Onboarding
+
+New team member? Generate a comprehensive project overview — architecture, key interfaces, domain models — in seconds.
+AI can then answer questions about the codebase with full context.
+
+### 📚 Documentation Generation
+
+Point CTX at your source code with modifiers like `php-signature` to extract API surfaces, then let AI generate
+comprehensive documentation.
 
 ## Full Documentation
 
-For complete documentation, including all available features and configuration options, please visit:
+For complete documentation, including all features and configuration options:
 
 https://docs.ctxllm.com
 
 ## Join Our Community
 
-Join hundreds of developers using CTX for professional AI-assisted coding:
-
 [![Join Discord](https://img.shields.io/discord/1419284404315881633?color=5865F2&label=Join%20Discord&logo=discord&logoColor=white&style=for-the-badge)](https://discord.gg/YmFckwVkQM)
 
-**What you'll find in our Discord:**
+**What you'll find:**
 
-- 💡 Share and discover context configurations
+- 💡 Share and discover configurations and workflows
 - 🛠️ Get help with setup and advanced usage
 - 🚀 Showcase your AI development workflows
-- 🤝 Connect with like-minded developers
-- 📢 First to know about new releases and features
+- 📢 First to know about new releases
 
 ---
 
 ### License
 
 This project is licensed under the MIT License.
-
-
