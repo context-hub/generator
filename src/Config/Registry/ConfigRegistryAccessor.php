@@ -21,9 +21,9 @@ final readonly class ConfigRegistryAccessor
     /**
      * Get document registry
      */
-    public function getDocuments(): ?DocumentRegistry
+    public function getDocuments(): DocumentRegistry
     {
-        return $this->getRegistry('documents', DocumentRegistry::class);
+        return $this->getRegistry('documents', DocumentRegistry::class) ?? new DocumentRegistry();
     }
 
     /**
