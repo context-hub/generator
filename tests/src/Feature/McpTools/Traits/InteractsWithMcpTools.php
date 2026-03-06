@@ -7,6 +7,7 @@ namespace Tests\Feature\McpTools\Traits;
 use Spiral\Console\Console;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
+use Symfony\Component\Console\Style\SymfonyStyle;
 use Tests\Feature\McpTools\ToolExecutionResult;
 
 /**
@@ -38,8 +39,9 @@ trait InteractsWithMcpTools
             $input['-c'] = $configPath;
         }
 
+        $input = new ArrayInput($input);
         $output = new BufferedOutput();
-        $result = $console->run('tool:run', new ArrayInput($input), $output);
+        $result = $console->run('tool:run', $input, new SymfonyStyle($input, $output));
 
         return new ToolExecutionResult(
             exitCode: $result->getCode(),
@@ -70,7 +72,8 @@ trait InteractsWithMcpTools
             $input['-c'] = $configPath;
         }
 
-        $console->run('tool:schema', new ArrayInput($input), $output);
+        $input = new ArrayInput($input);
+        $console->run('tool:schema', $input, new SymfonyStyle($input, $output));
 
         $decoded = \json_decode($output->fetch(), true);
 

@@ -11,6 +11,8 @@ use Tests\TestCase;
 
 class TextSourceFromArrayTest extends TestCase
 {
+    private TextSourceFactory $factory;
+
     #[Test]
     public function it_should_create_from_array_with_minimal_parameters(): void
     {

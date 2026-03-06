@@ -8,6 +8,7 @@ use Spiral\Console\Console;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 final readonly class ContextBuilder
 {
@@ -73,7 +74,7 @@ final readonly class ContextBuilder
         /** @psalm-suppress ArgumentTypeCoercion */
         $output->setVerbosity($verbosityLevel ?? $this->defaultVerbosityLevel);
 
-        $this->console->run($command, $input, $output);
+        $this->console->run($command, $input, new SymfonyStyle($input, $output));
 
         return $output->fetch();
     }
