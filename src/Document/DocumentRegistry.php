@@ -34,6 +34,11 @@ final class DocumentRegistry implements RegistryInterface, \ArrayAccess
         return $this;
     }
 
+    public function hasItems(): bool
+    {
+        return $this->documents !== [];
+    }
+
     public function getItems(): array
     {
         return $this->documents;
