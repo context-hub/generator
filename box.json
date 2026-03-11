@@ -4,6 +4,7 @@
     "KevinGH\\Box\\Compactor\\Json",
     "KevinGH\\Box\\Compactor\\Php"
   ],
+  "annotations": false,
   "check-requirements": false,
   "dump-autoload": false,
   "compression": "GZ",
