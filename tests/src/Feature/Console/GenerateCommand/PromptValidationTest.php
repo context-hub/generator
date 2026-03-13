@@ -129,7 +129,7 @@ final class PromptValidationTest extends ConsoleTestCase
 
     #[Test]
     #[DataProvider('commandsProvider')]
-    public function prompt_with_missing_message_role_should_be_rejected(string $command): void
+    public function prompt_with_missing_message_role_defaults_to_user(string $command): void
     {
         // Create a config with a prompt that has a message with missing role
         $configFile = $this->createTempFile(
@@ -139,7 +139,7 @@ final class PromptValidationTest extends ConsoleTestCase
                     description: "Prompt with message missing role"
                     messages:
                       - content: "This message is missing a role"
-                        # Missing role
+                        # Missing role defaults to "user"
                 YAML,
             '.yaml',
         );
@@ -150,8 +150,8 @@ final class PromptValidationTest extends ConsoleTestCase
             command: $command,
         );
 
-        // The implementation should reject a prompt with missing message role
-        $result->assertPromptCount(0);
+        $result->assertPromptCount(1);
+        $this->assertSame('user', $result->getResult()['prompts'][0]['messages'][0]['role'] ?? null);
     }
 
     #[Test]
@@ -221,7 +221,7 @@ final class PromptValidationTest extends ConsoleTestCase
                     type: template
                     description: "Template with no messages"
                     # Missing 'messages'
-                
+
                   - id: extending-empty
                     description: "Prompt extending empty template"
                     extend:
@@ -259,7 +259,7 @@ final class PromptValidationTest extends ConsoleTestCase
                     messages:
                       - role: user
                         content: "Template content"
-                
+
                   - id: invalid-extension
                     description: "Prompt with invalid extension format"
                     extend:
@@ -361,7 +361,7 @@ final class PromptValidationTest extends ConsoleTestCase
                     messages:
                       - role: user
                         content: "First prompt content"
-                
+
                   - id: duplicate-id
                     description: "Second prompt with the same ID"
                     messages:
@@ -420,7 +420,7 @@ final class PromptValidationTest extends ConsoleTestCase
                     messages:
                       - role: user
                         content: "Template content with {{var}}."
-                
+
                   - id: valid-combined
                     description: "Prompt with both messages and extensions"
                     extend:
@@ -469,7 +469,7 @@ final class PromptValidationTest extends ConsoleTestCase
                     messages:
                       - role: user
                         content: "Template A content"
-                
+
                   - id: template-b
                     type: template
                     extend:
