@@ -820,7 +820,6 @@
           "items": {
             "type": "object",
             "required": [
-              "role",
               "content"
             ],
             "properties": {
@@ -830,6 +829,7 @@
                   "user",
                   "assistant"
                 ],
+                "default": "user",
                 "description": "The role of the message sender"
               },
               "content": {
