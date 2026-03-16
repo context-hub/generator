@@ -23,6 +23,11 @@
       "required": [
         "tools"
       ]
+    },
+    {
+      "required": [
+        "import"
+      ]
     }
   ],
   "properties": {
