@@ -37,6 +37,7 @@ final class Document implements \JsonSerializable
         public readonly string $description,
         public readonly string $outputPath,
         public readonly bool $overwrite = true,
+        public readonly bool $showFileStats = true,
         private array $modifiers = [],
         private array $tags = [],
         SourceInterface ...$sources,
@@ -165,7 +166,8 @@ A document definition in configuration follows this structure:
 documents:
   - description: "API Documentation"
     outputPath: "docs/api.md"
-    overwrite: true    # Optional, default: true
+    overwrite: true         # Optional, default: true
+    showFileStats: true     # Optional, default: true — set to false to omit the auto-generated File Statistics section
     tags: # Optional tags for categorization
       - api
       - reference
@@ -187,6 +189,42 @@ documents:
           This is custom markdown content.
 ```
 
+### Global Default via `settings.showFileStats`
+
+The `showFileStats` flag can also be set globally in the `settings` block at the root of `context.yaml`, providing a
+project-wide default for all documents:
+
+```yaml
+settings:
+  showFileStats: false   # Disable File Statistics section for all documents by default
+
+documents:
+  - description: "API Documentation"
+    outputPath: "docs/api.md"
+    sources:
+      - type: file
+        sourcePaths: ["src/Api"]
+    # Inherits showFileStats: false from settings
+
+  - description: "Reference Guide"
+    outputPath: "docs/reference.md"
+    showFileStats: true  # Per-document override — stats section is shown for this document only
+    sources:
+      - type: file
+        sourcePaths: ["src/Reference"]
+```
+
+**Precedence rule:** the per-document `showFileStats` value always wins over the global `settings.showFileStats`.
+When neither is set, both default to `true`.
+
+| Setting | Per-document | Global default | Effective value |
+|---------|-------------|----------------|-----------------|
+| Neither set | — | — | `true` |
+| Global only | — | `false` | `false` |
+| Per-document only | `true` | — | `true` |
+| Both set | `true` | `false` | `true` (per-document wins) |
+| Both set | `false` | `true` | `false` (per-document wins) |
+
 ## 5. Compilation Process
 
 The document compilation process follows these steps:
@@ -202,9 +240,10 @@ The document compilation process follows these steps:
         - Parse source content
         - Apply modifiers (source-specific and document-level)
         - Add content to the builder
-5. **Error Collection**: Collect any errors that occur during compilation
-6. **Directory Creation**: Ensure the output directory exists
-7. **File Writing**: Write the compiled content to the output file
+5. **File Statistics**: If `showFileStats` is `true` (the default), append the auto-generated File Statistics section summarising each included source file. If `showFileStats` is `false`, the compiled content is written as-is — no statistics block is appended and the prior version of the output file is not read.
+6. **Error Collection**: Collect any errors that occur during compilation
+7. **Directory Creation**: Ensure the output directory exists
+8. **File Writing**: Write the compiled content to the output file
 
 ## 6. Usage Examples
 
@@ -216,6 +255,7 @@ $document = Document::create(
     description: 'API Documentation',
     outputPath: 'docs/api.md',
     overwrite: true,
+    showFileStats: true,   // Set to false to omit the File Statistics section
     tags: ['api', 'reference']
 );
 

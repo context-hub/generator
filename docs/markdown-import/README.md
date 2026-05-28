@@ -82,6 +82,7 @@ The system uses this priority order for determining titles and descriptions:
 - `title`/`description`: Document description
 - `outputPath`: Where to save the generated document
 - `overwrite`: Whether to overwrite existing files
+- `showFileStats`: Whether to append the auto-generated File Statistics section (default: `true`). When absent from front-matter, the global `settings.showFileStats` value is used; per-document takes precedence when set.
 - `tags`: Array or comma-separated string of tags
 - `sources`: Array of source configurations (auto-generated from content if not provided)
 

@@ -40,6 +40,18 @@ final readonly class DocumentsParserPlugin implements ConfigParserPluginInterfac
         return $config;
     }
 
+    /**
+     * Parse the "documents" section of the configuration and build a DocumentRegistry.
+     *
+     * **`showFileStats` resolution order (highest priority first):**
+     * 1. Per-document `showFileStats` key — when present on a document entry it always takes
+     *    precedence over the global setting.
+     * 2. Global `settings.showFileStats` — when the per-document key is absent, the value from
+     *    `$config['settings']['showFileStats']` is used.
+     * 3. Default `true` — when neither the per-document key nor `settings.showFileStats` is
+     *    present, the flag defaults to `true` so the File Statistics section is appended
+     *    (backward-compatible behaviour).
+     */
     public function parse(array $config, string $rootPath): ?RegistryInterface
     {
         if (!$this->supports($config)) {
@@ -47,6 +59,8 @@ final readonly class DocumentsParserPlugin implements ConfigParserPluginInterfac
         }
 
         $registry = new DocumentRegistry();
+
+        $globalShowFileStats = (bool) ($config['settings']['showFileStats'] ?? true);
 
         foreach ($config['documents'] as $index => $docData) {
             if (!isset($docData['description'], $docData['outputPath'])) {
@@ -71,6 +85,7 @@ final readonly class DocumentsParserPlugin implements ConfigParserPluginInterfac
                 description: (string) $docData['description'],
                 outputPath: (string) $docData['outputPath'],
                 overwrite: (bool) ($docData['overwrite'] ?? true),
+                showFileStats: (bool) ($docData['showFileStats'] ?? $globalShowFileStats),
                 modifiers: $documentModifiers,
                 tags: $documentTags,
             );

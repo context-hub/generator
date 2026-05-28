@@ -452,6 +452,11 @@
               }
             }
           }
+        },
+        "showFileStats": {
+          "type": "boolean",
+          "description": "Global default for whether to append the auto-generated File Statistics section to compiled documents",
+          "default": true
         }
       }
     },
@@ -923,6 +928,11 @@
         "overwrite": {
           "type": "boolean",
           "description": "Whether to overwrite existing files",
+          "default": true
+        },
+        "showFileStats": {
+          "type": "boolean",
+          "description": "Whether to append the auto-generated File Statistics section to this document",
           "default": true
         },
         "sources": {

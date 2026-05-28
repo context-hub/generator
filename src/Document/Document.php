@@ -19,6 +19,7 @@ final class Document implements \JsonSerializable
      * @param string $description Human-readable description
      * @param string $outputPath Path where to write the output
      * @param bool $overwrite Whether to overwrite the file if it already exists
+     * @param bool $showFileStats Whether to append the auto-generated File Statistics section
      * @param array<Modifier> $modifiers Modifiers to apply to all sources
      * @param array<non-empty-string> $tags Tags to apply to the document
      */
@@ -26,6 +27,7 @@ final class Document implements \JsonSerializable
         public readonly string $description,
         public readonly string $outputPath,
         public readonly bool $overwrite = true,
+        public readonly bool $showFileStats = true,
         private array $modifiers = [],
         private array $tags = [],
         SourceInterface ...$sources,
@@ -35,12 +37,14 @@ final class Document implements \JsonSerializable
 
     /**
      * @param bool $overwrite Whether to overwrite the file if it already exists
+     * @param bool $showFileStats Whether to append the auto-generated File Statistics section
      * @param array<non-empty-string> $tags Tags to apply to the document
      */
     public static function create(
         string $description,
         string $outputPath,
         bool $overwrite = true,
+        bool $showFileStats = true,
         array $modifiers = [],
         array $tags = [],
     ): self {
@@ -48,6 +52,7 @@ final class Document implements \JsonSerializable
             description: $description,
             outputPath: $outputPath,
             overwrite: $overwrite,
+            showFileStats: $showFileStats,
             modifiers: $modifiers,
             tags: $tags,
         );
@@ -152,12 +157,14 @@ final class Document implements \JsonSerializable
         return \array_values($this->sources);
     }
 
+    #[\Override]
     public function jsonSerialize(): array
     {
         return \array_filter([
             'description' => $this->description,
             'outputPath' => $this->outputPath,
             'overwrite' => $this->overwrite,
+            'showFileStats' => $this->showFileStats,
             'sources' => $this->getSources(),
             'modifiers' => $this->getModifiers(),
             'tags' => $this->getTags(),

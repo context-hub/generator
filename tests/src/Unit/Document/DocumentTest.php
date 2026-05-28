@@ -109,9 +109,51 @@ final class DocumentTest extends TestCase
         $this->assertArrayHasKey('description', $json);
         $this->assertArrayHasKey('outputPath', $json);
         $this->assertArrayHasKey('overwrite', $json);
+        $this->assertArrayHasKey('showFileStats', $json);
         $this->assertArrayHasKey('sources', $json);
         $this->assertArrayHasKey('modifiers', $json);
         $this->assertArrayHasKey('tags', $json);
+    }
+
+    #[Test]
+    public function it_should_default_show_file_stats_to_true(): void
+    {
+        $document = Document::create(
+            description: 'Test Description',
+            outputPath: '/path/to/output.txt',
+        );
+
+        $this->assertTrue($document->showFileStats);
+    }
+
+    #[Test]
+    public function it_should_accept_show_file_stats_false(): void
+    {
+        $document = Document::create(
+            description: 'Test Description',
+            outputPath: '/path/to/output.txt',
+            showFileStats: false,
+        );
+
+        $this->assertFalse($document->showFileStats);
+    }
+
+    #[Test]
+    public function it_should_include_show_file_stats_in_json_serialize(): void
+    {
+        $documentTrue = Document::create(
+            description: 'Test',
+            outputPath: '/path/to/output.txt',
+            showFileStats: true,
+        );
+        $documentFalse = Document::create(
+            description: 'Test',
+            outputPath: '/path/to/output.txt',
+            showFileStats: false,
+        );
+
+        $this->assertTrue($documentTrue->jsonSerialize()['showFileStats']);
+        $this->assertFalse($documentFalse->jsonSerialize()['showFileStats']);
     }
 
     #[Test]

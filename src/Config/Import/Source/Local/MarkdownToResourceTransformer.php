@@ -180,6 +180,11 @@ final readonly class MarkdownToResourceTransformer
             $document['overwrite'] = (bool) $metadata['overwrite'];
         }
 
+        // Add showFileStats flag if specified
+        if (isset($metadata['showFileStats'])) {
+            $document['showFileStats'] = (bool) $metadata['showFileStats'];
+        }
+
         // Add tags if present
         if (!empty($metadata['tags'])) {
             $document['tags'] = $this->normalizeTagsArray($metadata['tags']);
