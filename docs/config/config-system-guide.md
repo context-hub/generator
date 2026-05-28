@@ -192,6 +192,7 @@ final class Document implements \JsonSerializable
         public readonly string $description,
         public readonly string $outputPath,
         public readonly bool $overwrite = true,
+        public readonly bool $showFileStats = true,
         private array $modifiers = [],
         private array $tags = [],
         SourceInterface ...$sources,
@@ -232,15 +233,37 @@ import:
 documents:
   - description: API Documentation
     outputPath: docs/api.md
-    overwrite: true    # Whether to overwrite existing file
-    tags: [ api, docs ]  # Optional tags
-    modifiers: [ ... ]   # Optional modifiers
+    overwrite: true         # Optional, default: true — overwrite existing file
+    showFileStats: true     # Optional, default: true — append the File Statistics section
+    tags: [ api, docs ]     # Optional tags
+    modifiers: [ ... ]      # Optional modifiers
     sources:
       - type: file     # Source type
         sourcePaths: # Paths to source files
           - src/Api
           - src/Controllers
 ```
+
+### Global Default via `settings.showFileStats`
+
+The `showFileStats` flag can also be set globally for all documents using the `settings` block at the root of
+`context.yaml`. The per-document value always takes precedence; when neither level is set the default is `true`.
+
+```yaml
+settings:
+  showFileStats: false   # Disable File Statistics for all documents by default
+
+documents:
+  - description: API Documentation
+    outputPath: docs/api.md
+    # Inherits showFileStats: false from settings
+
+  - description: Reference
+    outputPath: docs/reference.md
+    showFileStats: true  # Per-document override — stats shown for this document only
+```
+
+**Precedence:** per-document `showFileStats` > `settings.showFileStats` > default (`true`).
 
 ## 5. Usage Examples
 

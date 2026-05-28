@@ -107,6 +107,7 @@ structures it into clean markdown documents:
 documents:
   - description: User Authentication System
     outputPath: auth.md
+    showFileStats: false  # Optional — omit the auto-generated File Statistics section
     sources:
       - type: file
         sourcePaths: [ src/Auth ]
@@ -114,6 +115,8 @@ documents:
       - type: git_diff
         commit: "last-week"
 ```
+
+Set `showFileStats: false` per document or globally under `settings.showFileStats: false` to suppress the auto-generated File Statistics section. Per-document takes precedence over the global default (`true`).
 
 ### 📐 Declarative Config with JSON Schema
 

@@ -72,7 +72,9 @@ final readonly class DocumentCompiler
         $this->files->ensureDirectory($directory);
 
         // Add file statistics to the generated content before writing
-        $finalContent = $this->addFileStatistics($compiledDocument->content, $resultPath, $outputPath);
+        $finalContent = $document->showFileStats
+            ? $this->addFileStatistics($compiledDocument->content, $outputPath)
+            : (string) $compiledDocument->content;
 
         $this->logger?->debug('Writing compiled document to file', ['path' => $resultPath]);
         $this->files->write($resultPath, $finalContent);
@@ -83,8 +85,7 @@ final readonly class DocumentCompiler
         } else {
             $this->logger?->info('Document compiled successfully', [
                 'path' => $resultPath,
-                'contentLength' => \strlen($finalContent),
-                'fileSize' => $this->files->size($resultPath),
+                'fileSize' => \strlen($finalContent),
             ]);
         }
 
@@ -173,47 +174,36 @@ final readonly class DocumentCompiler
     }
 
     /**
-     * Add file statistics to the generated content
+     * Add file statistics to the generated content.
+     *
+     * Statistics are computed directly from the in-memory content string — no disk I/O is
+     * performed. Byte count and line count therefore describe the content as written in the
+     * current run, including on the very first compilation where the output file does not yet
+     * exist.
      *
      * @param string|\Stringable $content The original content
-     * @param string $resultPath The actual file path where content was written
-     * @param string $outputPath The configured output path
+     * @param string $outputPath The configured output path (used as the display path in the stats block)
      * @return string The content with file statistics added
      */
-    private function addFileStatistics(string|\Stringable $content, string $resultPath, string $outputPath): string
+    private function addFileStatistics(string|\Stringable $content, string $outputPath): string
     {
-        try {
-            // Check if file exists before attempting to read it
-            if (!$this->files->exists($resultPath)) {
-                $this->logger?->debug('File does not exist, skipping statistics', ['path' => $resultPath]);
-                return (string) $content;
-            }
+        $contentStr = (string) $content;
+        $fileSize = \strlen($contentStr);
+        $lineCount = \substr_count($contentStr, "\n") + 1;
 
-            $fileSize = $this->files->size($resultPath);
-            $fileContent = $this->files->read($resultPath);
-            $lineCount = \substr_count($fileContent, "\n") + 1; // Count lines including the last line
+        // Create a new content builder with the original content
+        $builder = $this->builderFactory->create();
+        $builder->addText($contentStr);
 
-            // Create a new content builder with the original content
-            $builder = $this->builderFactory->create();
-            $builder->addText((string) $content);
+        // Add file statistics
+        $this->logger?->debug('Adding file statistics', [
+            'fileSize' => $fileSize,
+            'lineCount' => $lineCount,
+            'filePath' => $outputPath,
+        ]);
 
-            // Add file statistics
-            $this->logger?->debug('Adding file statistics', [
-                'fileSize' => $fileSize,
-                'lineCount' => $lineCount,
-                'filePath' => $outputPath,
-            ]);
+        $builder->addFileStats($fileSize, $lineCount, $outputPath);
 
-            $builder->addFileStats($fileSize, $lineCount, $outputPath);
-
-            return $builder->build();
-        } catch (\Throwable $e) {
-            $this->logger?->warning('Failed to add file statistics', [
-                'path' => $resultPath,
-                'error' => $e->getMessage(),
-            ]);
-            // Return original content if statistics calculation fails
-            return (string) $content;
-        }
+        return $builder->build();
     }
 }
