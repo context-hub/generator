@@ -35,13 +35,8 @@ final class DocumentCompilerTest extends TestCase
             description: 'Test Document',
             outputPath: 'output.txt',
             overwrite: true,
+            showFileStats: false,
         );
-
-        $this->files
-            ->expects($this->once())
-            ->method('exists')
-            ->with('/base/path/output.txt')
-            ->willReturn(false);
 
         $this->files
             ->expects($this->once())
@@ -103,12 +98,6 @@ final class DocumentCompilerTest extends TestCase
 
         $document = $document->addSource($source);
 
-        $this->files
-            ->expects($this->once())
-            ->method('exists')
-            ->with('/base/path/output.txt')
-            ->willReturn(false);
-
         $compiled = $this->compiler->compile($document);
 
         $this->assertEquals("# Test Document", (string) $compiled->content);
@@ -123,13 +112,8 @@ final class DocumentCompilerTest extends TestCase
             description: 'Test Document',
             outputPath: 'output.txt',
             overwrite: true,
+            showFileStats: false,
         )->addTag(...['tag1', 'tag2']);
-
-        $this->files
-            ->expects($this->once())
-            ->method('exists')
-            ->with('/base/path/output.txt')
-            ->willReturn(false);
 
         $this->files
             ->expects($this->once())
@@ -152,6 +136,7 @@ final class DocumentCompilerTest extends TestCase
             description: 'Test Document',
             outputPath: 'output.txt',
             overwrite: true,
+            showFileStats: false,
         );
 
         $source1 = $this->createMock(SourceInterface::class);
@@ -165,12 +150,6 @@ final class DocumentCompilerTest extends TestCase
             ->willReturn('Content from source 2');
 
         $document = $document->addSource($source1)->addSource($source2);
-
-        $this->files
-            ->expects($this->once())
-            ->method('exists')
-            ->with('/base/path/output.txt')
-            ->willReturn(false);
 
         $this->files
             ->expects($this->once())
@@ -193,6 +172,7 @@ final class DocumentCompilerTest extends TestCase
             description: 'Test Document',
             outputPath: 'output.txt',
             overwrite: true,
+            showFileStats: false,
         );
 
         $source = $this->createMock(SourceInterface::class);
@@ -255,6 +235,7 @@ final class DocumentCompilerTest extends TestCase
             description: 'Empty Document',
             outputPath: 'empty.txt',
             overwrite: true,
+            showFileStats: false,
         );
 
         $this->files
@@ -269,6 +250,99 @@ final class DocumentCompilerTest extends TestCase
 
         $this->assertEquals($content, (string) $compiled->content);
         $this->assertEquals(0, \count($compiled->errors));
+    }
+
+    #[Test]
+    public function it_should_skip_file_stats_when_showFileStats_is_false(): void
+    {
+        $document = Document::create(
+            description: 'Doc',
+            outputPath: 'output.txt',
+            overwrite: true,
+            showFileStats: false,
+        );
+
+        // exists() should NOT be called for statistics (addFileStatistics is bypassed)
+        $this->files
+            ->expects($this->never())
+            ->method('exists');
+
+        $writtenContent = null;
+        $this->files
+            ->expects($this->once())
+            ->method('write')
+            ->willReturnCallback(static function (string $path, string $content) use (&$writtenContent): bool {
+                $writtenContent = $content;
+                return true;
+            });
+
+        $this->compiler->compile($document);
+
+        $this->assertNotNull($writtenContent);
+        $this->assertStringNotContainsString('File Statistics', $writtenContent);
+    }
+
+    #[Test]
+    public function it_should_include_file_stats_when_showFileStats_is_true(): void
+    {
+        $document = Document::create(
+            description: 'Doc',
+            outputPath: 'output.txt',
+            overwrite: true,
+            showFileStats: true,
+        );
+
+        $writtenContent = null;
+        $this->files
+            ->expects($this->once())
+            ->method('write')
+            ->willReturnCallback(static function (string $path, string $content) use (&$writtenContent): bool {
+                $writtenContent = $content;
+                return true;
+            });
+
+        $this->compiler->compile($document);
+
+        $this->assertNotNull($writtenContent);
+        $this->assertStringContainsString('File Statistics', $writtenContent);
+    }
+
+    #[Test]
+    public function it_should_include_file_stats_on_first_run(): void
+    {
+        $document = Document::create(
+            description: 'Doc',
+            outputPath: 'output.txt',
+            overwrite: true,
+            showFileStats: true,
+        );
+
+        // These filesystem methods must NOT be called — stats are computed from in-memory content
+        $this->files
+            ->expects($this->never())
+            ->method('exists');
+
+        $this->files
+            ->expects($this->never())
+            ->method('size');
+
+        $this->files
+            ->expects($this->never())
+            ->method('read');
+
+        $writtenContent = null;
+        $this->files
+            ->expects($this->once())
+            ->method('write')
+            ->willReturnCallback(static function (string $path, string $content) use (&$writtenContent): bool {
+                $writtenContent = $content;
+                return true;
+            });
+
+        $this->compiler->compile($document);
+
+        $this->assertNotNull($writtenContent);
+        $this->assertStringContainsString('File Statistics', $writtenContent);
     }
 
     protected function setUp(): void
