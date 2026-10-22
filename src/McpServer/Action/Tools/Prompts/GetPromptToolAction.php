@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\McpServer\Action\Tools\Prompts;
 
 use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
-use Butschster\ContextGenerator\McpServer\Prompt\PromptProviderInterface;
+use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Prompts\Dto\GetPromptRequest;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
-use Butschster\ContextGenerator\McpServer\Action\ToolResult;
+use Butschster\ContextGenerator\McpServer\Prompt\PromptProviderInterface;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use PhpMcp\Schema\Content\PromptMessage;
 use PhpMcp\Schema\Content\TextContent;

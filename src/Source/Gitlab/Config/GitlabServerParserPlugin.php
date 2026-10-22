@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\Gitlab\Config;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Config\Parser\ConfigParserPluginInterface;
 use Butschster\ContextGenerator\Config\Registry\RegistryInterface;
 use Psr\Log\LoggerInterface;
-use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 
 /**
  * Plugin for parsing the "settings.gitlab.servers" section

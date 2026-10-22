@@ -11,8 +11,8 @@ use PhpParser\Node;
 use PhpParser\Node\Stmt;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
-use PhpParser\ParserFactory;
 use PhpParser\Parser;
+use PhpParser\ParserFactory;
 use Spiral\Files\FilesInterface;
 
 /**
@@ -324,7 +324,7 @@ final class PhpSignatureParser
                     }
 
                     // Name
-                    if ($param->var instanceof \PhpParser\Node\Expr\Variable && \is_string($param->var->name)) {
+                    if ($param->var instanceof Node\Expr\Variable && \is_string($param->var->name)) {
                         $part .= '$' . $param->var->name;
                     }
 

@@ -8,11 +8,11 @@ use Butschster\ContextGenerator\Lib\Content\Block\BlockInterface;
 use Butschster\ContextGenerator\Lib\Content\Block\CodeBlock;
 use Butschster\ContextGenerator\Lib\Content\Block\CommentBlock;
 use Butschster\ContextGenerator\Lib\Content\Block\DescriptionBlock;
+use Butschster\ContextGenerator\Lib\Content\Block\FileStatsBlock;
 use Butschster\ContextGenerator\Lib\Content\Block\SeparatorBlock;
 use Butschster\ContextGenerator\Lib\Content\Block\TextBlock;
 use Butschster\ContextGenerator\Lib\Content\Block\TitleBlock;
 use Butschster\ContextGenerator\Lib\Content\Block\TreeViewBlock;
-use Butschster\ContextGenerator\Lib\Content\Block\FileStatsBlock;
 use Butschster\ContextGenerator\Lib\Content\Renderer\MarkdownRenderer;
 use Butschster\ContextGenerator\Lib\Content\Renderer\RendererInterface;
 

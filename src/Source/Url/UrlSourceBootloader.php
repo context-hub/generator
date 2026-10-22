@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\Url;
 
-use Butschster\ContextGenerator\Lib\HttpClient\HttpClientBootloader;
-use Butschster\ContextGenerator\Source\Fetcher\SourceFetcherBootloader;
 use Butschster\ContextGenerator\Application\Logger\HasPrefixLoggerInterface;
 use Butschster\ContextGenerator\Lib\Content\ContentBuilderFactory;
+use Butschster\ContextGenerator\Lib\HttpClient\HttpClientBootloader;
 use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
+use Butschster\ContextGenerator\Source\Fetcher\SourceFetcherBootloader;
 use Butschster\ContextGenerator\Source\Registry\SourceRegistryInterface;
 use Spiral\Boot\Bootloader\Bootloader;
 use Spiral\Core\FactoryInterface;

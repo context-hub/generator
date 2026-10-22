@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\Console;
 
 use Butschster\ContextGenerator\Application\Application;
-use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 use Butschster\ContextGenerator\Lib\HttpClient\Exception\HttpException;
+use Butschster\ContextGenerator\Lib\HttpClient\HttpClientInterface;
 use Spiral\Console\Attribute\Option;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;

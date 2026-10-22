@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\Tree;
 
-use Butschster\ContextGenerator\Source\Fetcher\SourceFetcherBootloader;
 use Butschster\ContextGenerator\DirectoriesInterface;
+use Butschster\ContextGenerator\Source\Fetcher\SourceFetcherBootloader;
 use Butschster\ContextGenerator\Source\Registry\SourceRegistryInterface;
 use Spiral\Boot\Bootloader\Bootloader;
 use Spiral\Core\FactoryInterface;
