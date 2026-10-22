@@ -7,9 +7,9 @@ namespace Butschster\ContextGenerator\Source\Gitlab;
 use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\DirectoriesInterface;
 use Butschster\ContextGenerator\Source\Gitlab\Config\ServerConfig;
+use Butschster\ContextGenerator\Source\Gitlab\Config\ServerRegistry;
 use Butschster\ContextGenerator\Source\Registry\AbstractSourceFactory;
 use Butschster\ContextGenerator\Source\SourceInterface;
-use Butschster\ContextGenerator\Source\Gitlab\Config\ServerRegistry;
 use Psr\Log\LoggerInterface;
 
 #[LoggerPrefix(prefix: 'gitlab-source-factory')]

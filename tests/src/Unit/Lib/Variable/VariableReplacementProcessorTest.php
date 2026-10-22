@@ -9,8 +9,8 @@ use Butschster\ContextGenerator\Lib\Variable\VariableReplacementProcessor;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
-use Tests\TestCase;
 use Psr\Log\LoggerInterface;
+use Tests\TestCase;
 
 #[CoversClass(VariableReplacementProcessor::class)]
 class VariableReplacementProcessorTest extends TestCase

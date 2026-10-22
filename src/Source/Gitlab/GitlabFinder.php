@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Butschster\ContextGenerator\Source\Gitlab;
 
+use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Butschster\ContextGenerator\Config\Exclude\ExcludeRegistryInterface;
 use Butschster\ContextGenerator\Lib\Finder\FinderInterface;
 use Butschster\ContextGenerator\Lib\Finder\FinderResult;
@@ -17,7 +18,6 @@ use Butschster\ContextGenerator\Lib\PathFilter\PathFilter;
 use Butschster\ContextGenerator\Lib\TreeBuilder\FileTreeBuilder;
 use Butschster\ContextGenerator\Lib\Variable\VariableResolver;
 use Butschster\ContextGenerator\Source\Fetcher\FilterableSourceInterface;
-use Butschster\ContextGenerator\Application\Logger\LoggerPrefix;
 use Psr\Log\LoggerInterface;
 
 final class GitlabFinder implements FinderInterface

@@ -6,10 +6,10 @@ namespace Butschster\ContextGenerator\McpServer\Action\Tools\Docs;
 
 use Butschster\ContextGenerator\Lib\Context7Client\Context7ClientInterface;
 use Butschster\ContextGenerator\Lib\Context7Client\Exception\Context7ClientException;
+use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Action\Tools\Docs\Dto\FetchLibraryDocsRequest;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
-use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use PhpMcp\Schema\Result\CallToolResult;
 use Psr\Log\LoggerInterface;

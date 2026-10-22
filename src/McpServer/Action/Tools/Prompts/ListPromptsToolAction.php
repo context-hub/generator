@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\McpServer\Action\Tools\Prompts;
 
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
-use Butschster\ContextGenerator\McpServer\Prompt\PromptProviderInterface;
-use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Action\ToolResult;
+use Butschster\ContextGenerator\McpServer\Attribute\Tool;
+use Butschster\ContextGenerator\McpServer\Prompt\PromptProviderInterface;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use Mcp\Server\Contracts\ReferenceProviderInterface;
 use PhpMcp\Schema\Result\CallToolResult;

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Butschster\ContextGenerator\McpServer\Projects\Actions;
 
 use Butschster\ContextGenerator\Application\FSPath;
+use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Attribute\InputSchema;
 use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Projects\Actions\Dto\AliasResolutionResponse;
@@ -12,7 +13,6 @@ use Butschster\ContextGenerator\McpServer\Projects\Actions\Dto\CurrentProjectRes
 use Butschster\ContextGenerator\McpServer\Projects\Actions\Dto\ProjectSwitchRequest;
 use Butschster\ContextGenerator\McpServer\Projects\Actions\Dto\ProjectSwitchResponse;
 use Butschster\ContextGenerator\McpServer\Projects\ProjectServiceInterface;
-use Butschster\ContextGenerator\McpServer\Action\ToolResult;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use PhpMcp\Schema\Result\CallToolResult;
 use Psr\Log\LoggerInterface;

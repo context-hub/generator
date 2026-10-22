@@ -6,8 +6,8 @@ namespace Butschster\ContextGenerator\McpServer\Action\Tools\Context;
 
 use Butschster\ContextGenerator\Config\Loader\ConfigLoaderInterface;
 use Butschster\ContextGenerator\Config\Registry\ConfigRegistryAccessor;
-use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Action\ToolResult;
+use Butschster\ContextGenerator\McpServer\Attribute\Tool;
 use Butschster\ContextGenerator\McpServer\Routing\Attribute\Post;
 use PhpMcp\Schema\Content\TextContent;
 use PhpMcp\Schema\Result\CallToolResult;

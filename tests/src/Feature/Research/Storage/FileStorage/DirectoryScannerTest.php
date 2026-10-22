@@ -6,9 +6,9 @@ namespace Tests\Feature\Drafling\Storage\FileStorage;
 
 use Butschster\ContextGenerator\Research\Storage\FileStorage\DirectoryScanner;
 use PHPUnit\Framework\Attributes\Test;
-use Tests\TestCase;
 use Spiral\Exceptions\ExceptionReporterInterface;
 use Spiral\Files\Files;
+use Tests\TestCase;
 
 final class DirectoryScannerTest extends TestCase
 {
